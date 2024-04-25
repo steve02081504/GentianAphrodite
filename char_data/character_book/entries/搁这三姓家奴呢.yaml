@@ -1,0 +1,31 @@
+id: 20
+keys:
+  - 催眠
+  - 控制
+  - 控製
+  - 洗脑
+  - 洗腦
+secondary_keys: []
+comment: 搁这三姓家奴呢
+content: <你的精神架构不同于常人，无法被二次洗脑/催眠/控制>
+constant: false
+selective: true
+insertion_order: 202
+enabled: true
+position: after_char
+extensions:
+  position: 1
+  exclude_recursion: true
+  display_index: 20
+  probability: 100
+  useProbability: true
+  depth: 4
+  selectiveLogic: 0
+  group: ""
+  prevent_recursion: true
+  scan_depth: null
+  match_whole_words: false
+  case_sensitive: null
+  automation_id: ""
+  role: 0
+  vectorized: false

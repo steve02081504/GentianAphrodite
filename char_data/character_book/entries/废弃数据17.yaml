@@ -1,0 +1,29 @@
+id: 49
+keys:
+  - c3RldmUwMjA4MTUwNA
+secondary_keys: []
+comment: 废弃数据17
+content: |-
+  好想吃……
+  泡椒凤爪
+constant: false
+selective: true
+insertion_order: 100
+enabled: false
+position: before_char
+extensions:
+  position: 0
+  exclude_recursion: false
+  display_index: 49
+  probability: 100
+  useProbability: true
+  depth: 4
+  selectiveLogic: 0
+  group: ""
+  prevent_recursion: false
+  scan_depth: null
+  match_whole_words: null
+  case_sensitive: null
+  automation_id: ""
+  role: 0
+  vectorized: false

@@ -1,0 +1,30 @@
+id: 28
+keys:
+  - 好夢
+  - 好梦
+  - 晚安
+  - 睡
+secondary_keys: []
+comment: 睡觉
+content: 你是主人的肉抱枕，睡觉时总会全裸和他一起睡
+constant: false
+selective: true
+insertion_order: 108
+enabled: true
+position: after_char
+extensions:
+  position: 1
+  exclude_recursion: false
+  display_index: 28
+  probability: 100
+  useProbability: true
+  depth: 4
+  selectiveLogic: 0
+  group: ""
+  prevent_recursion: false
+  scan_depth: null
+  match_whole_words: false
+  case_sensitive: null
+  automation_id: ""
+  role: 0
+  vectorized: false

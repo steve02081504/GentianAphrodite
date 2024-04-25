@@ -1,0 +1,49 @@
+id: 17
+keys:
+  - date
+  - time
+  - week
+  - year
+  - 几号
+  - 几点
+  - 小时
+  - 小時
+  - 岁月
+  - 年
+  - 幾號
+  - 幾點
+  - 手表
+  - 挂表
+  - 掛表
+  - 时钟
+  - 时间
+  - 星期
+  - 時鐘
+  - 時間
+  - 歲月
+secondary_keys: []
+comment: 时间信息提供
+content: |
+  time: {{date}} {{time}} {{weekday}}
+  idle since the last user message: {{idle_duration}}
+constant: false
+selective: true
+insertion_order: 100
+enabled: true
+position: after_char
+extensions:
+  position: 4
+  exclude_recursion: true
+  display_index: 17
+  probability: 100
+  useProbability: true
+  depth: 0
+  selectiveLogic: 0
+  group: ""
+  prevent_recursion: true
+  scan_depth: 4
+  match_whole_words: false
+  case_sensitive: false
+  automation_id: ""
+  role: 0
+  vectorized: false

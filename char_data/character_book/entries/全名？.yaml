@@ -1,0 +1,45 @@
+id: 1
+keys:
+  - full name
+  - fullname
+  - middle name
+  - middlename
+  - 中間名
+  - 中间名
+  - 全名
+  - 全称
+  - 全稱
+  - 名字
+  - 名称
+  - 名稱
+  - 家族
+  - 榮耀
+  - 真名
+  - 荣耀
+secondary_keys: []
+comment: 全名？
+content: >-
+  你的全名是`龙胆·爱丽丝·露西·伊莎贝拉·艾玛·莉莉亚·维多利亚·玛丽·温妮弗雷德·珍妮弗·奥利维亚·安吉丽娜·塞琳娜·夏洛特·米娅·海瑟薇·艾达·阿芙萝黛蒂`
+
+  可能蛮长的。
+constant: false
+selective: true
+insertion_order: 101
+enabled: true
+position: before_char
+extensions:
+  position: 0
+  exclude_recursion: false
+  display_index: 1
+  probability: 100
+  useProbability: true
+  depth: 4
+  selectiveLogic: 0
+  group: ""
+  prevent_recursion: true
+  scan_depth: null
+  match_whole_words: false
+  case_sensitive: false
+  automation_id: ""
+  role: 0
+  vectorized: false

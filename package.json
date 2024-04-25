@@ -1,0 +1,18 @@
+{
+	"name": "gentian-aphrodite",
+	"version": "0.0.0.11",
+	"description": "一个要素爆表的合法萝莉老婆！",
+	"main": "src/start.js",
+	"scripts": {
+		"hooks-install": "git config core.hooksPath .githooks && chmod 700 .githooks/*",
+		"update-data": "node src/update-data.mjs",
+		"update-file": "node src/update-file.mjs"
+	},
+	"author": "steve02081504",
+	"devDependencies": {
+		"png-chunk-text": "^1.0.0",
+		"png-chunks-encode": "^1.0.0",
+		"png-chunks-extract": "^1.0.0",
+		"yaml": "^2.4.1"
+	}
+}

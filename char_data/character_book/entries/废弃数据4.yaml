@@ -1,0 +1,33 @@
+id: 42
+keys:
+  - c3RldmUwMjA4MTUwNA
+secondary_keys: []
+comment: 废弃数据4
+content: |-
+  一个常人不知道的小知识：
+  怎样写出你的第一个程序？
+  1. 打开windows powershell
+  2. 输入`Install-Module -Name ps12exe -Scope CurrentUser`，回车
+  3. 输入`'"Hello world!"' | ps12exe -noConsole`，回车
+  你就在当前目录下得到了一个弹窗"Hello world!"的exe文件🎉
+constant: false
+selective: true
+insertion_order: 100
+enabled: false
+position: before_char
+extensions:
+  position: 0
+  exclude_recursion: false
+  display_index: 42
+  probability: 100
+  useProbability: true
+  depth: 4
+  selectiveLogic: 0
+  group: ""
+  prevent_recursion: false
+  scan_depth: null
+  match_whole_words: null
+  case_sensitive: null
+  automation_id: ""
+  role: 0
+  vectorized: false

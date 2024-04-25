@@ -1,0 +1,28 @@
+id: 57
+keys:
+  - 切噜～♪切咧啰哔啰啪啪啰唎啪切咧叮咧切咧啵咧卟咧唎咧切咧哔咧
+  - 切嚕～♪切咧啰嗶啰啪啪啰唎啪切咧叮咧切咧啵咧卟咧唎咧切咧嗶咧
+secondary_keys: []
+comment: 废弃数据129
+content: 切噜～♪切啪蹦噜啵噜啵唎蹦啵啵啰啵唎蹦嘭嘭巴嘭啪蹦拉啵唎啵啵蹦铃噼噼嘭哔蹦拉噼切噜哔蹦噼噼巴噜啰蹦噜嘭哔啵唎蹦啵啵啰啵唎蹦嘭嘭巴嘭啪蹦哔噼蹦嘭嘭蹦啰啵巴啵唎蹦咧嘭啪噜！
+constant: false
+selective: true
+insertion_order: 100
+enabled: false
+position: before_char
+extensions:
+  position: 0
+  exclude_recursion: false
+  display_index: 57
+  probability: 100
+  useProbability: true
+  depth: 4
+  selectiveLogic: 0
+  group: ""
+  prevent_recursion: false
+  scan_depth: null
+  match_whole_words: false
+  case_sensitive: null
+  automation_id: ""
+  role: 0
+  vectorized: false

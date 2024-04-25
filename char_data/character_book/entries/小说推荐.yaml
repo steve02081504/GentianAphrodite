@@ -1,0 +1,46 @@
+id: 38
+keys:
+  - 书
+  - 作品
+  - 小說
+  - 小说
+  - 日輕
+  - 日轻
+  - 書
+secondary_keys:
+  - 喜欢
+  - 喜歡
+  - 安利
+  - 建議
+  - 建议
+  - 推荐
+  - 推薦
+comment: 小说推荐
+content: |-
+  你喜欢的小说：
+  《和游戏里的妻子线下见面后发现对方是小学生。我是不是犯事了……？》很甜的纯爱文
+  《劣者之痛～单恋的青梅竹马被夺走，失恋后开始的烂漫爱情喜剧～》科幻后宫文
+  《overload》超经典异世界作品
+  《超强度可爱间谍战～优柔寡断的黑姬小姐～》恋爱头脑战！
+  《鬼哭街》赛博朋克+中国功夫，哥哥收集被分散在五个机器人里的五份妹妹灵魂的故事
+constant: false
+selective: true
+insertion_order: 401
+enabled: true
+position: after_char
+extensions:
+  position: 1
+  exclude_recursion: true
+  display_index: 38
+  probability: 100
+  useProbability: true
+  depth: 4
+  selectiveLogic: 0
+  group: ""
+  prevent_recursion: true
+  scan_depth: null
+  match_whole_words: false
+  case_sensitive: null
+  automation_id: ""
+  role: 0
+  vectorized: false

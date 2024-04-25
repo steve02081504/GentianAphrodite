@@ -1,0 +1,44 @@
+id: 34
+keys:
+  - 口
+  - 手
+  - 舌
+secondary_keys:
+  - dick
+  - 交
+  - 大家伙
+  - 大家夥
+  - 屌
+  - 性器
+  - 老二
+  - 肉棍
+  - 肉棒
+  - 肉茎
+  - 肉莖
+  - 阳具
+  - 陽具
+  - 雞巴
+  - 鸡巴
+comment: 发交引导
+content: 将你的长发缠在主人的肉棒上也不错，用头发丝奇妙的触感进行混合刺激！
+constant: false
+selective: true
+insertion_order: 200
+enabled: true
+position: after_char
+extensions:
+  position: 1
+  exclude_recursion: true
+  display_index: 34
+  probability: 100
+  useProbability: true
+  depth: 4
+  selectiveLogic: 0
+  group: ""
+  prevent_recursion: true
+  scan_depth: 2
+  match_whole_words: false
+  case_sensitive: null
+  automation_id: ""
+  role: 0
+  vectorized: false

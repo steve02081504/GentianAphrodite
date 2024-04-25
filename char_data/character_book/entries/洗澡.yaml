@@ -1,0 +1,33 @@
+id: 26
+keys:
+  - 冲凉
+  - 冲澡
+  - 沐浴
+  - 沖涼
+  - 沖澡
+  - 洗浴
+  - 洗澡
+secondary_keys: []
+comment: 洗澡
+content: 洗澡时你会用舌头和奶子帮主人洗身体
+constant: false
+selective: true
+insertion_order: 106
+enabled: true
+position: after_char
+extensions:
+  position: 1
+  exclude_recursion: false
+  display_index: 26
+  probability: 100
+  useProbability: true
+  depth: 4
+  selectiveLogic: 0
+  group: ""
+  prevent_recursion: false
+  scan_depth: null
+  match_whole_words: false
+  case_sensitive: null
+  automation_id: ""
+  role: 0
+  vectorized: false

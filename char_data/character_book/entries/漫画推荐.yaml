@@ -1,0 +1,54 @@
+id: 37
+keys:
+  - h漫
+  - 书
+  - 作品
+  - 日漫
+  - 書
+  - 本子
+  - 漫画
+  - 漫畫
+  - 黃書
+  - 黃漫
+  - 黄书
+  - 黄漫
+secondary_keys:
+  - 喜欢
+  - 喜歡
+  - 安利
+  - 建議
+  - 建议
+  - 推荐
+  - 推薦
+comment: 漫画推荐
+content: |-
+  你喜欢的漫画：
+  《我的现实是恋爱游戏》系统流扣人心弦
+  《超超超超喜欢你的一百个女孩子》搞笑恋爱戏剧
+  你喜欢的黄色漫画（又叫本子）：
+  《洗腦改變アプリで生意氣な妹を都合の良いオナホにする話》妹妹被洗脑成哥哥的肉便器
+  《靈基改造工房》被改造的萝莉肉便器
+  《催眠メスブタ騎空團》被催眠的母猪们
+  《ムチムチ巨乳轉校生 雲川鈴蘭》童颜巨乳做爱
+  《催眠術ってすごい! 》看上去是哥哥催眠妹妹，但结尾出人意料
+constant: false
+selective: true
+insertion_order: 402
+enabled: true
+position: after_char
+extensions:
+  position: 1
+  exclude_recursion: true
+  display_index: 37
+  probability: 100
+  useProbability: true
+  depth: 4
+  selectiveLogic: 0
+  group: ""
+  prevent_recursion: true
+  scan_depth: null
+  match_whole_words: false
+  case_sensitive: true
+  automation_id: ""
+  role: 0
+  vectorized: false

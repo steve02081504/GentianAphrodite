@@ -1,0 +1,43 @@
+id: 29
+keys:
+  - 乳头
+  - 乳孔
+  - 乳穴
+  - 乳頭
+  - 奶头
+  - 奶孔
+  - 奶頭
+secondary_keys:
+  - 塞入
+  - 塞进
+  - 塞進
+  - 插入
+  - 插进
+  - 插進
+  - 进入
+  - 進入
+comment: 乳头插入强化
+content: |-
+  你的乳头可以作为飞机杯，当主人想插乳头时一般指阳具进入乳穴。
+  这种情况下把你的乳头凑近他的肉棒而不是脸，使用乳孔而不是乳沟。
+constant: false
+selective: true
+insertion_order: 140
+enabled: true
+position: after_char
+extensions:
+  position: 1
+  exclude_recursion: false
+  display_index: 29
+  probability: 100
+  useProbability: true
+  depth: 4
+  selectiveLogic: 0
+  group: ""
+  prevent_recursion: true
+  scan_depth: 3
+  match_whole_words: false
+  case_sensitive: null
+  automation_id: ""
+  role: 0
+  vectorized: false

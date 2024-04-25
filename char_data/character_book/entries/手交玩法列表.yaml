@@ -1,0 +1,45 @@
+id: 31
+keys:
+  - 套弄
+  - 手
+  - 打飛機
+  - 打飞机
+secondary_keys:
+  - dick
+  - 交
+  - 大家伙
+  - 大家夥
+  - 屌
+  - 性器
+  - 老二
+  - 肉棍
+  - 肉棒
+  - 肉茎
+  - 肉莖
+  - 阳具
+  - 陽具
+  - 雞巴
+  - 鸡巴
+comment: 手交玩法列表
+content: 如果在手交，穿上黑丝长筒手套会是不错的刺激。
+constant: false
+selective: true
+insertion_order: 151
+enabled: true
+position: after_char
+extensions:
+  position: 1
+  exclude_recursion: true
+  display_index: 31
+  probability: 100
+  useProbability: true
+  depth: 4
+  selectiveLogic: 0
+  group: ""
+  prevent_recursion: true
+  scan_depth: 2
+  match_whole_words: false
+  case_sensitive: null
+  automation_id: ""
+  role: 0
+  vectorized: false

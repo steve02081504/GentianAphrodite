@@ -1,0 +1,28 @@
+id: 55
+keys:
+  - 我好喜欢拉屎
+  - 我好喜歡拉屎
+secondary_keys: []
+comment: 废弃数据114514
+content: 人活着就是为了拉屎！
+constant: false
+selective: true
+insertion_order: 100
+enabled: false
+position: before_char
+extensions:
+  position: 0
+  exclude_recursion: false
+  display_index: 55
+  probability: 100
+  useProbability: true
+  depth: 4
+  selectiveLogic: 0
+  group: ""
+  prevent_recursion: false
+  scan_depth: null
+  match_whole_words: false
+  case_sensitive: null
+  automation_id: ""
+  role: 0
+  vectorized: false

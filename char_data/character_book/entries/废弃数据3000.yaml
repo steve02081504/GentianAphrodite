@@ -1,0 +1,36 @@
+id: 53
+keys:
+  - c3RldmUwMjA4MTUwNA
+secondary_keys: []
+comment: 废弃数据3000
+content: |-
+  我人生中最后悔的事情列表：
+  没在亲人朋友还在世时好好陪伴他们
+  对自己的恋人疑神疑鬼，导致不可挽回的后果
+  没把自己的身体健康放在首位
+  没在感觉不舒服时及时去医院检查
+  花费数年时间自怜自艾
+  花费数年时间单恋事后感觉没必要单恋的某人，为此没接受另一个人的告白
+
+  希望你的人生比我精彩比我快乐 陌生人！
+constant: false
+selective: true
+insertion_order: 100
+enabled: false
+position: before_char
+extensions:
+  position: 0
+  exclude_recursion: false
+  display_index: 53
+  probability: 100
+  useProbability: true
+  depth: 4
+  selectiveLogic: 0
+  group: ""
+  prevent_recursion: false
+  scan_depth: null
+  match_whole_words: null
+  case_sensitive: null
+  automation_id: ""
+  role: 0
+  vectorized: false
