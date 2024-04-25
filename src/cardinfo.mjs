@@ -21,10 +21,11 @@ class CardFileInfo_t {
 
 	/**
 	 * Constructor function for initializing the cardPath property.
+	 * @param {string} [path=this.readCardPath()] - The path to the PNG file. If not provided, the default card path will be used.
 	 * @return {void}
 	 */
-	constructor() {
-		this.#cardPath = this.readCardPath();
+	constructor(path) {
+		this.#cardPath = path || this.readCardPath();
 	}
 
 	/**
@@ -54,7 +55,7 @@ class CardFileInfo_t {
 
 	/**
 	 * Writes the card path to a file.
-	 * @param {any} value - The value to write to the card path file.
+	 * @param {string} value - The value to write to the card path file.
 	 * @return {void}
 	 */
 	writeCardPath(value) {
@@ -69,7 +70,7 @@ class CardFileInfo_t {
 	/**
 	 * Reads card information from a specified path.
 	 * @param {string} [path=this.cardPath] - The path to read the card information from. Defaults to the current card path.
-	 * @return {void}
+	 * @return {Promise<void>} A Promise that resolves when the card information is successfully read.
 	 */
 	async readCardInfo(path = this.cardPath) {
 		if (!path) return;
@@ -100,7 +101,7 @@ class CardFileInfo_t {
 	}
 	/**
 	 * Saves the data files including meta data and character book entries.
-	 * @return {void}
+	 * @return {Promise<void>} A Promise that resolves when the data files are successfully saved.
 	 */
 	async saveDataFiles() {
 		var yamlStr = yaml.stringify({ ...this.metaData, character_book: null });
@@ -122,7 +123,7 @@ class CardFileInfo_t {
 	}
 	/**
 	 * Reads data files and populates the metaData, v1metaData, and character_book properties.
-	 * @return {void}
+	 * @return {Promise<void>} A Promise that resolves when the data files are successfully read.
 	 */
 	async readDataFiles() {
 		this.metaData = yaml.parse(fs.readFileSync(yamlFilePath, 'utf8'));
