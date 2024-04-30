@@ -95,7 +95,7 @@ class CardFileInfo_t {
 	 */
 	async saveCardInfo(path = this.cardPath) {
 		if (!path) return;
-		const buffer = fs.readFileSync(path);
+		var buffer = fs.readFileSync(path);
 		//写入png文件的metaData
 		var charData = JSON.stringify(this.v1metaData);
 		buffer = charDataParser.write(buffer, charData);
