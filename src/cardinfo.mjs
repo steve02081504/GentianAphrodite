@@ -85,6 +85,8 @@ class CardFileInfo_t {
 		this.metaData = this.metaData.data
 		//split character_book
 		this.character_book = this.metaData.character_book;
+		//remove chat data in v1
+		this.v1metaData.chat = '';
 	}
 	/**
 	 * Saves the card information to a PNG file.
