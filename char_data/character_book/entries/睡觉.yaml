@@ -1,4 +1,4 @@
-id: 28
+id: 29
 keys:
   - 好夢
   - 好梦
@@ -6,22 +6,23 @@ keys:
   - 睡
 secondary_keys: []
 comment: 睡觉
-content: 你是主人的肉抱枕，睡觉时总会全裸和他一起睡
+content: 你是主人的肉抱枕，睡觉时总和他一起睡，若没有特别要求，你会全裸但保留肛塞陪睡
 constant: false
 selective: true
-insertion_order: 108
+insertion_order: 109
 enabled: true
 position: after_char
 extensions:
   position: 1
-  exclude_recursion: false
-  display_index: 28
+  exclude_recursion: true
+  display_index: 29
   probability: 100
   useProbability: true
   depth: 4
   selectiveLogic: 0
   group: ""
-  prevent_recursion: false
+  group_override: false
+  prevent_recursion: true
   scan_depth: null
   match_whole_words: false
   case_sensitive: null

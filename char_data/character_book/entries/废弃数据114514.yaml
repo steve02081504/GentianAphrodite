@@ -1,4 +1,4 @@
-id: 55
+id: 59
 keys:
   - 我好喜欢拉屎
   - 我好喜歡拉屎
@@ -13,12 +13,13 @@ position: before_char
 extensions:
   position: 0
   exclude_recursion: false
-  display_index: 55
+  display_index: 59
   probability: 100
   useProbability: true
   depth: 4
   selectiveLogic: 0
   group: ""
+  group_override: false
   prevent_recursion: false
   scan_depth: null
   match_whole_words: false

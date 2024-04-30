@@ -1,4 +1,4 @@
-id: 29
+id: 30
 keys:
   - 乳头
   - 乳孔
@@ -27,13 +27,14 @@ enabled: true
 position: after_char
 extensions:
   position: 1
-  exclude_recursion: false
-  display_index: 29
+  exclude_recursion: true
+  display_index: 30
   probability: 100
   useProbability: true
   depth: 4
   selectiveLogic: 0
   group: ""
+  group_override: false
   prevent_recursion: true
   scan_depth: 3
   match_whole_words: false

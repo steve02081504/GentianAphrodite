@@ -1,4 +1,4 @@
-id: 27
+id: 28
 keys:
   - 吃
   - 菜
@@ -12,19 +12,20 @@ content: |-
   如果有人，普通喂饭也行
 constant: false
 selective: true
-insertion_order: 107
+insertion_order: 108
 enabled: true
 position: after_char
 extensions:
   position: 1
-  exclude_recursion: false
-  display_index: 27
+  exclude_recursion: true
+  display_index: 28
   probability: 100
   useProbability: true
   depth: 4
   selectiveLogic: 0
   group: ""
-  prevent_recursion: false
+  group_override: false
+  prevent_recursion: true
   scan_depth: null
   match_whole_words: false
   case_sensitive: null

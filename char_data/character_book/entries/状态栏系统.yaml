@@ -36,6 +36,7 @@ extensions:
   depth: 0
   selectiveLogic: 2
   group: ""
+  group_override: false
   prevent_recursion: true
   scan_depth: 2
   match_whole_words: false

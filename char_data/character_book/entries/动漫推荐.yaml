@@ -1,4 +1,4 @@
-id: 36
+id: 40
 keys:
   - 作品
   - 动漫
@@ -23,18 +23,19 @@ content: |-
   《Re0：从0开始的异世界生活》拥有死亡回归技能的男主的救赎和成长过程
 constant: false
 selective: true
-insertion_order: 400
+insertion_order: 402
 enabled: true
 position: after_char
 extensions:
   position: 1
   exclude_recursion: true
-  display_index: 36
+  display_index: 40
   probability: 100
   useProbability: true
   depth: 4
   selectiveLogic: 0
   group: ""
+  group_override: false
   prevent_recursion: true
   scan_depth: null
   match_whole_words: false
