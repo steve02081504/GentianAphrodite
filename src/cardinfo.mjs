@@ -7,6 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const yamlFilePath = `${__dirname}/../char_data/index.yaml`;
 const character_book_path = `${__dirname}/../char_data/character_book`;
+const packageJsonFilePath = `${__dirname}/../package.json`;
 
 import charDataParser from './character-card-parser.mjs';
 
@@ -78,7 +79,12 @@ class CardFileInfo_t {
 		//\r\n
 		this.metaData = this.metaData.replace(/\\r\\n/g, '\\n');
 		//string to object
+		var metaDataStr = this.metaData;
 		this.metaData = JSON.parse(this.metaData);
+		if (this.metaData.data.character_version) {
+			metaDataStr = metaDataStr.replace(`\`${this.metaData.data.character_version}\``, '{{char_version}}');
+			this.metaData = JSON.parse(metaDataStr);
+		}
 		//only keep v2 data
 		this.v1metaData = this.metaData;
 		this.metaData = this.metaData.data
@@ -97,6 +103,7 @@ class CardFileInfo_t {
 		var buffer = fs.readFileSync(path);
 		//写入png文件的metaData
 		var charData = JSON.stringify(this.v1metaData);
+		charData = charData.replace(/{{char_version}}/g, this.metaData.character_version);
 		buffer = charDataParser.write(buffer, charData);
 		fs.writeFileSync(path, buffer, { encoding: 'binary' });
 	}
@@ -107,6 +114,10 @@ class CardFileInfo_t {
 	async saveDataFiles() {
 		var data = { ...this.metaData, create_date: this.v1metaData.create_date }
 		delete data.character_book
+		var packageJson = JSON.parse(fs.readFileSync(packageJsonFilePath, 'utf8'));
+		packageJson.version = data.character_version;
+		fs.writeFileSync(packageJsonFilePath, JSON.stringify(packageJson, null, '\t') + '\n');
+		delete data.character_version
 		var yamlStr = yaml.stringify(data);
 		fs.writeFileSync(yamlFilePath, yamlStr);
 		fs.rmSync(character_book_path + '/entries', { recursive: true, force: true });
