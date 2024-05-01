@@ -5,9 +5,9 @@
 	"main": "src/start.js",
 	"scripts": {
 		"hooks-install": "git config core.hooksPath .githooks && chmod 700 .githooks/*",
-		"update-data": "node src/update-data.mjs",
-		"update-file": "node src/update-file.mjs",
-		"run-fixer": "node src/run-fixer.mjs"
+		"update-data": "node src/path/update-data.mjs",
+		"update-file": "node src/path/update-file.mjs",
+		"run-fixer": "node src/path/run-fixer.mjs"
 	},
 	"author": "steve02081504",
 	"devDependencies": {
