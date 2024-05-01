@@ -85,7 +85,7 @@ class CardFileInfo_t {
 		//split character_book
 		this.character_book = this.metaData.character_book;
 		//remove chat data in v1
-		this.v1metaData.chat = '';
+		delete this.v1metaData.chat;
 	}
 	/**
 	 * Saves the card information to a PNG file.
@@ -105,7 +105,9 @@ class CardFileInfo_t {
 	 * @return {Promise<void>} A Promise that resolves when the data files are successfully saved.
 	 */
 	async saveDataFiles() {
-		var yamlStr = yaml.stringify({ ...this.metaData, character_book: null, create_date: this.v1metaData.create_date });
+		var data = { ...this.metaData, create_date: this.v1metaData.create_date }
+		delete data.character_book
+		var yamlStr = yaml.stringify(data);
 		fs.writeFileSync(yamlFilePath, yamlStr);
 		fs.rmSync(character_book_path + '/entries', { recursive: true, force: true });
 		fs.mkdirSync(character_book_path + '/entries');
@@ -117,7 +119,9 @@ class CardFileInfo_t {
 			var yamlStr = yaml.stringify(entrie);
 			fs.writeFileSync(filePath, yamlStr);
 		}
-		yamlStr = yaml.stringify({ ...character_book, entries: null });
+		data = { ...character_book }
+		delete data.entries
+		yamlStr = yaml.stringify(data);
 		fs.writeFileSync(character_book_path + '/index.yaml', yamlStr);
 	}
 	/**
