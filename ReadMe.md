@@ -12,9 +12,3 @@
 运行`npm run update-cardfile`，更新仓库信息至角色卡中。  
   
 使用`npm run hooks-install`命令，将git hooks设置为`src/.githooks`目录，以在pull等操作时自动更新卡片信息。
-
-## 我该如何获取该角色卡？
-
-该仓库中的某些地方有该卡片的社区信息！  
-祝你好运  
-XD
