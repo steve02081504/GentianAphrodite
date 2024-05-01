@@ -193,6 +193,12 @@ class CardFileInfo_t {
 		charData = charData.replace(/{{char_version}}/g, VerId);
 		return charDataParser.write(buffer, charData);
 	}
+	/**
+	 * Asynchronously builds PNG buffer information based on the provided subversion ID.
+	 *
+	 * @param {string} [subverId='default'] - The subversion ID to build the PNG buffer for.
+	 * @return {Promise<Buffer>} A Promise that resolves with the updated PNG buffer.
+	 */
 	async buildPngBufferInfo(subverId = 'default') {
 		let SubVerCfg = await import(pathToFileURL(`${SubVerCfgsDir}/${subverId}.mjs`)).then(m => m.default || m);
 		SubVerCfg = {
@@ -204,6 +210,13 @@ class CardFileInfo_t {
 		let buffer = fs.readFileSync(SubVerCfg.GetPngFile());
 		return this.UpdatePngBufferInfo(buffer, SubVerCfg.VerIdUpdater || (subverId == "default" ? a => a : a => `${a}-${subverId}`), SubVerCfg.dataUpdater);
 	}
+	/**
+	 * Asynchronously builds a PNG file at the specified subversion ID and saves it to the specified path.
+	 *
+	 * @param {string} [subverId='default'] - The subversion ID to build the PNG file for.
+	 * @param {string} [SavePath=`${BuildDir}/${subverId}.png`] - The path to save the PNG file to.
+	 * @return {Promise<void>} A Promise that resolves when the PNG file is built and saved successfully.
+	 */
 	async Build(subverId = 'default', SavePath = `${BuildDir}/${subverId}.png`) {
 		let buffer = await this.buildPngBufferInfo(subverId);
 		fs.mkdirSync(path.dirname(SavePath), { recursive: true });
