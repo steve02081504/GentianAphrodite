@@ -1,5 +1,12 @@
 import { simplized, traditionalized } from "./chs2t.mjs";
 
+/**
+ * Iterates WI data array and performs specific operations on it.
+ * 1. If the key or secondary key contains Chinese characters, the match_whole_words property is set to false.
+ * 2. Add the simplized and traditionalized versions of the key and secondary key to the key and secondary key arrays.
+ * this function will not remove duplicates keys, use {@link removeDuplicates} function to remove them.
+ * @param {Object} data - The data containing entries to process.
+ */
 function reRule(data) {
 	for (const id in data) {
 		let entrie = data[id];
@@ -25,6 +32,10 @@ function reRule(data) {
 	}
 }
 
+/**
+ * Iterates WI data array and re-indexes the uid and display index property.
+ * @param {Object} data - The data containing entries to process.
+ */
 function reIndex(data) {
 	let displayIndexArray = [];
 	for (const key in data)
@@ -38,9 +49,13 @@ function reIndex(data) {
 	return aret;
 }
 
+/**
+ * Removes duplicate entries from the array or object tree.
+ * @param {Object|Array} data - The data containing entries to process.
+ * @returns {Object|Array} The data with duplicate entries removed.
+ */
 function removeDuplicates(data) {
-	if (typeof data == 'string')
-		return data;
+	if (typeof data == 'string') return data;
 	for (const key in data) {
 		data[key] = removeDuplicates(data[key]);
 	}
@@ -49,6 +64,10 @@ function removeDuplicates(data) {
 	return data;
 }
 
+/**
+ * do the common fixes on winfo datas.
+ * @param {Object} data - The charbook data
+ */
 function winfoFixer(data) {
 	reRule(data.entries);
 	data = removeDuplicates(data)
