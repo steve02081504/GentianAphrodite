@@ -1,3 +1,4 @@
 /src/data/cardpath.txt
 package-lock.json
 /node_modules
+/build

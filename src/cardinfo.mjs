@@ -1,13 +1,15 @@
 import fs from 'fs';
 import path from 'path';
 import yaml from 'yaml';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const yamlFilePath = `${__dirname}/../char_data/index.yaml`;
 const character_book_path = `${__dirname}/../char_data/character_book`;
 const packageJsonFilePath = `${__dirname}/../package.json`;
+const SubVerCfgsDir = `${__dirname}/../char_data/subvers`;
+const BuildDir = `${__dirname}/../build`;
 
 import charDataParser from './character-card-parser.mjs';
 
@@ -101,11 +103,7 @@ class CardFileInfo_t {
 	async saveCardInfo(path = this.cardPath) {
 		if (!path) return;
 		var buffer = fs.readFileSync(path);
-		//写入png文件的metaData
-		var charData = JSON.stringify(this.v1metaData);
-		charData = charData.replace(/{{char_version}}/g, this.metaData.character_version);
-		buffer = charDataParser.write(buffer, charData);
-		fs.writeFileSync(path, buffer, { encoding: 'binary' });
+		fs.writeFileSync(path, this.UpdatePngBufferInfo(buffer), { encoding: 'binary' });
 	}
 	/**
 	 * Saves the data files including meta data and character book entries.
@@ -173,6 +171,43 @@ class CardFileInfo_t {
 		}
 		this.v1metaData.data = this.metaData;
 		this.metaData.character_book = this.character_book;
+	}
+	/**
+	 * Updates the PNG buffer information with metadata.
+	 *
+	 * @param {Buffer} buffer - The buffer to update with metadata.
+	 * @param {function} VerIdUpdater - A function that takes the current character version and returns the updated character version.
+	 * @param {function} dataUpdater - A function that takes the current character data and returns the updated character data.
+	 * @return {Buffer} The updated PNG buffer.
+	 */
+	UpdatePngBufferInfo(buffer, VerIdUpdater = a => a, dataUpdater = a => a) {
+		if (!buffer) return;
+		var VerId = VerIdUpdater(this.metaData.character_version);
+		var charData = JSON.stringify(dataUpdater({
+			...this.v1metaData,
+			data: {
+				...this.metaData,
+				character_version: VerId
+			}
+		}));
+		charData = charData.replace(/{{char_version}}/g, VerId);
+		return charDataParser.write(buffer, charData);
+	}
+	async buildPngBufferInfo(subverId = 'default') {
+		let SubVerCfg = await import(pathToFileURL(`${SubVerCfgsDir}/${subverId}.mjs`)).then(m => m.default || m);
+		SubVerCfg = {
+			GetPngFile: () => {
+				return this.cardPath;
+			},
+			...SubVerCfg
+		}
+		let buffer = fs.readFileSync(SubVerCfg.GetPngFile());
+		return this.UpdatePngBufferInfo(buffer, SubVerCfg.VerIdUpdater || (subverId == "default" ? a => a : a => `${a}-${subverId}`), SubVerCfg.dataUpdater);
+	}
+	async Build(subverId = 'default', SavePath = `${BuildDir}/${subverId}.png`) {
+		let buffer = await this.buildPngBufferInfo(subverId);
+		fs.mkdirSync(path.dirname(SavePath), { recursive: true });
+		fs.writeFileSync(SavePath, buffer, { encoding: 'binary' });
 	}
 }
 /**

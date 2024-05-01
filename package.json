@@ -7,7 +7,8 @@
 		"hooks-install": "git config core.hooksPath .githooks && chmod 700 .githooks/*",
 		"update-data": "node src/path/update-data.mjs",
 		"update-cardfile": "node src/path/update-cardfile.mjs",
-		"run-fixer": "node src/path/run-fixer.mjs"
+		"run-fixer": "node src/path/run-fixer.mjs",
+		"build": "node src/path/build.mjs"
 	},
 	"author": "steve02081504",
 	"devDependencies": {
