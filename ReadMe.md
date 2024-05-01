@@ -9,7 +9,7 @@
 ## 更新信息
 
 在此仓库中运行`npm run update-data`，自角色卡更新仓库中的信息。  
-运行`npm run update-file`，更新仓库信息至角色卡中。  
+运行`npm run update-cardfile`，更新仓库信息至角色卡中。  
   
 使用`npm run hooks-install`命令，将git hooks设置为`src/.githooks`目录，以在pull等操作时自动更新卡片信息。
 
