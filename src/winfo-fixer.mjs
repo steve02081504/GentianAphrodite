@@ -30,7 +30,7 @@ function reIndex(data) {
 	for (const key in data)
 		displayIndexArray.push(data[key].extensions.display_index);
 	let orderedIndexArray = displayIndexArray.sort((a, b) => a - b);
-	let aret = new Object();
+	let aret = [];
 	for (const key in data) {
 		data[key].id = data[key].extensions.display_index = orderedIndexArray.indexOf(data[key].extensions.display_index);
 		aret[data[key].id] = data[key];
@@ -39,13 +39,13 @@ function reIndex(data) {
 }
 
 function removeDuplicates(data) {
-	if (Array.isArray(data))
-		return [...new Set(data)].sort()
 	if (typeof data == 'string')
 		return data;
 	for (const key in data) {
 		data[key] = removeDuplicates(data[key]);
 	}
+	if (Array.isArray(data))
+		return [...new Set(data)].sort()
 	return data;
 }
 

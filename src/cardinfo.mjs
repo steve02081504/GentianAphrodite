@@ -99,7 +99,7 @@ class CardFileInfo_t {
 		//写入png文件的metaData
 		var charData = JSON.stringify(this.v1metaData);
 		buffer = charDataParser.write(buffer, charData);
-		fs.writeFileSync(path, buffer);
+		fs.writeFileSync(path, buffer, { encoding: 'binary' });
 	}
 	/**
 	 * Saves the data files including meta data and character book entries.
@@ -131,7 +131,7 @@ class CardFileInfo_t {
 		this.metaData = yaml.parse(fs.readFileSync(yamlFilePath, 'utf8'));
 		this.v1metaData = yaml.parse(fs.readFileSync(v1yamlFilePath, 'utf8'));
 		this.character_book = yaml.parse(fs.readFileSync(character_book_path + '/index.yaml', 'utf8'));
-		this.character_book.entries = {};
+		this.character_book.entries = [];
 		var character_book_dir = fs.readdirSync(character_book_path + '/entries');
 		for (const key of character_book_dir) {
 			var filePath = character_book_path + '/entries/' + key;
