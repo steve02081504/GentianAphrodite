@@ -6,7 +6,6 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const yamlFilePath = `${__dirname}/../char_data/index.yaml`;
-const v1yamlFilePath = `${__dirname}/../char_data/v1.yaml`;
 const character_book_path = `${__dirname}/../char_data/character_book`;
 
 import charDataParser from './character-card-parser.mjs';
@@ -106,10 +105,8 @@ class CardFileInfo_t {
 	 * @return {Promise<void>} A Promise that resolves when the data files are successfully saved.
 	 */
 	async saveDataFiles() {
-		var yamlStr = yaml.stringify({ ...this.metaData, character_book: null });
+		var yamlStr = yaml.stringify({ ...this.metaData, character_book: null, create_date: this.v1metaData.create_date });
 		fs.writeFileSync(yamlFilePath, yamlStr);
-		yamlStr = yaml.stringify({ ...this.v1metaData, data: null });
-		fs.writeFileSync(v1yamlFilePath, yamlStr);
 		fs.rmSync(character_book_path + '/entries', { recursive: true, force: true });
 		fs.mkdirSync(character_book_path + '/entries');
 		var character_book = this.character_book;
@@ -129,7 +126,27 @@ class CardFileInfo_t {
 	 */
 	async readDataFiles() {
 		this.metaData = yaml.parse(fs.readFileSync(yamlFilePath, 'utf8'));
-		this.v1metaData = yaml.parse(fs.readFileSync(v1yamlFilePath, 'utf8'));
+		this.v1metaData = {
+			name: this.metaData.name,
+			description: this.metaData.description,
+			personality: this.metaData.personality,
+			scenario: this.metaData.scenario,
+			first_mes: this.metaData.first_mes,
+			mes_example: this.metaData.mes_example,
+			creatorcomment: this.metaData.creator_notes,
+			avatar: 'none',
+			talkativeness: this.metaData.extensions.talkativeness,
+			fav: this.metaData.extensions.fav,
+			spec: 'chara_card_v2',
+			spec_version: "2.0",
+			tags: this.metaData.tags
+		}
+		if (this.metaData.create_by)
+			this.v1metaData.create_by = this.metaData.create_by
+		if (this.metaData.create_date) {
+			this.v1metaData.create_date = this.metaData.create_date
+			delete this.metaData.create_date
+		}
 		this.character_book = yaml.parse(fs.readFileSync(character_book_path + '/index.yaml', 'utf8'));
 		this.character_book.entries = [];
 		var character_book_dir = fs.readdirSync(character_book_path + '/entries');
