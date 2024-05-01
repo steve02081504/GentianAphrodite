@@ -139,6 +139,8 @@ class CardFileInfo_t {
 	 */
 	async readDataFiles() {
 		this.metaData = yaml.parse(fs.readFileSync(yamlFilePath, 'utf8'));
+		var packageJson = JSON.parse(fs.readFileSync(packageJsonFilePath, 'utf8'));
+		this.metaData.character_version = packageJson.version;
 		this.v1metaData = {
 			name: this.metaData.name,
 			description: this.metaData.description,
