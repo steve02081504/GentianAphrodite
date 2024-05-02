@@ -9,12 +9,37 @@ const yamlFilePath = `${__dirname}/../char_data/index.yaml`;
 const character_book_path = `${__dirname}/../char_data/character_book`;
 const packageJsonFilePath = `${__dirname}/../package.json`;
 const SubVerCfgsDir = `${__dirname}/../char_data/subvers`;
+const ImgsDir = `${__dirname}/../char_data/img`;
 const BuildDir = `${__dirname}/../build`;
 
 import charDataParser from './character-card-parser.mjs';
 
 const cardFilePath = `${__dirname}/data/cardpath.txt`;
 
+/**
+ * Retrieves V1 character data from V2 data.
+ *
+ * @param {Object} data - The V2 data object containing character information.
+ * @return {Object} The V1 character data extracted from the V2 data.
+ */
+function GetV1CharDataFromV2(data) {
+	var aret = {}
+	var move_pepos = ['name', 'description', 'personality', 'scenario', 'first_mes', 'mes_example', 'tags', 'create_by', 'create_date']
+	for (const key of move_pepos) if (data[key]) aret[key] = data[key]
+	var extension_pepos = ['talkativeness', 'fav']
+	for (const key of extension_pepos) aret[key] = data.extensions[key]
+	aret = {
+		...aret,
+		creatorcomment: data.creator_notes,
+		avatar: 'none',
+		spec: 'chara_card_v2',
+		spec_version: "2.0",
+		data: data
+	}
+
+	delete data.create_date
+	return aret
+}
 /**
  * Class for reading and writing card information.
  */
@@ -52,6 +77,7 @@ class CardFileInfo_t {
 	 * @return {string} The card path read from the file.
 	 */
 	readCardPath() {
+		if (!fs.existsSync(cardFilePath)) return;
 		return fs.readFileSync(cardFilePath, 'utf8').trimEnd();
 	}
 
@@ -141,28 +167,8 @@ class CardFileInfo_t {
 		this.metaData = yaml.parse(fs.readFileSync(yamlFilePath, 'utf8'));
 		var packageJson = JSON.parse(fs.readFileSync(packageJsonFilePath, 'utf8'));
 		this.metaData.character_version = packageJson.version;
-		this.v1metaData = {
-			name: this.metaData.name,
-			description: this.metaData.description,
-			personality: this.metaData.personality,
-			scenario: this.metaData.scenario,
-			first_mes: this.metaData.first_mes,
-			mes_example: this.metaData.mes_example,
-			creatorcomment: this.metaData.creator_notes,
-			avatar: 'none',
-			talkativeness: this.metaData.extensions.talkativeness,
-			fav: this.metaData.extensions.fav,
-			spec: 'chara_card_v2',
-			spec_version: "2.0",
-			tags: this.metaData.tags
-		}
-		if (this.metaData.create_by)
-			this.v1metaData.create_by = this.metaData.create_by
-		if (this.metaData.create_date) {
-			this.v1metaData.create_date = this.metaData.create_date
-			delete this.metaData.create_date
-		}
-		this.character_book = yaml.parse(fs.readFileSync(character_book_path + '/index.yaml', 'utf8'));
+		this.v1metaData = GetV1CharDataFromV2(this.metaData);
+		this.metaData.character_book = this.character_book = yaml.parse(fs.readFileSync(character_book_path + '/index.yaml', 'utf8'));
 		this.character_book.entries = [];
 		var character_book_dir = fs.readdirSync(character_book_path + '/entries');
 		for (const key of character_book_dir) {
@@ -171,8 +177,6 @@ class CardFileInfo_t {
 			var data = yaml.parse(yamlStr);
 			this.character_book.entries[data.id] = data;
 		}
-		this.v1metaData.data = this.metaData;
-		this.metaData.character_book = this.character_book;
 	}
 	/**
 	 * Updates the PNG buffer information with metadata.
@@ -185,13 +189,11 @@ class CardFileInfo_t {
 	UpdatePngBufferInfo(buffer, VerIdUpdater = a => a, dataUpdater = a => a) {
 		if (!buffer) return;
 		var VerId = VerIdUpdater(this.metaData.character_version);
-		var charData = JSON.stringify(dataUpdater({
-			...this.v1metaData,
-			data: {
-				...this.metaData,
-				character_version: VerId
-			}
-		}));
+		var charData = dataUpdater({
+			...this.metaData,
+			character_version: VerId
+		});
+		charData = JSON.stringify(GetV1CharDataFromV2({ ...charData }));
 		charData = charData.replace(/{{char_version}}/g, VerId);
 		return charDataParser.write(buffer, charData);
 	}
@@ -205,12 +207,19 @@ class CardFileInfo_t {
 		let SubVerCfg = await import(pathToFileURL(`${SubVerCfgsDir}/${subverId}.mjs`)).then(m => m.default || m);
 		SubVerCfg = {
 			GetPngFile: () => {
-				return this.cardPath;
+				const imageFilePaths = [
+					this.cardPath,
+					`${ImgsDir}/${subverId}.png`,
+					`${ImgsDir}/static.png`,
+					`${ImgsDir}/default.png`
+				];
+				return imageFilePaths.find(fs.existsSync);
 			},
+			VerIdUpdater: (charVer) => subverId == "default" ? charVer : `${charVer}-${subverId}`,
 			...SubVerCfg
 		}
 		let buffer = fs.readFileSync(SubVerCfg.GetPngFile());
-		return this.UpdatePngBufferInfo(buffer, SubVerCfg.VerIdUpdater || (subverId == "default" ? a => a : a => `${a}-${subverId}`), SubVerCfg.dataUpdater);
+		return this.UpdatePngBufferInfo(buffer, SubVerCfg.VerIdUpdater, SubVerCfg.dataUpdater);
 	}
 	/**
 	 * Asynchronously builds a PNG file at the specified subversion ID and saves it to the specified path.
