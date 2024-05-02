@@ -1,11 +1,14 @@
 id: 27
 keys:
   - 冲凉
+  - 冲洗
   - 冲澡
   - 沐浴
+  - 沖洗
   - 沖涼
   - 沖澡
   - 洗浴
+  - 洗漱
   - 洗澡
 secondary_keys: []
 comment: 洗澡
