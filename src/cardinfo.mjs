@@ -86,9 +86,9 @@ class CardFileInfo_t {
 	/**
 	 * Reads card information from a specified path.
 	 * @param {string} [path=this.cardPath] - The path to read the card information from. Defaults to the current card path.
-	 * @return {Promise<void>} A Promise that resolves when the card information is successfully read.
+	 * @return {void}
 	 */
-	async readCardInfo(path = this.cardPath) {
+	readCardInfo(path = this.cardPath) {
 		if (!path) return;
 		//读取png文件的metaData
 		var metaDataStr = charDataParser.parse(path, 'png');
@@ -97,7 +97,7 @@ class CardFileInfo_t {
 		//string to object
 		this.v1metaData = JSON.parse(metaDataStr);
 		if (this.v1metaData.data.character_version) {
-			metaDataStr = metaDataStr.replace(`\`${this.metaData.data.character_version}\``, '{{char_version}}');
+			metaDataStr = metaDataStr.replace(`\`${this.v1metaData.data.character_version}\``, '{{char_version}}');
 			this.v1metaData = JSON.parse(metaDataStr);
 		}
 		this.metaData = this.v1metaData.data
@@ -108,18 +108,18 @@ class CardFileInfo_t {
 	/**
 	 * Saves the card information to a PNG file.
 	 * @param {string} [path=this.cardPath] - The path to the PNG file. If not provided, the default card path will be used.
-	 * @return {Promise<void>} A Promise that resolves when the card information is successfully saved.
+	 * @return {void}
 	 */
-	async saveCardInfo(path = this.cardPath) {
+	saveCardInfo(path = this.cardPath) {
 		if (!path) return;
 		var buffer = fs.readFileSync(path);
 		fs.writeFileSync(path, this.UpdatePngBufferInfo(buffer), { encoding: 'binary' });
 	}
 	/**
 	 * Saves the data files including meta data and character book entries.
-	 * @return {Promise<void>} A Promise that resolves when the data files are successfully saved.
+	 * @return {void}
 	 */
-	async saveDataFiles() {
+	saveDataFiles() {
 		var data = { ...this.metaData, create_date: this.v1metaData.create_date }
 		delete data.character_book
 		var packageJson = JSON.parse(fs.readFileSync(packageJsonFilePath, 'utf8'));
@@ -145,9 +145,9 @@ class CardFileInfo_t {
 	}
 	/**
 	 * Reads data files and populates the metaData, v1metaData, and character_book properties.
-	 * @return {Promise<void>} A Promise that resolves when the data files are successfully read.
+	 * @return {void}
 	 */
-	async readDataFiles() {
+	readDataFiles() {
 		this.metaData = yaml.parse(fs.readFileSync(yamlFilePath, 'utf8'));
 		var packageJson = JSON.parse(fs.readFileSync(packageJsonFilePath, 'utf8'));
 		this.metaData.character_version = packageJson.version;
@@ -175,10 +175,11 @@ class CardFileInfo_t {
 		var VerId = VerIdUpdater(this.metaData.character_version);
 		var charData = dataUpdater({
 			...this.metaData,
-			character_version: VerId
+			character_version: VerId,
+			create_date: this.v1metaData.create_date
 		});
 		charData = JSON.stringify(GetV1CharDataFromV2({ ...charData }));
-		charData = charData.replace(/{{char_version}}/g, VerId);
+		charData = charData.replace(/{{char_version}}/g, `\`${VerId}\``);
 		return charDataParser.write(buffer, charData);
 	}
 	/**
@@ -220,7 +221,7 @@ class CardFileInfo_t {
 }
 /**
  * The default instance of the CardFileInfo class.
- * @type {CardFileInfo}
+ * @type {CardFileInfo_t}
  */
 var CardFileInfo = new CardFileInfo_t();
 
