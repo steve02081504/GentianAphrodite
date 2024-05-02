@@ -11,6 +11,7 @@ let buildCfg = {
 	dataUpdater: (data) => {
 		let datastr = JSON.stringify(data);
 		datastr = datastr.replace(/<!--hide-for-fools-->([\s\S]*?)<!--\/hide-for-fools-->/g, '<!-->');
+		datastr = datastr.replace(/<!--badges-->([\s\S]*?)<!--\/badges-->/g, '<!-->');
 		datastr = datastr.replace(/<!--exlinks-->([\s\S]*?)<!--\/exlinks-->/g, '<!-->');
 		datastr = datastr.replace(/(\\n)+<\!-->(\\n)+/g, '\\n');
 		datastr = datastr.replace(/(\\n)+<\!-->/g, '\\n');

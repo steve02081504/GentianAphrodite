@@ -39,6 +39,21 @@ first_mes: |-
 mes_example: ""
 creator_notes: >-
   一个要素爆表的合法萝莉老婆！  
+
+
+  <!--badges-->
+
+  [![GitHub code size in
+  bytes](https://img.shields.io/github/languages/code-size/steve02081504/GentianAphrodite)
+  ![GitHub Repo
+  stars](https://img.shields.io/github/stars/steve02081504/GentianAphrodite)
+  ![GitHub last
+  commit](https://img.shields.io/github/last-commit/steve02081504/GentianAphrodite)](https://github.com/steve02081504/GentianAphrodite)
+
+  [![GitHub
+  Release](https://img.shields.io/github/v/release/steve02081504/GentianAphrodite?label=%E6%9C%80%E6%96%B0%E7%89%88%E6%9C%AC)](https://github.com/steve02081504/GentianAphrodite/releases/latest)
+
+  <!--/badges-->
    
   <!--hide-for-fools-->
 
