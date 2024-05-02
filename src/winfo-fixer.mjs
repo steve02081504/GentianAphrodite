@@ -1,11 +1,12 @@
 import { simplized, traditionalized } from "./chs2t.mjs";
+import { WorldInfoBook, WorldInfoEntry } from "./charData.mjs";
 
 /**
  * Iterates WI data array and performs specific operations on it.
  * 1. If the key or secondary key contains Chinese characters, the match_whole_words property is set to false.
  * 2. Add the simplized and traditionalized versions of the key and secondary key to the key and secondary key arrays.
  * this function will not remove duplicates keys, use {@link removeDuplicates} function to remove them.
- * @param {Object} data - The data containing entries to process.
+ * @param {WorldInfoEntry[]} data - The data containing entries to process.
  */
 function reRule(data) {
 	for (const id in data) {
@@ -34,7 +35,7 @@ function reRule(data) {
 
 /**
  * Iterates WI data array and re-indexes the uid and display index property.
- * @param {Object} data - The data containing entries to process.
+ * @param {WorldInfoEntry[]} data - The data containing entries to process.
  */
 function reIndex(data) {
 	let displayIndexArray = [];
@@ -66,7 +67,7 @@ function removeDuplicates(data) {
 
 /**
  * do the common fixes on winfo datas.
- * @param {Object} data - The charbook data
+ * @param {WorldInfoBook} data - The charbook data
  */
 function winfoFixer(data) {
 	reRule(data.entries);

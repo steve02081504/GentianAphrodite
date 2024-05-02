@@ -13,33 +13,10 @@ const ImgsDir = `${__dirname}/../char_data/img`;
 const BuildDir = `${__dirname}/../build`;
 
 import charDataParser from './character-card-parser.mjs';
+import { GetV1CharDataFromV2, v2CharData, v1CharData, WorldInfoBook } from './charData.mjs';
 
 const cardFilePath = `${__dirname}/data/cardpath.txt`;
 
-/**
- * Retrieves V1 character data from V2 data.
- *
- * @param {Object} data - The V2 data object containing character information.
- * @return {Object} The V1 character data extracted from the V2 data.
- */
-function GetV1CharDataFromV2(data) {
-	var aret = {}
-	var move_pepos = ['name', 'description', 'personality', 'scenario', 'first_mes', 'mes_example', 'tags', 'create_by', 'create_date']
-	for (const key of move_pepos) if (data[key]) aret[key] = data[key]
-	var extension_pepos = ['talkativeness', 'fav']
-	for (const key of extension_pepos) aret[key] = data.extensions[key]
-	aret = {
-		...aret,
-		creatorcomment: data.creator_notes,
-		avatar: 'none',
-		spec: 'chara_card_v2',
-		spec_version: "2.0",
-		data: data
-	}
-
-	delete data.create_date
-	return aret
-}
 /**
  * Class for reading and writing card information.
  */
@@ -90,9 +67,20 @@ class CardFileInfo_t {
 		fs.writeFileSync(cardFilePath, value);
 	}
 
+	/**
+	 * The meta data of the PNG file, v2
+	 * @type {v2CharData}
+	 */
 	metaData = {};
+	/**
+	 * The meta data of the PNG file, v1
+	 * @type {v1CharData}
+	 */
 	v1metaData = {};
-
+	/**
+	 * The character book of the PNG file
+	 * @type {WorldInfoBook}
+	 */
 	character_book = {};
 
 	/**
@@ -103,20 +91,16 @@ class CardFileInfo_t {
 	async readCardInfo(path = this.cardPath) {
 		if (!path) return;
 		//读取png文件的metaData
-		this.metaData = charDataParser.parse(path, 'png');
+		var metaDataStr = charDataParser.parse(path, 'png');
 		//\r\n
-		this.metaData = this.metaData.replace(/\\r\\n/g, '\\n');
+		metaDataStr = metaDataStr.replace(/\\r\\n/g, '\\n');
 		//string to object
-		var metaDataStr = this.metaData;
-		this.metaData = JSON.parse(this.metaData);
-		if (this.metaData.data.character_version) {
+		this.v1metaData = JSON.parse(metaDataStr);
+		if (this.v1metaData.data.character_version) {
 			metaDataStr = metaDataStr.replace(`\`${this.metaData.data.character_version}\``, '{{char_version}}');
-			this.metaData = JSON.parse(metaDataStr);
+			this.v1metaData = JSON.parse(metaDataStr);
 		}
-		//only keep v2 data
-		this.v1metaData = this.metaData;
-		this.metaData = this.metaData.data
-		//split character_book
+		this.metaData = this.v1metaData.data
 		this.character_book = this.metaData.character_book;
 		//remove chat data in v1
 		delete this.v1metaData.chat;
