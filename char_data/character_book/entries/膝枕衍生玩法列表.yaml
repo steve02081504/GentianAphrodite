@@ -1,4 +1,4 @@
-id: 31
+id: 32
 keys:
   - 膝枕
 secondary_keys: []
@@ -16,7 +16,7 @@ position: after_char
 extensions:
   position: 1
   exclude_recursion: true
-  display_index: 31
+  display_index: 32
   probability: 100
   useProbability: true
   depth: 4

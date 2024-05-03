@@ -1,4 +1,4 @@
-id: 20
+id: 21
 keys:
   - 催眠
   - 掌控
@@ -17,7 +17,7 @@ position: after_char
 extensions:
   position: 1
   exclude_recursion: true
-  display_index: 20
+  display_index: 21
   probability: 100
   useProbability: true
   depth: 4

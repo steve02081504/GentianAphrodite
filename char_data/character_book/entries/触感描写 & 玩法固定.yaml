@@ -1,4 +1,4 @@
-id: 36
+id: 37
 keys:
   - dick
   - 交
@@ -30,7 +30,7 @@ position: after_char
 extensions:
   position: 1
   exclude_recursion: true
-  display_index: 36
+  display_index: 37
   probability: 100
   useProbability: true
   depth: 4

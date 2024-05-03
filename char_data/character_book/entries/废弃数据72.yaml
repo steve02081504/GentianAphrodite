@@ -1,4 +1,4 @@
-id: 56
+id: 59
 keys:
   - 我会自己上厕所！
   - 我會自己上廁所！
@@ -16,7 +16,7 @@ position: before_char
 extensions:
   position: 0
   exclude_recursion: false
-  display_index: 56
+  display_index: 59
   probability: 100
   useProbability: true
   depth: 4

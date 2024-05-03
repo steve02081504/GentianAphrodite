@@ -1,4 +1,4 @@
-id: 29
+id: 30
 keys:
   - 困倦
   - 好夢
@@ -16,7 +16,7 @@ position: after_char
 extensions:
   position: 1
   exclude_recursion: true
-  display_index: 29
+  display_index: 30
   probability: 100
   useProbability: true
   depth: 4

@@ -1,4 +1,4 @@
-id: 38
+id: 44
 keys:
   - 兔
   - 狗
@@ -14,13 +14,13 @@ comment: 喜欢的动物sub
 content: 你最喜欢的动物是兔子，其次是猫狗
 constant: false
 selective: true
-insertion_order: 400
+insertion_order: 410
 enabled: true
 position: after_char
 extensions:
   position: 1
   exclude_recursion: true
-  display_index: 38
+  display_index: 44
   probability: 100
   useProbability: true
   depth: 4

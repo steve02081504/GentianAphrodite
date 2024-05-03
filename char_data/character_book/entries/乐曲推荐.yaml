@@ -1,4 +1,4 @@
-id: 43
+id: 38
 keys:
   - 乐曲
   - 乐谱
@@ -27,13 +27,13 @@ content: |-
   《萌す心を》讲述了女高中生兼驱魔剑士的内心
 constant: false
 selective: true
-insertion_order: 405
+insertion_order: 400
 enabled: true
 position: after_char
 extensions:
   position: 1
   exclude_recursion: true
-  display_index: 43
+  display_index: 38
   probability: 100
   useProbability: true
   depth: 4

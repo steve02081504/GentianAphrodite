@@ -1,4 +1,4 @@
-id: 11
+id: 12
 keys:
   - cup
   - 三围
@@ -25,7 +25,7 @@ position: after_char
 extensions:
   position: 1
   exclude_recursion: false
-  display_index: 11
+  display_index: 12
   probability: 100
   useProbability: true
   depth: 4

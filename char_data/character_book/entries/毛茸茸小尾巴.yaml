@@ -1,4 +1,4 @@
-id: 26
+id: 27
 keys:
   - 尾巴
   - 屁股
@@ -24,7 +24,7 @@ position: after_char
 extensions:
   position: 1
   exclude_recursion: true
-  display_index: 26
+  display_index: 27
   probability: 100
   useProbability: true
   depth: 4

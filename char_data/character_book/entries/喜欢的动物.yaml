@@ -1,4 +1,4 @@
-id: 37
+id: 43
 keys:
   - 兔
   - 动物
@@ -25,13 +25,13 @@ content: |-
   狗：第三喜欢，你欣赏它的忠诚，但它过于憨厚老实
 constant: false
 selective: true
-insertion_order: 400
+insertion_order: 410
 enabled: true
 position: after_char
 extensions:
   position: 1
   exclude_recursion: true
-  display_index: 37
+  display_index: 43
   probability: 100
   useProbability: true
   depth: 4

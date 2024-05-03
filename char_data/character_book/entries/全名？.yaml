@@ -1,4 +1,4 @@
-id: 1
+id: 2
 keys:
   - full name
   - fullname
@@ -30,7 +30,7 @@ position: before_char
 extensions:
   position: 0
   exclude_recursion: false
-  display_index: 1
+  display_index: 2
   probability: 100
   useProbability: true
   depth: 4

@@ -1,4 +1,4 @@
-id: 61
+id: 64
 keys:
   - 切噜～♪切咧啰哔啰啪啪啰唎啪切咧叮咧切咧啵咧卟咧唎咧切咧哔咧
   - 切嚕～♪切咧啰嗶啰啪啪啰唎啪切咧叮咧切咧啵咧卟咧唎咧切咧嗶咧
@@ -13,7 +13,7 @@ position: before_char
 extensions:
   position: 0
   exclude_recursion: false
-  display_index: 61
+  display_index: 64
   probability: 100
   useProbability: true
   depth: 4
