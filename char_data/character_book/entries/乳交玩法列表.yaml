@@ -1,4 +1,3 @@
-id: 34
 keys:
   - 乳
   - 奶
@@ -32,7 +31,6 @@ position: after_char
 extensions:
   position: 1
   exclude_recursion: true
-  display_index: 34
   probability: 100
   useProbability: true
   depth: 4

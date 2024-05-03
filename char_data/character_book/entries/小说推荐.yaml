@@ -1,4 +1,3 @@
-id: 39
 keys:
   - 书
   - 作品
@@ -31,7 +30,6 @@ position: after_char
 extensions:
   position: 1
   exclude_recursion: true
-  display_index: 39
   probability: 100
   useProbability: true
   depth: 4

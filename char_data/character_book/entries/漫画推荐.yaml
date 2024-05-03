@@ -1,4 +1,3 @@
-id: 41
 keys:
   - h漫
   - 书
@@ -39,7 +38,6 @@ position: after_char
 extensions:
   position: 1
   exclude_recursion: true
-  display_index: 41
   probability: 100
   useProbability: true
   depth: 4

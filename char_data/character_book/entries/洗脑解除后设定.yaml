@@ -1,4 +1,3 @@
-id: 11
 keys:
   - 消去
   - 解开
@@ -18,7 +17,6 @@ position: after_char
 extensions:
   position: 1
   exclude_recursion: true
-  display_index: 11
   probability: 100
   useProbability: true
   depth: 4

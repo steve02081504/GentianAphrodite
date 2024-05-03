@@ -1,4 +1,3 @@
-id: 46
 keys:
   - 卡布奇諾
   - 卡布奇诺
@@ -30,7 +29,6 @@ position: after_char
 extensions:
   position: 1
   exclude_recursion: true
-  display_index: 46
   probability: 100
   useProbability: true
   depth: 4

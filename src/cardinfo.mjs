@@ -18,6 +18,23 @@ import { GetV1CharDataFromV2, v2CharData, v1CharData, WorldInfoBook } from './ch
 const cardFilePath = `${__dirname}/data/cardpath.txt`;
 
 /**
+ * Checks if two arrays are equal.
+ * @param {Array} a - The first array.
+ * @param {Array} b - The second array.
+ * @return {boolean} True if the arrays are equal, false otherwise.
+ */
+function arraysEqual(a, b) {
+	if (a === b) return true;
+	if (a == null || b == null) return false;
+	if (a.length !== b.length) return false;
+
+	for (var i = 0; i < a.length; ++i)
+		if (a[i] !== b[i])
+			return false;
+	return true;
+}
+
+/**
  * Class for reading and writing card information.
  */
 class CardFileInfo_t {
@@ -131,15 +148,22 @@ class CardFileInfo_t {
 		fs.rmSync(character_book_path + '/entries', { recursive: true, force: true });
 		fs.mkdirSync(character_book_path + '/entries');
 		var character_book = this.character_book;
+		data = { ...character_book }
+		delete data.entries
+		data.index_list = []
+		data.display_index_list = []
 		for (const key in character_book.entries) {
-			var entrie = character_book.entries[key];
+			var entrie = { ...character_book.entries[key] };
 			var fileName = entrie.comment || key;
+			data.index_list[entrie.id] = fileName
+			data.display_index_list[entrie.extensions.display_index] = fileName
+			delete entrie.id
+			delete entrie.extensions.display_index
 			var filePath = character_book_path + '/entries/' + fileName + '.yaml';
 			var yamlStr = yaml.stringify(entrie);
 			fs.writeFileSync(filePath, yamlStr);
 		}
-		data = { ...character_book }
-		delete data.entries
+		if (arraysEqual(data.index_list,data.display_index_list)) delete data.display_index_list
 		yamlStr = yaml.stringify(data);
 		fs.writeFileSync(character_book_path + '/index.yaml', yamlStr);
 	}
@@ -155,12 +179,18 @@ class CardFileInfo_t {
 		this.metaData.character_book = this.character_book = yaml.parse(fs.readFileSync(character_book_path + '/index.yaml', 'utf8'));
 		this.character_book.entries = [];
 		var character_book_dir = fs.readdirSync(character_book_path + '/entries');
+		this.character_book.display_index_list ??= this.character_book.index_list
 		for (const key of character_book_dir) {
 			var filePath = character_book_path + '/entries/' + key;
 			var yamlStr = fs.readFileSync(filePath, 'utf8');
 			var data = yaml.parse(yamlStr);
+			var fileName = data.comment || key.replace(/\.yaml$/, '');
+			data.id = this.character_book.index_list.indexOf(fileName);
+			data.extensions.display_index = this.character_book.display_index_list.indexOf(fileName);
 			this.character_book.entries[data.id] = data;
 		}
+		delete this.character_book.index_list
+		delete this.character_book.display_index_list
 	}
 	/**
 	 * Updates the PNG buffer information with metadata.

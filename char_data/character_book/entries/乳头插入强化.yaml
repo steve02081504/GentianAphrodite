@@ -1,4 +1,3 @@
-id: 31
 keys:
   - 乳头
   - 乳孔
@@ -28,7 +27,6 @@ position: after_char
 extensions:
   position: 1
   exclude_recursion: true
-  display_index: 31
   probability: 100
   useProbability: true
   depth: 4

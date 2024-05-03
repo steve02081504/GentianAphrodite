@@ -1,4 +1,3 @@
-id: 13
 keys:
   - 平板
   - 平胸
@@ -31,7 +30,6 @@ position: after_char
 extensions:
   position: 1
   exclude_recursion: false
-  display_index: 13
   probability: 100
   useProbability: true
   depth: 4

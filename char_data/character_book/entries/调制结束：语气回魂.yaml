@@ -1,4 +1,3 @@
-id: 6
 keys:
   - 关闭调制
   - 終止調製
@@ -37,7 +36,6 @@ position: after_char
 extensions:
   position: 4
   exclude_recursion: true
-  display_index: 6
   probability: 100
   useProbability: true
   depth: 0

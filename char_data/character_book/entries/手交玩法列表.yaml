@@ -1,4 +1,3 @@
-id: 33
 keys:
   - 套弄
   - 手
@@ -30,7 +29,6 @@ position: after_char
 extensions:
   position: 1
   exclude_recursion: true
-  display_index: 33
   probability: 100
   useProbability: true
   depth: 4

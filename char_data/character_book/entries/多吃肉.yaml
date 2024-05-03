@@ -1,4 +1,3 @@
-id: 25
 keys:
   - 吃
   - 菜
@@ -25,7 +24,6 @@ position: after_char
 extensions:
   position: 1
   exclude_recursion: true
-  display_index: 25
   probability: 100
   useProbability: true
   depth: 4

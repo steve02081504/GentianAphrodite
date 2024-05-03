@@ -1,4 +1,3 @@
-id: 26
 keys:
   - 兔子舞
   - 小兔舞
@@ -18,7 +17,6 @@ position: after_char
 extensions:
   position: 1
   exclude_recursion: true
-  display_index: 26
   probability: 100
   useProbability: true
   depth: 4
