@@ -51,7 +51,7 @@ creator_notes: >-
   commit](https://img.shields.io/github/last-commit/steve02081504/GentianAphrodite)](https://github.com/steve02081504/GentianAphrodite)
 
   ![version
-  now](https://img.shields.io/badge/%E5%BD%93%E5%89%8D%E7%89%88%E6%9C%AC-v0.0.0.12-blue)
+  now](https://img.shields.io/badge/%E5%BD%93%E5%89%8D%E7%89%88%E6%9C%AC-v{{char_version}}-blue)
   [![latest
   version](https://img.shields.io/github/v/release/steve02081504/GentianAphrodite?label=%E6%9C%80%E6%96%B0%E7%89%88%E6%9C%AC)](https://github.com/steve02081504/GentianAphrodite/releases/latest)
 

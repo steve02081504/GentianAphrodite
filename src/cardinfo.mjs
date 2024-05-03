@@ -115,7 +115,7 @@ class CardFileInfo_t {
 		this.v1metaData = JSON.parse(metaDataStr);
 		if (this.v1metaData.data.character_version) {
 			metaDataStr = metaDataStr.replace(`\`${this.v1metaData.data.character_version}\``, '{{char_version}}');
-			metaDataStr = metaDataStr.replace(`%E7%89%88%E6%9C%AC-v${this.v1metaData.data.character_version}-`, '%E7%89%88%E6%9C%AC-v{{char_version}}-');
+			metaDataStr = metaDataStr.replace(new RegExp(`-v${this.v1metaData.data.character_version}-`, 'g'), '-v{{char_version}}-');
 			this.v1metaData = JSON.parse(metaDataStr);
 		}
 		this.metaData = this.v1metaData.data
@@ -210,7 +210,7 @@ class CardFileInfo_t {
 			create_date: this.v1metaData.create_date
 		});
 		charData = JSON.stringify(GetV1CharDataFromV2({ ...charData }));
-		charData = charData.replace('%E7%89%88%E6%9C%AC-v{{char_version}}-',`%E7%89%88%E6%9C%AC-v${VerId}-`).replace(/{{char_version}}/g, `\`${VerId}\``);
+		charData = charData.replace(/-v{{char_version}}-/g, `-v${VerId}-`).replace(/{{char_version}}/g, `\`${VerId}\``);
 		return charDataParser.write(buffer, charData);
 	}
 	/**
