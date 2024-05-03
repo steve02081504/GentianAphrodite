@@ -163,7 +163,7 @@ class CardFileInfo_t {
 			var yamlStr = yaml.stringify(entrie);
 			fs.writeFileSync(filePath, yamlStr);
 		}
-		if (arraysEqual(data.index_list,data.display_index_list)) delete data.display_index_list
+		if (arraysEqual(data.index_list, data.display_index_list)) delete data.display_index_list
 		yamlStr = yaml.stringify(data);
 		fs.writeFileSync(character_book_path + '/index.yaml', yamlStr);
 	}
