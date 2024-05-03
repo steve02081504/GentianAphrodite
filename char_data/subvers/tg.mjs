@@ -10,9 +10,7 @@ let buildCfg = {
 		return path.join(__dirname, '../img/static.png');
 	},
 	dataUpdater: (
-		/**
-		 * @type {v2CharData}
-		 */
+		/** @type {v2CharData} */
 		data
 	) => {
 		let datastr = JSON.stringify(data);
