@@ -54,6 +54,8 @@ creator_notes: >-
   now](https://img.shields.io/badge/%E5%BD%93%E5%89%8D%E7%89%88%E6%9C%AC-v{{char_version}}-blue)
   [![latest
   version](https://img.shields.io/github/v/release/steve02081504/GentianAphrodite?label=%E6%9C%80%E6%96%B0%E7%89%88%E6%9C%AC)](https://github.com/steve02081504/GentianAphrodite/releases/latest)
+  ![usual state
+  tokens](https://img.shields.io/badge/%E5%B8%B8%E6%80%81token-1.7k-green)
 
   <!--/badges-->
    
@@ -68,12 +70,13 @@ creator_notes: >-
 
   支持玩法：恋人、主从、蓄乳喷奶、乳头插入、洗脑  
 
-  洗脑模式指令：`进入调制模式` <!--hide-for-fools-->*需要规则书且上下文充足*<!--/hide-for-fools-->  
+  洗脑指令：`进入调制模式`/`退出调制`
+  <!--hide-for-fools-->*需要规则书且上下文充足*<!--/hide-for-fools-->  
 
 
-  状态栏功能开启指令： `状态栏功能开`  
+  状态栏功能开关指令： `状态栏功能开`/`状态栏功能关`  
 
-  选项功能开启指令：`选项功能开`  
+  选项功能开关指令：`选项功能开`/`选项功能关`  
 
   以上两个功能<!--hide-for-fools-->也 *需要规则书且上下文充足*
   ，并且<!--/hide-for-fools-->会造成额外的token消耗，酌情使用。
