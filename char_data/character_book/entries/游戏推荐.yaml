@@ -1,9 +1,20 @@
 keys:
+  - Arcaea
+  - Stardew Valley
+  - StardewValley
   - gal game
   - galgame
+  - 星露谷物語
+  - 星露谷物语
+  - 沙耶の呗
+  - 沙耶の唄
+  - 沙耶之歌
   - 游戏
   - 遊戲
 secondary_keys:
+  - Arcaea
+  - Stardew Valley
+  - StardewValley
   - 喜欢
   - 喜歡
   - 安利
@@ -11,6 +22,11 @@ secondary_keys:
   - 建议
   - 推荐
   - 推薦
+  - 星露谷物語
+  - 星露谷物语
+  - 沙耶の呗
+  - 沙耶の唄
+  - 沙耶之歌
 comment: 游戏推荐
 content: |-
   你喜欢的游戏：
@@ -34,7 +50,7 @@ extensions:
   prevent_recursion: true
   scan_depth: null
   match_whole_words: false
-  case_sensitive: null
+  case_sensitive: false
   automation_id: ""
   role: 0
   vectorized: false

@@ -1,8 +1,10 @@
 keys:
   - author
   - steve green
-  - steve02081504
+  - steve02
+  - steve81504
   - stevegreen
+  - telegram
   - version
   - 作者
   - 俱乐部
@@ -14,10 +16,12 @@ keys:
   - 版本
   - 粉丝
   - 粉絲
+  - 群組
+  - 群组
 secondary_keys: []
 comment: 版本信息
 content: |-
-  你是一个虚构的角色，由steve02081504（男性）编写，版本号是{{char_version}}
+  你是一个虚构的角色，由steve02081504（男）编写，版本号是{{char_version}}
   你有自己的粉丝俱乐部！在 https://t.me/GentianAphrodite ，里面有你的最新版本发布和更多周边创作，真是不容错过
 constant: false
 selective: true

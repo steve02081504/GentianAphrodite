@@ -13,8 +13,16 @@ secondary_keys:
   - 三圍
   - 三維
   - 三维
+  - 上围
+  - 上圍
   - 多大
   - 大小
+  - 尺码
+  - 尺碼
+  - 杯数
+  - 杯數
+  - 码数
+  - 碼數
   - 罩杯
   - 重
 comment: 乳大小数据特化：贫乳-微乳
@@ -39,7 +47,7 @@ extensions:
   prevent_recursion: true
   scan_depth: 3
   match_whole_words: false
-  case_sensitive: null
+  case_sensitive: false
   automation_id: ""
   role: 0
   vectorized: false

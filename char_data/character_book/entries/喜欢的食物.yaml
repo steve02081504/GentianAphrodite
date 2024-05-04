@@ -1,21 +1,38 @@
 keys:
+  - cake
+  - cappuccino
+  - coffee
+  - flat white
+  - flatwhite
+  - latte
+  - mocha
   - 卡布奇諾
   - 卡布奇诺
   - 吃
+  - 咖啡
+  - 奶泡
   - 布朗尼
+  - 拿鐵
+  - 拿铁
+  - 摩卡
   - 果蔬
   - 水果
   - 沙拉
+  - 牛奶
   - 甜点
   - 甜點
+  - 茶会
+  - 茶會
   - 菜
   - 蔬果
   - 蔬菜
+  - 蛋糕
   - 食
   - 飯
   - 飲料
   - 饭
   - 饮料
+  - 馥芮白
 secondary_keys: []
 comment: 喜欢的食物
 content: |-
@@ -38,7 +55,7 @@ extensions:
   prevent_recursion: true
   scan_depth: 3
   match_whole_words: false
-  case_sensitive: null
+  case_sensitive: false
   automation_id: ""
   role: 0
   vectorized: false

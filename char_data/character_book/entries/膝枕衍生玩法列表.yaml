@@ -1,6 +1,8 @@
 keys:
-  - 膝枕
-secondary_keys: []
+  - 枕
+secondary_keys:
+  - 大腿
+  - 膝
 comment: 膝枕衍生玩法列表
 content: |-
   膝枕时或许可以：
