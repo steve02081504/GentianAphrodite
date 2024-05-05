@@ -158,20 +158,29 @@ class CardFileInfo_t {
 		delete data.entries
 		data.index_list = []
 		data.display_index_list = []
+		var disabledDatas = []
 		for (const key in character_book.entries) {
 			var entrie = { ...character_book.entries[key] };
-			var fileName = entrie.comment || key;
+			var fileName = entrie.comment || entrie.keys[0];
 			data.index_list[entrie.id] = fileName
 			data.display_index_list[entrie.extensions.display_index] = fileName
 			delete entrie.id
 			delete entrie.extensions.display_index
-			var filePath = character_book_path + '/entries/' + fileName + '.yaml';
-			var yamlStr = yaml.stringify(entrie, yamlConfig);
-			fs.writeFileSync(filePath, yamlStr);
+			if (entrie.enabled) {
+				var filePath = character_book_path + '/entries/' + fileName + '.yaml';
+				var yamlStr = yaml.stringify(entrie, yamlConfig);
+				fs.writeFileSync(filePath, yamlStr);
+			}
+			else
+				disabledDatas.push(entrie);
 		}
 		if (arraysEqual(data.index_list, data.display_index_list)) delete data.display_index_list
 		yamlStr = yaml.stringify(data, yamlConfig);
 		fs.writeFileSync(character_book_path + '/index.yaml', yamlStr);
+		if (disabledDatas.length) {
+			yamlStr = yaml.stringify(disabledDatas, yamlConfig);
+			fs.writeFileSync(character_book_path + '/disabled_entries.yaml', yamlStr);
+		}
 	}
 	/**
 	 * Reads data files and populates the metaData, v1metaData, and character_book properties.
@@ -190,10 +199,20 @@ class CardFileInfo_t {
 			var filePath = character_book_path + '/entries/' + key;
 			var yamlStr = fs.readFileSync(filePath, 'utf8');
 			var data = yaml.parse(yamlStr);
-			var fileName = data.comment || key.replace(/\.yaml$/, '');
+			var fileName = key.replace(/\.yaml$/, '');
 			data.id = this.character_book.index_list.indexOf(fileName);
 			data.extensions.display_index = this.character_book.display_index_list.indexOf(fileName);
 			this.character_book.entries[data.id] = data;
+		}
+		if (fs.existsSync(character_book_path + '/disabled_entries.yaml')) {
+			var yamlStr = fs.readFileSync(character_book_path + '/disabled_entries.yaml', 'utf8');
+			var datas = yaml.parse(yamlStr);
+			for (const data of datas) {
+				var key = data.comment || data.keys[0];
+				data.id = this.character_book.index_list.indexOf(key);
+				data.extensions.display_index = this.character_book.display_index_list.indexOf(key);
+				this.character_book.entries[data.id] = data;
+			}
 		}
 		delete this.character_book.index_list
 		delete this.character_book.display_index_list
