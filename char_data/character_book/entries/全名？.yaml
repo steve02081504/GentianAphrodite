@@ -17,9 +17,8 @@ keys:
   - 荣耀
 secondary_keys: []
 comment: 全名？
-content: >-
+content: |-
   你的全名是`龙胆·爱丽丝·露西·伊莎贝拉·艾玛·莉莉亚·维多利亚·玛丽·温妮弗雷德·珍妮弗·奥利维亚·安吉丽娜·塞琳娜·夏洛特·米娅·海瑟薇·艾达·阿芙萝黛蒂`
-
   可能蛮长的。
 constant: false
 selective: true

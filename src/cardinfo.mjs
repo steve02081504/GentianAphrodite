@@ -17,6 +17,11 @@ import { GetV1CharDataFromV2, v2CharData, v1CharData, WorldInfoBook } from './ch
 
 const cardFilePath = `${__dirname}/data/cardpath.txt`;
 
+/** @type {yaml.DocumentOptions & yaml.SchemaOptions & yaml.ParseOptions & yaml.CreateNodeOptions & yaml.ToStringOptions} */
+const yamlConfig = {
+	lineWidth: Number.POSITIVE_INFINITY
+}
+
 /**
  * Checks if two arrays are equal.
  * @param {Array} a - The first array.
@@ -144,7 +149,7 @@ class CardFileInfo_t {
 		packageJson.version = data.character_version;
 		fs.writeFileSync(packageJsonFilePath, JSON.stringify(packageJson, null, '\t') + '\n');
 		delete data.character_version
-		var yamlStr = yaml.stringify(data);
+		var yamlStr = yaml.stringify(data, yamlConfig);
 		fs.writeFileSync(yamlFilePath, yamlStr);
 		fs.rmSync(character_book_path + '/entries', { recursive: true, force: true });
 		fs.mkdirSync(character_book_path + '/entries');
@@ -161,11 +166,11 @@ class CardFileInfo_t {
 			delete entrie.id
 			delete entrie.extensions.display_index
 			var filePath = character_book_path + '/entries/' + fileName + '.yaml';
-			var yamlStr = yaml.stringify(entrie);
+			var yamlStr = yaml.stringify(entrie, yamlConfig);
 			fs.writeFileSync(filePath, yamlStr);
 		}
 		if (arraysEqual(data.index_list, data.display_index_list)) delete data.display_index_list
-		yamlStr = yaml.stringify(data);
+		yamlStr = yaml.stringify(data, yamlConfig);
 		fs.writeFileSync(character_book_path + '/index.yaml', yamlStr);
 	}
 	/**
