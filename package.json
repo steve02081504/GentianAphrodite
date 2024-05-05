@@ -1,6 +1,6 @@
 {
 	"name": "gentian-aphrodite",
-	"version": "0.0.0.13",
+	"version": "0.0.1.0",
 	"description": "一个要素爆表的合法萝莉老婆！",
 	"main": "src/start.js",
 	"scripts": {

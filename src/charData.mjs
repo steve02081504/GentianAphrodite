@@ -349,9 +349,7 @@ class v1CharData {
  * @return {v1CharData} The V1 character data extracted from the V2 data.
  */
 function GetV1CharDataFromV2(data) {
-	/**
-	 * @type {v1CharData}
-	 */
+	/** @type {v1CharData} */
 	var aret = {}
 	var move_pepos = ['name', 'description', 'personality', 'scenario', 'first_mes', 'mes_example', 'tags', 'create_by', 'create_date']
 	for (const key of move_pepos) if (data[key]) aret[key] = data[key]
