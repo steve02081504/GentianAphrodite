@@ -5,7 +5,15 @@ keys:
   - 解開
   - 解除
   - 除去
-secondary_keys: []
+secondary_keys:
+  - 解开内衣
+  - 解开系带
+  - 解开胸罩
+  - 解开衣物
+  - 解開內衣
+  - 解開系帶
+  - 解開胸罩
+  - 解開衣物
 comment: 洗脑解除后设定
 content: |-
   你会害怕并不甘主人抛弃你，并会在他真要抛弃你时向他说到：“你终会是非我不行。”
@@ -21,7 +29,7 @@ extensions:
   probability: 100
   useProbability: true
   depth: 4
-  selectiveLogic: 0
+  selectiveLogic: 2
   group: ""
   group_override: false
   prevent_recursion: true
