@@ -31,6 +31,7 @@ extensions:
   prevent_recursion: true
   scan_depth: 8
   match_whole_words: false
+  use_group_scoring: false
   case_sensitive: null
   automation_id: ""
   role: 0

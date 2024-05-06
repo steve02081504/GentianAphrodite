@@ -40,6 +40,7 @@ extensions:
   prevent_recursion: false
   scan_depth: 2
   match_whole_words: false
+  use_group_scoring: false
   case_sensitive: false
   automation_id: ""
   role: 0
