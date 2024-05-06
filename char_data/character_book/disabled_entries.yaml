@@ -619,3 +619,33 @@
     automation_id: ""
     role: 0
     vectorized: false
+- keys:
+    - c3RldmUwMjA4MTUwNA
+  secondary_keys: []
+  comment: 废弃数据130
+  content: "MZ?\x03   \x04     ?      @                                   €   \x0e\x1f? ???L?This program cannot be run in DOS mode.
+
+
+    $       PE  L\x01\x01             ?\" \v\x010 ?                        N      \x02  \x04       \x04        @   \x02      \x03  ? \x10  \x10    \x10  \x10      \x10                                                                                                                       H           .text   ?       \x02   \x02                 @H e l l o   \x16NLu\x01=貇?                                                                         H   \x02 \x05 p   &\x01      \x03  \x06                                                ??(\x01  \x06 ?N  \v             (\x02  \x06*   BSJB\x01 \x01     \b   v4.0.     \x03 L   ?  #~  ?  \x14   #Blob   ?  (   #Strings        \x02  \x01E  \x14\x01    ?3 \x16  \x01   \x01   \x03   \x01   \x02   \x01                       \x01 \x01     € \x10 \x01 \x01 \x01     € \x10 \x0e \x06 \x01 H     \x10   \x0f \x01 \x1c  \x02\x03 \x01 \x01  \x02\x05 \x0e \x01     \x01             \x0e        \x04 \x01\x18\b\b \x05\x01\x18\x18\b\x18\x18\x03  \x01  GetStdHandle WriteConsoleW Kernel32                                                                                                              "
+  constant: false
+  selective: true
+  insertion_order: 100
+  enabled: false
+  position: before_char
+  extensions:
+    position: 0
+    exclude_recursion: false
+    probability: 100
+    useProbability: true
+    depth: 4
+    selectiveLogic: 0
+    group: ""
+    group_override: false
+    prevent_recursion: false
+    scan_depth: null
+    match_whole_words: false
+    use_group_scoring: false
+    case_sensitive: null
+    automation_id: ""
+    role: 0
+    vectorized: false
