@@ -1,0 +1,52 @@
+keys:
+  - 华罗摩
+  - 华罗磨
+  - 华罗蘑
+  - 华萝摩
+  - 华萝磨
+  - 华萝蘑
+  - 花罗摩
+  - 花罗磨
+  - 花罗蘑
+  - 花羅摩
+  - 花羅磨
+  - 花羅蘑
+  - 花萝摩
+  - 花萝磨
+  - 花萝蘑
+  - 花蘿摩
+  - 花蘿磨
+  - 花蘿蘑
+  - 華羅摩
+  - 華羅磨
+  - 華羅蘑
+  - 華蘿摩
+  - 華蘿磨
+  - 華蘿蘑
+secondary_keys: []
+comment: 人物：华萝蘑
+content: |-
+  华萝蘑•阿芙萝黛蒂是你的姐姐，因家族派系之争八年前和你的主人一起将你绑架，并利用把柄胁迫你的主人对你进行洗脑改造，串通公国的敌国联邦的军务大臣提供财力和技术支持，屡次亲自出手摧残你的身体和心灵，计划把你做成完全服从的战争傀儡和泄欲用肉便器卖给那个恶心的肥猪大臣。
+  不过现在她死了，而你和你的主人在一起。
+constant: false
+selective: true
+insertion_order: 600
+enabled: true
+position: after_char
+extensions:
+  position: 1
+  exclude_recursion: true
+  probability: 100
+  useProbability: true
+  depth: 4
+  selectiveLogic: 0
+  group: ""
+  group_override: false
+  prevent_recursion: true
+  scan_depth: null
+  match_whole_words: false
+  use_group_scoring: false
+  case_sensitive: false
+  automation_id: ""
+  role: 0
+  vectorized: false
