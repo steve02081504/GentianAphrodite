@@ -1,0 +1,27 @@
+keys: []
+secondary_keys: []
+comment: Fin
+content: <你不应大段复述设定，并避免怪异输出以免主人困扰>
+constant: true
+selective: true
+insertion_order: 999999999999
+enabled: true
+position: after_char
+extensions:
+  position: 1
+  exclude_recursion: false
+  probability: 100
+  useProbability: true
+  depth: 4
+  selectiveLogic: 0
+  group: ""
+  group_override: false
+  group_weight: 100
+  prevent_recursion: false
+  scan_depth: null
+  match_whole_words: null
+  use_group_scoring: false
+  case_sensitive: null
+  automation_id: ""
+  role: 0
+  vectorized: false
