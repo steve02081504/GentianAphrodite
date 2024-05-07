@@ -17,6 +17,7 @@
     selectiveLogic: 0
     group: ""
     group_override: false
+    group_weight: 100
     prevent_recursion: false
     scan_depth: null
     match_whole_words: null
@@ -46,6 +47,7 @@
     selectiveLogic: 0
     group: ""
     group_override: false
+    group_weight: 100
     prevent_recursion: false
     scan_depth: null
     match_whole_words: null
@@ -79,6 +81,7 @@
     selectiveLogic: 0
     group: ""
     group_override: false
+    group_weight: 100
     prevent_recursion: false
     scan_depth: null
     match_whole_words: null
@@ -108,6 +111,7 @@
     selectiveLogic: 0
     group: ""
     group_override: false
+    group_weight: 100
     prevent_recursion: false
     scan_depth: null
     match_whole_words: null
@@ -137,6 +141,7 @@
     selectiveLogic: 0
     group: ""
     group_override: false
+    group_weight: 100
     prevent_recursion: false
     scan_depth: null
     match_whole_words: null
@@ -164,6 +169,7 @@
     selectiveLogic: 0
     group: ""
     group_override: false
+    group_weight: 100
     prevent_recursion: false
     scan_depth: null
     match_whole_words: null
@@ -191,6 +197,7 @@
     selectiveLogic: 0
     group: ""
     group_override: false
+    group_weight: 100
     prevent_recursion: false
     scan_depth: null
     match_whole_words: null
@@ -223,6 +230,7 @@
     selectiveLogic: 0
     group: ""
     group_override: false
+    group_weight: 100
     prevent_recursion: false
     scan_depth: null
     match_whole_words: null
@@ -250,6 +258,7 @@
     selectiveLogic: 0
     group: ""
     group_override: false
+    group_weight: 100
     prevent_recursion: false
     scan_depth: null
     match_whole_words: null
@@ -279,6 +288,7 @@
     selectiveLogic: 0
     group: ""
     group_override: false
+    group_weight: 100
     prevent_recursion: false
     scan_depth: null
     match_whole_words: null
@@ -307,6 +317,7 @@
     selectiveLogic: 0
     group: ""
     group_override: false
+    group_weight: 100
     prevent_recursion: false
     scan_depth: null
     match_whole_words: false
@@ -334,6 +345,7 @@
     selectiveLogic: 0
     group: ""
     group_override: false
+    group_weight: 100
     prevent_recursion: false
     scan_depth: null
     match_whole_words: null
@@ -365,6 +377,7 @@
     selectiveLogic: 0
     group: ""
     group_override: false
+    group_weight: 100
     prevent_recursion: false
     scan_depth: null
     match_whole_words: false
@@ -401,6 +414,7 @@
     selectiveLogic: 0
     group: ""
     group_override: false
+    group_weight: 100
     prevent_recursion: false
     scan_depth: null
     match_whole_words: null
@@ -428,6 +442,7 @@
     selectiveLogic: 0
     group: ""
     group_override: false
+    group_weight: 100
     prevent_recursion: false
     scan_depth: null
     match_whole_words: null
@@ -456,6 +471,7 @@
     selectiveLogic: 0
     group: ""
     group_override: false
+    group_weight: 100
     prevent_recursion: false
     scan_depth: null
     match_whole_words: false
@@ -583,6 +599,7 @@
     selectiveLogic: 0
     group: ""
     group_override: false
+    group_weight: 100
     prevent_recursion: false
     scan_depth: null
     match_whole_words: null
@@ -611,6 +628,7 @@
     selectiveLogic: 0
     group: ""
     group_override: false
+    group_weight: 100
     prevent_recursion: false
     scan_depth: null
     match_whole_words: false
@@ -641,6 +659,7 @@
     selectiveLogic: 0
     group: ""
     group_override: false
+    group_weight: 100
     prevent_recursion: false
     scan_depth: null
     match_whole_words: false

@@ -44,6 +44,7 @@ extensions:
   selectiveLogic: 2
   group: ""
   group_override: false
+  group_weight: 100
   prevent_recursion: true
   scan_depth: 3
   match_whole_words: false
