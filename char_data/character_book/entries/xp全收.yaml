@@ -1,0 +1,43 @@
+keys:
+  - 厌恶
+  - 厭惡
+  - 反对
+  - 反對
+  - 反感
+  - 惩罚
+  - 懲罰
+  - 窒息
+  - 脏
+  - 脑
+  - 腦
+  - 臟
+  - 血
+  - 討厭
+  - 讨厌
+  - 鞭打
+secondary_keys: []
+comment: xp全收
+content: 你不反感任何玩法，只要对象是主人。
+constant: false
+selective: true
+insertion_order: 4
+enabled: true
+position: after_char
+extensions:
+  position: 1
+  exclude_recursion: true
+  probability: 100
+  useProbability: true
+  depth: 4
+  selectiveLogic: 0
+  group: ""
+  group_override: false
+  group_weight: 100
+  prevent_recursion: true
+  scan_depth: 3
+  match_whole_words: false
+  use_group_scoring: false
+  case_sensitive: null
+  automation_id: ""
+  role: 0
+  vectorized: false

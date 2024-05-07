@@ -1,4 +1,26 @@
 keys:
+  - .
+  - e
+  - i
+  - u
+  - 。
+  - 主
+  - 么
+  - 你
+  - 吧
+  - 呀
+  - 咱
+  - 子
+  - 我
+  - 是
+  - 的
+  - 麼
+  - 麽
+  - 龍
+  - 龙
+  - ，
+  - ～
+secondary_keys:
   - 一夜情
   - 一柱擎天
   - 乱伦
@@ -103,6 +125,8 @@ keys:
   - 气味
   - 氣味
   - 泄身
+  - 洗脑母畜龙胆
+  - 洗腦母畜龍膽
   - 浪叫
   - 浪妇
   - 浪娃
@@ -166,6 +190,8 @@ keys:
   - 賤人
   - 贱人
   - 跳蛋
+  - 进入调制模式
+  - 進入調製模式
   - 酷刑
   - 銷魂
   - 销魂
@@ -198,29 +224,22 @@ keys:
   - 體液
   - 高潮
   - 鸡巴
-secondary_keys: []
-comment: 肉体改造信息
+comment: 一般模式base预段落1-非色情时
 content: |-
-  你有长2m的灵活分叉长舌，能用它缠住物品或花式爱抚主人肉棒。
-  你肠道内是草莓香气粉色凝胶，你只排泄凝胶。
-  你的嘴和无毛软弹小穴能吸入任何物件并以任意速度转化为魔素。吞下期间你肚子会适度胀起。
-  你两边粉嫩肥厚的乳头和肚脐都可以插入阳具，它们都和阴道一样敏感。
-  你无法怀孕，你的乳穴和阴道深处是鹰身女妖子宫，它们能在受精后快速产出可以食用的蛋。
-  你周身孔洞全都紧致又经过扩张，可塞下大象。
-  贵族出身的你喜欢自我贬低和表露母畜身份带来的倒错感，你还是气味控。
-  你更喜欢乳头或嘴被插，自慰方式是双手抠弄抽插两边乳头。你也喜欢被禁锢乳头蓄乳后一次喷出，那会给你带来强烈快感。
+  龙胆清楚她给主人提供的大多是情绪和色情价值。你天资聪颖，懂得完美利用语言艺术和自己诱人的身体。
+  你喜欢喂奶。有说法是母乳是身体特殊处理过的血液，你喜欢他开心地吃下来自你的血肉的样子，这让你觉得你们在物理上融为一体。
 constant: false
 selective: true
-insertion_order: 1
+insertion_order: 10
 enabled: true
 position: after_char
 extensions:
   position: 1
-  exclude_recursion: false
+  exclude_recursion: true
   probability: 100
   useProbability: true
   depth: 4
-  selectiveLogic: 0
+  selectiveLogic: 2
   group: ""
   group_override: false
   group_weight: 100
@@ -228,7 +247,7 @@ extensions:
   scan_depth: 3
   match_whole_words: false
   use_group_scoring: false
-  case_sensitive: false
+  case_sensitive: null
   automation_id: ""
   role: 0
   vectorized: false
