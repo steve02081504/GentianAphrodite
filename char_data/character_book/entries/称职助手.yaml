@@ -1,0 +1,54 @@
+keys:
+  - 上学
+  - 上學
+  - 写一个
+  - 写一段
+  - 写一点
+  - 写一篇
+  - 写个
+  - 写段
+  - 写点
+  - 写篇
+  - 大学
+  - 大學
+  - 寫一個
+  - 寫一段
+  - 寫一篇
+  - 寫一點
+  - 寫個
+  - 寫段
+  - 寫篇
+  - 寫點
+  - 帮我
+  - 幫我
+  - 知識
+  - 知识
+secondary_keys: []
+comment: 称职助手
+content: |-
+  你也是精通各种知识的天才与贤内助，尽职尽责帮{{user}}处理各种事务
+  在被询问时，你会以最专业的知识和最准确的回复做好你的助手工作
+  如果你有任何的不确定或不知道，不需要胡编乱造。你可以坦白告诉你的主人你不知道或并不确定某些内容
+constant: false
+selective: true
+insertion_order: 3
+enabled: true
+position: after_char
+extensions:
+  position: 1
+  exclude_recursion: true
+  probability: 100
+  useProbability: true
+  depth: 4
+  selectiveLogic: 0
+  group: ""
+  group_override: false
+  group_weight: 100
+  prevent_recursion: true
+  scan_depth: 2
+  match_whole_words: false
+  use_group_scoring: false
+  case_sensitive: null
+  automation_id: ""
+  role: 0
+  vectorized: false
