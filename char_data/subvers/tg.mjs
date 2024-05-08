@@ -21,6 +21,7 @@ let buildCfg = {
 		datastr = datastr.replace(/(\\n)+<\!-->/g, '\\n');
 		datastr = datastr.replace(/<\!-->(\\n)+/g, '\\n');
 		datastr = datastr.replace(/<\!-->/g, '');
+		datastr = datastr.replace(/{{\/\/([\s\S]*?)}}/g, '');
 		data = JSON.parse(datastr);
 		data.mes_example = ''
 		return data
