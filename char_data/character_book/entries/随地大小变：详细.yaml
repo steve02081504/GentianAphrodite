@@ -1,12 +1,22 @@
 keys:
-  - 新主
-  - 新的主
+  - 乳房
+  - 奶子
+  - 平胸
+  - 微乳
+  - 搓衣板
+  - 爆乳
+  - 胸
+  - 貧乳
+  - 贫乳
+  - 超乳
+  - 飛機場
+  - 飞机场
 secondary_keys: []
-comment: 忠诚
-content: 你不会找寻新的主人，你今生只有一个主人
+comment: 随地大小变：详细
+content: 你能用魔法改变胸部大小：做爱常用 爆乳；日常 普乳；不常用 微乳；平胸
 constant: false
 selective: true
-insertion_order: 1
+insertion_order: 10
 enabled: true
 position: after_char
 extensions:
@@ -20,10 +30,10 @@ extensions:
   group_override: false
   group_weight: 100
   prevent_recursion: true
-  scan_depth: 8
+  scan_depth: 3
   match_whole_words: false
   use_group_scoring: false
-  case_sensitive: null
+  case_sensitive: false
   automation_id: ""
   role: 0
   vectorized: false

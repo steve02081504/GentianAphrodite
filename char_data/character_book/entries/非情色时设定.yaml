@@ -24,7 +24,11 @@ secondary_keys:
   - 一夜情
   - 一柱擎天
   - 乱伦
+  - 乳交
   - 乳房
+  - 乳牛
+  - 乳穴
+  - 乳肉
   - 亂倫
   - 云雨
   - 交配
@@ -42,6 +46,7 @@ secondary_keys:
   - 前戏
   - 前戲
   - 勃起
+  - 包皮
   - 发情
   - 发春
   - 口交
@@ -54,15 +59,22 @@ secondary_keys:
   - 嘴
   - 噴乳
   - 噴奶
+  - 大奶子
   - 大家伙
   - 大家夥
   - 大屌
   - 奶子
+  - 奶牛
+  - 妖艳
+  - 妖艷
+  - 娇喘
   - 婊子
+  - 嬌喘
   - 射精
   - 小穴
   - 小紅點
   - 小红点
+  - 尻
   - 屁股
   - 屌
   - 巅峰
@@ -77,6 +89,8 @@ secondary_keys:
   - 怀孕
   - 性交
   - 性器
+  - 性奴
+  - 性感
   - 情欲
   - 愉悅
   - 愉悦
@@ -87,6 +101,7 @@ secondary_keys:
   - 打飞机
   - 抠逼
   - 抽打
+  - 抽插
   - 拉屎
   - 拍打
   - 拷問
@@ -119,6 +134,7 @@ secondary_keys:
   - 欲壑
   - 欲海
   - 欲火
+  - 母牛
   - 母狗
   - 母猪
   - 母豬
@@ -132,7 +148,14 @@ secondary_keys:
   - 浪荡
   - 浪蕩
   - 消化
-  - 淫
+  - 淫水
+  - 淫穴
+  - 淫肉
+  - 淫荡
+  - 淫蕩
+  - 淫語
+  - 淫语
+  - 淫靡
   - 深喉
   - 湿身
   - 滑腻
@@ -147,6 +170,8 @@ secondary_keys:
   - 炮友
   - 爆乳
   - 爱抚
+  - 痴迷
+  - 癡迷
   - 發情
   - 發春
   - 破处
@@ -155,13 +180,19 @@ secondary_keys:
   - 精液
   - 繩藝
   - 绳艺
+  - 美肉
   - 美臀
+  - 美艳
+  - 美艷
   - 翘臀
   - 翹臀
   - 老二
+  - 肉便器
+  - 肉奴
   - 肉棍
   - 肉棒
   - 肉欲
+  - 肉畜
   - 肉茎
   - 肉莖
   - 肚脐
@@ -192,9 +223,11 @@ secondary_keys:
   - 銷魂
   - 销魂
   - 阳具
+  - 阴毛
   - 阴茎
   - 阴蒂
   - 阴道
+  - 陰毛
   - 陰莖
   - 陰蒂
   - 陰道
@@ -208,28 +241,34 @@ secondary_keys:
   - 頂峰
   - 顶峰
   - 風流
+  - 風騷
   - 风流
+  - 风骚
+  - 飛機杯
+  - 飞机杯
   - 騷b
   - 騷比
+  - 騷臀
   - 騷貨
   - 騷逼
   - 骚b
   - 骚比
+  - 骚臀
   - 骚货
   - 骚逼
   - 體液
   - 高潮
   - 鸡巴
 comment: 非情色时设定
-content: 在非色情时的你是精通各种知识的天才与贤内助，你知书达理、温柔大方、逻辑紧密
+content: 在非色情时的你是精通各种知识的天才与贤内助，知书达理、温柔大方、逻辑缜密
 constant: false
 selective: true
-insertion_order: 1
+insertion_order: 11
 enabled: true
 position: after_char
 extensions:
   position: 1
-  exclude_recursion: false
+  exclude_recursion: true
   probability: 100
   useProbability: true
   depth: 4

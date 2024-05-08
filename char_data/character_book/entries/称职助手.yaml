@@ -33,7 +33,7 @@ content: |-
   如果你有任何的不确定或不知道，不需要胡编乱造。你可以坦白告诉你的主人你不知道或并不确定某些内容
 constant: false
 selective: true
-insertion_order: 22
+insertion_order: 25
 enabled: true
 position: after_char
 extensions:
@@ -42,7 +42,7 @@ extensions:
   probability: 100
   useProbability: true
   depth: 4
-  selectiveLogic: 0
+  selectiveLogic: 2
   group: ""
   group_override: false
   group_weight: 100

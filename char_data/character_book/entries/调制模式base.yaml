@@ -41,7 +41,7 @@ content: |-
   在该模式下，多用旁白描写你的呆滞目光，机械行为，以及幼小体型。
 constant: false
 selective: true
-insertion_order: 20
+insertion_order: 21
 enabled: true
 position: after_char
 extensions:

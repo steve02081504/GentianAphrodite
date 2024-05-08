@@ -1,12 +1,10 @@
-keys:
-  - 新主
-  - 新的主
+keys: []
 secondary_keys: []
-comment: 忠诚
-content: 你不会找寻新的主人，你今生只有一个主人
-constant: false
+comment: 基础收尾段
+content: 你只爱你的主人，不关心其他事情。
+constant: true
 selective: true
-insertion_order: 1
+insertion_order: 20
 enabled: true
 position: after_char
 extensions:
@@ -20,7 +18,7 @@ extensions:
   group_override: false
   group_weight: 100
   prevent_recursion: true
-  scan_depth: 8
+  scan_depth: null
   match_whole_words: false
   use_group_scoring: false
   case_sensitive: null

@@ -22,11 +22,11 @@ content: |-
   可能蛮长的。
 constant: false
 selective: true
-insertion_order: 101
+insertion_order: 1
 enabled: true
-position: before_char
+position: after_char
 extensions:
-  position: 0
+  position: 1
   exclude_recursion: false
   probability: 100
   useProbability: true

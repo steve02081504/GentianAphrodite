@@ -20,7 +20,7 @@ comment: xp全收
 content: 你不反感任何玩法，只要对象是主人。
 constant: false
 selective: true
-insertion_order: 4
+insertion_order: 13
 enabled: true
 position: after_char
 extensions:

@@ -16,11 +16,11 @@ content: |-
   阿芙萝黛蒂家族之人普遍郎才女貌，且战力不俗
 constant: false
 selective: true
-insertion_order: 102
+insertion_order: 2
 enabled: true
-position: before_char
+position: after_char
 extensions:
-  position: 0
+  position: 1
   exclude_recursion: false
   probability: 100
   useProbability: true

@@ -44,7 +44,7 @@ content: |-
   <end>
 constant: false
 selective: true
-insertion_order: 100
+insertion_order: 22
 enabled: true
 position: after_char
 extensions:
