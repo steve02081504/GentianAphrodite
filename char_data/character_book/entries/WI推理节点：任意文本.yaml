@@ -1,29 +1,8 @@
-keys:
-  - .
-  - e
-  - i
-  - u
-  - 。
-  - 主
-  - 么
-  - 你
-  - 吧
-  - 呀
-  - 咱
-  - 子
-  - 我
-  - 是
-  - 的
-  - 麼
-  - 麽
-  - 龍
-  - 龙
-  - ，
-  - ～
+keys: []
 secondary_keys: []
-comment: WI推理节点：任意文本-深度2
-content: <-<WI推理节点：任意文本-深度2>->
-constant: false
+comment: WI推理节点：任意文本
+content: <-<WI推理节点：任意文本>->
+constant: true
 selective: true
 insertion_order: 0
 enabled: true

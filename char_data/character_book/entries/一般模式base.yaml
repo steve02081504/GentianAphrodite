@@ -1,5 +1,5 @@
 keys:
-  - <-<WI推理节点：任意文本-深度2>->
+  - <-<WI推理节点：任意文本>->
 secondary_keys:
   - <-<WI推理节点：调制模式-深度2>->
 comment: 一般模式base
