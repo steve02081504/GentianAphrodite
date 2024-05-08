@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import sha256 from 'crypto-js/sha256.js';
 import yaml from 'yaml';
 import { fileURLToPath, pathToFileURL } from 'url';
 
@@ -136,7 +137,7 @@ class CardFileInfo_t {
 	saveCardInfo(path = this.cardPath) {
 		if (!path) return;
 		var buffer = fs.readFileSync(path);
-		fs.writeFileSync(path, this.UpdatePngBufferInfo(buffer), { encoding: 'binary' });
+		fs.writeFileSync(path, this.UpdatePngBufferInfo(buffer, false), { encoding: 'binary' });
 	}
 	/**
 	 * Saves the data files including meta data and character book entries.
@@ -225,17 +226,22 @@ class CardFileInfo_t {
 	 * @param {function} dataUpdater - A function that takes the current character data and returns the updated character data.
 	 * @return {Buffer} The updated PNG buffer.
 	 */
-	UpdatePngBufferInfo(buffer, VerIdUpdater = a => a, dataUpdater = a => a) {
+	UpdatePngBufferInfo(buffer, usecrypto = true, VerIdUpdater = a => a, dataUpdater = a => a) {
 		if (!buffer) return;
 		var VerId = VerIdUpdater(this.metaData.character_version);
+		/** @type {v2CharData} */
 		var charData = dataUpdater({
 			...this.metaData,
 			character_version: VerId,
 			create_date: this.v1metaData.create_date
 		});
-		charData = JSON.stringify(GetV1CharDataFromV2({ ...charData }));
-		charData = charData.replace(/-v{{char_version}}-/g, `-v${VerId}-`).replace(/{{char_version}}/g, `\`${VerId}\``);
-		return charDataParser.write(buffer, charData);
+		var charDataStr = JSON.stringify(GetV1CharDataFromV2({ ...charData }));
+		charDataStr = charDataStr.replace(/-v{{char_version}}-/g, `-v${VerId}-`).replace(/{{char_version}}/g, `\`${VerId}\``);
+		if (usecrypto)
+			charDataStr = charDataStr.replace(/<-<WI(推理节点|推理節點|LogicalNode)(：|:)([\s\S]+?)>->*/g, (_, key) => {
+				return '<' + sha256(charData.creator + key).toString().substring(0, 6) + '>'
+			})
+		return charDataParser.write(buffer, charDataStr);
 	}
 	/**
 	 * Asynchronously builds PNG buffer information based on the provided subversion ID.
@@ -259,7 +265,7 @@ class CardFileInfo_t {
 			...SubVerCfg
 		}
 		let buffer = fs.readFileSync(SubVerCfg.GetPngFile());
-		return this.UpdatePngBufferInfo(buffer, SubVerCfg.VerIdUpdater, SubVerCfg.dataUpdater);
+		return this.UpdatePngBufferInfo(buffer, true, SubVerCfg.VerIdUpdater, SubVerCfg.dataUpdater);
 	}
 	/**
 	 * Asynchronously builds a PNG file at the specified subversion ID and saves it to the specified path.
