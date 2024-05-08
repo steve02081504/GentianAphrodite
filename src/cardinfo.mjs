@@ -285,10 +285,11 @@ class CardFileInfo_t {
 				return imageFilePaths.find(fs.existsSync);
 			},
 			VerIdUpdater: (charVer) => subverId == "default" ? charVer : `${charVer}-${subverId}`,
+			UseCrypto: true,
 			...SubVerCfg
 		}
 		let buffer = fs.readFileSync(SubVerCfg.GetPngFile());
-		return this.UpdatePngBufferInfo(buffer, true, SubVerCfg.VerIdUpdater, SubVerCfg.dataUpdater);
+		return this.UpdatePngBufferInfo(buffer, SubVerCfg.UseCrypto, SubVerCfg.VerIdUpdater, SubVerCfg.dataUpdater);
 	}
 	/**
 	 * Asynchronously builds a PNG file at the specified subversion ID and saves it to the specified path.

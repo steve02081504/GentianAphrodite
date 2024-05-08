@@ -8,6 +8,7 @@ let buildCfg = {
 	GetPngFile: () => {
 		return path.join(__dirname, '../img/mini.png');
 	},
-	VerIdUpdater: (charVer) => charVer
+	VerIdUpdater: (charVer) => charVer,
+	UseCrypto: false
 }
 export default buildCfg
