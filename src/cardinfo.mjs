@@ -238,7 +238,7 @@ class CardFileInfo_t {
 		var charDataStr = JSON.stringify(GetV1CharDataFromV2({ ...charData }));
 		charDataStr = charDataStr.replace(/-v{{char_version}}-/g, `-v${VerId}-`).replace(/{{char_version}}/g, `\`${VerId}\``);
 		if (usecrypto)
-			charDataStr = charDataStr.replace(/<-<WI(推理节点|推理節點|LogicalNode)(：|:)([\s\S]+?)>->*/g, (_, key) => {
+			charDataStr = charDataStr.replace(/<-<WI(推理节点|推理節點|LogicalNode)(：|:)([\s\S]+?)>->*/g, (key) => {
 				return '<' + sha256(charData.creator + key).toString().substring(0, 6) + '>'
 			})
 		return charDataParser.write(buffer, charDataStr);
