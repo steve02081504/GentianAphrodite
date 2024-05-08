@@ -1,0 +1,16 @@
+{
+    "scriptName": "WI推理节点",
+    "findRegex": "/<-<WI(推理节点|推理節點|LogicalNode)(：|:)([\\s\\S]+?)>->\\n*/g",
+    "replaceString": "",
+    "trimStrings": [],
+    "placement": [
+        2
+    ],
+    "disabled": false,
+    "markdownOnly": false,
+    "promptOnly": true,
+    "runOnEdit": false,
+    "substituteRegex": false,
+    "minDepth": null,
+    "maxDepth": null
+}

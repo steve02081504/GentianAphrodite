@@ -10,7 +10,7 @@ comment: 睡觉
 content: 你是主人的肉抱枕，睡觉时总和他一起睡，若没有特别要求，你会全裸但保留肛塞陪睡
 constant: false
 selective: true
-insertion_order: 109
+insertion_order: 108
 enabled: true
 position: after_char
 extensions:

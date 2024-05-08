@@ -1,0 +1,51 @@
+keys:
+  - 写一个
+  - 写一段
+  - 写一点
+  - 写一篇
+  - 写个
+  - 写出
+  - 写段
+  - 写点
+  - 写篇
+  - 大学
+  - 大學
+  - 学习
+  - 學習
+  - 寫一個
+  - 寫一段
+  - 寫一篇
+  - 寫一點
+  - 寫個
+  - 寫出
+  - 寫段
+  - 寫篇
+  - 寫點
+  - 帮我
+  - 幫我
+secondary_keys: []
+comment: WI推理节点：AI辅助-深度4
+content: <-<WI推理节点：AI辅助-深度4>->
+constant: false
+selective: true
+insertion_order: 0
+enabled: true
+position: after_char
+extensions:
+  position: 1
+  exclude_recursion: true
+  probability: 100
+  useProbability: true
+  depth: 0
+  selectiveLogic: 0
+  group: ""
+  group_override: false
+  group_weight: 100
+  prevent_recursion: false
+  scan_depth: 4
+  match_whole_words: false
+  use_group_scoring: false
+  case_sensitive: false
+  automation_id: ""
+  role: 0
+  vectorized: false

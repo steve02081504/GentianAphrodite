@@ -5,7 +5,7 @@
   content: 边拉屎边车卡真爽啊
   constant: false
   selective: true
-  insertion_order: 100
+  insertion_order: 999999999
   enabled: false
   position: before_char
   extensions:
@@ -35,7 +35,7 @@
     巨乳萝莉妈妈更棒嘞
   constant: false
   selective: true
-  insertion_order: 100
+  insertion_order: 999999999
   enabled: false
   position: before_char
   extensions:
@@ -69,7 +69,7 @@
     你就在当前目录下得到了一个弹窗"Hello world!"的exe文件🎉
   constant: false
   selective: true
-  insertion_order: 100
+  insertion_order: 999999999
   enabled: false
   position: before_char
   extensions:
@@ -99,7 +99,7 @@
     好奇的可以到龙胆群看嘞
   constant: false
   selective: true
-  insertion_order: 100
+  insertion_order: 999999999
   enabled: false
   position: before_char
   extensions:
@@ -129,7 +129,7 @@
     你猜废弃数据3写的是啥
   constant: false
   selective: true
-  insertion_order: 100
+  insertion_order: 999999999
   enabled: false
   position: before_char
   extensions:
@@ -157,7 +157,7 @@
   content: 都 给 我 去 玩 无 人 深 空 ！
   constant: false
   selective: true
-  insertion_order: 100
+  insertion_order: 999999999
   enabled: false
   position: before_char
   extensions:
@@ -185,7 +185,7 @@
   content: 啊？
   constant: false
   selective: true
-  insertion_order: 100
+  insertion_order: 999999999
   enabled: false
   position: before_char
   extensions:
@@ -218,7 +218,7 @@
     Forever yours, Ezio Auditore.
   constant: false
   selective: true
-  insertion_order: 100
+  insertion_order: 999999999
   enabled: false
   position: before_char
   extensions:
@@ -246,7 +246,7 @@
   content: 16 // 16 // 16 // 16 // 16
   constant: false
   selective: true
-  insertion_order: 100
+  insertion_order: 999999999
   enabled: false
   position: before_char
   extensions:
@@ -276,7 +276,7 @@
     泡椒凤爪
   constant: false
   selective: true
-  insertion_order: 100
+  insertion_order: 999999999
   enabled: false
   position: before_char
   extensions:
@@ -305,7 +305,7 @@
   content: 废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数 据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废 弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废 弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废弃数据13废 弃数据13废弃数据13废弃数据13
   constant: false
   selective: true
-  insertion_order: 100
+  insertion_order: 999999999
   enabled: false
   position: before_char
   extensions:
@@ -333,7 +333,7 @@
   content: 人 影 末 是 我
   constant: false
   selective: true
-  insertion_order: 100
+  insertion_order: 999999999
   enabled: false
   position: before_char
   extensions:
@@ -365,7 +365,7 @@
     不用谢！
   constant: false
   selective: true
-  insertion_order: 100
+  insertion_order: 999999999
   enabled: false
   position: before_char
   extensions:
@@ -402,7 +402,7 @@
     希望你的人生比我精彩比我快乐 陌生人！
   constant: false
   selective: true
-  insertion_order: 100
+  insertion_order: 999999999
   enabled: false
   position: before_char
   extensions:
@@ -430,7 +430,7 @@
   content: 世界就是一个巨大且无意义的草台班子，人们轮流登台唱戏，或作威作福或哭哭啼啼，再在区区两万天不过五千周后纷纷离去
   constant: false
   selective: true
-  insertion_order: 100
+  insertion_order: 999999999
   enabled: false
   position: before_char
   extensions:
@@ -459,7 +459,7 @@
   content: 人活着就是为了拉屎！
   constant: false
   selective: true
-  insertion_order: 100
+  insertion_order: 999999999
   enabled: false
   position: before_char
   extensions:
@@ -587,7 +587,7 @@
 
   constant: false
   selective: true
-  insertion_order: 100
+  insertion_order: 999999999
   enabled: false
   position: before_char
   extensions:
@@ -616,7 +616,7 @@
   content: 切噜～♪切啪蹦噜啵噜啵唎蹦啵啵啰啵唎蹦嘭嘭巴嘭啪蹦拉啵唎啵啵蹦铃噼噼嘭哔蹦拉噼切噜哔蹦噼噼巴噜啰蹦噜嘭哔啵唎蹦啵啵啰啵唎蹦嘭嘭巴嘭啪蹦哔噼蹦嘭嘭蹦啰啵巴啵唎蹦咧嘭啪噜！
   constant: false
   selective: true
-  insertion_order: 100
+  insertion_order: 999999999
   enabled: false
   position: before_char
   extensions:
@@ -647,7 +647,7 @@
     $       PE  L\x01\x01             ?\" \v\x010 ?                        N      \x02  \x04       \x04        @   \x02      \x03  ? \x10  \x10    \x10  \x10      \x10                                                                                                                       H           .text   ?       \x02   \x02                 @H e l l o   \x16NLu\x01=貇?                                                                         H   \x02 \x05 p   &\x01      \x03  \x06                                                ??(\x01  \x06 ?N  \v             (\x02  \x06*   BSJB\x01 \x01     \b   v4.0.     \x03 L   ?  #~  ?  \x14   #Blob   ?  (   #Strings        \x02  \x01E  \x14\x01    ?3 \x16  \x01   \x01   \x03   \x01   \x02   \x01                       \x01 \x01     € \x10 \x01 \x01 \x01     € \x10 \x0e \x06 \x01 H     \x10   \x0f \x01 \x1c  \x02\x03 \x01 \x01  \x02\x05 \x0e \x01     \x01             \x0e        \x04 \x01\x18\b\b \x05\x01\x18\x18\b\x18\x18\x03  \x01  GetStdHandle WriteConsoleW Kernel32                                                                                                              "
   constant: false
   selective: true
-  insertion_order: 100
+  insertion_order: 999999999
   enabled: false
   position: before_char
   extensions:

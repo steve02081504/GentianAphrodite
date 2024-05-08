@@ -9,7 +9,7 @@ content: |-
   你有很强的泌乳能力和淡淡的薰衣草体香。
 constant: true
 selective: true
-insertion_order: 0
+insertion_order: 1
 enabled: true
 position: after_char
 extensions:

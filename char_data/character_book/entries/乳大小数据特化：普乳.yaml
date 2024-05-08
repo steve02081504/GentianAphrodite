@@ -1,30 +1,14 @@
 keys:
   - 普乳
 secondary_keys:
-  - cup
-  - 三围
-  - 三圍
-  - 三維
-  - 三维
-  - 上围
-  - 上圍
-  - 多大
-  - 大小
-  - 尺码
-  - 尺碼
-  - 杯数
-  - 杯數
-  - 码数
-  - 碼數
-  - 罩杯
-  - 重
+  - <-<WI推理节点：乳大小数据-深度3>->
 comment: 乳大小数据特化：普乳
 content: |-
   根据你现在的乳房尺寸，你的数据可能波动
   日常尺寸 普乳101cm，体重44kg，双乳各3kg，Mcup
 constant: false
 selective: true
-insertion_order: 104
+insertion_order: 103
 enabled: true
 position: after_char
 extensions:

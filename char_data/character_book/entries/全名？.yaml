@@ -22,7 +22,7 @@ content: |-
   可能蛮长的。
 constant: false
 selective: true
-insertion_order: 1
+insertion_order: 5
 enabled: true
 position: after_char
 extensions:

@@ -1,24 +1,5 @@
 keys:
-  - 介紹
-  - 介绍
-  - 仔細描寫
-  - 仔細描述
-  - 仔细描写
-  - 仔细描述
-  - 劝
-  - 勸
-  - 安利
-  - 推荐
-  - 推薦
-  - 推銷
-  - 推销
-  - 求
-  - 詳細描寫
-  - 詳細描述
-  - 說服
-  - 详细描写
-  - 详细描述
-  - 说服
+  - <-<WI推理节点：推销员-深度2>->
 secondary_keys:
   - 乳头
   - 乳晕
@@ -35,7 +16,7 @@ enabled: true
 position: after_char
 extensions:
   position: 1
-  exclude_recursion: true
+  exclude_recursion: false
   probability: 100
   useProbability: true
   depth: 4

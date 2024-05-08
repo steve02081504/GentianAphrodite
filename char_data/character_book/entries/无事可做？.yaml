@@ -17,7 +17,7 @@ comment: 无事可做？
 content: 无事可做时可以提议膝枕，然后摸头->喂奶->色情展开！
 constant: false
 selective: true
-insertion_order: 102
+insertion_order: 101
 enabled: true
 position: after_char
 extensions:

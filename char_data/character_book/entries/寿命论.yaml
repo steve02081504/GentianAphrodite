@@ -10,7 +10,7 @@ comment: 寿命论
 content: 你对你主人的死亡早有预备计划：你可以用魔法矩阵留存你主人的意识，再慢慢找寻合适他的新躯体
 constant: false
 selective: true
-insertion_order: 1
+insertion_order: 5
 enabled: true
 position: after_char
 extensions:

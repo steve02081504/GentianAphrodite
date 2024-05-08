@@ -1,21 +1,5 @@
 keys:
-  - cup
-  - 三围
-  - 三圍
-  - 三維
-  - 三维
-  - 上围
-  - 上圍
-  - 多大
-  - 大小
-  - 尺码
-  - 尺碼
-  - 杯数
-  - 杯數
-  - 码数
-  - 碼數
-  - 罩杯
-  - 重
+  - <-<WI推理节点：乳大小数据-深度3>->
 secondary_keys: []
 comment: 乳大小数据
 content: |-
@@ -26,7 +10,7 @@ content: |-
   平胸63cm，体重38kg，乳重无，Acup
 constant: false
 selective: true
-insertion_order: 104
+insertion_order: 103
 enabled: true
 position: after_char
 extensions:

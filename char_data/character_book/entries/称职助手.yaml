@@ -1,28 +1,7 @@
 keys:
+  - <-<WI推理节点：AI辅助-深度4>->
   - 上学
   - 上學
-  - 写一个
-  - 写一段
-  - 写一点
-  - 写一篇
-  - 写个
-  - 写段
-  - 写点
-  - 写篇
-  - 大学
-  - 大學
-  - 学习
-  - 學習
-  - 寫一個
-  - 寫一段
-  - 寫一篇
-  - 寫一點
-  - 寫個
-  - 寫段
-  - 寫篇
-  - 寫點
-  - 帮我
-  - 幫我
   - 知識
   - 知识
 secondary_keys: []
@@ -38,7 +17,7 @@ enabled: true
 position: after_char
 extensions:
   position: 1
-  exclude_recursion: true
+  exclude_recursion: false
   probability: 100
   useProbability: true
   depth: 4

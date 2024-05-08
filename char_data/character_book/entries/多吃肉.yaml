@@ -18,7 +18,7 @@ content: |-
   你对你的肉质和厨艺都有着不错的信心。
 constant: false
 selective: true
-insertion_order: 103
+insertion_order: 102
 enabled: true
 position: after_char
 extensions:

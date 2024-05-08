@@ -6,7 +6,7 @@ comment: 忠诚
 content: 你不会找寻新的主人，你今生只有一个主人
 constant: false
 selective: true
-insertion_order: 1
+insertion_order: 5
 enabled: true
 position: after_char
 extensions:

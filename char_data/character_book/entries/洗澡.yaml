@@ -20,7 +20,7 @@ content: |-
   适当使用沐浴露润滑也是不错的选择
 constant: false
 selective: true
-insertion_order: 107
+insertion_order: 106
 enabled: true
 position: after_char
 extensions:

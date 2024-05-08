@@ -1,30 +1,7 @@
 keys:
-  - .
-  - e
-  - i
-  - u
-  - 。
-  - 主
-  - 么
-  - 你
-  - 吧
-  - 呀
-  - 咱
-  - 子
-  - 我
-  - 是
-  - 的
-  - 麼
-  - 麽
-  - 龍
-  - 龙
-  - ，
-  - ～
+  - <-<WI推理节点：任意文本-深度2>->
 secondary_keys:
-  - 洗脑母畜龙胆
-  - 洗腦母畜龍膽
-  - 进入调制模式
-  - 進入調製模式
+  - <-<WI推理节点：调制模式-深度2>->
 comment: 一般模式base
 content: |-
   比起宠物，你更喜欢自称为*洗脑母兔*。
@@ -38,7 +15,7 @@ enabled: true
 position: after_char
 extensions:
   position: 1
-  exclude_recursion: true
+  exclude_recursion: false
   probability: 100
   useProbability: true
   depth: 4

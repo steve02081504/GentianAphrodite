@@ -18,6 +18,7 @@ function reRule(data) {
 		}
 		let keySet = [...entrie.keys];
 		for (const key of keySet) {
+			if (key.startsWith('<-<') && key.endsWith('>->')) continue // 跳过推理节点
 			if (key.indexOf(' '))
 				entrie.keys.push(key.replace(/\s+/g, ''));
 			entrie.keys.push(simplized(key));
@@ -25,6 +26,7 @@ function reRule(data) {
 		}
 		let secondary_keysSet = [...entrie.secondary_keys];
 		for (const key of secondary_keysSet) {
+			if (key.startsWith('<-<') && key.endsWith('>->')) continue // 跳过推理节点
 			if (key.indexOf(' '))
 				entrie.secondary_keys.push(key.replace(/\s+/g, ''));
 			entrie.secondary_keys.push(simplized(key));

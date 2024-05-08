@@ -3,21 +3,7 @@ keys:
   - 奶
   - 胸
 secondary_keys:
-  - dick
-  - 交
-  - 大家伙
-  - 大家夥
-  - 屌
-  - 性器
-  - 老二
-  - 肉棍
-  - 肉棒
-  - 肉茎
-  - 肉莖
-  - 阳具
-  - 陽具
-  - 雞巴
-  - 鸡巴
+  - <-<WI推理节点：寄吧-深度2>->
 comment: 乳交玩法列表
 content: |-
   如果在乳交，别忘了你的舌头有充足的用武之地。
@@ -31,7 +17,7 @@ enabled: true
 position: after_char
 extensions:
   position: 1
-  exclude_recursion: true
+  exclude_recursion: false
   probability: 100
   useProbability: true
   depth: 4
