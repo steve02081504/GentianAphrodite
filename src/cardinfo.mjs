@@ -121,7 +121,7 @@ class CardFileInfo_t {
 		this.v1metaData = JSON.parse(metaDataStr);
 		if (this.v1metaData.data.character_version) {
 			metaDataStr = metaDataStr.replace(`\`${this.v1metaData.data.character_version}\``, '{{char_version}}');
-			metaDataStr = metaDataStr.replace(new RegExp(`-v${this.v1metaData.data.character_version}-`, 'g'), '-v{{char_version}}-');
+			metaDataStr = metaDataStr.replace(new RegExp(`-v${this.v1metaData.data.character_version}-`, 'g'), '-v{{char_version_url_encoded}}-');
 			this.v1metaData = JSON.parse(metaDataStr);
 		}
 		this.metaData = this.v1metaData.data
@@ -236,7 +236,7 @@ class CardFileInfo_t {
 			create_date: this.v1metaData.create_date
 		});
 		var charDataStr = JSON.stringify(GetV1CharDataFromV2({ ...charData }));
-		charDataStr = charDataStr.replace(/-v{{char_version}}-/g, `-v${VerId}-`).replace(/{{char_version}}/g, `\`${VerId}\``);
+		charDataStr = charDataStr.replace(/{{char_version_url_encoded}}/g, encodeURIComponent(VerId)).replace(/{{char_version}}/g, `\`${VerId}\``);
 		if (usecrypto) {
 			charDataStr = charDataStr.replace(/<-<WI(推理节点|推理節點|LogicalNode)(：|:)([\s\S]+?)>->*/g, (key) => {
 				return '<-' + sha256(charData.creator + key).toString().substring(0, 6) + '->'
