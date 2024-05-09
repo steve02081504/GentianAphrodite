@@ -239,7 +239,7 @@ class CardFileInfo_t {
 		charDataStr = charDataStr.replace(/-v{{char_version}}-/g, `-v${VerId}-`).replace(/{{char_version}}/g, `\`${VerId}\``);
 		if (usecrypto) {
 			charDataStr = charDataStr.replace(/<-<WI(推理节点|推理節點|LogicalNode)(：|:)([\s\S]+?)>->*/g, (key) => {
-				return '<' + sha256(charData.creator + key).toString().substring(0, 6) + '>'
+				return '<-' + sha256(charData.creator + key).toString().substring(0, 6) + '->'
 			})
 			/** @type {v1CharData} */
 			let v1charData = JSON.parse(charDataStr);
@@ -256,7 +256,7 @@ class CardFileInfo_t {
 				[book[currentIndex].extensions.display_index, book[randomIndex2].extensions.display_index] = [book[randomIndex2].extensions.display_index, book[currentIndex].extensions.display_index];
 			}
 
-			var randomCommts = ["东西", '不是东西', '可能是个东西', '屎', '菠萝', '苹果', '寄吧', '我是傻逼', '？', '傻逼', '我去'];
+			var randomCommts = ["东西", '不是东西', '可能是个东西', '屎', '菠萝', '苹果', '可能不是个东西', '史记', '寄吧', '我是傻逼', '？', '我去'];
 			var uid = 0;
 			for (var entrie of book) {
 				entrie.comment = randomCommts[Math.floor(Math.random() * randomCommts.length)];
