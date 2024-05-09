@@ -121,7 +121,7 @@ class CardFileInfo_t {
 		this.v1metaData = JSON.parse(metaDataStr);
 		if (this.v1metaData.data.character_version) {
 			metaDataStr = metaDataStr.replace(`\`${this.v1metaData.data.character_version}\``, '{{char_version}}');
-			metaDataStr = metaDataStr.replace(new RegExp(`-v${this.v1metaData.data.character_version}-`, 'g'), '-v{{char_version_url_encoded}}-');
+			metaDataStr = metaDataStr.replace(new RegExp(`/v${encodeURIComponent(this.v1metaData.data.character_version)}`, 'g'), '/v{{char_version_url_encoded}}');
 			this.v1metaData = JSON.parse(metaDataStr);
 		}
 		this.metaData = this.v1metaData.data
