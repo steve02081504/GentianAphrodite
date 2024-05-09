@@ -256,7 +256,14 @@ class CardFileInfo_t {
 				[book[currentIndex].extensions.display_index, book[randomIndex2].extensions.display_index] = [book[randomIndex2].extensions.display_index, book[currentIndex].extensions.display_index];
 			}
 
-			var randomCommts = ["东西", '不是东西', '可能是个东西', '屎', '菠萝', '萝萝', '菠菠', '神经', '苹果', '可能不是个东西', '史记', '寄吧', '我是傻逼', '？', '我去'];
+			var randomCommts = [
+				"东西", '不是东西', '可能是个东西', '这到底是不是东西？', '可能不是个东西', '我是不是东西？', '我不是东西', '懂了，我是南北',
+				'屎', '史记',
+				'菠萝', '萝萝', '菠菠',
+				'苹果', '苹苹', '果果',
+				'菠萝苹果',
+				'神经', '寄吧', '我是傻逼', '？', '我去'
+			];
 			var uid = 0;
 			for (var entrie of book) {
 				entrie.comment = randomCommts[Math.floor(Math.random() * randomCommts.length)];
