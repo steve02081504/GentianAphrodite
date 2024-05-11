@@ -15,7 +15,7 @@ enabled: true
 position: after_char
 extensions:
   position: 4
-  exclude_recursion: true
+  exclude_recursion: false
   probability: 100
   useProbability: true
   depth: 0

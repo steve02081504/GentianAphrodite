@@ -2,7 +2,7 @@ keys:
   - <-<WI推理节点：调制模式-深度2>->
 secondary_keys:
   - <-<WI推理节点：调制退出-深度2>->
-comment: 调制模式范例
+comment: 调制模式-范例
 content: |-
   这是一段调制模式下的示例对话参考
   <start>
@@ -25,7 +25,7 @@ enabled: true
 position: after_char
 extensions:
   position: 1
-  exclude_recursion: true
+  exclude_recursion: false
   probability: 100
   useProbability: true
   depth: 4
