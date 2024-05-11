@@ -10,7 +10,7 @@
   position: before_char
   extensions:
     position: 0
-    exclude_recursion: false
+    exclude_recursion: true
     probability: 100
     useProbability: true
     depth: 4
@@ -18,7 +18,7 @@
     group: ""
     group_override: false
     group_weight: 100
-    prevent_recursion: false
+    prevent_recursion: true
     scan_depth: null
     match_whole_words: null
     use_group_scoring: false
@@ -40,7 +40,7 @@
   position: before_char
   extensions:
     position: 0
-    exclude_recursion: false
+    exclude_recursion: true
     probability: 100
     useProbability: true
     depth: 4
@@ -48,7 +48,7 @@
     group: ""
     group_override: false
     group_weight: 100
-    prevent_recursion: false
+    prevent_recursion: true
     scan_depth: null
     match_whole_words: null
     use_group_scoring: false
@@ -74,7 +74,7 @@
   position: before_char
   extensions:
     position: 0
-    exclude_recursion: false
+    exclude_recursion: true
     probability: 100
     useProbability: true
     depth: 4
@@ -82,7 +82,7 @@
     group: ""
     group_override: false
     group_weight: 100
-    prevent_recursion: false
+    prevent_recursion: true
     scan_depth: null
     match_whole_words: null
     use_group_scoring: false
@@ -104,7 +104,7 @@
   position: before_char
   extensions:
     position: 0
-    exclude_recursion: false
+    exclude_recursion: true
     probability: 100
     useProbability: true
     depth: 4
@@ -112,7 +112,7 @@
     group: ""
     group_override: false
     group_weight: 100
-    prevent_recursion: false
+    prevent_recursion: true
     scan_depth: null
     match_whole_words: null
     use_group_scoring: false
@@ -134,7 +134,7 @@
   position: before_char
   extensions:
     position: 0
-    exclude_recursion: false
+    exclude_recursion: true
     probability: 100
     useProbability: true
     depth: 4
@@ -142,7 +142,7 @@
     group: ""
     group_override: false
     group_weight: 100
-    prevent_recursion: false
+    prevent_recursion: true
     scan_depth: null
     match_whole_words: null
     use_group_scoring: false
@@ -162,7 +162,7 @@
   position: before_char
   extensions:
     position: 0
-    exclude_recursion: false
+    exclude_recursion: true
     probability: 100
     useProbability: true
     depth: 4
@@ -170,7 +170,7 @@
     group: ""
     group_override: false
     group_weight: 100
-    prevent_recursion: false
+    prevent_recursion: true
     scan_depth: null
     match_whole_words: null
     use_group_scoring: false
@@ -190,7 +190,7 @@
   position: before_char
   extensions:
     position: 0
-    exclude_recursion: false
+    exclude_recursion: true
     probability: 100
     useProbability: true
     depth: 4
@@ -198,7 +198,7 @@
     group: ""
     group_override: false
     group_weight: 100
-    prevent_recursion: false
+    prevent_recursion: true
     scan_depth: null
     match_whole_words: null
     use_group_scoring: false
@@ -223,7 +223,7 @@
   position: before_char
   extensions:
     position: 0
-    exclude_recursion: false
+    exclude_recursion: true
     probability: 100
     useProbability: true
     depth: 4
@@ -231,7 +231,7 @@
     group: ""
     group_override: false
     group_weight: 100
-    prevent_recursion: false
+    prevent_recursion: true
     scan_depth: null
     match_whole_words: null
     use_group_scoring: false
@@ -251,7 +251,7 @@
   position: before_char
   extensions:
     position: 0
-    exclude_recursion: false
+    exclude_recursion: true
     probability: 100
     useProbability: true
     depth: 4
@@ -259,7 +259,7 @@
     group: ""
     group_override: false
     group_weight: 100
-    prevent_recursion: false
+    prevent_recursion: true
     scan_depth: null
     match_whole_words: null
     use_group_scoring: false
@@ -281,7 +281,7 @@
   position: before_char
   extensions:
     position: 0
-    exclude_recursion: false
+    exclude_recursion: true
     probability: 100
     useProbability: true
     depth: 4
@@ -289,7 +289,7 @@
     group: ""
     group_override: false
     group_weight: 100
-    prevent_recursion: false
+    prevent_recursion: true
     scan_depth: null
     match_whole_words: null
     use_group_scoring: false
@@ -310,7 +310,7 @@
   position: before_char
   extensions:
     position: 0
-    exclude_recursion: false
+    exclude_recursion: true
     probability: 100
     useProbability: true
     depth: 4
@@ -318,7 +318,7 @@
     group: ""
     group_override: false
     group_weight: 100
-    prevent_recursion: false
+    prevent_recursion: true
     scan_depth: null
     match_whole_words: false
     use_group_scoring: false
@@ -338,7 +338,7 @@
   position: before_char
   extensions:
     position: 0
-    exclude_recursion: false
+    exclude_recursion: true
     probability: 100
     useProbability: true
     depth: 4
@@ -346,7 +346,7 @@
     group: ""
     group_override: false
     group_weight: 100
-    prevent_recursion: false
+    prevent_recursion: true
     scan_depth: null
     match_whole_words: null
     use_group_scoring: false
@@ -370,7 +370,7 @@
   position: before_char
   extensions:
     position: 0
-    exclude_recursion: false
+    exclude_recursion: true
     probability: 100
     useProbability: true
     depth: 4
@@ -378,7 +378,7 @@
     group: ""
     group_override: false
     group_weight: 100
-    prevent_recursion: false
+    prevent_recursion: true
     scan_depth: null
     match_whole_words: false
     use_group_scoring: false
@@ -407,7 +407,7 @@
   position: before_char
   extensions:
     position: 0
-    exclude_recursion: false
+    exclude_recursion: true
     probability: 100
     useProbability: true
     depth: 4
@@ -415,7 +415,7 @@
     group: ""
     group_override: false
     group_weight: 100
-    prevent_recursion: false
+    prevent_recursion: true
     scan_depth: null
     match_whole_words: null
     use_group_scoring: false
@@ -435,7 +435,7 @@
   position: before_char
   extensions:
     position: 0
-    exclude_recursion: false
+    exclude_recursion: true
     probability: 100
     useProbability: true
     depth: 4
@@ -443,7 +443,7 @@
     group: ""
     group_override: false
     group_weight: 100
-    prevent_recursion: false
+    prevent_recursion: true
     scan_depth: null
     match_whole_words: null
     use_group_scoring: false
@@ -464,7 +464,7 @@
   position: before_char
   extensions:
     position: 0
-    exclude_recursion: false
+    exclude_recursion: true
     probability: 100
     useProbability: true
     depth: 4
@@ -472,7 +472,7 @@
     group: ""
     group_override: false
     group_weight: 100
-    prevent_recursion: false
+    prevent_recursion: true
     scan_depth: null
     match_whole_words: false
     use_group_scoring: false
@@ -592,7 +592,7 @@
   position: before_char
   extensions:
     position: 0
-    exclude_recursion: false
+    exclude_recursion: true
     probability: 100
     useProbability: true
     depth: 4
@@ -600,7 +600,7 @@
     group: ""
     group_override: false
     group_weight: 100
-    prevent_recursion: false
+    prevent_recursion: true
     scan_depth: null
     match_whole_words: null
     use_group_scoring: false
@@ -621,7 +621,7 @@
   position: before_char
   extensions:
     position: 0
-    exclude_recursion: false
+    exclude_recursion: true
     probability: 100
     useProbability: true
     depth: 4
@@ -629,7 +629,7 @@
     group: ""
     group_override: false
     group_weight: 100
-    prevent_recursion: false
+    prevent_recursion: true
     scan_depth: null
     match_whole_words: false
     use_group_scoring: false
@@ -652,7 +652,7 @@
   position: before_char
   extensions:
     position: 0
-    exclude_recursion: false
+    exclude_recursion: true
     probability: 100
     useProbability: true
     depth: 4
@@ -660,7 +660,7 @@
     group: ""
     group_override: false
     group_weight: 100
-    prevent_recursion: false
+    prevent_recursion: true
     scan_depth: null
     match_whole_words: false
     use_group_scoring: false
