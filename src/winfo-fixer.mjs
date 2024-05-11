@@ -12,6 +12,7 @@ function reRule(data) {
 	for (const id in data) {
 		let entrie = data[id];
 		for (const key of [...entrie.keys, ...entrie.secondary_keys]) {
+			if (key.startsWith('<-<') && key.endsWith('>->')) continue // 跳过推理节点
 			// 判断是否包含中日韩文字符
 			if (/\p{Unified_Ideograph}/u.test(key))
 				entrie.extensions.match_whole_words = false;

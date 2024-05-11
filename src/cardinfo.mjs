@@ -40,6 +40,45 @@ function arraysEqual(a, b) {
 	return true;
 }
 
+let keyscorespliter = "__worldinfo_keyscores__"
+
+/**
+ * add key scores to the data
+ * @param {WorldInfoEntry[]} data - The charbook data
+ */
+function keyScoreAdder(data) {
+	for (const id in data) {
+		let entrie = data[id];
+		let secondary_keysSet = [...entrie.secondary_keys];
+		for (const key of secondary_keysSet) {
+			if (key.startsWith('<-<') && key.endsWith('>->')) {
+				let keyscore = data.filter(e => e.content == key)[0];
+				if (!keyscore) {
+					console.log(`keyscore not found: ${key}`);
+					continue
+				}
+				entrie.secondary_keys.push(keyscorespliter);
+				entrie.secondary_keys = entrie.secondary_keys.concat(keyscore.keys);
+			}
+		}
+		entrie.secondary_keys = [...new Set(entrie.secondary_keys)];
+	}
+}
+/**
+ * remove key scores from the data
+ * @param {WorldInfoEntry[]} data - The charbook data
+ */
+function keyScoreRemover(data) {
+	for (const id in data) {
+		let entrie = data[id];
+		let index = entrie.secondary_keys.findIndex(x => x == keyscorespliter);
+		if (index > -1) {
+			// 移除keyscorespliter及其后的所有元素
+			entrie.secondary_keys = entrie.secondary_keys.slice(0, index)
+		}
+	}
+}
+
 /**
  * Class for reading and writing card information.
  */
@@ -126,6 +165,7 @@ class CardFileInfo_t {
 		}
 		this.metaData = this.v1metaData.data
 		this.character_book = this.metaData.character_book;
+		keyScoreRemover(this.character_book.entries)
 		//remove chat data in v1
 		delete this.v1metaData.chat;
 	}
@@ -222,25 +262,25 @@ class CardFileInfo_t {
 	 * Updates the PNG buffer information with metadata.
 	 *
 	 * @param {Buffer} buffer - The buffer to update with metadata.
-	 * @param {function} VerIdUpdater - A function that takes the current character version and returns the updated character version.
-	 * @param {function} dataUpdater - A function that takes the current character data and returns the updated character data.
+	 * @param {(str: string) => string} VerIdUpdater - A function that takes the current character version and returns the updated character version.
+	 * @param {(data: v2CharData) => v2CharData} dataUpdater - A function that takes the current character data and returns the updated character data.
 	 * @return {Buffer} The updated PNG buffer.
 	 */
 	UpdatePngBufferInfo(buffer, usecrypto = true, VerIdUpdater = a => a, dataUpdater = a => a) {
 		if (!buffer) return;
 		var VerId = VerIdUpdater(this.metaData.character_version);
-		/** @type {v2CharData} */
 		var charData = dataUpdater({
 			...this.metaData,
 			character_version: VerId,
 			create_date: this.v1metaData.create_date
 		});
+		keyScoreAdder(charData.character_book.entries)
 		var charDataStr = JSON.stringify(GetV1CharDataFromV2({ ...charData }));
 		charDataStr = charDataStr.replace(/{{char_version_url_encoded}}/g, encodeURIComponent(VerId)).replace(/{{char_version}}/g, `\`${VerId}\``);
 		if (usecrypto) {
-			charDataStr = charDataStr.replace(/<-<WI(推理节点|推理節點|LogicalNode)(：|:)([\s\S]+?)>->*/g, (key) => {
+			charDataStr = charDataStr.replace(/<-<WI(推理节点|推理節點|LogicalNode)(：|:)([\s\S]+?)>->/g, (key) => {
 				return '<-' + sha256(charData.creator + key).toString().substring(0, 6) + '->'
-			})
+			}).replace(`"${keyscorespliter}",`,'')
 			/** @type {v1CharData} */
 			let v1charData = JSON.parse(charDataStr);
 			charData = v1charData.data
