@@ -14,7 +14,7 @@ const ImgsDir = `${__dirname}/../char_data/img`;
 const BuildDir = `${__dirname}/../build`;
 
 import charDataParser from './character-card-parser.mjs';
-import { GetV1CharDataFromV2, v2CharData, v1CharData, WorldInfoBook } from './charData.mjs';
+import { GetV1CharDataFromV2, v2CharData, v1CharData, WorldInfoBook, world_info_logic } from './charData.mjs';
 
 const cardFilePath = `${__dirname}/data/cardpath.txt`;
 
@@ -49,6 +49,8 @@ let keyscorespliter = "__worldinfo_keyscores__"
 function keyScoreAdder(data) {
 	for (const id in data) {
 		let entrie = data[id];
+		if(entrie.extensions.selectiveLogic == world_info_logic.AND_ALL || entrie.extensions.selectiveLogic == world_info_logic.AND_ANY)
+			continue
 		let secondary_keysSet = [...entrie.secondary_keys];
 		for (const key of secondary_keysSet) {
 			if (key.startsWith('<-<') && key.endsWith('>->')) {

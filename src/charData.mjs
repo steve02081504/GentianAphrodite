@@ -1,3 +1,10 @@
+/** @enum {number} */
+const world_info_logic = {
+	AND_ANY: 0,
+	NOT_ALL: 1,
+	NOT_ANY: 2,
+	AND_ALL: 3,
+};
 class WorldInfoEntry {
 	/**
 	 * the id of the entry
@@ -93,7 +100,7 @@ class WorldInfoEntry {
 		depth,
 		/**
 		 * the selective logic of the entry
-		 * @type {number}
+		 * @type {world_info_logic}
 		 * @default 0
 		 */
 		selectiveLogic,
@@ -367,4 +374,4 @@ function GetV1CharDataFromV2(data) {
 	delete data.create_date
 	return aret
 }
-export { v2CharData, v1CharData, GetV1CharDataFromV2, WorldInfoBook, WorldInfoEntry }
+export { v2CharData, v1CharData, GetV1CharDataFromV2, WorldInfoBook, WorldInfoEntry, world_info_logic }

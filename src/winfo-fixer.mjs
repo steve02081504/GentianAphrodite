@@ -1,5 +1,5 @@
 import { simplized, traditionalized } from "./chs2t.mjs";
-import { WorldInfoBook, WorldInfoEntry } from "./charData.mjs";
+import { WorldInfoBook, WorldInfoEntry, world_info_logic } from "./charData.mjs";
 
 /**
  * Iterates WI data array and performs specific operations on it.
@@ -11,6 +11,8 @@ import { WorldInfoBook, WorldInfoEntry } from "./charData.mjs";
 function reRule(data) {
 	for (const id in data) {
 		let entrie = data[id];
+		entrie.extensions.exclude_recursion = true
+		entrie.extensions.prevent_recursion = !(entrie.content.startsWith('<-<') && entrie.content.endsWith('>->'))
 		for (const key of [...entrie.keys, ...entrie.secondary_keys]) {
 			if (key.startsWith('<-<') && key.endsWith('>->')) continue // 跳过推理节点
 			// 判断是否包含中日韩文字符
@@ -19,7 +21,10 @@ function reRule(data) {
 		}
 		let keySet = [...entrie.keys];
 		for (const key of keySet) {
-			if (key.startsWith('<-<') && key.endsWith('>->')) continue // 跳过推理节点
+			if (key.startsWith('<-<') && key.endsWith('>->')) {
+				entrie.extensions.exclude_recursion = false
+				continue // 跳过推理节点
+			}
 			if (key.indexOf(' '))
 				entrie.keys.push(key.replace(/\s+/g, ''));
 			entrie.keys.push(simplized(key));
@@ -27,7 +32,11 @@ function reRule(data) {
 		}
 		let secondary_keysSet = [...entrie.secondary_keys];
 		for (const key of secondary_keysSet) {
-			if (key.startsWith('<-<') && key.endsWith('>->')) continue // 跳过推理节点
+			if (key.startsWith('<-<') && key.endsWith('>->')) {
+				if(entrie.extensions.selectiveLogic == world_info_logic.AND_ALL || entrie.extensions.selectiveLogic == world_info_logic.AND_ANY)
+					entrie.extensions.exclude_recursion = false
+				continue // 跳过推理节点
+			}
 			if (key.indexOf(' '))
 				entrie.secondary_keys.push(key.replace(/\s+/g, ''));
 			entrie.secondary_keys.push(simplized(key));
