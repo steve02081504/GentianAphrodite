@@ -18,7 +18,7 @@ import { GetV1CharDataFromV2, v2CharData, v1CharData, WorldInfoBook, world_info_
 
 const cardFilePath = `${__dirname}/data/cardpath.txt`;
 
-/** @type {yaml.DocumentOptions & yaml.SchemaOptions & yaml.ParseOptions & yaml.CreateNodeOptions & yaml.ToStringOptions} */
+/** @type {yaml.ToStringOptions} */
 const yamlConfig = {
 	lineWidth: Number.POSITIVE_INFINITY
 }
@@ -49,7 +49,7 @@ let keyscorespliter = "__worldinfo_keyscores__"
 function keyScoreAdder(data) {
 	for (const id in data) {
 		let entrie = data[id];
-		if(entrie.extensions.selectiveLogic == world_info_logic.AND_ALL || entrie.extensions.selectiveLogic == world_info_logic.AND_ANY)
+		if (entrie.extensions.selectiveLogic == world_info_logic.AND_ALL || entrie.extensions.selectiveLogic == world_info_logic.AND_ANY)
 			continue
 		let secondary_keysSet = [...entrie.secondary_keys];
 		for (const key of secondary_keysSet) {
@@ -74,10 +74,8 @@ function keyScoreRemover(data) {
 	for (const id in data) {
 		let entrie = data[id];
 		let index = entrie.secondary_keys.findIndex(x => x == keyscorespliter);
-		if (index > -1) {
-			// 移除keyscorespliter及其后的所有元素
+		if (index > -1) // 移除keyscorespliter及其后的所有元素
 			entrie.secondary_keys = entrie.secondary_keys.slice(0, index)
-		}
 	}
 }
 
@@ -281,9 +279,9 @@ class CardFileInfo_t {
 		keyScoreRemover(charData.character_book.entries)
 		charDataStr = charDataStr.replace(/{{char_version_url_encoded}}/g, encodeURIComponent(VerId)).replace(/{{char_version}}/g, `\`${VerId}\``);
 		if (usecrypto) {
-			charDataStr = charDataStr.replace(/<-<WI(推理节点|推理節點|LogicalNode)(：|:)([\s\S]+?)>->/g, (key) => {
-				return '<-' + sha256(charData.creator + key).toString().substring(0, 6) + '->'
-			})
+			charDataStr = charDataStr.replace(/<-<WI(推理节点|推理節點|LogicalNode)(：|:)([\s\S]+?)>->/g, key =>
+				'<-' + sha256(charData.creator + key).toString().substring(0, 6) + '->'
+			)
 			/** @type {v1CharData} */
 			let v1charData = JSON.parse(charDataStr);
 			charData = v1charData.data
@@ -308,19 +306,19 @@ class CardFileInfo_t {
 				'神经', '寄吧', '我是傻逼', '？', '我去'
 			];
 			var uid = 0;
-			var randintleesthan7 = _ => Math.floor(Math.random() * 6)+1;
+			var randintleesthan7 = _ => Math.floor(Math.random() * 6) + 1;
 			let orderList = [];
 			for (var entrie of book) {
 				entrie.comment = randomCommts[Math.floor(Math.random() * randomCommts.length)];
 				entrie.keys = entrie.keys.filter(x => x != keyscorespliter);
 				entrie.secondary_keys = entrie.secondary_keys.filter(x => x != keyscorespliter);
-				entrie.id = uid+=randintleesthan7();
+				entrie.id = uid += randintleesthan7();
 				orderList.push(entrie.insertion_order);
 			}
 			orderList = [...new Set(orderList.sort((a, b) => a - b))]
 			let cryptedOrderList = []
 			var i = 0;
-			for(var _ of orderList) cryptedOrderList.push(i+=randintleesthan7())
+			for (var _ of orderList) cryptedOrderList.push(i += randintleesthan7())
 			for (var entrie of book)
 				entrie.insertion_order = cryptedOrderList[orderList.indexOf(entrie.insertion_order)];
 			charDataStr = JSON.stringify(v1charData);
@@ -336,15 +334,12 @@ class CardFileInfo_t {
 	async buildPngBufferInfo(subverId = 'default') {
 		let SubVerCfg = await import(pathToFileURL(`${SubVerCfgsDir}/${subverId}.mjs`)).then(m => m.default || m);
 		SubVerCfg = {
-			GetPngFile: () => {
-				const imageFilePaths = [
-					this.cardPath,
-					`${ImgsDir}/${subverId}.png`,
-					`${ImgsDir}/static.png`,
-					`${ImgsDir}/default.png`
-				];
-				return imageFilePaths.find(fs.existsSync);
-			},
+			GetPngFile: _ => [
+				this.cardPath,
+				`${ImgsDir}/${subverId}.png`,
+				`${ImgsDir}/static.png`,
+				`${ImgsDir}/default.png`
+			].find(fs.existsSync),
 			VerIdUpdater: (charVer) => subverId == "default" ? charVer : `${charVer}-${subverId}`,
 			UseCrypto: true,
 			...SubVerCfg
