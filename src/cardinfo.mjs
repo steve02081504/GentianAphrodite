@@ -308,12 +308,21 @@ class CardFileInfo_t {
 				'神经', '寄吧', '我是傻逼', '？', '我去'
 			];
 			var uid = 0;
+			var randintleesthan7 = _ => Math.floor(Math.random() * 6)+1;
+			let orderList = [];
 			for (var entrie of book) {
 				entrie.comment = randomCommts[Math.floor(Math.random() * randomCommts.length)];
 				entrie.keys = entrie.keys.filter(x => x != keyscorespliter);
 				entrie.secondary_keys = entrie.secondary_keys.filter(x => x != keyscorespliter);
-				entrie.id = uid++;
+				entrie.id = uid+=randintleesthan7();
+				orderList.push(entrie.insertion_order);
 			}
+			orderList = [...new Set(orderList.sort((a, b) => a - b))]
+			let cryptedOrderList = []
+			var i = 0;
+			for(var _ of orderList) cryptedOrderList.push(i+=randintleesthan7())
+			for (var entrie of book)
+				entrie.insertion_order = cryptedOrderList[orderList.indexOf(entrie.insertion_order)];
 			charDataStr = JSON.stringify(v1charData);
 		}
 		return charDataParser.write(buffer, charDataStr);
