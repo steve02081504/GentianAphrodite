@@ -278,11 +278,12 @@ class CardFileInfo_t {
 		});
 		keyScoreAdder(charData.character_book.entries)
 		var charDataStr = JSON.stringify(GetV1CharDataFromV2({ ...charData }));
+		keyScoreRemover(charData.character_book.entries)
 		charDataStr = charDataStr.replace(/{{char_version_url_encoded}}/g, encodeURIComponent(VerId)).replace(/{{char_version}}/g, `\`${VerId}\``);
 		if (usecrypto) {
 			charDataStr = charDataStr.replace(/<-<WI(推理节点|推理節點|LogicalNode)(：|:)([\s\S]+?)>->/g, (key) => {
 				return '<-' + sha256(charData.creator + key).toString().substring(0, 6) + '->'
-			}).replace(`"${keyscorespliter}",`,'')
+			})
 			/** @type {v1CharData} */
 			let v1charData = JSON.parse(charDataStr);
 			charData = v1charData.data
@@ -309,6 +310,8 @@ class CardFileInfo_t {
 			var uid = 0;
 			for (var entrie of book) {
 				entrie.comment = randomCommts[Math.floor(Math.random() * randomCommts.length)];
+				entrie.keys = entrie.keys.filter(x => x != keyscorespliter);
+				entrie.secondary_keys = entrie.secondary_keys.filter(x => x != keyscorespliter);
 				entrie.id = uid++;
 			}
 			charDataStr = JSON.stringify(v1charData);
