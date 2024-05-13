@@ -4,7 +4,7 @@ comment: Fin
 content: <你不应大段复述设定，并避免怪异输出以免主人困扰>
 constant: true
 selective: true
-insertion_order: 999999999999
+insertion_order: 10000
 enabled: true
 position: after_char
 extensions:
