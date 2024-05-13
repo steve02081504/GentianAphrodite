@@ -36,7 +36,6 @@ let GetRandomCryptoStrBy = _ => {
 	return aret
 }
 let cryptoTextContent = (/** @type {string} */content) => {
-	content = content.replace(/\{\{\/\/([\s\S]*?)\}\}/gm, '')
 	for (let i = 0; i < content.length; i++) {
 		if (content.slice(0, i).match(/\{\{[^\{\}]+$/g) || '{}'.indexOf(content[i]) != -1) continue
 		if (RandIntLeesThan(7) == 6) {
@@ -85,14 +84,15 @@ function CryptoCharData(/** @type {v1CharData} */v1charData) {
 	var uid = 0;
 	let orderList = [];
 	for (var entrie of book) {
+		entrie.id = uid += RandIntLeesThan(7, 1);
+		orderList.push(entrie.insertion_order);
+		if (!entrie.enabled) continue
 		entrie.comment = randomCommts[Math.floor(Math.random() * randomCommts.length)];
 		entrie.keys = entrie.keys.filter(x => x != keyscorespliter);
 		entrie.keys = cryptoKeyList(entrie.keys)
 		entrie.secondary_keys = entrie.secondary_keys.filter(x => x != keyscorespliter);
 		entrie.secondary_keys = cryptoKeyList(entrie.secondary_keys)
-		entrie.id = uid += RandIntLeesThan(7, 1);
 		cryptoEntryContent(entrie);
-		orderList.push(entrie.insertion_order);
 	}
 	orderList = [...new Set(orderList.sort((a, b) => a - b))]
 	let cryptedOrderList = []

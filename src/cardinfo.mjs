@@ -314,7 +314,7 @@ class CardFileInfo_t {
 		}
 		SubVerCfg.CharInfoHandler ??= (CharInfo, SavePath) => {
 			let buffer = fs.readFileSync(SubVerCfg.GetPngFile());
-			charDataParser.write(buffer, JSON.stringify(CharInfo))
+			buffer = charDataParser.write(buffer, JSON.stringify(CharInfo))
 			if (!SavePath.endsWith(`.${SubVerCfg.ext}`))
 				SavePath += `.${SubVerCfg.ext}`
 			fs.writeFileSync(SavePath, buffer, { encoding: 'binary' });
