@@ -9,7 +9,7 @@ let buildCfg = {
 	GetPngFile: () => {
 		return path.join(__dirname, '../img/static.png');
 	},
-	dataUpdater: (
+	DataUpdater: (
 		/** @type {v2CharData} */
 		data
 	) => {

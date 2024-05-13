@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import sha256 from 'crypto-js/sha256.js';
 import yaml from 'yaml';
 import { fileURLToPath, pathToFileURL } from 'url';
 
@@ -14,7 +13,8 @@ const ImgsDir = `${__dirname}/../char_data/img`;
 const BuildDir = `${__dirname}/../build`;
 
 import charDataParser from './character-card-parser.mjs';
-import { GetV1CharDataFromV2, v2CharData, v1CharData, WorldInfoBook, world_info_logic } from './charData.mjs';
+import { GetV1CharDataFromV2, v2CharData, v1CharData, WorldInfoBook, WorldInfoEntry, world_info_logic } from './charData.mjs';
+import CryptoCharData from './charCrypto.mjs';
 
 const cardFilePath = `${__dirname}/data/cardpath.txt`;
 
@@ -176,8 +176,7 @@ class CardFileInfo_t {
 	 */
 	saveCardInfo(path = this.cardPath) {
 		if (!path) return;
-		var buffer = fs.readFileSync(path);
-		fs.writeFileSync(path, this.UpdatePngBufferInfo(buffer, false), { encoding: 'binary' });
+		this.RunBuildCfg({ GetPngFile: _ => path, UseCrypto: false });
 	}
 	/**
 	 * Saves the data files including meta data and character book entries.
@@ -259,17 +258,23 @@ class CardFileInfo_t {
 		delete this.character_book.display_index_list
 	}
 	/**
-	 * Updates the PNG buffer information with metadata.
-	 *
-	 * @param {Buffer} buffer - The buffer to update with metadata.
-	 * @param {(str: string) => string} VerIdUpdater - A function that takes the current character version and returns the updated character version.
-	 * @param {(data: v2CharData) => v2CharData} dataUpdater - A function that takes the current character data and returns the updated character data.
-	 * @return {Buffer} The updated PNG buffer.
+	 * Builds the character information.
+	 * @param {{
+	 *   VerIdUpdater:(str: string) => string
+	 *   DataUpdater:(data: v2CharData) => v2CharData
+	 *   UseCrypto: boolean
+	 * }} Config - The configuration object.
+	 * @return {v1CharData} - The character information.
 	 */
-	UpdatePngBufferInfo(buffer, usecrypto = true, VerIdUpdater = a => a, dataUpdater = a => a) {
-		if (!buffer) return;
-		var VerId = VerIdUpdater(this.metaData.character_version);
-		var charData = dataUpdater({
+	BuildCharInfo(Config = {}) {
+		Config = {
+			VerIdUpdater: _ => _,
+			DataUpdater: _ => _,
+			UseCrypto: true,
+			...Config
+		}
+		var VerId = Config.VerIdUpdater(this.metaData.character_version);
+		var charData = Config.DataUpdater({
 			...this.metaData,
 			character_version: VerId,
 			create_date: this.v1metaData.create_date
@@ -278,61 +283,24 @@ class CardFileInfo_t {
 		var charDataStr = JSON.stringify(GetV1CharDataFromV2({ ...charData }));
 		keyScoreRemover(charData.character_book.entries)
 		charDataStr = charDataStr.replace(/{{char_version_url_encoded}}/g, encodeURIComponent(VerId)).replace(/{{char_version}}/g, `\`${VerId}\``);
-		if (usecrypto) {
-			charDataStr = charDataStr.replace(/<-<WI(推理节点|推理節點|LogicalNode)(：|:)([\s\S]+?)>->/g, key =>
-				'<-' + sha256(charData.creator + key).toString().substring(0, 6) + '->'
-			)
-			/** @type {v1CharData} */
-			let v1charData = JSON.parse(charDataStr);
-			charData = v1charData.data
-			var book = charData.character_book.entries;
-			let currentIndex = book.length;
-
-			while (currentIndex != 0) {
-				let randomIndex = Math.floor(Math.random() * currentIndex);
-				let randomIndex2 = Math.floor(Math.random() * currentIndex);
-				currentIndex--;
-
-				[book[currentIndex], book[randomIndex]] = [book[randomIndex], book[currentIndex]];
-				[book[currentIndex].extensions.display_index, book[randomIndex2].extensions.display_index] = [book[randomIndex2].extensions.display_index, book[currentIndex].extensions.display_index];
-			}
-
-			var randomCommts = [
-				"东西", '不是东西', '可能是个东西', '这到底是不是东西？', '可能不是个东西', '我是不是东西？', '我不是东西', '懂了，我是南北',
-				'屎', '史记',
-				'菠萝', '萝萝', '菠菠',
-				'苹果', '苹苹', '果果',
-				'菠萝苹果',
-				'神经', '寄吧', '我是傻逼', '？', '我去'
-			];
-			var uid = 0;
-			var randintleesthan7 = _ => Math.floor(Math.random() * 6) + 1;
-			let orderList = [];
-			for (var entrie of book) {
-				entrie.comment = randomCommts[Math.floor(Math.random() * randomCommts.length)];
-				entrie.keys = entrie.keys.filter(x => x != keyscorespliter);
-				entrie.secondary_keys = entrie.secondary_keys.filter(x => x != keyscorespliter);
-				entrie.id = uid += randintleesthan7();
-				orderList.push(entrie.insertion_order);
-			}
-			orderList = [...new Set(orderList.sort((a, b) => a - b))]
-			let cryptedOrderList = []
-			var i = 0;
-			for (var _ of orderList) cryptedOrderList.push(i += randintleesthan7())
-			for (var entrie of book)
-				entrie.insertion_order = cryptedOrderList[orderList.indexOf(entrie.insertion_order)];
-			charDataStr = JSON.stringify(v1charData);
-		}
-		return charDataParser.write(buffer, charDataStr);
+		let NewCharData = JSON.parse(charDataStr);
+		if (Config.UseCrypto)
+			return CryptoCharData(NewCharData);
+		return NewCharData;
 	}
 	/**
-	 * Asynchronously builds PNG buffer information based on the provided subversion ID.
-	 *
-	 * @param {string} [subverId='default'] - The subversion ID to build the PNG buffer for.
-	 * @return {Promise<Buffer>} A Promise that resolves with the updated PNG buffer.
+	 * Builds the files for a subversion.
+	 * @param {{
+	 *   GetPngFile: () => string
+	 *   VerIdUpdater: (str: string) => string
+	 *   CharInfoHandler: (CharInfo: v1CharData, SavePath: string) => void
+	 *   ext: string
+	 * }} SubVerCfg - The configuration object for the subversion.
+	 * @param {string} subverId - The ID of the subversion.
+	 * @param {string} SavePath - The path to save the files.
 	 */
-	async buildPngBufferInfo(subverId = 'default') {
-		let SubVerCfg = await import(pathToFileURL(`${SubVerCfgsDir}/${subverId}.mjs`)).then(m => m.default || m);
+	RunBuildCfg(SubVerCfg = {}, subverId = 'default', SavePath = `${BuildDir}/${subverId}`) {
+		fs.mkdirSync(path.dirname(SavePath), { recursive: true });
 		SubVerCfg = {
 			GetPngFile: _ => [
 				this.cardPath,
@@ -341,23 +309,28 @@ class CardFileInfo_t {
 				`${ImgsDir}/default.png`
 			].find(fs.existsSync),
 			VerIdUpdater: (charVer) => subverId == "default" ? charVer : `${charVer}-${subverId}`,
-			UseCrypto: true,
+			ext: 'png',
 			...SubVerCfg
 		}
-		let buffer = fs.readFileSync(SubVerCfg.GetPngFile());
-		return this.UpdatePngBufferInfo(buffer, SubVerCfg.UseCrypto, SubVerCfg.VerIdUpdater, SubVerCfg.dataUpdater);
+		SubVerCfg.CharInfoHandler ??= (CharInfo, SavePath) => {
+			let buffer = fs.readFileSync(SubVerCfg.GetPngFile());
+			charDataParser.write(buffer, JSON.stringify(CharInfo))
+			if (!SavePath.endsWith(`.${SubVerCfg.ext}`))
+				SavePath += `.${SubVerCfg.ext}`
+			fs.writeFileSync(SavePath, buffer, { encoding: 'binary' });
+		}
+		SubVerCfg.CharInfoHandler(this.BuildCharInfo(SubVerCfg), SavePath);
 	}
 	/**
 	 * Asynchronously builds a PNG file at the specified subversion ID and saves it to the specified path.
 	 *
 	 * @param {string} [subverId='default'] - The subversion ID to build the PNG file for.
-	 * @param {string} [SavePath=`${BuildDir}/${subverId}.png`] - The path to save the PNG file to.
+	 * @param {string} [SavePath=`${BuildDir}/${subverId}`] - The path to save the PNG file to.
 	 * @return {Promise<void>} A Promise that resolves when the PNG file is built and saved successfully.
 	 */
-	async Build(subverId = 'default', SavePath = `${BuildDir}/${subverId}.png`) {
-		let buffer = await this.buildPngBufferInfo(subverId);
-		fs.mkdirSync(path.dirname(SavePath), { recursive: true });
-		fs.writeFileSync(SavePath, buffer, { encoding: 'binary' });
+	async Build(subverId = 'default', SavePath = `${BuildDir}/${subverId}`) {
+		let SubVerCfg = await import(pathToFileURL(`${SubVerCfgsDir}/${subverId}.mjs`)).then(m => m.default || m);
+		this.RunBuildCfg(SubVerCfg, subverId, SavePath);
 	}
 }
 /**
