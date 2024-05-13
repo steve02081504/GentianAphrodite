@@ -16,6 +16,7 @@
 		"png-chunk-text": "^1.0.0",
 		"png-chunks-encode": "^1.0.0",
 		"png-chunks-extract": "^1.0.0",
+		"seedrandom": "^3.0.5",
 		"yaml": "^2.4.1"
 	}
 }

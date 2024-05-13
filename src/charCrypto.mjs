@@ -1,5 +1,6 @@
 import sha256 from 'crypto-js/sha256.js';
-import { v1CharData, WorldInfoEntry } from './charData.mjs';
+import seedrandom from 'seedrandom';
+import { v2CharData, WorldInfoEntry } from './charData.mjs';
 
 let keyscorespliter = "__worldinfo_keyscores__"
 var randomCommts = [
@@ -14,9 +15,14 @@ let cryptoStrs = ["\u202e", "\u2066"]
 let cryptoStrsX = ["\u0E4e", "\u0E49", "\u0E47"]
 let mindlessStr = "毒毒杀救了我红死自杀恨死蛇猩红腐败癫狂毒杀救了我红死自杀恨死蛇混乱堕落崩溃疯和蛇病骷毒杀救？？？了我红死自杀恨死蛇髅瘟疫死毒杀救了我红死自杀恨死蛇亡毒杀救了我红死！！！！自杀恨死蛇悲剧灾难的惨恐怖事痛苦扭曲救！？—杀爱恨我你\n\n\n\n"
 
-var RandIntLeesThan = (x, y = 0) => Math.floor(Math.random() * (x - y)) + y;
-let GetRandomCryptoBaseStr = _ => cryptoStrs[Math.floor(Math.random() * cryptoStrs.length)]
-let GetRandomCryptoXBaseStr = _ => cryptoStrsX[Math.floor(Math.random() * cryptoStrsX.length)].repeat(RandIntLeesThan(7))
+/** @type {seedrandom.PRNG} */
+var BaseRng;
+function SetCryptoBaseRng(seed) {
+	BaseRng = seedrandom(seed);
+}
+var RandIntLeesThan = (x, y = 0) => Math.floor(BaseRng() * (x - y)) + y;
+let GetRandomCryptoBaseStr = _ => cryptoStrs[RandIntLeesThan(cryptoStrs.length)]
+let GetRandomCryptoXBaseStr = _ => cryptoStrsX[RandIntLeesThan(cryptoStrsX.length)].repeat(RandIntLeesThan(7))
 let GetRandomCryptoStrBy = _ => {
 	let aret = ''
 	for (let i = 0; i < RandIntLeesThan(24); i++)
@@ -62,13 +68,11 @@ let cryptoKeyList = (/** @type {string[]} */list) => {
 	return aret
 }
 
-function CryptoCharData(/** @type {v1CharData} */v1charData) {
-	let charData = v1charData.data
-	let charDataStr = JSON.stringify(v1charData).replace(/<-<WI(推理节点|推理節點|LogicalNode)(：|:)([\s\S]+?)>->/g, key =>
+function CryptoCharData(/** @type {v2CharData} */charData) {
+	let charDataStr = JSON.stringify(charData).replace(/<-<WI(推理节点|推理節點|LogicalNode)(：|:)([\s\S]+?)>->/g, key =>
 		'<-' + sha256(charData.creator + key).toString().substring(0, 6) + '->'
 	)
-	v1charData = JSON.parse(charDataStr);
-	charData = v1charData.data
+	charData = JSON.parse(charDataStr)
 	var book = charData.character_book.entries;
 	let currentIndex = book.length;
 
@@ -87,7 +91,7 @@ function CryptoCharData(/** @type {v1CharData} */v1charData) {
 		entrie.id = uid += RandIntLeesThan(7, 1);
 		orderList.push(entrie.insertion_order);
 		if (!entrie.enabled) continue
-		entrie.comment = randomCommts[Math.floor(Math.random() * randomCommts.length)];
+		entrie.comment = randomCommts[RandIntLeesThan(randomCommts.length)];
 		entrie.keys = entrie.keys.filter(x => x != keyscorespliter);
 		entrie.keys = cryptoKeyList(entrie.keys)
 		entrie.secondary_keys = entrie.secondary_keys.filter(x => x != keyscorespliter);
@@ -100,6 +104,10 @@ function CryptoCharData(/** @type {v1CharData} */v1charData) {
 	for (var _ of orderList) cryptedOrderList.push(i += RandIntLeesThan(7, 1))
 	for (var entrie of book)
 		entrie.insertion_order = cryptedOrderList[orderList.indexOf(entrie.insertion_order)];
-	return v1charData;
+	return charData;
 }
-export default CryptoCharData
+export {
+	CryptoCharData,
+	SetCryptoBaseRng,
+	CryptoCharData as default
+}

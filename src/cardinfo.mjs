@@ -14,7 +14,7 @@ const BuildDir = `${__dirname}/../build`;
 
 import charDataParser from './character-card-parser.mjs';
 import { GetV1CharDataFromV2, v2CharData, v1CharData, WorldInfoBook, WorldInfoEntry, world_info_logic } from './charData.mjs';
-import CryptoCharData from './charCrypto.mjs';
+import { SetCryptoBaseRng, CryptoCharData } from './charCrypto.mjs';
 
 const cardFilePath = `${__dirname}/data/cardpath.txt`;
 
@@ -284,8 +284,7 @@ class CardFileInfo_t {
 		keyScoreRemover(charData.character_book.entries)
 		charDataStr = charDataStr.replace(/{{char_version_url_encoded}}/g, encodeURIComponent(VerId)).replace(/{{char_version}}/g, `\`${VerId}\``);
 		let NewCharData = JSON.parse(charDataStr);
-		if (Config.UseCrypto)
-			return CryptoCharData(NewCharData);
+		if (Config.UseCrypto) NewCharData.data = CryptoCharData(NewCharData.data);
 		return NewCharData;
 	}
 	/**
@@ -294,12 +293,16 @@ class CardFileInfo_t {
 	 *   GetPngFile: () => string
 	 *   VerIdUpdater: (str: string) => string
 	 *   CharInfoHandler: (CharInfo: v1CharData, SavePath: string) => void
+	 *   VerIdUpdater:(str: string) => string
+	 *   DataUpdater:(data: v2CharData) => v2CharData
+	 *   UseCrypto: boolean
 	 *   ext: string
 	 * }} SubVerCfg - The configuration object for the subversion.
 	 * @param {string} subverId - The ID of the subversion.
 	 * @param {string} SavePath - The path to save the files.
 	 */
 	RunBuildCfg(SubVerCfg = {}, subverId = 'default', SavePath = `${BuildDir}/${subverId}`) {
+		SetCryptoBaseRng(this.metaData.character_version)
 		fs.mkdirSync(path.dirname(SavePath), { recursive: true });
 		SubVerCfg = {
 			GetPngFile: _ => [
