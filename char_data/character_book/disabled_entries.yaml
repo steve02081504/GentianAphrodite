@@ -668,3 +668,57 @@
     automation_id: ""
     role: 0
     vectorized: false
+- keys: []
+  secondary_keys: []
+  comment: TODO：语料段开始
+  content: <示例对话>
+  constant: false
+  selective: true
+  insertion_order: 10001
+  enabled: false
+  position: after_char
+  extensions:
+    position: 1
+    exclude_recursion: true
+    probability: 100
+    useProbability: true
+    depth: 4
+    selectiveLogic: 0
+    group: ""
+    group_override: false
+    group_weight: 100
+    prevent_recursion: true
+    scan_depth: null
+    match_whole_words: null
+    use_group_scoring: false
+    case_sensitive: null
+    automation_id: ""
+    role: 0
+    vectorized: false
+- keys: []
+  secondary_keys: []
+  comment: TODO：语料段结束
+  content: </示例对话>
+  constant: false
+  selective: true
+  insertion_order: 10100
+  enabled: false
+  position: after_char
+  extensions:
+    position: 1
+    exclude_recursion: true
+    probability: 100
+    useProbability: true
+    depth: 4
+    selectiveLogic: 0
+    group: ""
+    group_override: false
+    group_weight: 100
+    prevent_recursion: true
+    scan_depth: null
+    match_whole_words: null
+    use_group_scoring: false
+    case_sensitive: null
+    automation_id: ""
+    role: 0
+    vectorized: false
