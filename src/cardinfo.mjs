@@ -204,6 +204,9 @@ class CardFileInfo_t {
 			};
 		}
 		keyScoreRemover(this.v1metaData.data.character_book.entries)
+		this.metaData = yaml.parse(fs.readFileSync(yamlFilePath, 'utf8'));
+		this.v1metaData.create_date = this.metaData.create_date;
+		this.v1metaData.data.extensions.fav = this.metaData.extensions.fav;
 		if (this.v1metaData.data.character_version) {
 			metaDataStr = JSON.stringify(this.v1metaData);
 			metaDataStr = metaDataStr.replace(`\`${this.v1metaData.data.character_version}\``, '{{char_version}}');
