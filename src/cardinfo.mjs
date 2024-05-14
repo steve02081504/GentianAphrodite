@@ -235,13 +235,18 @@ class CardFileInfo_t {
 		this.character_book.entries = [];
 		var character_book_dir = fs.readdirSync(character_book_path + '/entries');
 		this.character_book.display_index_list ??= this.character_book.index_list
+		let [index_list, display_index_list] = [this.character_book.index_list, this.character_book.display_index_list]
+		delete this.character_book.index_list
+		delete this.character_book.display_index_list
 		for (const key of character_book_dir) {
 			var filePath = character_book_path + '/entries/' + key;
 			var yamlStr = fs.readFileSync(filePath, 'utf8');
 			var data = yaml.parse(yamlStr);
-			var fileName = key.replace(/\.yaml$/, '');
-			data.id = this.character_book.index_list.indexOf(fileName);
-			data.extensions.display_index = this.character_book.display_index_list.indexOf(fileName);
+			var fileName = data.comment || data.keys[0] || key.replace(/\.yaml$/, '');
+			data.id = index_list.indexOf(fileName);
+			data.extensions.display_index = display_index_list.indexOf(fileName);
+			if (this.character_book.entries[data.id])
+				console.error(`Duplicated entry: ${fileName}(${data.id}) and ${this.character_book.entries[data.id].comment || this.character_book.entries[data.id].keys[0]}(${data.id})`);
 			this.character_book.entries[data.id] = data;
 		}
 		if (fs.existsSync(character_book_path + '/disabled_entries.yaml')) {
@@ -249,13 +254,13 @@ class CardFileInfo_t {
 			var datas = yaml.parse(yamlStr);
 			for (const data of datas) {
 				var key = data.comment || data.keys[0];
-				data.id = this.character_book.index_list.indexOf(key);
-				data.extensions.display_index = this.character_book.display_index_list.indexOf(key);
+				data.id = index_list.indexOf(key);
+				data.extensions.display_index = display_index_list.indexOf(key);
+				if (this.character_book.entries[data.id])
+					console.log(`Duplicated entry: ${key}(${data.id}) and ${this.character_book.entries[data.id].comment || this.character_book.entries[data.id].keys[0]}(${data.id})`);
 				this.character_book.entries[data.id] = data;
 			}
 		}
-		delete this.character_book.index_list
-		delete this.character_book.display_index_list
 	}
 	/**
 	 * Builds the character information.
