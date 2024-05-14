@@ -15,8 +15,10 @@ const BuildDir = `${__dirname}/../build`;
 import charDataParser from './character-card-parser.mjs';
 import { GetV1CharDataFromV2, v2CharData, v1CharData, WorldInfoBook, WorldInfoEntry, world_info_logic } from './charData.mjs';
 import { SetCryptoBaseRng, CryptoCharData } from './charCrypto.mjs';
+import { v2CharWIbook2WIjson } from './WIjsonMaker.mjs';
 
 const cardFilePath = `${__dirname}/data/cardpath.txt`;
+const WIjsonFilePath = `${__dirname}/data/WIpath.txt`;
 
 /** @type {yaml.ToStringOptions} */
 const yamlConfig = {
@@ -84,6 +86,7 @@ function keyScoreRemover(data) {
  */
 class CardFileInfo_t {
 	#cardPath;
+	#WijsonPath;
 
 	/**
 	 * Constructor function for initializing the cardPath property.
@@ -91,20 +94,20 @@ class CardFileInfo_t {
 	 * @return {void}
 	 */
 	constructor(path) {
-		this.#cardPath = path || this.readCardPath();
+		this.#cardPath = path;
 	}
 
 	/**
 	 * Gets the value of the card path.
-	 * @return {any} The value of the card path.
+	 * @return {string} The value of the card path.
 	 */
 	get cardPath() {
-		return this.#cardPath;
+		return this.#cardPath ??= this.readCardPath();
 	}
 
 	/**
 	 * Sets the value of the card path and writes it to a file.
-	 * @param {any} value - The new value of the card path.
+	 * @param {string} value - The new value of the card path.
 	 * @return {void}
 	 */
 	set cardPath(value) {
@@ -127,6 +130,41 @@ class CardFileInfo_t {
 	 */
 	writeCardPath(value) {
 		fs.writeFileSync(cardFilePath, value);
+	}
+
+	/**
+	 * Gets the value of the WIjson path.
+	 * @return {string} The value of the WIjson path.
+	 */
+	get WIjsonPath() {
+		return this.#WijsonPath ??= this.readWIjsonPath();
+	}
+
+	/**
+	 * Sets the value of the WIjson path and writes it to a file.
+	 * @param {string} value - The new value of the WIjson path.
+	 * @return {void}
+	 */
+	set WIjsonPath(value) {
+		this.writeWIjsonPath(this.#WijsonPath = value);
+	}
+
+	/**
+	 * Reads the WIjson path from the specified file.
+	 * @return {string} The WIjson path read from the file.
+	 */
+	readWIjsonPath() {
+		if (!fs.existsSync(WIjsonFilePath)) return;
+		return fs.readFileSync(WIjsonFilePath, 'utf8').trimEnd();
+	}
+
+	/**
+	 * Writes the WIjson path to a file.
+	 * @param {string} value - The value to write to the WIjson path file.
+	 * @return {void}
+	 */
+	writeWIjsonPath(value) {
+		fs.writeFileSync(WIjsonFilePath, value);
 	}
 
 	/**
@@ -174,9 +212,11 @@ class CardFileInfo_t {
 	 * @param {string} [path=this.cardPath] - The path to the PNG file. If not provided, the default card path will be used.
 	 * @return {void}
 	 */
-	saveCardInfo(path = this.cardPath) {
+	saveCardInfo(path = this.cardPath, saveWIJson = true) {
 		if (!path) return;
 		this.RunBuildCfg({ GetPngFile: _ => path, UseCrypto: false });
+		if (saveWIJson)
+			fs.writeFileSync(this.WIjsonPath, JSON.stringify(v2CharWIbook2WIjson(this.character_book), null, '\t') + '\n');
 	}
 	/**
 	 * Saves the data files including meta data and character book entries.
