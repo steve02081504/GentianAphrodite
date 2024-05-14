@@ -15,7 +15,7 @@ const BuildDir = `${__dirname}/../build`;
 import charDataParser from './character-card-parser.mjs';
 import { GetV1CharDataFromV2, v2CharData, v1CharData, WorldInfoBook, WorldInfoEntry, world_info_logic } from './charData.mjs';
 import { SetCryptoBaseRng, CryptoCharData } from './charCrypto.mjs';
-import { v2CharWIbook2WIjson } from './WIjsonMaker.mjs';
+import { v2CharWIbook2WIjson, WIjson2v2CharWIbook } from './WIjsonMaker.mjs';
 
 const cardFilePath = `${__dirname}/data/cardpath.txt`;
 const WIjsonFilePath = `${__dirname}/data/WIpath.txt`;
@@ -188,7 +188,7 @@ class CardFileInfo_t {
 	 * @param {string} [path=this.cardPath] - The path to read the card information from. Defaults to the current card path.
 	 * @return {void}
 	 */
-	readCardInfo(path = this.cardPath) {
+	readCardInfo(path = this.cardPath, readWIjson = true) {
 		if (!path) return;
 		//读取png文件的metaData
 		var metaDataStr = charDataParser.parse(path, 'png');
@@ -196,14 +196,22 @@ class CardFileInfo_t {
 		metaDataStr = metaDataStr.replace(/\\r\\n/g, '\\n');
 		//string to object
 		this.v1metaData = JSON.parse(metaDataStr);
+		if (readWIjson && this.WIjsonPath) {
+			var wijsonStr = fs.readFileSync(this.WIjsonPath, 'utf8');
+			this.v1metaData.data.character_book = {
+				...this.v1metaData.data.character_book,
+				...WIjson2v2CharWIbook(JSON.parse(wijsonStr))
+			};
+		}
+		keyScoreRemover(this.v1metaData.data.character_book.entries)
 		if (this.v1metaData.data.character_version) {
+			metaDataStr = JSON.stringify(this.v1metaData);
 			metaDataStr = metaDataStr.replace(`\`${this.v1metaData.data.character_version}\``, '{{char_version}}');
 			metaDataStr = metaDataStr.replace(new RegExp(`/v${encodeURIComponent(this.v1metaData.data.character_version)}`, 'g'), '/v{{char_version_url_encoded}}');
 			this.v1metaData = JSON.parse(metaDataStr);
 		}
 		this.metaData = this.v1metaData.data
 		this.character_book = this.metaData.character_book;
-		keyScoreRemover(this.character_book.entries)
 		//remove chat data in v1
 		delete this.v1metaData.chat;
 	}
@@ -215,7 +223,7 @@ class CardFileInfo_t {
 	saveCardInfo(path = this.cardPath, saveWIJson = true) {
 		if (!path) return;
 		this.RunBuildCfg({ GetPngFile: _ => path, UseCrypto: false });
-		if (saveWIJson)
+		if (saveWIJson && this.WIjsonPath)
 			fs.writeFileSync(this.WIjsonPath, JSON.stringify(v2CharWIbook2WIjson(this.character_book), null, '\t') + '\n');
 	}
 	/**
