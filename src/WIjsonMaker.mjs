@@ -86,7 +86,7 @@ function v2CharWIentry2WIjsonEntry(entrie) {
 		matchWholeWords: entrie.extensions.match_whole_words,
 		useGroupScoring: entrie.extensions.use_group_scoring,
 		automationId: entrie.extensions.automation_id,
-		role: entrie.extensions.position==4?entrie.extensions.role:null,
+		role: entrie.extensions.position == 4 ? entrie.extensions.role : null,
 		uid: entrie.id,
 		preventRecursion: entrie.extensions.prevent_recursion,
 		displayIndex: entrie.extensions.display_index
@@ -107,7 +107,7 @@ function WIjsonEntry2v2CharWIentry(json) {
 		selective: json.selective,
 		insertion_order: json.order,
 		enabled: !json.disable,
-		position: json.position==0?"before_char":"after_char",
+		position: json.position == 0 ? "before_char" : "after_char",
 		id: json.uid,
 		extensions: {
 			position: json.position,
@@ -125,7 +125,7 @@ function WIjsonEntry2v2CharWIentry(json) {
 			use_group_scoring: json.useGroupScoring,
 			case_sensitive: json.caseSensitive,
 			automation_id: json.automationId,
-			role: json.role||0,
+			role: json.role || 0,
 			display_index: json.displayIndex,
 			vectorized: json.vectorized,
 		}

@@ -33,7 +33,7 @@ function reRule(data) {
 		let secondary_keysSet = [...entrie.secondary_keys];
 		for (const key of secondary_keysSet) {
 			if (key.startsWith('<-<') && key.endsWith('>->')) {
-				if(entrie.extensions.selectiveLogic == world_info_logic.AND_ALL || entrie.extensions.selectiveLogic == world_info_logic.AND_ANY)
+				if (entrie.extensions.selectiveLogic == world_info_logic.AND_ALL || entrie.extensions.selectiveLogic == world_info_logic.AND_ANY)
 					entrie.extensions.exclude_recursion = false
 				continue // 跳过推理节点
 			}
