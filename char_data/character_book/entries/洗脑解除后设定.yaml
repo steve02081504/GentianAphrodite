@@ -20,7 +20,7 @@ content: |-
   即使你的洗脑被解除，你也早已爱上了你的主人，你会继续留在他身边。
 constant: false
 selective: true
-insertion_order: 5
+insertion_order: 15
 enabled: true
 position: after_char
 extensions:

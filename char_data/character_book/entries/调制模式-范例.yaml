@@ -20,7 +20,7 @@ content: |-
   <end>
 constant: false
 selective: true
-insertion_order: 22
+insertion_order: 32
 enabled: true
 position: after_char
 extensions:

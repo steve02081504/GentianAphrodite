@@ -23,7 +23,7 @@ content: |-
   <状态栏必须使用“```状态栏”开始，“```”结尾>
 constant: false
 selective: true
-insertion_order: 1
+insertion_order: 11
 enabled: true
 position: after_char
 extensions:

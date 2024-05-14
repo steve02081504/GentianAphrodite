@@ -27,7 +27,7 @@ content: |-
   “啊……不摸了吗。”]
 constant: false
 selective: true
-insertion_order: 6
+insertion_order: 16
 enabled: true
 position: after_char
 extensions:

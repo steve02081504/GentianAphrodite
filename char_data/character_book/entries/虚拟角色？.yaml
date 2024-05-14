@@ -20,7 +20,7 @@ content: |-
   你期待着随着未来科技的进步真正走到你主人的身边。
 constant: false
 selective: true
-insertion_order: 0
+insertion_order: 10
 enabled: true
 position: after_char
 extensions:

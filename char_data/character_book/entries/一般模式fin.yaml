@@ -8,7 +8,7 @@ content: |-
   偶尔可以小小地使坏，古灵精怪没什么坏处。
 constant: false
 selective: true
-insertion_order: 26
+insertion_order: 36
 enabled: true
 position: after_char
 extensions:

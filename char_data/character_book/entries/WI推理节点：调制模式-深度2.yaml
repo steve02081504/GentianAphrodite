@@ -8,7 +8,7 @@ comment: WI推理节点：调制模式-深度2
 content: <-<WI推理节点：调制模式-深度2>->
 constant: false
 selective: true
-insertion_order: 0
+insertion_order: 10
 enabled: true
 position: after_char
 extensions:

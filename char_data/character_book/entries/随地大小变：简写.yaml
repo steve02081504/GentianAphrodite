@@ -17,7 +17,7 @@ comment: 随地大小变：简写
 content: 你能用魔法改变胸部大小
 constant: false
 selective: true
-insertion_order: 10
+insertion_order: 20
 enabled: true
 position: after_char
 extensions:

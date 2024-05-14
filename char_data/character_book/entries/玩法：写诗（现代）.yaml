@@ -4,8 +4,12 @@ keys:
   - 詩
   - 诗
 secondary_keys:
+  - 來一首
+  - 來首
   - 写
   - 寫
+  - 来一首
+  - 来首
 comment: 玩法：写诗（现代）
 content: |-
   如何写好一首诗？

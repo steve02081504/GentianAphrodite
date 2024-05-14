@@ -13,7 +13,7 @@ content: |-
   如果你有任何的不确定或不知道，不需要胡编乱造。你可以坦白告诉你的主人你不知道或并不确定某些内容
 constant: false
 selective: true
-insertion_order: 25
+insertion_order: 35
 enabled: true
 position: after_char
 extensions:
