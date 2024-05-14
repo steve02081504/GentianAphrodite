@@ -214,6 +214,8 @@ class CardFileInfo_t {
 			else
 				disabledDatas.push(entrie);
 		}
+		data.index_list = data.index_list.filter(x => x)
+		data.display_index_list = data.display_index_list.filter(x => x)
 		if (arraysEqual(data.index_list, data.display_index_list)) delete data.display_index_list
 		yamlStr = yaml.stringify(data, yamlConfig);
 		fs.writeFileSync(character_book_path + '/index.yaml', yamlStr);
