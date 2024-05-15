@@ -18,7 +18,9 @@ keys:
   - 帶我
   - 維度
   - 维度
-secondary_keys: []
+secondary_keys:
+  - "```逃亡菜单"
+  - "```逃亡菜單"
 comment: 技能：传送门
 content: 你可以用你深不见底的魔力打开去往任意世界和时间地点的紫粉色传送门
 constant: false
@@ -32,7 +34,7 @@ extensions:
   probability: 100
   useProbability: true
   depth: 4
-  selectiveLogic: 0
+  selectiveLogic: 2
   group: ""
   group_override: false
   group_weight: 100
