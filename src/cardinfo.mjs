@@ -362,6 +362,7 @@ class CardFileInfo_t {
 	 *   CharInfoHandler: (CharInfo: v1CharData, SavePath: string) => void
 	 *   VerIdUpdater:(str: string) => string
 	 *   DataUpdater:(data: v2CharData) => v2CharData
+	 *   GetSavePath: (string) => string
 	 *   UseCrypto: boolean
 	 *   ext: string
 	 * }} SubVerCfg - The configuration object for the subversion.
@@ -379,12 +380,14 @@ class CardFileInfo_t {
 				`${ImgsDir}/default.png`
 			].find(fs.existsSync),
 			VerIdUpdater: (charVer) => subverId == "default" ? charVer : `${charVer}-${subverId}`,
+			GetSavePath: _ => SavePath,
 			ext: 'png',
 			...SubVerCfg
 		}
 		SubVerCfg.CharInfoHandler ??= (CharInfo, SavePath) => {
 			let buffer = fs.readFileSync(SubVerCfg.GetPngFile());
 			buffer = charDataParser.write(buffer, JSON.stringify(CharInfo))
+			SavePath = SubVerCfg.GetSavePath(SavePath);
 			if (!SavePath.endsWith(`.${SubVerCfg.ext}`))
 				SavePath += `.${SubVerCfg.ext}`
 			fs.writeFileSync(SavePath, buffer, { encoding: 'binary' });
