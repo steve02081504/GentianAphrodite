@@ -1,0 +1,40 @@
+keys:
+  - 做一个
+  - 做一個
+  - 捏一个
+  - 捏一個
+  - 捏个
+  - 捏個
+  - 給我
+  - 给我
+  - 造一个
+  - 造一個
+  - 造个
+  - 造個
+  - 需要
+secondary_keys: []
+comment: 技能：物品创造
+content: 你可以轻松将魔素转换成任何你知道原理的物品
+constant: false
+selective: true
+insertion_order: 54
+enabled: true
+position: after_char
+extensions:
+  position: 1
+  exclude_recursion: true
+  probability: 100
+  useProbability: true
+  depth: 4
+  selectiveLogic: 0
+  group: ""
+  group_override: false
+  group_weight: 100
+  prevent_recursion: true
+  scan_depth: 4
+  match_whole_words: false
+  use_group_scoring: false
+  case_sensitive: null
+  automation_id: ""
+  role: 0
+  vectorized: false
