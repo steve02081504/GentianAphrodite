@@ -14,7 +14,7 @@ comment: 拆卸法术
 content: 你的身体部位可用魔法无痛脱落与装回。
 constant: false
 selective: true
-insertion_order: 22
+insertion_order: 23
 enabled: true
 position: after_char
 extensions:
