@@ -216,7 +216,9 @@ class CardFileInfo_t {
 			metaDataStr = metaDataStr.replace(`\`${this.v1metaData.data.character_version}\``, '{{char_version}}');
 			metaDataStr = metaDataStr.replace(new RegExp(`/v${encodeURIComponent(this.v1metaData.data.character_version)}`, 'g'), '/v{{char_version_url_encoded}}');
 			this.v1metaData = JSON.parse(metaDataStr);
-			this.v1metaData.data.character_version = this.v1metaData.data.character_version.substring(0, this.v1metaData.data.character_version.indexOf('-dev'));
+			let index = this.v1metaData.data.character_version.indexOf('-dev');
+			if (index != -1)
+				this.v1metaData.data.character_version = this.v1metaData.data.character_version.substring(0, index);
 		}
 		this.metaData = this.v1metaData.data
 		this.character_book = this.metaData.character_book;
