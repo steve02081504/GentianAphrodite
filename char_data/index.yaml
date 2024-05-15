@@ -207,6 +207,9 @@ alternate_greetings:
     {{user}}装扮：花里胡哨的乔装打扮🧥
     龙胆性欲累计度：一般🎠
     ```
+  - |-
+    没有更多开场了！
+    <video autoplay controls loop width='100%' src='https://archive.org/download/Rick_Astley_Never_Gonna_Give_You_Up/Rick_Astley_Never_Gonna_Give_You_Up.mp4' />
 extensions:
   talkativeness: "0.5"
   fav: true
