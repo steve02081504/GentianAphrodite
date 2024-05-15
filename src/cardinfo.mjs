@@ -225,7 +225,7 @@ class CardFileInfo_t {
 	 */
 	saveCardInfo(path = this.cardPath, saveWIJson = true) {
 		if (!path) return;
-		this.RunBuildCfg({ GetPngFile: _ => path, UseCrypto: false });
+		this.RunBuildCfg({ GetPngFile: _ => path, UseCrypto: false }, 'dev', this.cardPath);
 		if (saveWIJson && this.WIjsonPath)
 			fs.writeFileSync(this.WIjsonPath, JSON.stringify(v2CharWIbook2WIjson(this.character_book), null, '\t') + '\n');
 	}
