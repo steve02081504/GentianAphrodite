@@ -51,6 +51,10 @@ let keyscorespliter = "__worldinfo_keyscores__"
 function keyScoreAdder(data) {
 	for (const id in data) {
 		let entrie = data[id];
+		if (entrie?.extensions?.selectiveLogic == undefined) {
+			console.error('selectiveLogic not found: ', entrie);
+			continue
+		}
 		if (entrie.extensions.selectiveLogic == world_info_logic.AND_ALL || entrie.extensions.selectiveLogic == world_info_logic.AND_ANY)
 			continue
 		let secondary_keysSet = [...entrie.secondary_keys];
@@ -212,6 +216,7 @@ class CardFileInfo_t {
 			metaDataStr = metaDataStr.replace(`\`${this.v1metaData.data.character_version}\``, '{{char_version}}');
 			metaDataStr = metaDataStr.replace(new RegExp(`/v${encodeURIComponent(this.v1metaData.data.character_version)}`, 'g'), '/v{{char_version_url_encoded}}');
 			this.v1metaData = JSON.parse(metaDataStr);
+			this.v1metaData.data.character_version = this.v1metaData.data.character_version.substring(0, this.v1metaData.data.character_version.indexOf('-dev'));
 		}
 		this.metaData = this.v1metaData.data
 		this.character_book = this.metaData.character_book;
@@ -226,8 +231,12 @@ class CardFileInfo_t {
 	saveCardInfo(path = this.cardPath, saveWIJson = true) {
 		if (!path) return;
 		this.RunBuildCfg({ GetPngFile: _ => path, UseCrypto: false }, 'dev', this.cardPath);
-		if (saveWIJson && this.WIjsonPath)
-			fs.writeFileSync(this.WIjsonPath, JSON.stringify(v2CharWIbook2WIjson(this.character_book), null, '\t') + '\n');
+		if (saveWIJson && this.WIjsonPath) {
+			keyScoreAdder(this.character_book.entries);
+			let data = v2CharWIbook2WIjson(this.character_book);
+			fs.writeFileSync(this.WIjsonPath, JSON.stringify(data, null, '\t') + '\n');
+			keyScoreRemover(this.character_book.entries)
+		}
 	}
 	/**
 	 * Saves the data files including meta data and character book entries.
