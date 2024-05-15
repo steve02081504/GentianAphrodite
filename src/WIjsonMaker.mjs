@@ -21,7 +21,11 @@ export function v2CharWIbook2WIjson(book) {
  * @returns {WorldInfoBook}
  */
 export function WIjson2v2CharWIbook(json) {
-	return json.originalData
+	let aret = { ...json, entries: [] }
+	delete aret.originalData
+	for (let id in json.entries)
+		aret.entries[id] = WIjsonEntry2v2CharWIentry(json.entries[id])
+	return aret
 }
 /**
 * @typedef {object} WIjsonEntry
