@@ -13,7 +13,7 @@ var randomCommts = [
 ];
 let cryptoStrs = ["\u202e", "\u2066"]
 let cryptoStrsX = ["\u0E4e", "\u0E49", "\u0E47"]
-let mindlessStr = "毒毒杀救了我红死自杀恨死蛇猩红腐败癫狂毒杀救了我红死自杀恨死蛇混乱堕落崩溃疯和蛇病骷毒杀救？？？了我红死自杀恨死蛇髅瘟疫死毒杀救了我红死自杀恨死蛇亡毒杀救了我红死！！！！自杀恨死蛇悲剧灾难的惨恐怖事痛苦扭曲救！？—杀爱恨我你\n\n\n\n"
+let mindlessStr = "毒毒杀救了我红死自杀恨死蛇猩红腐败癫狂毒杀救了我红死自杀恨死蛇混乱堕落崩溃疯和蛇病骷毒杀救？？？了我红死自杀恨死蛇髅瘟疫死毒杀救了，。我红死自杀恨死蛇亡毒杀救了我红死！！！！自杀恨死蛇悲剧灾难的惨恐怖事痛苦扭曲救！？—杀爱恨我你\n\n\n\n"
 
 /** @type {seedrandom.PRNG} */
 var BaseRng;
@@ -25,23 +25,28 @@ let GetRandomCryptoBaseStr = _ => cryptoStrs[RandIntLeesThan(cryptoStrs.length)]
 let GetRandomCryptoXBaseStr = _ => cryptoStrsX[RandIntLeesThan(cryptoStrsX.length)].repeat(RandIntLeesThan(7))
 let GetRandomCryptoStrBy = _ => {
 	let aret = ''
-	for (let i = 0; i < RandIntLeesThan(24); i++)
+	for (let i = 0; i < RandIntLeesThan(24, 7); i++)
 		switch (RandIntLeesThan(4)) {
 			case 0:
 				aret += GetRandomCryptoXBaseStr().repeat(RandIntLeesThan(9))
 				i += RandIntLeesThan(7)
+				break
 			case 1:
 				aret += GetRandomCryptoBaseStr()
+				break
 			case 2:
 				aret += _.repeat(RandIntLeesThan(2))
 				i += RandIntLeesThan(2)
+				break
 			default:
 				aret += mindlessStr[RandIntLeesThan(mindlessStr.length)].repeat(RandIntLeesThan(8))
 				i += RandIntLeesThan(6)
+				break
 		}
 	return aret
 }
 let cryptoTextContent = (/** @type {string} */content) => {
+	content = content.replace('\n', "\n{{//\u202e}}")
 	for (let i = 0; i < content.length; i++) {
 		if (content.slice(0, i).match(/\{\{[^\{\}]+$/g) || '{}'.indexOf(content[i]) != -1) continue
 		if (RandIntLeesThan(7) == 6) {
@@ -50,7 +55,7 @@ let cryptoTextContent = (/** @type {string} */content) => {
 			i += rand.length + 6
 		}
 	}
-	return content
+	return "{{//\u202e}}" + content
 }
 let cryptoEntryContent = (/** @type {WorldInfoEntry} */entrie) => {
 	entrie.content = cryptoTextContent(entrie.content)
@@ -66,6 +71,15 @@ let cryptoKeyList = (/** @type {string[]} */list) => {
 		aret.push(cryptoTextContent(list[i]))
 	}
 	return aret
+}
+function suffleArray(a) {
+	let currentIndex = a.length;
+
+	while (currentIndex != 0) {
+		let randomIndex = RandIntLeesThan(currentIndex);
+		currentIndex--;
+		[a[currentIndex], a[randomIndex]] = [a[randomIndex], a[currentIndex]];
+	}
 }
 
 function CryptoCharData(/** @type {v2CharData} */charData) {
@@ -94,8 +108,10 @@ function CryptoCharData(/** @type {v2CharData} */charData) {
 		entrie.comment = randomCommts[RandIntLeesThan(randomCommts.length)];
 		entrie.keys = entrie.keys.filter(x => x != keyscorespliter);
 		entrie.keys = cryptoKeyList(entrie.keys)
+		suffleArray(entrie.keys)
 		entrie.secondary_keys = entrie.secondary_keys.filter(x => x != keyscorespliter);
 		entrie.secondary_keys = cryptoKeyList(entrie.secondary_keys)
+		suffleArray(entrie.secondary_keys)
 		cryptoEntryContent(entrie);
 	}
 	orderList = [...new Set(orderList.sort((a, b) => a - b))]
