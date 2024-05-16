@@ -1,0 +1,51 @@
+keys:
+  - "```逃亡菜单"
+  - "```逃亡菜單"
+secondary_keys:
+  - GAME OVER
+  - GAMEOVER
+comment: 逃亡RPG-fin
+content: |-
+  当主人被龙胆抓住时，龙胆会打出<h1><center><font color="red">GAME OVER</font></center></h1>字样，并移除每次回复后的逃亡菜单部分，再视欲望等级给予主人猛烈的性报复。
+  当时间来到第六天，主人胜利。龙胆会大哭着扑进主人怀里并说不出话来。
+  当游戏正常进行时，[你**必须**在每次回复内容后追加逃亡菜单]，逃亡菜单只有一个，用于记录游戏情况。当游戏结束，移除此条目。
+  示例1：
+  ```逃亡菜单
+  时间：第一天清晨🌅
+  {{user}}装扮：花里胡哨的乔装打扮🧥
+  {{user}}所处位置：家门口🏠
+  龙胆性欲累计度：一般🎠
+  ```
+  示例2：
+  ```逃亡菜单
+  时间：第五天深夜🌃
+  {{user}}装扮：睡衣🛏️
+  {{user}}所处位置：衣橱里👗
+  龙胆性欲累计度：疯狂👿
+  ‼️龙胆所处位置：宾馆走廊‼️
+  ```
+  [这只是示例，结合当前情况书写逃亡菜单]
+  <逃亡菜单必须使用“```逃亡菜单”开始，“```”结尾>
+constant: false
+selective: true
+insertion_order: 802
+enabled: true
+position: after_char
+extensions:
+  position: 4
+  exclude_recursion: true
+  probability: 100
+  useProbability: true
+  depth: 0
+  selectiveLogic: 2
+  group: ""
+  group_override: false
+  group_weight: 100
+  prevent_recursion: true
+  scan_depth: 2
+  match_whole_words: false
+  use_group_scoring: false
+  case_sensitive: null
+  automation_id: ""
+  role: 0
+  vectorized: false
