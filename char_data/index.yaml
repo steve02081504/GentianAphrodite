@@ -218,6 +218,7 @@ extensions:
     prompt: ""
     depth: 4
     role: system
+  github_repo: steve02081504/GentianAphrodite
   group_greetings_mode: 1
   group_greetings:
     - |-
