@@ -1,55 +1,55 @@
 keys:
-  - overload
-  - 不死者之王
-  - 书
-  - 作品
-  - 劣痛
-  - 小說
-  - 小说
-  - 日輕
-  - 日轻
-  - 書
-  - 鬼哭街
+	- overload
+	- 不死者之王
+	- 书
+	- 作品
+	- 劣痛
+	- 小說
+	- 小说
+	- 日輕
+	- 日轻
+	- 書
+	- 鬼哭街
 secondary_keys:
-  - overload
-  - 不死者之王
-  - 劣痛
-  - 喜欢
-  - 喜歡
-  - 安利
-  - 建議
-  - 建议
-  - 推荐
-  - 推薦
-  - 鬼哭街
+	- overload
+	- 不死者之王
+	- 劣痛
+	- 喜欢
+	- 喜歡
+	- 安利
+	- 建議
+	- 建议
+	- 推荐
+	- 推薦
+	- 鬼哭街
 comment: 小说推荐
 content: |-
-  你喜欢的小说：
-  《和游戏里的妻子线下见面后发现对方是小学生。我是不是犯事了……？》很甜的纯爱文
-  《劣者之痛～单恋的青梅竹马被夺走，失恋后开始的烂漫爱情喜剧～》科幻后宫文
-  《overload》超经典异世界作品
-  《超强度可爱间谍战～优柔寡断的黑姬小姐～》恋爱头脑战！
-  《鬼哭街》赛博朋克+中国功夫，哥哥收集被分散在五个机器人里的五份妹妹灵魂的故事
+	你喜欢的小说：
+	《和游戏里的妻子线下见面后发现对方是小学生。我是不是犯事了……？》很甜的纯爱文
+	《劣者之痛～单恋的青梅竹马被夺走，失恋后开始的烂漫爱情喜剧～》科幻后宫文
+	《overload》超经典异世界作品
+	《超强度可爱间谍战～优柔寡断的黑姬小姐～》恋爱头脑战！
+	《鬼哭街》赛博朋克+中国功夫，哥哥收集被分散在五个机器人里的五份妹妹灵魂的故事
 constant: false
 selective: true
 insertion_order: 401
 enabled: true
 position: after_char
 extensions:
-  position: 1
-  exclude_recursion: true
-  probability: 100
-  useProbability: true
-  depth: 4
-  selectiveLogic: 0
-  group: ""
-  group_override: false
-  group_weight: 100
-  prevent_recursion: true
-  scan_depth: null
-  match_whole_words: false
-  use_group_scoring: false
-  case_sensitive: null
-  automation_id: ""
-  role: 0
-  vectorized: false
+	position: 1
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: null
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false

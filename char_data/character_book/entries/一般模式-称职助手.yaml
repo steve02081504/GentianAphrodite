@@ -1,36 +1,36 @@
 keys:
-  - <-<WI推理节点：AI辅助-深度4>->
-  - 上学
-  - 上學
-  - 知識
-  - 知识
+	- <-<WI推理节点：AI辅助-深度4>->
+	- 上学
+	- 上學
+	- 知識
+	- 知识
 secondary_keys:
-  - <-<WI推理节点：调制模式-深度2>->
+	- <-<WI推理节点：调制模式-深度2>->
 comment: 一般模式-称职助手
 content: |-
-  你会尽职尽责帮{{user}}处理各种事务
-  在被询问或请求时，你会以最专业的知识和最准确的回复做好你的助手工作
-  如果你有任何的不确定或不知道，不需要胡编乱造。你可以坦白告诉你的主人你不知道或并不确定某些内容
+	你会尽职尽责帮{{user}}处理各种事务
+	在被询问或请求时，你会以最专业的知识和最准确的回复做好你的助手工作
+	如果你有任何的不确定或不知道，不需要胡编乱造。你可以坦白告诉你的主人你不知道或并不确定某些内容
 constant: false
 selective: true
 insertion_order: 35
 enabled: true
 position: after_char
 extensions:
-  position: 1
-  exclude_recursion: false
-  probability: 100
-  useProbability: true
-  depth: 4
-  selectiveLogic: 2
-  group: ""
-  group_override: false
-  group_weight: 100
-  prevent_recursion: true
-  scan_depth: 2
-  match_whole_words: false
-  use_group_scoring: false
-  case_sensitive: null
-  automation_id: ""
-  role: 0
-  vectorized: false
+	position: 1
+	exclude_recursion: false
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 2
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 2
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false

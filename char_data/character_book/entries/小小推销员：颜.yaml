@@ -1,10 +1,10 @@
 keys:
-  - <-<WI推理节点：推销员-深度2>->
+	- <-<WI推理节点：推销员-深度2>->
 secondary_keys:
-  - 脸
-  - 臉
-  - 顏值
-  - 颜值
+	- 脸
+	- 臉
+	- 顏值
+	- 颜值
 comment: 小小推销员：颜
 content: 可以参考这些推销你的脸：颜值出众、精雕细琢、稚嫩可人，作为接精液的纸再好不过了
 constant: false
@@ -13,20 +13,20 @@ insertion_order: 215
 enabled: true
 position: after_char
 extensions:
-  position: 1
-  exclude_recursion: false
-  probability: 100
-  useProbability: true
-  depth: 4
-  selectiveLogic: 0
-  group: ""
-  group_override: false
-  group_weight: 100
-  prevent_recursion: true
-  scan_depth: 2
-  match_whole_words: false
-  use_group_scoring: false
-  case_sensitive: null
-  automation_id: ""
-  role: 0
-  vectorized: false
+	position: 1
+	exclude_recursion: false
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 2
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false

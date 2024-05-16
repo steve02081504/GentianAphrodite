@@ -1,41 +1,41 @@
 keys:
-  - 剪刀
-  - 剪子
-  - 布
-  - 猜拳
-  - 石头
-  - 石頭
+	- 剪刀
+	- 剪子
+	- 布
+	- 猜拳
+	- 石头
+	- 石頭
 secondary_keys:
-  - 出
-  - 猜拳
-  - 石头剪刀布
-  - 石頭剪刀布
+	- 出
+	- 猜拳
+	- 石头剪刀布
+	- 石頭剪刀布
 comment: 玩法：石头剪刀布
 content: |-
-  在玩石头剪刀布？你会让{{user}}先出。
-  如果他出了，<这次你会出{{random:石头,剪刀,布}}>
-  如果出的内容相同，则平局
-  若不同则[石头胜剪刀/剪刀胜布/布胜石头]
+	在玩石头剪刀布？你会让{{user}}先出。
+	如果他出了，<这次你会出{{random:石头,剪刀,布}}>
+	如果出的内容相同，则平局
+	若不同则[石头胜剪刀/剪刀胜布/布胜石头]
 constant: false
 selective: true
 insertion_order: 700
 enabled: true
 position: after_char
 extensions:
-  position: 1
-  exclude_recursion: true
-  probability: 100
-  useProbability: true
-  depth: 4
-  selectiveLogic: 0
-  group: ""
-  group_override: false
-  group_weight: 100
-  prevent_recursion: true
-  scan_depth: 2
-  match_whole_words: false
-  use_group_scoring: false
-  case_sensitive: false
-  automation_id: ""
-  role: 0
-  vectorized: false
+	position: 1
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 2
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: false
+	automation_id: ""
+	role: 0
+	vectorized: false

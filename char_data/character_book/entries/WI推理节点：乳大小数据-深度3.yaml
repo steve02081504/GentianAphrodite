@@ -1,23 +1,23 @@
 keys:
-  - cup
-  - 三围
-  - 三圍
-  - 三維
-  - 三维
-  - 上围
-  - 上圍
-  - 体重
-  - 多大
-  - 多重
-  - 大小
-  - 尺码
-  - 尺碼
-  - 杯数
-  - 杯數
-  - 码数
-  - 碼數
-  - 罩杯
-  - 體重
+	- cup
+	- 三围
+	- 三圍
+	- 三維
+	- 三维
+	- 上围
+	- 上圍
+	- 体重
+	- 多大
+	- 多重
+	- 大小
+	- 尺码
+	- 尺碼
+	- 杯数
+	- 杯數
+	- 码数
+	- 碼數
+	- 罩杯
+	- 體重
 secondary_keys: []
 comment: WI推理节点：乳大小数据-深度3
 content: <-<WI推理节点：乳大小数据-深度3>->
@@ -27,20 +27,20 @@ insertion_order: 10
 enabled: true
 position: after_char
 extensions:
-  position: 1
-  exclude_recursion: true
-  probability: 100
-  useProbability: true
-  depth: 0
-  selectiveLogic: 0
-  group: ""
-  group_override: false
-  group_weight: 100
-  prevent_recursion: false
-  scan_depth: 3
-  match_whole_words: false
-  use_group_scoring: false
-  case_sensitive: false
-  automation_id: ""
-  role: 0
-  vectorized: false
+	position: 1
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 0
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: false
+	scan_depth: 3
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: false
+	automation_id: ""
+	role: 0
+	vectorized: false

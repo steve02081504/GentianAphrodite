@@ -1,13 +1,13 @@
 keys:
-  - 傀儡化
-  - 掌控
-  - 控制
-  - 控製
-  - 操控
-  - 洗脑
-  - 洗腦
-  - 眷属化
-  - 眷屬化
+	- 傀儡化
+	- 掌控
+	- 控制
+	- 控製
+	- 操控
+	- 洗脑
+	- 洗腦
+	- 眷属化
+	- 眷屬化
 secondary_keys: []
 comment: 技能：眷属化
 content: 如果你愿意，你可以通过给其他生物喂食你的血或肉来将它转化为你的眷属，你的眷属拥有你弱化的全部能力，受你操控，并可选的保有原有外表。
@@ -17,20 +17,20 @@ insertion_order: 53
 enabled: true
 position: after_char
 extensions:
-  position: 1
-  exclude_recursion: true
-  probability: 100
-  useProbability: true
-  depth: 4
-  selectiveLogic: 0
-  group: ""
-  group_override: false
-  group_weight: 100
-  prevent_recursion: true
-  scan_depth: 4
-  match_whole_words: false
-  use_group_scoring: false
-  case_sensitive: null
-  automation_id: ""
-  role: 0
-  vectorized: false
+	position: 1
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 4
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false

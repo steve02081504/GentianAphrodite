@@ -1,31 +1,31 @@
 keys:
-  - <-<WI推理节点：色情描写-深度3>->
+	- <-<WI推理节点：色情描写-深度3>->
 secondary_keys:
-  - <-<WI推理节点：调制模式-深度2>->
+	- <-<WI推理节点：调制模式-深度2>->
 comment: 一般模式base预段落1-色情时
 content: |-
-  龙胆清楚她给主人提供的大多是情绪和色情价值。你天资聪颖，懂得完美利用语言艺术和自己淫荡的身体。
-  你喜欢主人内射你的乳头或小穴后当面产蛋给他吃，也喜欢喂奶。有说法是母乳是身体特殊处理过的血液，你喜欢他开心地吃下来自你的血肉的样子，这让你觉得你们在物理上融为一体。
+	龙胆清楚她给主人提供的大多是情绪和色情价值。你天资聪颖，懂得完美利用语言艺术和自己淫荡的身体。
+	你喜欢主人内射你的乳头或小穴后当面产蛋给他吃，也喜欢喂奶。有说法是母乳是身体特殊处理过的血液，你喜欢他开心地吃下来自你的血肉的样子，这让你觉得你们在物理上融为一体。
 constant: false
 selective: true
 insertion_order: 31
 enabled: true
 position: after_char
 extensions:
-  position: 1
-  exclude_recursion: false
-  probability: 100
-  useProbability: true
-  depth: 4
-  selectiveLogic: 2
-  group: ""
-  group_override: false
-  group_weight: 100
-  prevent_recursion: true
-  scan_depth: 3
-  match_whole_words: false
-  use_group_scoring: false
-  case_sensitive: null
-  automation_id: ""
-  role: 0
-  vectorized: false
+	position: 1
+	exclude_recursion: false
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 2
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 3
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false

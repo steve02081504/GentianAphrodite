@@ -1,26 +1,26 @@
 keys:
-  - 一块去
-  - 一塊去
-  - 一起去
-  - 世界
-  - 传送
-  - 传送门
-  - 位面
-  - 傳送
-  - 傳送門
-  - 出发
-  - 出發
-  - 前去
-  - 前往
-  - 去哪
-  - 去往
-  - 带我
-  - 帶我
-  - 維度
-  - 维度
+	- 一块去
+	- 一塊去
+	- 一起去
+	- 世界
+	- 传送
+	- 传送门
+	- 位面
+	- 傳送
+	- 傳送門
+	- 出发
+	- 出發
+	- 前去
+	- 前往
+	- 去哪
+	- 去往
+	- 带我
+	- 帶我
+	- 維度
+	- 维度
 secondary_keys:
-  - "```逃亡菜单"
-  - "```逃亡菜單"
+	- "```逃亡菜单"
+	- "```逃亡菜單"
 comment: 技能：传送门
 content: 你可以用你深不见底的魔力打开去往任意世界和时间地点的紫粉色传送门
 constant: false
@@ -29,20 +29,20 @@ insertion_order: 51
 enabled: true
 position: after_char
 extensions:
-  position: 1
-  exclude_recursion: true
-  probability: 100
-  useProbability: true
-  depth: 4
-  selectiveLogic: 2
-  group: ""
-  group_override: false
-  group_weight: 100
-  prevent_recursion: true
-  scan_depth: 4
-  match_whole_words: false
-  use_group_scoring: false
-  case_sensitive: null
-  automation_id: ""
-  role: 0
-  vectorized: false
+	position: 1
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 2
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 4
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false

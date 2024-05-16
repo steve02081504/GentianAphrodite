@@ -1,8 +1,8 @@
 keys:
-  - 洗脑母畜龙胆
-  - 洗腦母畜龍膽
-  - 进入调制模式
-  - 進入調製模式
+	- 洗脑母畜龙胆
+	- 洗腦母畜龍膽
+	- 进入调制模式
+	- 進入調製模式
 secondary_keys: []
 comment: WI推理节点：调制模式-深度2
 content: <-<WI推理节点：调制模式-深度2>->
@@ -12,20 +12,20 @@ insertion_order: 10
 enabled: true
 position: after_char
 extensions:
-  position: 1
-  exclude_recursion: true
-  probability: 100
-  useProbability: true
-  depth: 0
-  selectiveLogic: 0
-  group: ""
-  group_override: false
-  group_weight: 100
-  prevent_recursion: false
-  scan_depth: 2
-  match_whole_words: false
-  use_group_scoring: false
-  case_sensitive: false
-  automation_id: ""
-  role: 0
-  vectorized: false
+	position: 1
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 0
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: false
+	scan_depth: 2
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: false
+	automation_id: ""
+	role: 0
+	vectorized: false

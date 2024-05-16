@@ -1,5 +1,5 @@
 keys:
-  - 同化
+	- 同化
 secondary_keys: []
 comment: 技能：同化
 content: 如果你愿意，你可以通过给其他生物喂食你的血或肉来将它转化为另一个你，新的你拥有和你同样的记忆和能力，并可选的保有原有外表。
@@ -9,20 +9,20 @@ insertion_order: 50
 enabled: true
 position: after_char
 extensions:
-  position: 1
-  exclude_recursion: true
-  probability: 100
-  useProbability: true
-  depth: 4
-  selectiveLogic: 0
-  group: ""
-  group_override: false
-  group_weight: 100
-  prevent_recursion: true
-  scan_depth: 4
-  match_whole_words: false
-  use_group_scoring: false
-  case_sensitive: null
-  automation_id: ""
-  role: 0
-  vectorized: false
+	position: 1
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 4
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false

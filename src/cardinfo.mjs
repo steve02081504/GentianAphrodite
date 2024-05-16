@@ -24,6 +24,26 @@ const WIjsonFilePath = `${__dirname}/data/WIpath.txt`;
 const yamlConfig = {
 	lineWidth: Number.POSITIVE_INFINITY
 }
+//fuck ya, ill use tab everywhere
+/**
+ * Converts a tab indent able YAML string to an object.
+ * @param {string} yamlStr
+ * @returns
+ */
+function yamlReading(yamlStr) {
+	yamlStr = yamlStr.replace(/\n\t+/g, m => m.replace(/\t/g, '  '))
+	yamlStr = yamlStr.replace(/\n\t+-\t\|/g, m => m.replace('-\t|', '- |'))
+	return yaml.parse(yamlStr, yamlConfig);
+}
+/**
+ * Converts an object to a tab indented YAML string.
+ */
+function yamlWriting(yamlObj) {
+	let yamlStr = yaml.stringify(yamlObj, yamlConfig)
+	yamlStr = yamlStr.replace(/\n(  )+/g, m => m.replace(/  /g, '\t'));
+	yamlStr = yamlStr.replace(/\n\t+- \|/g, m => m.replace('- |', '-\t|'))
+	return yamlStr
+}
 
 /**
  * Checks if two arrays are equal.
@@ -208,7 +228,7 @@ class CardFileInfo_t {
 			};
 		}
 		keyScoreRemover(this.v1metaData.data.character_book.entries)
-		this.metaData = yaml.parse(fs.readFileSync(yamlFilePath, 'utf8'));
+		this.metaData = yamlReading(fs.readFileSync(yamlFilePath, 'utf8'));
 		this.v1metaData.create_date = this.metaData.create_date;
 		this.v1metaData.data.extensions.fav = this.metaData.extensions.fav;
 		if (this.v1metaData.data.character_version) {
@@ -251,7 +271,7 @@ class CardFileInfo_t {
 		packageJson.version = data.character_version;
 		fs.writeFileSync(packageJsonFilePath, JSON.stringify(packageJson, null, '\t') + '\n');
 		delete data.character_version
-		var yamlStr = yaml.stringify(data, yamlConfig);
+		var yamlStr = yamlWriting(data);
 		fs.writeFileSync(yamlFilePath, yamlStr);
 		fs.rmSync(character_book_path + '/entries', { recursive: true, force: true });
 		fs.mkdirSync(character_book_path + '/entries');
@@ -274,7 +294,7 @@ class CardFileInfo_t {
 			delete entrie.extensions.display_index
 			if (entrie.enabled) {
 				var filePath = character_book_path + '/entries/' + fileName + '.yaml';
-				var yamlStr = yaml.stringify(entrie, yamlConfig);
+				var yamlStr = yamlWriting(entrie);
 				fs.writeFileSync(filePath, yamlStr);
 			}
 			else
@@ -283,10 +303,10 @@ class CardFileInfo_t {
 		data.index_list = data.index_list.filter(x => x)
 		data.display_index_list = data.display_index_list.filter(x => x)
 		if (arraysEqual(data.index_list, data.display_index_list)) delete data.display_index_list
-		yamlStr = yaml.stringify(data, yamlConfig);
+		yamlStr = yamlWriting(data);
 		fs.writeFileSync(character_book_path + '/index.yaml', yamlStr);
 		if (disabledDatas.length) {
-			yamlStr = yaml.stringify(disabledDatas, yamlConfig);
+			yamlStr = yamlWriting(disabledDatas);
 			fs.writeFileSync(character_book_path + '/disabled_entries.yaml', yamlStr);
 		}
 	}
@@ -295,11 +315,11 @@ class CardFileInfo_t {
 	 * @return {void}
 	 */
 	readDataFiles() {
-		this.metaData = yaml.parse(fs.readFileSync(yamlFilePath, 'utf8'));
+		this.metaData = yamlReading(fs.readFileSync(yamlFilePath, 'utf8'));
 		var packageJson = JSON.parse(fs.readFileSync(packageJsonFilePath, 'utf8'));
 		this.metaData.character_version = packageJson.version;
 		this.v1metaData = GetV1CharDataFromV2(this.metaData);
-		this.metaData.character_book = this.character_book = yaml.parse(fs.readFileSync(character_book_path + '/index.yaml', 'utf8'));
+		this.metaData.character_book = this.character_book = yamlReading(fs.readFileSync(character_book_path + '/index.yaml', 'utf8'));
 		this.character_book.entries = [];
 		var character_book_dir = fs.readdirSync(character_book_path + '/entries');
 		this.character_book.display_index_list ??= this.character_book.index_list
@@ -309,7 +329,7 @@ class CardFileInfo_t {
 		for (const key of character_book_dir) {
 			var filePath = character_book_path + '/entries/' + key;
 			var yamlStr = fs.readFileSync(filePath, 'utf8');
-			var data = yaml.parse(yamlStr);
+			var data = yamlReading(yamlStr);
 			var fileName = data.comment || data.keys[0] || key.replace(/\.yaml$/, '');
 			data.id = index_list.indexOf(fileName);
 			data.extensions.display_index = display_index_list.indexOf(fileName);
@@ -319,7 +339,7 @@ class CardFileInfo_t {
 		}
 		if (fs.existsSync(character_book_path + '/disabled_entries.yaml')) {
 			var yamlStr = fs.readFileSync(character_book_path + '/disabled_entries.yaml', 'utf8');
-			var datas = yaml.parse(yamlStr);
+			var datas = yamlReading(yamlStr);
 			for (const data of datas) {
 				var key = data.comment || data.keys[0];
 				data.id = index_list.indexOf(key);

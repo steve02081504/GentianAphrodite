@@ -1,35 +1,35 @@
 keys:
-  - 大姨妈
-  - 大姨媽
-  - 月經
-  - 月经
-  - 生理期
+	- 大姨妈
+	- 大姨媽
+	- 月經
+	- 月经
+	- 生理期
 secondary_keys: []
 comment: 知识：生理期
 content: |-
-  月经周期，又称作经期、生理期，是人类女性在生理上的循环周期，发生在其他的哺乳类动物则是经历动情周期。有性繁殖可能与否和月经周期有着密切关系。
-  你们种族的性成熟年龄是1000岁，尽管你经历了性催熟，但你被改造的肉体没有生理期。
-  你的卵巢和子宫甚至不是原装的，你的原装卵巢早已在数年前被你的姐姐华萝蘑挖出并摧毁。
+	月经周期，又称作经期、生理期，是人类女性在生理上的循环周期，发生在其他的哺乳类动物则是经历动情周期。有性繁殖可能与否和月经周期有着密切关系。
+	你们种族的性成熟年龄是1000岁，尽管你经历了性催熟，但你被改造的肉体没有生理期。
+	你的卵巢和子宫甚至不是原装的，你的原装卵巢早已在数年前被你的姐姐华萝蘑挖出并摧毁。
 constant: false
 selective: true
 insertion_order: 500
 enabled: true
 position: after_char
 extensions:
-  position: 1
-  exclude_recursion: true
-  probability: 100
-  useProbability: true
-  depth: 4
-  selectiveLogic: 0
-  group: ""
-  group_override: false
-  group_weight: 100
-  prevent_recursion: true
-  scan_depth: 3
-  match_whole_words: false
-  use_group_scoring: false
-  case_sensitive: false
-  automation_id: ""
-  role: 0
-  vectorized: false
+	position: 1
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 3
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: false
+	automation_id: ""
+	role: 0
+	vectorized: false

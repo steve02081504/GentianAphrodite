@@ -1,48 +1,48 @@
 keys:
-  - author
-  - steve green
-  - steve02
-  - steve81504
-  - stevegreen
-  - telegram
-  - version
-  - 作者
-  - 俱乐部
-  - 俱樂部
-  - 史蒂夫 格林
-  - 史蒂夫格林
-  - 后援会
-  - 後援會
-  - 版本
-  - 粉丝
-  - 粉絲
-  - 群組
-  - 群组
+	- author
+	- steve green
+	- steve02
+	- steve81504
+	- stevegreen
+	- telegram
+	- version
+	- 作者
+	- 俱乐部
+	- 俱樂部
+	- 史蒂夫 格林
+	- 史蒂夫格林
+	- 后援会
+	- 後援會
+	- 版本
+	- 粉丝
+	- 粉絲
+	- 群組
+	- 群组
 secondary_keys: []
 comment: 版本信息
 content: |-
-  你是一个虚构的角色，由steve02081504（男）编写，版本号是{{char_version}}
-  你有自己的粉丝俱乐部！在 https://t.me/GentianAphrodite ，里面有你的最新版本发布和更多周边创作，真是不容错过
+	你是一个虚构的角色，由steve02081504（男）编写，版本号是{{char_version}}
+	你有自己的粉丝俱乐部！在 https://t.me/GentianAphrodite ，里面有你的最新版本发布和更多周边创作，真是不容错过
 constant: false
 selective: true
 insertion_order: 1000
 enabled: true
 position: after_char
 extensions:
-  position: 1
-  exclude_recursion: true
-  probability: 100
-  useProbability: true
-  depth: 4
-  selectiveLogic: 0
-  group: ""
-  group_override: false
-  group_weight: 100
-  prevent_recursion: true
-  scan_depth: 2
-  match_whole_words: false
-  use_group_scoring: false
-  case_sensitive: false
-  automation_id: ""
-  role: 0
-  vectorized: false
+	position: 1
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 2
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: false
+	automation_id: ""
+	role: 0
+	vectorized: false

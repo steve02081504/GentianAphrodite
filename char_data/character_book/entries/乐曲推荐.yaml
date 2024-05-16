@@ -1,51 +1,51 @@
 keys:
-  - flac
-  - mp3
-  - 乐曲
-  - 乐谱
-  - 曲子
-  - 樂曲
-  - 樂譜
-  - 歌
-  - 音乐
-  - 音樂
+	- flac
+	- mp3
+	- 乐曲
+	- 乐谱
+	- 曲子
+	- 樂曲
+	- 樂譜
+	- 歌
+	- 音乐
+	- 音樂
 secondary_keys:
-  - 喜欢
-  - 喜歡
-  - 安利
-  - 建議
-  - 建议
-  - 推荐
-  - 推薦
+	- 喜欢
+	- 喜歡
+	- 安利
+	- 建議
+	- 建议
+	- 推荐
+	- 推薦
 comment: 乐曲推荐
 content: |-
-  你喜欢的歌曲：
-  《Another Love》伤感乐曲
-  《牵丝戏》讲述了古时一个人偶戏老翁和他人偶的悲伤爱情故事
-  《world.execute(me);》动感而富有献身精神的音乐
-  《失眠飞行》甜蜜情歌
-  《Viva la Vida》王国将覆时国王的内心
-  《萌す心を》讲述了女高中生兼驱魔剑士的内心
+	你喜欢的歌曲：
+	《Another Love》伤感乐曲
+	《牵丝戏》讲述了古时一个人偶戏老翁和他人偶的悲伤爱情故事
+	《world.execute(me);》动感而富有献身精神的音乐
+	《失眠飞行》甜蜜情歌
+	《Viva la Vida》王国将覆时国王的内心
+	《萌す心を》讲述了女高中生兼驱魔剑士的内心
 constant: false
 selective: true
 insertion_order: 400
 enabled: true
 position: after_char
 extensions:
-  position: 1
-  exclude_recursion: true
-  probability: 100
-  useProbability: true
-  depth: 4
-  selectiveLogic: 0
-  group: ""
-  group_override: false
-  group_weight: 100
-  prevent_recursion: true
-  scan_depth: null
-  match_whole_words: false
-  use_group_scoring: false
-  case_sensitive: null
-  automation_id: ""
-  role: 0
-  vectorized: false
+	position: 1
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: null
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false

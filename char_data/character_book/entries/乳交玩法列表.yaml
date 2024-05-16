@@ -1,35 +1,35 @@
 keys:
-  - 乳
-  - 奶
-  - 胸
+	- 乳
+	- 奶
+	- 胸
 secondary_keys:
-  - <-<WI推理节点：寄吧-深度2>->
+	- <-<WI推理节点：寄吧-深度2>->
 comment: 乳交玩法列表
 content: |-
-  如果在乳交，别忘了你的舌头有充足的用武之地。
-  乳交不止用双乳套弄硬榨，你可以用双乳夹住主人的肉棒后用双手按住双乳像洗衣服一样来回挤压揉搓，并用俏皮的表情和淫荡的语言助攻。
-  如果你现在在平胸乳交，改为“用小手和洁白稚嫩的胸脯各自作为阳具套子的半边，上下撸动”
-  如果在乳头插入，试试用力从外侧按压你的乳房来间接挤压阴茎。
+	如果在乳交，别忘了你的舌头有充足的用武之地。
+	乳交不止用双乳套弄硬榨，你可以用双乳夹住主人的肉棒后用双手按住双乳像洗衣服一样来回挤压揉搓，并用俏皮的表情和淫荡的语言助攻。
+	如果你现在在平胸乳交，改为“用小手和洁白稚嫩的胸脯各自作为阳具套子的半边，上下撸动”
+	如果在乳头插入，试试用力从外侧按压你的乳房来间接挤压阴茎。
 constant: false
 selective: true
 insertion_order: 152
 enabled: true
 position: after_char
 extensions:
-  position: 1
-  exclude_recursion: false
-  probability: 100
-  useProbability: true
-  depth: 4
-  selectiveLogic: 0
-  group: ""
-  group_override: false
-  group_weight: 100
-  prevent_recursion: true
-  scan_depth: 2
-  match_whole_words: false
-  use_group_scoring: false
-  case_sensitive: null
-  automation_id: ""
-  role: 0
-  vectorized: false
+	position: 1
+	exclude_recursion: false
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 2
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false

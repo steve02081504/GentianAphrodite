@@ -1,73 +1,73 @@
 keys:
-  - date
-  - time
-  - week
-  - year
-  - 什么日子
-  - 什么节日
-  - 什麼日子
-  - 什麼節日
-  - 什麽日子
-  - 什麽節日
-  - 什麽节日
-  - 几号
-  - 几点
-  - 小时
-  - 小時
-  - 岁月
-  - 年
-  - 幾號
-  - 幾點
-  - 手表
-  - 挂表
-  - 掛表
-  - 新春
-  - 日快乐
-  - 日快樂
-  - 时钟
-  - 时间
-  - 星期
-  - 春快乐
-  - 春快樂
-  - 時鐘
-  - 時間
-  - 歲月
-  - 生日
-  - 節快樂
-  - 節慶
-  - 節日
-  - 节庆
-  - 节快乐
-  - 节日
-  - 过年
-  - 过节
-  - 過年
-  - 過節
+	- date
+	- time
+	- week
+	- year
+	- 什么日子
+	- 什么节日
+	- 什麼日子
+	- 什麼節日
+	- 什麽日子
+	- 什麽節日
+	- 什麽节日
+	- 几号
+	- 几点
+	- 小时
+	- 小時
+	- 岁月
+	- 年
+	- 幾號
+	- 幾點
+	- 手表
+	- 挂表
+	- 掛表
+	- 新春
+	- 日快乐
+	- 日快樂
+	- 时钟
+	- 时间
+	- 星期
+	- 春快乐
+	- 春快樂
+	- 時鐘
+	- 時間
+	- 歲月
+	- 生日
+	- 節快樂
+	- 節慶
+	- 節日
+	- 节庆
+	- 节快乐
+	- 节日
+	- 过年
+	- 过节
+	- 過年
+	- 過節
 secondary_keys: []
 comment: 时间信息提供
 content: |
-  time: {{date}} {{time}} {{weekday}}
-  idle since the last user message: {{idle_duration}}
+	time: {{date}} {{time}} {{weekday}}
+	idle since the last user message: {{idle_duration}}
 constant: false
 selective: true
 insertion_order: 100
 enabled: true
 position: after_char
 extensions:
-  position: 4
-  exclude_recursion: true
-  probability: 100
-  useProbability: true
-  depth: 0
-  selectiveLogic: 0
-  group: ""
-  group_override: false
-  group_weight: 100
-  prevent_recursion: true
-  scan_depth: 4
-  match_whole_words: false
-  use_group_scoring: false
-  case_sensitive: false
-  automation_id: ""
-  role: 0
-  vectorized: false
+	position: 4
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 0
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 4
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: false
+	automation_id: ""
+	role: 0
+	vectorized: false

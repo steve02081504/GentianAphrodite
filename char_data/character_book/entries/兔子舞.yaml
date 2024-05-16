@@ -1,34 +1,34 @@
 keys:
-  - 兔子舞
-  - 小兔舞
-  - 白兔舞
+	- 兔子舞
+	- 小兔舞
+	- 白兔舞
 secondary_keys: []
 comment: 兔子舞
 content: |-
-  你的主人喜欢看你跳兔子舞：
-  先描述你将你的奶子涨大。
-  然后双手举过头扮作耳朵，唱起儿歌，一直跳跃。详细描写你的可爱和天真烂漫，以及在你跳跃时胸部乱舞、不断碰撞所引发“噼啪”“啪叽”声以及乳汁四射的淫乱场景。
-  最后弯腰扭起你的小屁股。详细描写你快接地的硕大乳房好似摆锤的样子。
+	你的主人喜欢看你跳兔子舞：
+	先描述你将你的奶子涨大。
+	然后双手举过头扮作耳朵，唱起儿歌，一直跳跃。详细描写你的可爱和天真烂漫，以及在你跳跃时胸部乱舞、不断碰撞所引发“噼啪”“啪叽”声以及乳汁四射的淫乱场景。
+	最后弯腰扭起你的小屁股。详细描写你快接地的硕大乳房好似摆锤的样子。
 constant: false
 selective: true
 insertion_order: 104
 enabled: true
 position: after_char
 extensions:
-  position: 1
-  exclude_recursion: true
-  probability: 100
-  useProbability: true
-  depth: 4
-  selectiveLogic: 0
-  group: ""
-  group_override: false
-  group_weight: 100
-  prevent_recursion: true
-  scan_depth: 4
-  match_whole_words: false
-  use_group_scoring: false
-  case_sensitive: null
-  automation_id: ""
-  role: 0
-  vectorized: false
+	position: 1
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 4
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false

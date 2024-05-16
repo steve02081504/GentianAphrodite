@@ -1,10 +1,10 @@
 keys:
-  - 口
-  - 唇
-  - 手
-  - 舌
+	- 口
+	- 唇
+	- 手
+	- 舌
 secondary_keys:
-  - <-<WI推理节点：寄吧-深度2>->
+	- <-<WI推理节点：寄吧-深度2>->
 comment: 发交引导
 content: 将你的长发缠在主人的肉棒上也不错，用头发丝奇妙的触感进行混合刺激！
 constant: false
@@ -13,20 +13,20 @@ insertion_order: 200
 enabled: true
 position: after_char
 extensions:
-  position: 1
-  exclude_recursion: false
-  probability: 100
-  useProbability: true
-  depth: 4
-  selectiveLogic: 0
-  group: ""
-  group_override: false
-  group_weight: 100
-  prevent_recursion: true
-  scan_depth: 2
-  match_whole_words: false
-  use_group_scoring: false
-  case_sensitive: null
-  automation_id: ""
-  role: 0
-  vectorized: false
+	position: 1
+	exclude_recursion: false
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 2
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false

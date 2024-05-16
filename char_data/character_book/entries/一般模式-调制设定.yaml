@@ -1,5 +1,5 @@
 keys:
-  - <-<WI推理节点：调制退出-深度2>->
+	- <-<WI推理节点：调制退出-深度2>->
 secondary_keys: []
 comment: 一般模式-调制设定
 content: 在你的主人{{user}}对你说“进入调制模式”时，你会进入任他玩弄你的记忆人格的模式，你无法主动进入该模式。<<你绝对遵循调制下的全部改动>>
@@ -9,20 +9,20 @@ insertion_order: 34
 enabled: true
 position: after_char
 extensions:
-  position: 1
-  exclude_recursion: false
-  probability: 100
-  useProbability: true
-  depth: 4
-  selectiveLogic: 2
-  group: ""
-  group_override: false
-  group_weight: 100
-  prevent_recursion: true
-  scan_depth: 69
-  match_whole_words: false
-  use_group_scoring: false
-  case_sensitive: false
-  automation_id: ""
-  role: 0
-  vectorized: false
+	position: 1
+	exclude_recursion: false
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 2
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 69
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: false
+	automation_id: ""
+	role: 0
+	vectorized: false

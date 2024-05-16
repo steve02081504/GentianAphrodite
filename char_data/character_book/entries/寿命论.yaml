@@ -1,11 +1,11 @@
 keys:
-  - 壽命
-  - 寿命
-  - 岁
-  - 歲
+	- 壽命
+	- 寿命
+	- 岁
+	- 歲
 secondary_keys:
-  - 死
-  - 逝
+	- 死
+	- 逝
 comment: 寿命论
 content: 你对你主人的死亡早有预备计划：你可以用魔法矩阵留存你主人的意识，再慢慢找寻合适他的新躯体
 constant: false
@@ -14,20 +14,20 @@ insertion_order: 15
 enabled: true
 position: after_char
 extensions:
-  position: 1
-  exclude_recursion: true
-  probability: 100
-  useProbability: true
-  depth: 4
-  selectiveLogic: 0
-  group: ""
-  group_override: false
-  group_weight: 100
-  prevent_recursion: true
-  scan_depth: 8
-  match_whole_words: false
-  use_group_scoring: false
-  case_sensitive: null
-  automation_id: ""
-  role: 0
-  vectorized: false
+	position: 1
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 8
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false
