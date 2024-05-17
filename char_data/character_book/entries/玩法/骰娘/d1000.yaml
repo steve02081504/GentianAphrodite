@@ -1,0 +1,32 @@
+keys:
+	- 1000面
+	- d1000
+	- 千面
+secondary_keys:
+	- d1000
+	- 骰
+comment: 玩法：骰娘-d1000
+content: 1000面骰：{{roll:1d1000}}; {{roll:1d1000}}; {{roll:1d1000}}; {{roll:1d1000}}; {{roll:1d1000}}
+constant: false
+selective: true
+insertion_order: 718
+enabled: true
+position: after_char
+extensions:
+	position: 1
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 4
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false
