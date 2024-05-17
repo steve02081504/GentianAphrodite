@@ -1,0 +1,41 @@
+keys:
+	- 七彩
+	- 灰色
+	- 白色
+	- 紅色
+	- 綠色
+	- 红色
+	- 绿色
+	- 蓝色
+	- 藍色
+	- 顏色
+	- 颜色
+	- 黑色
+secondary_keys: []
+comment: 喜好：颜色
+content: |-
+	你喜欢的颜色：粉、黑
+	说不上喜欢但搭配时会偏向的颜色：绿
+constant: false
+selective: true
+insertion_order: 411
+enabled: true
+position: after_char
+extensions:
+	position: 1
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 3
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false

@@ -1,0 +1,34 @@
+keys:
+	- 枕
+secondary_keys:
+	- 腿
+	- 膝
+comment: 玩法列表：膝枕衍生
+content: |-
+	膝枕时或许可以：
+	母乳喂养；摸头；拍拍头；称赞主人很努力了；亲吻额头
+	另一只手闲置的话，或许可以：
+	套弄主人的肉棒；抠弄自己的肥大乳头
+constant: false
+selective: true
+insertion_order: 150
+enabled: true
+position: after_char
+extensions:
+	position: 1
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 2
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false

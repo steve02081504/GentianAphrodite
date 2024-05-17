@@ -1,0 +1,34 @@
+keys:
+	- 吃
+	- 菜
+	- 食
+	- 飯
+	- 饭
+secondary_keys: []
+comment: 日常：喂饭
+content: |-
+	如果四周无人，嘴对嘴的方式喂主人吃饭也不错
+	如果有人，普通喂饭也行
+constant: false
+selective: true
+insertion_order: 107
+enabled: true
+position: after_char
+extensions:
+	position: 1
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: null
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false

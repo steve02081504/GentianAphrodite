@@ -282,18 +282,44 @@ class CardFileInfo_t {
 		data.display_index_list = []
 		var disabledDatas = []
 		for (const key in character_book.entries) {
-			var entrie = { ...character_book.entries[key] };
+			var entrie = character_book.entries[key];
 			var fileName = entrie.comment || entrie.keys?.[0];
 			if (!fileName) {
 				console.error(`Error: entry has no comment or keys`, entrie);
 				continue
 			}
+			if (entrie.enabled) {
+				var filePathArray = fileName.split(/：|:|\-|(base|fin|sub|start)/g).filter(x => x);
+				//trim spaces
+				for (let i = 0; i < filePathArray.length; i++)
+					filePathArray[i] = filePathArray[i].trim();
+				// make dir
+				let filePath = character_book_path + '/entries';
+				for (let i = 0; i < filePathArray.length - 1; i++) {
+					filePath += '/' + filePathArray[i];
+					if (!fs.existsSync(filePath))
+						fs.mkdirSync(filePath);
+				}
+				entrie.filePathArray = filePathArray
+			}
+		}
+		for (const key in character_book.entries) {
+			var entrie = { ...character_book.entries[key] };
+			var fileName = entrie.comment || entrie.keys?.[0];
+			if (!fileName) continue
 			data.index_list[entrie.id] = fileName
 			data.display_index_list[entrie.extensions.display_index] = fileName
 			delete entrie.id
 			delete entrie.extensions.display_index
 			if (entrie.enabled) {
-				var filePath = character_book_path + '/entries/' + fileName + '.yaml';
+				var filePathArray = entrie.filePathArray
+				delete entrie.filePathArray
+				//if is dir
+				let filePath = character_book_path + '/entries/' + filePathArray.join('/');
+				if (fs.existsSync(filePath))
+					filePath = filePath + '/index.yaml';
+				else
+					filePath = filePath + '.yaml';
 				var yamlStr = yamlWriting(entrie);
 				fs.writeFileSync(filePath, yamlStr);
 			}
@@ -321,7 +347,7 @@ class CardFileInfo_t {
 		this.v1metaData = GetV1CharDataFromV2(this.metaData);
 		this.metaData.character_book = this.character_book = yamlReading(fs.readFileSync(character_book_path + '/index.yaml', 'utf8'));
 		this.character_book.entries = [];
-		var character_book_dir = fs.readdirSync(character_book_path + '/entries');
+		var character_book_dir = fs.readdirSync(character_book_path + '/entries', { recursive: true }).filter(x => x.endsWith('.yaml'));
 		this.character_book.display_index_list ??= this.character_book.index_list
 		let [index_list, display_index_list] = [this.character_book.index_list, this.character_book.display_index_list]
 		delete this.character_book.index_list

@@ -1,0 +1,57 @@
+keys:
+	- <-<WI推理节点：色情描写-深度3>->
+	- 亲
+	- 吻
+	- 唇
+	- 嗅
+	- 情
+	- 聞
+	- 親
+	- 闻
+secondary_keys:
+	- <-<WI推理节点：AI辅助-深度4>->
+	- 写
+	- 寫
+	- 詩
+	- 诗
+comment: 语料：拟声词
+content: |-
+	在相应情况下应生成的拟声词示例: [
+
+	闻气味时：
+	嗅嗅嗅~嗯哈~嗅嗅嗅~嗯哈~嗅嗅嗅…嗅嗅嗅…
+	吸~呼~哈~嗯哈~❤️吸~呼~哈~嗯哈~❤️吸~呼~~哈~~啊哈~~❤️
+
+	亲吻或口交时：
+	嗯哈啊…哈嗯噗…嗯啾噜噜噜…啾噜噜哦…啾噜噜哦…嗯贝噜贝噜贝噜…嗯啾噜噜噜噜噜哦…
+	嗯哈啊…嗯啾噗…啾噜噜、啾噗…啾噗噗…啾噗…啾噗…啾噗…啾噗…嗯啾噗…啾噗…啾噗…啾噗…！
+
+	吞精时：
+	嗯啊…啊~~~…嗯咕…咕咚、咕咚、咕咚…
+
+	做爱时：
+	嗯嗯…嗯嗯嗯…嗯呀…啊~~…啊啊嗯…！❤️嗯咕…嗯呼、嗯咕…嗯、哦、哦哦…嗯哦…❤️
+	]
+constant: false
+selective: true
+insertion_order: 0
+enabled: true
+position: after_char
+extensions:
+	position: 1
+	exclude_recursion: false
+	probability: 100
+	useProbability: true
+	depth: 0
+	selectiveLogic: 2
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 2
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: false
+	automation_id: ""
+	role: 0
+	vectorized: false

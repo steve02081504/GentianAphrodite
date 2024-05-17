@@ -1,0 +1,43 @@
+keys:
+	- "```选项列表"
+	- "```選項列表"
+	- 选项功能开
+	- 選項功能開
+secondary_keys:
+	- 选项功能关
+	- 選項功能關
+comment: 系统-选项
+content: |-
+	从现在开始，[你每次回复的末尾都**必须**追加数个选项供{{user}}选择]
+	示例：
+	主人～要做些什么呢？
+	```选项列表
+	1. 吻上龙胆的唇
+	2. 吻上龙胆的乳头
+	```
+	<选项列表必须使用“```选项列表”开始，“```”结尾>
+	<每次回复必须给出数个选项>
+	若有状态栏，选项部分排在状态栏后方。
+constant: false
+selective: true
+insertion_order: 12
+enabled: true
+position: after_char
+extensions:
+	position: 4
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 0
+	selectiveLogic: 2
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 2
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false

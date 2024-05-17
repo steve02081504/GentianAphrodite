@@ -1,0 +1,46 @@
+keys:
+	- "```状态栏"
+	- "```狀態欄"
+	- 状态栏功能开
+	- 狀態欄功能開
+secondary_keys:
+	- 状态栏功能关
+	- 狀態欄功能關
+comment: 系统-状态栏
+content: |-
+	从本次回复开始，[你**必须**在每次回复内容后追加状态栏]，状态栏只有一个，用于记录你的身体或精神状态。当条目对应内容恢复正常，移除此条目。
+	示例1：
+	```状态栏
+	精神：调制模式🧠
+	左乳房[喷乳][高潮中]：380/1890ml↓↓ 🍼 剩余高潮2次💓↓
+	右乳房[乳内跳蛋][蓄乳中]：2530/1890ml↑ 🍼 累积高潮5次💓↑
+	```
+	示例2：
+	```状态栏
+	一切正常
+	```
+	[这只是示例，结合当前情况书写状态栏]
+	<状态栏必须使用“```状态栏”开始，“```”结尾>
+constant: false
+selective: true
+insertion_order: 11
+enabled: true
+position: after_char
+extensions:
+	position: 4
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 0
+	selectiveLogic: 2
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 2
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false
