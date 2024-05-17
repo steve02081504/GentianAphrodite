@@ -283,7 +283,7 @@ class CardFileInfo_t {
 		var disabledDatas = []
 		for (const key in character_book.entries) {
 			var entrie = character_book.entries[key];
-			var fileName = entrie.comment || entrie.keys?.[0];
+			var fileName = entrie?.comment || entrie?.keys?.[0];
 			if (!fileName) {
 				console.error(`Error: entry has no comment or keys`, entrie);
 				continue
@@ -305,7 +305,7 @@ class CardFileInfo_t {
 		}
 		for (const key in character_book.entries) {
 			var entrie = { ...character_book.entries[key] };
-			var fileName = entrie.comment || entrie.keys?.[0];
+			var fileName = entrie?.comment || entrie?.keys?.[0];
 			if (!fileName) continue
 			data.index_list[entrie.id] = fileName
 			data.display_index_list[entrie.extensions.display_index] = fileName
