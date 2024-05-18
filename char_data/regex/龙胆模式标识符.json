@@ -1,0 +1,16 @@
+{
+	"scriptName": "龙胆模式标识符",
+	"findRegex": "\\s*<龙胆当前模式(：|:)[^>]*>\\s*",
+	"replaceString": "",
+	"trimStrings": [],
+	"placement": [
+		2
+	],
+	"disabled": false,
+	"markdownOnly": true,
+	"promptOnly": false,
+	"runOnEdit": true,
+	"substituteRegex": false,
+	"minDepth": null,
+	"maxDepth": null
+}
