@@ -253,13 +253,24 @@ class CardFileInfo_t {
 	 */
 	saveCardInfo(path = this.cardPath, saveWIJson = true) {
 		if (!path) return;
-		this.RunBuildCfg({ GetPngFile: _ => path, UseCrypto: false }, 'dev', this.cardPath);
+		let CharInfoHandler
 		if (saveWIJson && this.WIjsonPath) {
-			keyScoreAdder(this.character_book.entries);
-			let data = v2CharWIbook2WIjson(this.character_book);
-			fs.writeFileSync(this.WIjsonPath, JSON.stringify(data, null, '\t') + '\n');
-			keyScoreRemover(this.character_book.entries)
+			/**
+			 * Saves the character book entries to a WIjson file.
+			 * @param {v1CharData} CharInfo - The character book entries.
+			 * @param {string} SavePath - The path to save the WIjson file to.
+			 * @param {function} defaultHandler - The default handler to use if the WIjson file is not found.
+			 * @return {void}
+			 */
+			CharInfoHandler = (CharInfo, SavePath, defaultHandler) => {
+				// Save the character book entries to a WIjson file
+				let data = v2CharWIbook2WIjson(CharInfo.data.character_book);
+				fs.writeFileSync(this.WIjsonPath, JSON.stringify(data, null, '\t') + '\n');
+				// Save the character book entries to a PNG file
+				defaultHandler(CharInfo, SavePath);
+			}
 		}
+		this.RunBuildCfg({ GetPngFile: _ => path, UseCrypto: false, CharInfoHandler: CharInfoHandler }, 'dev', this.cardPath);
 	}
 	/**
 	 * Saves the data files including meta data and character book entries.
@@ -415,7 +426,7 @@ class CardFileInfo_t {
 	 * @param {{
 	 *   GetPngFile: () => string
 	 *   VerIdUpdater: (str: string) => string
-	 *   CharInfoHandler: (CharInfo: v1CharData, SavePath: string) => void
+	 *   CharInfoHandler: (CharInfo: v1CharData, SavePath: string, defaultHandler: (CharInfo: v1CharData, SavePath: string) => void) => void
 	 *   VerIdUpdater:(str: string) => string
 	 *   DataUpdater:(data: v2CharData) => v2CharData
 	 *   GetSavePath: (string) => string
@@ -440,7 +451,7 @@ class CardFileInfo_t {
 			ext: 'png',
 			...SubVerCfg
 		}
-		SubVerCfg.CharInfoHandler ??= (CharInfo, SavePath) => {
+		let defaultCharDataHandler = (CharInfo, SavePath) => {
 			let buffer = fs.readFileSync(SubVerCfg.GetPngFile());
 			buffer = charDataParser.write(buffer, JSON.stringify(CharInfo))
 			SavePath = SubVerCfg.GetSavePath(SavePath);
@@ -448,7 +459,8 @@ class CardFileInfo_t {
 				SavePath += `.${SubVerCfg.ext}`
 			fs.writeFileSync(SavePath, buffer, { encoding: 'binary' });
 		}
-		SubVerCfg.CharInfoHandler(this.BuildCharInfo(SubVerCfg), SavePath);
+		SubVerCfg.CharInfoHandler ??= defaultCharDataHandler
+		SubVerCfg.CharInfoHandler(this.BuildCharInfo(SubVerCfg), SavePath, defaultCharDataHandler);
 	}
 	/**
 	 * Asynchronously builds a PNG file at the specified subversion ID and saves it to the specified path.
