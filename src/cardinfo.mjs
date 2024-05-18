@@ -301,7 +301,7 @@ class CardFileInfo_t {
 				continue
 			}
 			if (entrie.enabled) {
-				var filePathArray = fileName.split(/：|:|\-|(base|fin|sub|start)/g).filter(x => x);
+				var filePathArray = fileName.split(/：|:|\-|(base|fin|sub|start)|（([^）]+)）|\(([^\)]+)\)/g).filter(x => x);
 				//trim spaces
 				for (let i = 0; i < filePathArray.length; i++)
 					filePathArray[i] = filePathArray[i].trim();
