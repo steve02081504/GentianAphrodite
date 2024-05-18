@@ -235,6 +235,7 @@ class CardFileInfo_t {
 			metaDataStr = JSON.stringify(this.v1metaData);
 			metaDataStr = metaDataStr.replace(`\`${this.v1metaData.data.character_version}\``, '{{char_version}}');
 			metaDataStr = metaDataStr.replace(new RegExp(`/v${encodeURIComponent(this.v1metaData.data.character_version)}`, 'g'), '/v{{char_version_url_encoded}}');
+			metaDataStr = metaDataStr.replace(/\/data%20size\/[0-9\.]+KB/g, '/data%20size/{{char_data_size}}');
 			this.v1metaData = JSON.parse(metaDataStr);
 			let index = this.v1metaData.data.character_version.indexOf('-dev');
 			if (index != -1)
@@ -402,6 +403,9 @@ class CardFileInfo_t {
 		var charDataStr = JSON.stringify(GetV1CharDataFromV2({ ...charData }));
 		keyScoreRemover(charData.character_book.entries)
 		charDataStr = charDataStr.replace(/{{char_version_url_encoded}}/g, encodeURIComponent(VerId)).replace(/{{char_version}}/g, `\`${VerId}\``);
+		let data_size = charDataStr.length
+		let data_size_readable = (data_size / 1024.0).toFixed(2) + 'KB'
+		charDataStr = charDataStr.replace(/{{char_data_size}}/g, data_size_readable)
 		let NewCharData = JSON.parse(charDataStr);
 		if (Config.UseCrypto) NewCharData.data = CryptoCharData(NewCharData.data);
 		return NewCharData;

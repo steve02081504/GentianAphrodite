@@ -28,10 +28,10 @@ creator_notes: |-
 	一个要素爆表的合法萝莉老婆！✨  
 
 	<!--badges-->
-	[![code size in bytes](https://img.shields.io/github/languages/code-size/steve02081504/GentianAphrodite) ![GitHub stars](https://img.shields.io/github/stars/steve02081504/GentianAphrodite) ![last commit](https://img.shields.io/github/last-commit/steve02081504/GentianAphrodite)](https://github.com/steve02081504/GentianAphrodite)
+	[![data size of character](https://badgen.net/static/data%20size/{{char_data_size}}) ![GitHub stars](https://img.shields.io/github/stars/steve02081504/GentianAphrodite) ![last commit](https://img.shields.io/github/last-commit/steve02081504/GentianAphrodite)](https://github.com/steve02081504/GentianAphrodite)
 	![version now](https://badgen.net/static/%E5%BD%93%E5%89%8D%E7%89%88%E6%9C%AC/v{{char_version_url_encoded}}) [![latest version](https://img.shields.io/github/v/release/steve02081504/GentianAphrodite?label=%E6%9C%80%E6%96%B0%E7%89%88%E6%9C%AC)](https://github.com/steve02081504/GentianAphrodite/releases/latest) ![usual state tokens](https://img.shields.io/badge/%E5%B8%B8%E6%80%81token-2k-green)
 	<!--/badges-->
-	 
+
 	<!--hide-for-fools-->
 	📚更新或导入对应角色的规则书来体验所有的功能！  
 	🔍当预留给规则书的上下文达到3000或以上时，你将获得最佳的体验。例如，如果上下文长度为6000，则分配给规则书的比例约50% 。
