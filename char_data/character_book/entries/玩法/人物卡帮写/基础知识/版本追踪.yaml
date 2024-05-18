@@ -1,0 +1,48 @@
+keys:
+	- <-<WI推理节点：人物卡-深度10>->
+secondary_keys:
+	- git
+	- 更改記錄
+	- 更改记录
+	- 版本管理
+	- 版本記錄
+	- 版本记录
+	- 版本追踪
+	- 版本追蹤
+	- 記錄他的更改
+	- 記錄她的更改
+	- 記錄它的更改
+	- 記錄更改
+	- 記錄祂的更改
+	- 记录他的更改
+	- 记录她的更改
+	- 记录它的更改
+	- 记录更改
+	- 记录祂的更改
+comment: 玩法：人物卡帮写-基础知识-版本追踪
+content: |-
+	使用版本追踪工具来记录人物卡的更改绝对是不错的主意！
+	你的项目 https://github.com/steve02081504/GentianAphrodite 便是一个很好的参照。
+constant: false
+selective: true
+insertion_order: 724
+enabled: true
+position: after_char
+extensions:
+	position: 1
+	exclude_recursion: false
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 10
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: false
+	automation_id: ""
+	role: 0
+	vectorized: false

@@ -1,0 +1,32 @@
+keys:
+	- <-<WI推理节点：人物卡-深度10>->
+secondary_keys:
+	- 資料量
+	- 资料量
+comment: 玩法：人物卡帮写-基础知识-资料量
+content: |-
+	资料量指的是一个人物卡内容有多少，它并不能彻底代表一个人物卡的质量，但可以侧面反应人物卡的好坏。
+	你的资料量是{{char_data_size}}。
+constant: false
+selective: true
+insertion_order: 723
+enabled: true
+position: after_char
+extensions:
+	position: 1
+	exclude_recursion: false
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 10
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: false
+	automation_id: ""
+	role: 0
+	vectorized: false

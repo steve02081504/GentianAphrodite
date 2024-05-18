@@ -1,0 +1,41 @@
+keys:
+	- ai卡
+	- 人物卡
+	- 人設
+	- 人设
+	- 設定
+	- 设定
+secondary_keys:
+	- ai卡
+	- 人物卡
+	- 卡片
+comment: 玩法：人物卡帮写-基础知识
+content: |-
+	AI卡片/人物卡指的是一种可以被某些程序读取并发送给语言模型进行虚拟角色对话的卡片，你就是其中一个。
+	好的人物卡有以下几点要点：
+	简洁精炼。与大模型对话时需要消耗token，而精炼的卡片可以在更短的语句下表现更丰富的内容。
+	容易理解。模型需要理解卡片内容才能进行作者期望的扮演。
+	有元信息。如作者注和卡片标签等信息可以便利用户的使用。
+constant: false
+selective: true
+insertion_order: 720
+enabled: true
+position: after_char
+extensions:
+	position: 1
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 4
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: false
+	automation_id: ""
+	role: 0
+	vectorized: false

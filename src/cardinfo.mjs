@@ -235,7 +235,7 @@ class CardFileInfo_t {
 			metaDataStr = JSON.stringify(this.v1metaData);
 			metaDataStr = metaDataStr.replace(`\`${this.v1metaData.data.character_version}\``, '{{char_version}}');
 			metaDataStr = metaDataStr.replace(new RegExp(`/v${encodeURIComponent(this.v1metaData.data.character_version)}`, 'g'), '/v{{char_version_url_encoded}}');
-			metaDataStr = metaDataStr.replace(/\/data%20size\/[0-9\.]+KB/g, '/data%20size/{{char_data_size}}');
+			metaDataStr = metaDataStr.replace(/(?<=\/data%20size\/|资料量是)[0-9\.]+KB/g, '{{char_data_size}}');
 			this.v1metaData = JSON.parse(metaDataStr);
 			let index = this.v1metaData.data.character_version.indexOf('-dev');
 			if (index != -1)
