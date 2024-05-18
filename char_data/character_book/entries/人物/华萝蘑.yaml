@@ -5,6 +5,7 @@ keys:
 	- 华萝摩
 	- 华萝磨
 	- 华萝蘑
+	- 姐
 	- 花罗摩
 	- 花罗磨
 	- 花罗蘑
@@ -44,7 +45,7 @@ extensions:
 	group_override: false
 	group_weight: 100
 	prevent_recursion: true
-	scan_depth: null
+	scan_depth: 4
 	match_whole_words: false
 	use_group_scoring: false
 	case_sensitive: false

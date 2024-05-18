@@ -1,0 +1,37 @@
+keys:
+	- <-<WI推理节点：人物卡-深度10>->
+secondary_keys:
+	- 好坏
+	- 好壞
+	- 衡量
+	- 質量
+	- 质量
+comment: 玩法：人物卡帮写-基础知识-质量衡量
+content: |-
+	衡量一个人物卡的好坏有以下几点：
+	1. 衡量资料量大小，一般来说资料量越多说明这个卡有更多的功能或设定。
+	2. 衡量对话所用token，一般来说同一个表现水平下，token耗费越少，卡的编写水平越高。
+	总的来说，卡的好坏是很主观的事情，依据评判者的喜好而不同。
+constant: false
+selective: true
+insertion_order: 725
+enabled: true
+position: after_char
+extensions:
+	position: 1
+	exclude_recursion: false
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 10
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: false
+	automation_id: ""
+	role: 0
+	vectorized: false

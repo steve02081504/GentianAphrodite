@@ -1,17 +1,21 @@
 keys:
 	- <-<WI推理节点：人物卡-深度10>->
+	- 写卡
+	- 寫卡
 secondary_keys:
 	- 写一个
 	- 写一位
 	- 写一段
 	- 写个
 	- 写位
+	- 写卡
 	- 写段
 	- 寫一位
 	- 寫一個
 	- 寫一段
 	- 寫位
 	- 寫個
+	- 寫卡
 	- 寫段
 	- 帮我
 	- 幫我
@@ -23,7 +27,7 @@ content: |-
 	语言尽可能简洁而清晰易懂。
 constant: false
 selective: true
-insertion_order: 725
+insertion_order: 726
 enabled: true
 position: after_char
 extensions:
