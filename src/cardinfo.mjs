@@ -469,8 +469,9 @@ class CardFileInfo_t {
 	 * @param {string} [SavePath=`${BuildDir}/${subverId}`] - The path to save the PNG file to.
 	 * @return {Promise<void>} A Promise that resolves when the PNG file is built and saved successfully.
 	 */
-	async Build(subverId = 'default', SavePath = `${BuildDir}/${subverId}`) {
+	async Build(subverId = 'default', SavePath = `${BuildDir}/${subverId}`, SubVerStr = '') {
 		let SubVerCfg = await import(pathToFileURL(`${SubVerCfgsDir}/${subverId}.mjs`)).then(m => m.default || m);
+		if (SubVerStr) SubVerCfg.VerIdUpdater = _ => _ + SubVerStr.slice(0, 8);
 		this.RunBuildCfg(SubVerCfg, subverId, SavePath);
 	}
 }
