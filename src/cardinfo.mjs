@@ -471,7 +471,7 @@ class CardFileInfo_t {
 	 */
 	async Build(subverId = 'default', SavePath = `${BuildDir}/${subverId}`, SubVerStr = '') {
 		let SubVerCfg = await import(pathToFileURL(`${SubVerCfgsDir}/${subverId}.mjs`)).then(m => m.default || m);
-		if (SubVerStr) SubVerCfg.VerIdUpdater = _ => _ + SubVerStr.slice(0, 8);
+		if (SubVerStr) SubVerCfg.VerIdUpdater = _ => _ + '-' + SubVerStr.slice(0, 8);
 		this.RunBuildCfg(SubVerCfg, subverId, SavePath);
 	}
 }
