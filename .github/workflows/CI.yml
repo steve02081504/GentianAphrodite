@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'src/**'
+      - '.github/workflows/CI.yml'
   workflow_dispatch:
 
 jobs:

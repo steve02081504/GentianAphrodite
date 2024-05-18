@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'char_data/**'
+      - '.github/workflows/build.yml'
   workflow_dispatch:
 
 jobs:
@@ -22,8 +23,8 @@ jobs:
           node-version: latest
       - run: |
           npm install
-          npm run build default "" ${{github.sha}}
+          npm run build default build.png ${{github.sha}}
       - name: upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          path: ./build
+          path: build.png
