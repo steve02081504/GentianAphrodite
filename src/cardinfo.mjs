@@ -7,6 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const yamlFilePath = `${__dirname}/../char_data/index.yaml`;
 const character_book_path = `${__dirname}/../char_data/character_book`;
+const regex_scripts_path = `${__dirname}/../char_data/regex`;
 const packageJsonFilePath = `${__dirname}/../package.json`;
 const SubVerCfgsDir = `${__dirname}/../char_data/subvers`;
 const ImgsDir = `${__dirname}/../char_data/img`;
@@ -283,6 +284,8 @@ class CardFileInfo_t {
 		packageJson.version = data.character_version;
 		fs.writeFileSync(packageJsonFilePath, JSON.stringify(packageJson, null, '\t') + '\n');
 		delete data.character_version
+		// 考虑到regex_scripts不常更新，我们跳过它的处理
+		delete data.extensions.regex_scripts
 		var yamlStr = yamlWriting(data);
 		fs.writeFileSync(yamlFilePath, yamlStr);
 		fs.rmSync(character_book_path + '/entries', { recursive: true, force: true });
@@ -357,6 +360,13 @@ class CardFileInfo_t {
 		var packageJson = JSON.parse(fs.readFileSync(packageJsonFilePath, 'utf8'));
 		this.metaData.character_version = packageJson.version;
 		this.v1metaData = GetV1CharDataFromV2(this.metaData);
+		this.metaData.extensions.regex_scripts = [];
+		var regex_scripts_dir = fs.readdirSync(regex_scripts_path, { recursive: true }).filter(x => x.endsWith('.json'));
+		for (const key of regex_scripts_dir) {
+			var filePath = regex_scripts_path + '/' + key;
+			var jsonStr = fs.readFileSync(filePath, 'utf8');
+			this.metaData.extensions.regex_scripts.push(JSON.parse(jsonStr));
+		}
 		this.metaData.character_book = this.character_book = yamlReading(fs.readFileSync(character_book_path + '/index.yaml', 'utf8'));
 		this.character_book.entries = [];
 		var character_book_dir = fs.readdirSync(character_book_path + '/entries', { recursive: true }).filter(x => x.endsWith('.yaml'));
