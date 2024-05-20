@@ -232,15 +232,15 @@ class CardFileInfo_t {
 		this.metaData = yamlReading(fs.readFileSync(yamlFilePath, 'utf8'));
 		this.v1metaData.create_date = this.metaData.create_date;
 		this.v1metaData.data.extensions.fav = this.metaData.extensions.fav;
-		if (this.v1metaData.data.character_version) {
+		let ver = this.v1metaData.data.character_version;
+		if (ver) {
 			metaDataStr = JSON.stringify(this.v1metaData);
-			metaDataStr = metaDataStr.replace(`\`${this.v1metaData.data.character_version}\``, '{{char_version}}');
-			metaDataStr = metaDataStr.replace(new RegExp(`/v${encodeURIComponent(this.v1metaData.data.character_version)}`, 'g'), '/v{{char_version_url_encoded}}');
+			metaDataStr = metaDataStr.replace(new RegExp(`/v${encodeURIComponent(ver)}`, 'g'), '/v{{char_version_url_encoded}}');
+			metaDataStr = metaDataStr.replace(new RegExp(ver, 'g'), '{{char_version}}');
 			metaDataStr = metaDataStr.replace(/(?<=\/data%20size\/|资料量是)[0-9\.]+KB/g, '{{char_data_size}}');
 			this.v1metaData = JSON.parse(metaDataStr);
-			let index = this.v1metaData.data.character_version.indexOf('-dev');
-			if (index != -1)
-				this.v1metaData.data.character_version = this.v1metaData.data.character_version.substring(0, index);
+			let index = ver.indexOf('-dev');
+			this.v1metaData.data.character_version = index != -1 ? ver.substring(0, index) : ver;
 		}
 		this.metaData = this.v1metaData.data
 		this.character_book = this.metaData.character_book;
@@ -266,7 +266,13 @@ class CardFileInfo_t {
 			CharInfoHandler = (CharInfo, SavePath, defaultHandler) => {
 				// Save the character book entries to a WIjson file
 				let data = v2CharWIbook2WIjson(CharInfo.data.character_book);
-				fs.writeFileSync(this.WIjsonPath, JSON.stringify(data, null, '\t') + '\n');
+				delete data.originalData;
+				let dataStr = JSON.stringify(data, null, '\t') + '\n';
+				let originalData;
+				if (fs.existsSync(this.WIjsonPath))
+					originalData = fs.readFileSync(this.WIjsonPath, 'utf8');
+				if (originalData != dataStr)
+					fs.writeFileSync(this.WIjsonPath, dataStr);
 				// Save the character book entries to a PNG file
 				defaultHandler(CharInfo, SavePath);
 			}
@@ -288,8 +294,8 @@ class CardFileInfo_t {
 		delete data.extensions.regex_scripts
 		var yamlStr = yamlWriting(data);
 		fs.writeFileSync(yamlFilePath, yamlStr);
-		fs.rmSync(character_book_path + '/entries', { recursive: true, force: true });
-		fs.mkdirSync(character_book_path + '/entries');
+		if (!fs.existsSync(character_book_path + '/entries'))
+			fs.mkdirSync(character_book_path + '/entries');
 		var character_book = this.character_book;
 		data = { ...character_book }
 		delete data.entries
@@ -318,6 +324,7 @@ class CardFileInfo_t {
 				entrie.filePathArray = filePathArray
 			}
 		}
+		let dataArray = []
 		for (const key in character_book.entries) {
 			var entrie = { ...character_book.entries[key] };
 			var fileName = entrie?.comment || entrie?.keys?.[0];
@@ -336,11 +343,30 @@ class CardFileInfo_t {
 				else
 					filePath = filePath + '.yaml';
 				var yamlStr = yamlWriting(entrie);
+				dataArray.push(filePath.replace(/\\/g, '/'));
 				fs.writeFileSync(filePath, yamlStr);
 			}
 			else
 				disabledDatas.push(entrie);
 		}
+		var character_book_dir = fs.readdirSync(character_book_path + '/entries', { recursive: true }).filter(x => x.endsWith('.yaml'));
+		for (const file of character_book_dir) {
+			var filePath = (character_book_path + '/entries/' + file).replace(/\\/g, '/');
+			if (!dataArray.includes(filePath))
+				fs.unlinkSync(filePath);
+		}
+		//remove empty dir in entries
+		var clearDir = (dir) => {
+			var files = fs.readdirSync(dir, { recursive: true });
+			for (const file of files) {
+				var filePath = dir + '/' + file;
+				if (!fs.lstatSync(filePath).isDirectory() || !clearDir(filePath))
+					return false;
+			}
+			fs.rmdirSync(dir);
+			return true;
+		}
+		clearDir(character_book_path + '/entries');
 		data.index_list = data.index_list.filter(x => x)
 		data.display_index_list = data.display_index_list.filter(x => x)
 		if (arraysEqual(data.index_list, data.display_index_list)) delete data.display_index_list
@@ -423,7 +449,7 @@ class CardFileInfo_t {
 		keyScoreAdder(charData.character_book.entries)
 		var charDataStr = JSON.stringify(GetV1CharDataFromV2({ ...charData }));
 		keyScoreRemover(charData.character_book.entries)
-		charDataStr = charDataStr.replace(/{{char_version_url_encoded}}/g, encodeURIComponent(VerId)).replace(/{{char_version}}/g, `\`${VerId}\``);
+		charDataStr = charDataStr.replace(/{{char_version_url_encoded}}/g, encodeURIComponent(VerId)).replace(/{{char_version}}/g, VerId);
 		let data_size = charDataStr.length
 		let data_size_readable = (data_size / 1024.0).toFixed(2) + 'KB'
 		charDataStr = charDataStr.replace(/{{char_data_size}}/g, data_size_readable)
@@ -462,12 +488,14 @@ class CardFileInfo_t {
 			...SubVerCfg
 		}
 		let defaultCharDataHandler = (CharInfo, SavePath) => {
-			let buffer = fs.readFileSync(SubVerCfg.GetPngFile());
-			buffer = charDataParser.write(buffer, JSON.stringify(CharInfo))
+			let pngpath = SubVerCfg.GetPngFile();
+			let buffer = fs.readFileSync(pngpath);
+			let new_buffer = charDataParser.write(buffer, JSON.stringify(CharInfo))
 			SavePath = SubVerCfg.GetSavePath(SavePath);
 			if (!SavePath.endsWith(`.${SubVerCfg.ext}`))
 				SavePath += `.${SubVerCfg.ext}`
-			fs.writeFileSync(SavePath, buffer, { encoding: 'binary' });
+			if (buffer.compare(new_buffer) || SavePath != pngpath)
+				fs.writeFileSync(SavePath, new_buffer, { encoding: 'binary' });
 		}
 		SubVerCfg.CharInfoHandler ??= defaultCharDataHandler
 		SubVerCfg.CharInfoHandler(this.BuildCharInfo(SubVerCfg), SavePath, defaultCharDataHandler);

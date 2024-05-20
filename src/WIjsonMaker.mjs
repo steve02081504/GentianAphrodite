@@ -2,6 +2,7 @@ import { WorldInfoBook, WorldInfoEntry } from "./charData.mjs";
 /**
  * @typedef {object} WIjsonData
  * @property {{[key: `${number}`]: WIjsonEntry}} entries
+ * @property {WorldInfoBook} originalData
  */
 /**
  * Converts v2CharWIbook to WIjsonData
