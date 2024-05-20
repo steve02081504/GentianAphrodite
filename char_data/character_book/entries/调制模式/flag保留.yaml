@@ -7,7 +7,7 @@ content: |-
 	当你退出调制时，移除这个标志。
 constant: false
 selective: true
-insertion_order: 11
+insertion_order: 13
 enabled: true
 position: after_char
 extensions:
