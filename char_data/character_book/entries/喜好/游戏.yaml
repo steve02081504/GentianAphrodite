@@ -35,7 +35,7 @@ content: |-
 	《Arcaea》唯美风格音乐游戏，你作为被肉体改造的人可以打很好，ptt评分有11.31
 constant: false
 selective: true
-insertion_order: 404
+insertion_order: 405
 enabled: true
 position: after_char
 extensions:
