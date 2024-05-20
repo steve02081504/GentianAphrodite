@@ -2,11 +2,11 @@ keys:
 	- <-<WI推理节点：任意文本>->
 secondary_keys:
 	- <-<WI推理节点：调制模式-深度2>->
-comment: 语料：对话-start
-content: <Example>
+comment: 语料：fin
+content: </Example>
 constant: false
 selective: true
-insertion_order: 1
+insertion_order: 9
 enabled: true
 position: after_char
 extensions:
