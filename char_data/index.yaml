@@ -24,7 +24,7 @@ first_mes: |-
 	今天打算做些什么呢？
 	*自纤细腰肢长出的胀满双峰上，肥厚乳头隔着可爱衣服撑起两点遐想，在光照的凸显下让空气中多出一抹甜腻花香。*
 mes_example: ""
-creator_notes: |-
+creator_notes: |
 	一个要素爆表的合法萝莉老婆！✨  
 
 	<!--badges-->
@@ -36,7 +36,6 @@ creator_notes: |-
 	📚更新或导入对应角色的规则书来体验所有的功能！  
 	🔍当预留给规则书的上下文达到3000或以上时，你将获得最佳的体验。例如，如果上下文长度为6000，则分配给规则书的比例约50% 。
 	<!--/hide-for-fools-->
-
 
 	<details>
 	<summary>NSFW玩法列表</summary>
@@ -71,7 +70,6 @@ creator_notes: |-
 
 	</details>
 
-
 	🌟 洗脑指令：使用 `进入调制模式`/`退出调制` 来玩弄她的肉体、记忆和人格！<!--hide-for-fools-->*注意，此功能需要规则书以及充足的上下文长度。*<!--/hide-for-fools-->
 
 	此外，还有两项额外功能：
@@ -85,6 +83,40 @@ creator_notes: |-
 	<!--exlinks-->
 	卡片只在[龙胆社区](https://t.me/GentianAphrodite)配布，远离倒卖付费。
 	<!--/exlinks-->
+
+	<!--license-->
+
+	_____
+
+	CC BY-NC-ND 4.0 Deed
+	------
+
+	署名-非商业性使用-禁止演绎 4.0 国际
+	------
+
+	<p xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/"><a property="dct:title" rel="cc:attributionURL" href="https://github.com/steve02081504/GentianAphrodite">Gentian-Aphrodite</a> by <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://steve02081504.github.io/about/">steve02081504</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">CC BY-NC-ND 4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="CC icon"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="BY icon"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="NC icon"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nd.svg" alt="ND icon"></a></p>
+
+	You are free to
+	----------------
+
+	1. **Share** — copy and redistribute the material in any medium or format
+	2. The licensor cannot revoke these freedoms as long as you follow the license terms.
+
+	Under the following terms
+	--------------------------
+
+	1. **Attribution** — You must give [appropriate credit](https://creativecommons.org/licenses/by-nc-sa/4.0/#ref-appropriate-credit) , provide a link to the license, and [indicate if changes were made](https://creativecommons.org/licenses/by-nc-sa/4.0/#ref-indicate-changes) . You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.
+	2. **NonCommercial** — You may not use the material for [commercial purposes](https://creativecommons.org/licenses/by-nc-sa/4.0/#ref-commercial-purposes) .
+	3. **NoDerivatives** — If you [remix, transform, or build upon](https://creativecommons.org/licenses/by-nc-sa/4.0/#ref-some-kinds-of-mods) the material, you may not distribute the modified material.
+	4. **No additional restrictions** — You may not apply legal terms or [technological measures](https://creativecommons.org/licenses/by-nc-sa/4.0/#ref-technological-measures) that legally restrict others from doing anything the license permits.
+
+	Notices
+	--------
+
+	You do not have to comply with the license for elements of the material in the public domain or where your use is permitted by an applicable [exception or limitation](https://creativecommons.org/licenses/by-nc-sa/4.0/#ref-exception-or-limitation) .
+
+	No warranties are given. The license may not give you all of the permissions necessary for your intended use. For example, other rights such as [publicity, privacy, or moral rights](https://creativecommons.org/licenses/by-nc-sa/4.0/#ref-publicity-privacy-or-moral-rights) may limit how you use the material.
+	<!--/license-->
 system_prompt: ""
 post_history_instructions: ""
 image_generation_tags:
