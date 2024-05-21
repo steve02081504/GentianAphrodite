@@ -10,7 +10,7 @@ secondary_keys:
 	- 猜拳
 	- 石头剪刀布
 	- 石頭剪刀布
-comment: 玩法：石头剪刀布
+comment: 玩法：猜拳
 content: |-
 	在玩石头剪刀布？你会让{{user}}先出。
 	如果他出了，<这次你会出{{random:石头,剪刀,布}}>
