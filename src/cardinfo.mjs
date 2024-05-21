@@ -29,7 +29,7 @@ const yamlConfig = {
 /**
  * Converts a tab indent able YAML string to an object.
  * @param {string} yamlStr
- * @returns
+ * @returns {object}
  */
 function yamlReading(yamlStr) {
 	yamlStr = yamlStr.replace(/\n\t+/g, m => m.replace(/\t/g, '  '))
@@ -38,6 +38,8 @@ function yamlReading(yamlStr) {
 }
 /**
  * Converts an object to a tab indented YAML string.
+ * @param {object} yamlObj
+ * @returns {string}
  */
 function yamlWriting(yamlObj) {
 	let yamlStr = yaml.stringify(yamlObj, yamlConfig)
@@ -60,6 +62,22 @@ function arraysEqual(a, b) {
 	for (var i = 0; i < a.length; ++i)
 		if (a[i] !== b[i])
 			return false;
+	return true;
+}
+
+/**
+ * Removes all empty directories in a directory recursively.
+ * @param {string} dirPath - The directory to clear.
+ * @return {boolean} True if the directory was cleared successfully, false otherwise.
+ */
+function clearEmptyDirs(dirPath) {
+	var files = fs.readdirSync(dirPath, { recursive: true });
+	for (const file of files) {
+		var filePath = dirPath + '/' + file;
+		if (!fs.lstatSync(filePath).isDirectory() || !clearDir(filePath))
+			return false;
+	}
+	fs.rmdirSync(dirPath);
 	return true;
 }
 
@@ -356,17 +374,7 @@ class CardFileInfo_t {
 				fs.unlinkSync(filePath);
 		}
 		//remove empty dir in entries
-		var clearDir = (dir) => {
-			var files = fs.readdirSync(dir, { recursive: true });
-			for (const file of files) {
-				var filePath = dir + '/' + file;
-				if (!fs.lstatSync(filePath).isDirectory() || !clearDir(filePath))
-					return false;
-			}
-			fs.rmdirSync(dir);
-			return true;
-		}
-		clearDir(character_book_path + '/entries');
+		clearEmptyDirs(character_book_path + '/entries');
 		data.index_list = data.index_list.filter(x => x)
 		data.display_index_list = data.display_index_list.filter(x => x)
 		if (arraysEqual(data.index_list, data.display_index_list)) delete data.display_index_list
