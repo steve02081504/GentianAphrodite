@@ -99,6 +99,7 @@ function keyScoreAdder(data) {
 			continue
 		do {
 			let secondary_keysSet = [...entrie.secondary_keys];
+			let oldlen = entrie.secondary_keys.length;
 			for (const key of secondary_keysSet) {
 				if (key.startsWith('<-<') && key.endsWith('>->')) {
 					let keyscore = data.filter(e => e.content == key)[0];
@@ -110,7 +111,6 @@ function keyScoreAdder(data) {
 					entrie.secondary_keys = entrie.secondary_keys.concat(keyscore.keys);
 				}
 			}
-			let oldlen = entrie.secondary_keys.length;
 			entrie.secondary_keys = [...new Set(entrie.secondary_keys)];
 			if (oldlen == entrie.secondary_keys.length) break
 		}while(true)
