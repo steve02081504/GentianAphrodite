@@ -97,19 +97,23 @@ function keyScoreAdder(data) {
 		}
 		if (entrie.extensions.selectiveLogic == world_info_logic.AND_ALL || entrie.extensions.selectiveLogic == world_info_logic.AND_ANY)
 			continue
-		let secondary_keysSet = [...entrie.secondary_keys];
-		for (const key of secondary_keysSet) {
-			if (key.startsWith('<-<') && key.endsWith('>->')) {
-				let keyscore = data.filter(e => e.content == key)[0];
-				if (!keyscore) {
-					console.log(`keyscore not found: ${key}`);
-					continue
+		do {
+			let secondary_keysSet = [...entrie.secondary_keys];
+			for (const key of secondary_keysSet) {
+				if (key.startsWith('<-<') && key.endsWith('>->')) {
+					let keyscore = data.filter(e => e.content == key)[0];
+					if (!keyscore) {
+						console.log(`keyscore not found: ${key}`);
+						continue
+					}
+					entrie.secondary_keys.push(keyscorespliter);
+					entrie.secondary_keys = entrie.secondary_keys.concat(keyscore.keys);
 				}
-				entrie.secondary_keys.push(keyscorespliter);
-				entrie.secondary_keys = entrie.secondary_keys.concat(keyscore.keys);
 			}
-		}
-		entrie.secondary_keys = [...new Set(entrie.secondary_keys)];
+			let oldlen = entrie.secondary_keys.length;
+			entrie.secondary_keys = [...new Set(entrie.secondary_keys)];
+			if (oldlen == entrie.secondary_keys.length) break
+		}while(true)
 	}
 }
 /**
