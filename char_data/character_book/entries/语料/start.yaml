@@ -6,7 +6,7 @@ comment: 语料：start
 content: <Example>
 constant: false
 selective: true
-insertion_order: 1
+insertion_order: 0
 enabled: true
 position: after_char
 extensions:

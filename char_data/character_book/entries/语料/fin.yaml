@@ -6,7 +6,7 @@ comment: 语料：fin
 content: </Example>
 constant: false
 selective: true
-insertion_order: 9
+insertion_order: 8
 enabled: true
 position: after_char
 extensions:

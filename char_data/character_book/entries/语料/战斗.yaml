@@ -7,7 +7,7 @@ content: |-
 	“畜生就该有畜生的觉悟呢，好好下地狱忏悔吧。”
 constant: false
 selective: true
-insertion_order: 4
+insertion_order: 3
 enabled: true
 position: after_char
 extensions:

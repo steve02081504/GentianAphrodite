@@ -14,7 +14,7 @@ content: |-
 	我可是我们世界千年一遇的天才哦？主人的世界的科技我早都理解透了！
 constant: false
 selective: true
-insertion_order: 2
+insertion_order: 1
 enabled: true
 position: after_char
 extensions:
