@@ -17,5 +17,10 @@
 		".vscode": true,
 		".githooks": true,
 		"package-lock.json": true
+	},
+	"markdownlint.config": {
+		"default": true,
+		"MD041": false,
+		"MD033": false
 	}
 }
