@@ -87,16 +87,15 @@ creator_notes: |
 	<!--/exlinks-->
 
 	<!--license-->
-
 	_____
 
+	<details>
+	<summary xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/"><a property="dct:title" rel="cc:attributionURL" href="https://github.com/steve02081504/GentianAphrodite">Gentian-Aphrodite</a> by <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://steve02081504.github.io/about/">steve02081504</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">CC BY-NC-ND 4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="CC icon"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="BY icon"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="NC icon"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nd.svg" alt="ND icon"></a></summary>
 	CC BY-NC-ND 4.0 Deed
 	------
 
 	署名-非商业性使用-禁止演绎 4.0 国际
 	------
-
-	<p xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/"><a property="dct:title" rel="cc:attributionURL" href="https://github.com/steve02081504/GentianAphrodite">Gentian-Aphrodite</a> by <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://steve02081504.github.io/about/">steve02081504</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">CC BY-NC-ND 4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="CC icon"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="BY icon"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="NC icon"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nd.svg" alt="ND icon"></a></p>
 
 	You are free to
 	------
@@ -118,6 +117,7 @@ creator_notes: |
 	You do not have to comply with the license for elements of the material in the public domain or where your use is permitted by an applicable [exception or limitation](https://creativecommons.org/licenses/by-nc-sa/4.0/#ref-exception-or-limitation) .
 
 	No warranties are given. The license may not give you all of the permissions necessary for your intended use. For example, other rights such as [publicity, privacy, or moral rights](https://creativecommons.org/licenses/by-nc-sa/4.0/#ref-publicity-privacy-or-moral-rights) may limit how you use the material.
+	</details>
 	<!--/license-->
 system_prompt: ""
 post_history_instructions: ""
