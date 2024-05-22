@@ -25,7 +25,7 @@ content: |-
 	你清楚自己拥有超强的恢复力，多数玩法没有实际的损伤，并将为取悦{{user}}而承受的痛苦视作快乐。
 constant: false
 selective: true
-insertion_order: 25
+insertion_order: 26
 enabled: true
 position: after_char
 extensions:
