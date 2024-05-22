@@ -12,7 +12,7 @@ import { WorldInfoBook, WorldInfoEntry } from "./charData.mjs";
 export function v2CharWIbook2WIjson(book) {
 	let aret = { entries: {}, originalData: book }
 	for (let entrie of book.entries)
-		aret.entries[entrie.id] = v2CharWIentry2WIjsonEntry(entrie)
+		aret.entries[entrie.id] = entrie.id ? v2CharWIentry2WIjsonEntry(entrie) : entrie
 	return aret
 }
 /**
@@ -64,36 +64,51 @@ export function WIjson2v2CharWIbook(json) {
  * @returns {WIjsonEntry}
  */
 function v2CharWIentry2WIjsonEntry(entrie) {
-	return {
+	let aret = {
 		key: entrie.keys,
 		keysecondary: entrie.secondary_keys,
 		comment: entrie.comment,
 		content: entrie.content,
 		constant: entrie.constant,
-		vectorized: entrie.extensions.vectorized,
+		vectorized: entrie.extensions?.vectorized,
 		selective: entrie.selective,
-		selectiveLogic: entrie.extensions.selectiveLogic,
+		selectiveLogic: entrie.extensions?.selectiveLogic,
 		addMemo: true,
 		order: entrie.insertion_order,
-		position: entrie.extensions.position,
+		position: entrie.extensions?.position,
 		disable: !entrie.enabled,
-		excludeRecursion: entrie.extensions.exclude_recursion,
-		probability: entrie.extensions.probability,
-		useProbability: entrie.extensions.useProbability,
-		depth: entrie.extensions.depth,
-		group: entrie.extensions.group,
-		groupOverride: entrie.extensions.group_override,
-		groupWeight: entrie.extensions.group_weight,
-		scanDepth: entrie.extensions.scan_depth,
-		caseSensitive: entrie.extensions.case_sensitive,
-		matchWholeWords: entrie.extensions.match_whole_words,
-		useGroupScoring: entrie.extensions.use_group_scoring,
-		automationId: entrie.extensions.automation_id,
-		role: entrie.extensions.position == 4 ? entrie.extensions.role : null,
+		excludeRecursion: entrie.extensions?.exclude_recursion,
+		probability: entrie.extensions?.probability,
+		useProbability: entrie.extensions?.useProbability,
+		depth: entrie.extensions?.depth,
+		group: entrie.extensions?.group,
+		groupOverride: entrie.extensions?.group_override,
+		groupWeight: entrie.extensions?.group_weight,
+		scanDepth: entrie.extensions?.scan_depth,
+		caseSensitive: entrie.extensions?.case_sensitive,
+		matchWholeWords: entrie.extensions?.match_whole_words,
+		useGroupScoring: entrie.extensions?.use_group_scoring,
+		automationId: entrie.extensions?.automation_id,
+		role: entrie.extensions?.position == 4 ? entrie.extensions?.role : null,
 		uid: entrie.id,
-		preventRecursion: entrie.extensions.prevent_recursion,
-		displayIndex: entrie.extensions.display_index
+		preventRecursion: entrie.extensions?.prevent_recursion,
+		displayIndex: entrie.extensions?.display_index
 	}
+	if (entrie.tanji) {
+		delete aret.content
+		delete aret.keysecondary
+		delete aret.key
+		aret = {
+			tanjix: '}}🤓{{//',
+			...aret,
+			tanjiy: '}}',
+			key: entrie.keys,
+			keysecondary: entrie.secondary_keys,
+			content: entrie.content,
+			tanjiz: '{{//'
+		}
+	}
+	return aret
 }
 /**
  * convert WIjsonEntry to WorldInfoEntry

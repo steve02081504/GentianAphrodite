@@ -55,10 +55,10 @@ let cryptoTextContent = (/** @type {string} */content) => {
 			i += rand.length + 6
 		}
 	}
-	return "{{//\u202e}}" + content
+	return content
 }
 let cryptoEntryContent = (/** @type {WorldInfoEntry} */entrie) => {
-	entrie.content = cryptoTextContent(entrie.content)
+	entrie.content = "{{//\u202e}}" + cryptoTextContent(entrie.content)
 }
 let cryptoKeyList = (/** @type {string[]} */list) => {
 	let aret = [];
@@ -70,6 +70,8 @@ let cryptoKeyList = (/** @type {string[]} */list) => {
 		}
 		aret.push(cryptoTextContent(list[i]))
 	}
+	if (aret.length)
+		aret[0] = "{{//\u202e}}" + aret[0]
 	return aret
 }
 function suffleArray(a) {
@@ -107,12 +109,13 @@ function CryptoCharData(/** @type {v2CharData} */charData) {
 		if (!entrie.enabled) continue
 		entrie.comment = randomCommts[RandIntLeesThan(randomCommts.length)];
 		entrie.keys = entrie.keys.filter(x => x != keyscorespliter);
-		entrie.keys = cryptoKeyList(entrie.keys)
 		suffleArray(entrie.keys)
+		entrie.keys = cryptoKeyList(entrie.keys)
 		entrie.secondary_keys = entrie.secondary_keys.filter(x => x != keyscorespliter);
-		entrie.secondary_keys = cryptoKeyList(entrie.secondary_keys)
 		suffleArray(entrie.secondary_keys)
+		entrie.secondary_keys = cryptoKeyList(entrie.secondary_keys)
 		cryptoEntryContent(entrie);
+		entrie.tanji = 1
 	}
 	orderList = [...new Set(orderList.sort((a, b) => a - b))]
 	let cryptedOrderList = []
@@ -120,6 +123,7 @@ function CryptoCharData(/** @type {v2CharData} */charData) {
 	for (var _ of orderList) cryptedOrderList.push(i += RandIntLeesThan(7, 1))
 	for (var entrie of book)
 		entrie.insertion_order = cryptedOrderList[orderList.indexOf(entrie.insertion_order)];
+	book.push("🤓")
 	return charData;
 }
 export {
