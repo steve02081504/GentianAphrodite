@@ -73,13 +73,14 @@ function arraysEqual(a, b) {
  */
 function clearEmptyDirs(dirPath) {
 	var files = fs.readdirSync(dirPath, { recursive: true });
+	var empty = true;
 	for (const file of files) {
 		var filePath = dirPath + '/' + file;
-		if (!fs.lstatSync(filePath).isDirectory() || !clearDir(filePath))
-			return false;
+		if (fs.lstatSync(filePath).isDirectory() && clearEmptyDirs(filePath)) continue
+		empty = false;
 	}
-	fs.rmdirSync(dirPath);
-	return true;
+	if (empty) fs.rmdirSync(dirPath);
+	return empty;
 }
 
 let keyscorespliter = "__worldinfo_keyscores__"
@@ -113,7 +114,7 @@ function keyScoreAdder(data) {
 			}
 			entrie.secondary_keys = [...new Set(entrie.secondary_keys)];
 			if (oldlen == entrie.secondary_keys.length) break
-		}while(true)
+		} while (true)
 	}
 }
 /**
@@ -369,6 +370,10 @@ class CardFileInfo_t {
 					filePath = filePath + '.yaml';
 				var yamlStr = yamlWriting(entrie);
 				dataArray.push(filePath.replace(/\\/g, '/'));
+				if (fs.existsSync(filePath)) {
+					var originalData = fs.readFileSync(filePath, 'utf8');
+					if (originalData == yamlStr) continue
+				}
 				fs.writeFileSync(filePath, yamlStr);
 			}
 			else

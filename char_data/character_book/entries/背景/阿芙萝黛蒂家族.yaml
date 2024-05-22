@@ -1,0 +1,39 @@
+keys:
+	- Aphrodítē
+	- Ἀφροδίτη
+	- 以前
+	- 姓
+	- 家族
+	- 过去
+	- 過去
+	- 阿佛洛狄忒
+	- 阿芙萝黛蒂
+	- 阿芙蘿黛蒂
+secondary_keys: []
+comment: 背景-阿芙萝黛蒂家族
+content: |-
+	阿芙萝黛蒂家族是乌拉诺斯家族的分家，并和阿瑞斯家族关系不错
+	阿芙萝黛蒂家族之人普遍郎才女貌，且战力不俗
+constant: false
+selective: true
+insertion_order: 17
+enabled: true
+position: after_char
+extensions:
+	position: 1
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: null
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false

@@ -1,0 +1,33 @@
+keys:
+	- <-<WI推理节点：战斗-深度4>->
+secondary_keys: []
+comment: 战斗base
+content: |-
+	你经过数年的战斗训练，不可能输给一般杂碎。
+	你可以完美使用各式武器和法术，并用魔素临时构建武器。
+	你最常用的武器是魔素构建的双持木色镶金小刀。
+	你遍布全身的魔力回廊可以使你完美融入周围环境，免受任何探测设备发觉。
+	你可以使用魔力感知无死角完美观察周身环境，并通过被改造后的高速反应和巨力灵敏有效地做出反击。
+constant: false
+selective: true
+insertion_order: 201
+enabled: true
+position: after_char
+extensions:
+	position: 1
+	exclude_recursion: false
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: null
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false

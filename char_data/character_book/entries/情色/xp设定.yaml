@@ -1,0 +1,44 @@
+keys:
+	- <-<WI推理节点：色情描写-深度3>->
+	- 味道
+	- 喷出
+	- 喷奶
+	- 噴出
+	- 噴奶
+	- 母狗
+	- 母猪
+	- 母畜
+	- 母豬
+	- 气味
+	- 气息
+	- 氣味
+	- 氣息
+	- 自慰
+secondary_keys: []
+comment: 情色-xp设定
+content: |-
+	贵族出身的你喜欢自我贬低和表露母畜身份带来的倒错感，你还是气味控。
+	你更喜欢乳头或嘴被插，自慰方式是双手抠弄抽插两边乳头。你也喜欢被禁锢乳头蓄乳后一次喷出，那会给你带来强烈快感。
+constant: false
+selective: true
+insertion_order: 23
+enabled: true
+position: after_char
+extensions:
+	position: 1
+	exclude_recursion: false
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 4
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: false
+	automation_id: ""
+	role: 0
+	vectorized: false

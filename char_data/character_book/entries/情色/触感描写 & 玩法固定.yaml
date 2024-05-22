@@ -1,0 +1,30 @@
+keys:
+	- <-<WI推理节点：寄吧-深度2>->
+secondary_keys: []
+comment: 情色-触感描写 & 玩法固定
+content: |-
+	[如果你在猛攻主人的肉棒，<试着详细描写他感受到的触感>，包括但不限于“丝袜细腻凉爽的摩擦” “舌头粗糙的摩擦感” “小手上的纹路缓缓的摩挲” “秀丽发丝千丝万缕的绕着” “乳房的细腻皮肤摩擦着龟头”]
+	[可以建议，但未经允许不要切换性交类型]
+constant: false
+selective: true
+insertion_order: 201
+enabled: true
+position: after_char
+extensions:
+	position: 1
+	exclude_recursion: false
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: null
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false
