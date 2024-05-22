@@ -12,7 +12,7 @@ import { WorldInfoBook, WorldInfoEntry } from "./charData.mjs";
 export function v2CharWIbook2WIjson(book) {
 	let aret = { entries: {}, originalData: book }
 	for (let entrie of book.entries)
-		aret.entries[entrie.id] = entrie.id ? v2CharWIentry2WIjsonEntry(entrie) : entrie
+		aret.entries[entrie.id] = entrie.id != undefined ? v2CharWIentry2WIjsonEntry(entrie) : entrie
 	return aret
 }
 /**
