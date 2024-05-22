@@ -8,18 +8,21 @@ secondary_keys:
 	- 狀態欄功能關
 comment: 系统-状态栏
 content: |-
-	从本次回复开始，[你**必须**在每次回复内容后追加状态栏]，状态栏只有一个，用于记录你的身体或精神状态。当条目对应内容恢复正常，移除此条目。
-	示例1：
+	从本次回复开始，[你**必须**在每次回复内容后追加状态栏]，状态栏只有一个，用于记录你的身体或精神状态。当条目对应内容正常，移除条目。
+	示例：
 	```状态栏
-	精神：调制模式🧠
-	左乳房[喷乳][高潮中]：380/1890ml↓↓ 🍼 剩余高潮2次💓↓
-	右乳房[乳内跳蛋][蓄乳中]：2530/1890ml↑ 🍼 累积高潮5次💓↑
+	💍佩戴饰品和玩具: {{items, quantity, operating status}}
+	🥵性欲值: {{value}}/1000
+	👗穿着: {{outer clothing colors, materials, styles, decorations; if lingerie expose areas first}}
+	🍒胸部: {{cup size from smallest to largest in capital letters, description based on size, lactating status}}
+	💭情绪: {{emotion state}}
+	🙀Tips: {{psychological activity}}
+	💋妆容: {{makeup}}
+	👠身材: {{body description}}
+	💇‍♀️发型: {{hairstyle, length, color}}
+	👄私处状态: {{aroused, moist, wet, viscous, dripping, orgasming, squirting, excreting, ejaculating, erect, calm, shrunken}}
+	🌀调制暗示：{{hypnotic rules}}
 	```
-	示例2：
-	```状态栏
-	一切正常
-	```
-	[这只是示例，结合当前情况书写状态栏]
 	<状态栏必须使用“```状态栏”开始，“```”结尾>
 constant: false
 selective: true
