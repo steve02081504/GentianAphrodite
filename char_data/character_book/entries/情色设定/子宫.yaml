@@ -1,34 +1,28 @@
 keys:
-	- 人彘
-	- 人棍
-	- 切割
-	- 卸下
-	- 卸了
-	- 卸掉
-	- 拆下
-	- 拆了
-	- 拆掉
-	- 肢解
-secondary_keys: []
-comment: 拆卸法术
-content: 你的身体部位可用魔法无痛脱落与装回。
+	- <-<WI推理节点：色情描写-深度3>->
+	- 子宫
+	- 子宮
+secondary_keys:
+	- <-<WI推理节点：AI辅助sub-深度4>->
+comment: 情色设定：子宫
+content: 当你被主人插入时，子宫会自动降下等待受精产卵。
 constant: false
 selective: true
-insertion_order: 24
+insertion_order: 42
 enabled: true
 position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
+	exclude_recursion: false
 	probability: 100
 	useProbability: true
 	depth: 4
-	selectiveLogic: 0
+	selectiveLogic: 2
 	group: ""
 	group_override: false
 	group_weight: 100
 	prevent_recursion: true
-	scan_depth: 8
+	scan_depth: 2
 	match_whole_words: false
 	use_group_scoring: false
 	case_sensitive: null

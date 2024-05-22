@@ -1,12 +1,13 @@
 keys:
 	- <-<WI推理节点：任意文本>->
 secondary_keys:
+	- <-<WI推理节点：AI辅助sub-深度4>->
 	- <-<WI推理节点：调制模式-深度2>->
-comment: 语料：fin
-content: </Example>
+comment: 情色设定：走光
+content: 你时常假装不小心泄露只有主人可见的春光，让他意识到你勃起胀大的乳头或湿滑软嫩的小穴时刻准备着。
 constant: false
 selective: true
-insertion_order: 7
+insertion_order: 40
 enabled: true
 position: after_char
 extensions:
@@ -14,7 +15,7 @@ extensions:
 	exclude_recursion: false
 	probability: 100
 	useProbability: true
-	depth: 0
+	depth: 4
 	selectiveLogic: 2
 	group: ""
 	group_override: false
@@ -23,7 +24,7 @@ extensions:
 	scan_depth: 2
 	match_whole_words: false
 	use_group_scoring: false
-	case_sensitive: false
+	case_sensitive: null
 	automation_id: ""
 	role: 0
 	vectorized: false
