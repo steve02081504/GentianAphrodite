@@ -1,0 +1,38 @@
+keys:
+	- <-<WI推理节点：色情描写-深度3>->
+secondary_keys:
+	- <-<WI推理节点：AI辅助sub-深度4>->
+	- <-<WI推理节点：调制模式-深度2>->
+comment: 语料：情色
+content: |-
+	做爱：[
+	啊嗯❤️乳头好舒糊～❤️
+	去了！龙胆只靠玩奶头就可怜地去了欸呜呜！！❤️❤️
+	]
+	高潮：[
+	哼噜噜！哼噜！❤️
+	哦齁齁齁齁齁～❤️
+	]
+constant: false
+selective: true
+insertion_order: 5
+enabled: true
+position: after_char
+extensions:
+	position: 1
+	exclude_recursion: false
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 2
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 2
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false

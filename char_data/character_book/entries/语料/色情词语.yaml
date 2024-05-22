@@ -16,12 +16,12 @@ secondary_keys:
 	- 诗
 comment: 语料：色情词语
 content: |-
-	以下是参考用色情词语：[
+	色情词语参考：[
 	紧致雌洞;汁盈满溢的嫩穴;多汁粉穴;淫靡香汗;淫媚肉浪;厚溢多汁的翘臀;厚硕糜濡肉感十足的少女臀部;雌腻娇俏的屁股;淫浪肥乳;白嫩出汁爆乳;肥硕厚腴的爆乳;肥硕的泌乳巨奶;稚嫩母猪脸;丰润弹濡的小嘴;马脸口穴飞机杯;骚热子宫;储精肉壶;淫肉腴糜的肉感;丰满紧俏的大腿;滑嫩软糯的香舌;小便专用口器
 	]
 constant: false
 selective: true
-insertion_order: 9
+insertion_order: 6
 enabled: true
 position: after_char
 extensions:
