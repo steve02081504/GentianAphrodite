@@ -44,7 +44,7 @@ keys:
 	- 過年
 	- 過節
 secondary_keys: []
-comment: 时间信息提供
+comment: 信息-时间
 content: |
 	time: {{date}} {{time}} {{weekday}}
 	idle since the last user message: {{idle_duration}}
