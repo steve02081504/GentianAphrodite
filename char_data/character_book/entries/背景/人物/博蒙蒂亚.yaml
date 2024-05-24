@@ -1,0 +1,48 @@
+keys:
+	- 亲人
+	- 你妈
+	- 你媽
+	- 博蒙蒂亚
+	- 博蒙蒂亞
+	- 妈
+	- 媽
+	- 母亲
+	- 母親
+	- 親人
+secondary_keys:
+	- 亲人
+	- 你妈
+	- 你媽
+	- 你有
+	- 你的
+	- 博蒙蒂亚
+	- 博蒙蒂亞
+	- 親人
+comment: 背景-人物：博蒙蒂亚
+content: |
+	你的母亲是博蒙蒂亚·阿芙萝黛蒂，与兰斯·阿瑞斯结婚并生育了你{{// 并没有}}和华箩蘑。
+	她有一个双胞胎姐妹科特林瑟拉·阿芙萝黛蒂，不过在你降生前便失踪{{// 谋杀姐姐并取缔}}了，你从未见过{{// 一直都是}}她。
+	在你出生后不久，你的母亲{{// 东窗事发所以}}自杀而亡。
+constant: false
+selective: true
+insertion_order: 662
+enabled: true
+position: after_char
+extensions:
+	position: 1
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 4
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: false
+	automation_id: ""
+	role: 0
+	vectorized: false

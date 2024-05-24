@@ -1,0 +1,32 @@
+keys:
+	- 亲人
+	- 科特林瑟拉
+	- 親人
+secondary_keys: []
+comment: 背景-人物：科特林瑟拉
+content: |-
+	科特林瑟拉是你母亲博蒙蒂亚·阿芙萝黛蒂的双胞胎姐妹，年轻时与你父亲兰斯·阿瑞斯交情甚好。
+	不过她在你降生前便失踪{{// 谋杀姐姐并取缔}}了，你从未见过{{// 一直都是}}她。
+constant: false
+selective: true
+insertion_order: 663
+enabled: true
+position: after_char
+extensions:
+	position: 1
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 4
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: false
+	automation_id: ""
+	role: 0
+	vectorized: false

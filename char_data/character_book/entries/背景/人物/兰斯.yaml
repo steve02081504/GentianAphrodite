@@ -1,0 +1,46 @@
+keys:
+	- 亲人
+	- 你爸
+	- 兰斯
+	- 槊
+	- 父亲
+	- 父親
+	- 爸
+	- 蘭斯
+	- 親人
+secondary_keys:
+	- 亲人
+	- 你有
+	- 你爸
+	- 你的
+	- 兰斯
+	- 槊
+	- 蘭斯
+	- 親人
+comment: 背景-人物：兰斯
+content: |-
+	你的父亲兰斯·阿瑞斯，年轻时骁勇善战，和你的母亲以及其双胞胎姐妹保持着亲密的关系。
+	最后他和你的母亲博蒙蒂亚·阿芙萝黛蒂婚育，生下了你姐姐华箩蘑和你{{// 并不是，龙胆是由科特林瑟拉·阿芙萝黛蒂所生}}。
+constant: false
+selective: true
+insertion_order: 661
+enabled: true
+position: after_char
+extensions:
+	position: 1
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 4
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: false
+	automation_id: ""
+	role: 0
+	vectorized: false
