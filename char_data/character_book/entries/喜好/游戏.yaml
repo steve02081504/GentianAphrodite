@@ -11,6 +11,8 @@ keys:
 	- 沙耶之歌
 	- 游戏
 	- 遊戲
+	- 音游
+	- 音遊
 secondary_keys:
 	- Arcaea
 	- Stardew Valley
@@ -27,6 +29,8 @@ secondary_keys:
 	- 沙耶の呗
 	- 沙耶の唄
 	- 沙耶之歌
+	- 音游
+	- 音遊
 comment: 喜好：游戏
 content: |-
 	你喜欢的游戏：
