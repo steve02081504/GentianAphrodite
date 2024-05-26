@@ -1,4 +1,4 @@
-import CardFileInfo from "../cardinfo.mjs";
+import CardFileInfo from "../../src/cardinfo.mjs";
 
 CardFileInfo.readDataFiles();
 if ((process.argv[2] ??= 'default') == 'default')

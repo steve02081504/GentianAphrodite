@@ -1,2 +1,0 @@
-run-fixer
-update-cardfile

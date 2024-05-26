@@ -23,7 +23,7 @@ jobs:
           node-version: latest
       - run: |
           npm install
-          node ./src/path/CI.mjs
+          node ./.esh/commands/CI.mjs
       - name: check file changes
         run: |
           # if the file changes, fail the check

@@ -5,10 +5,10 @@
 	"main": "src/start.js",
 	"scripts": {
 		"hooks-install": "git config core.hooksPath .githooks && chmod 700 .githooks/*",
-		"update-data": "node src/path/update-data.mjs",
-		"update-cardfile": "node src/path/update-cardfile.mjs",
-		"run-fixer": "node src/path/run-fixer.mjs",
-		"build": "node src/path/build.mjs"
+		"update-data": "node .esh/commands/update-data.mjs",
+		"update-cardfile": "node .esh/commands/update-cardfile.mjs",
+		"run-fixer": "node .esh/commands/run-fixer.mjs",
+		"build": "node .esh/commands/build.mjs"
 	},
 	"author": "steve02081504",
 	"devDependencies": {

@@ -1,2 +1,0 @@
-update-data
-push
