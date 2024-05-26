@@ -9,7 +9,11 @@ let stat = {
 	total_token_size: [
 		CardFileInfo.metaData.description,
 		CardFileInfo.metaData.personality,
+		CardFileInfo.metaData.scenario,
 		CardFileInfo.metaData.first_mes,
+		CardFileInfo.metaData.mes_example,
+		CardFileInfo.metaData.system_prompt,
+		CardFileInfo.metaData.extensions.depth_prompt.prompt,
 		...CardFileInfo.metaData.alternate_greetings,
 		...CardFileInfo.metaData.extensions.group_greetings,
 		...CardFileInfo.character_book.entries.filter(_ => _.enabled).map(_ => _.content),
