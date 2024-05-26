@@ -1,8 +1,8 @@
 import sha256 from 'crypto-js/sha256.js';
 import seedrandom from 'seedrandom';
 import { v2CharData, WorldInfoEntry } from './charData.mjs';
+import { keyscorespliter } from './keyScore.mjs';
 
-let keyscorespliter = "__worldinfo_keyscores__"
 var randomCommts = [
 	"东西", '不是东西', '可能是个东西', '这到底是不是东西？', '可能不是个东西', '我是不是东西？', '我不是东西', '懂了，我是南北',
 	'屎', '史记',

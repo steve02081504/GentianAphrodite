@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import yaml from 'yaml';
 import { fileURLToPath, pathToFileURL } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -15,120 +14,15 @@ const ImgsDir = `${__dirname}/../char_data/img`;
 const BuildDir = `${__dirname}/../build`;
 
 import charDataParser from './character-card-parser.mjs';
-import { GetV1CharDataFromV2, v2CharData, v1CharData, WorldInfoBook, WorldInfoEntry, world_info_logic } from './charData.mjs';
+import { GetV1CharDataFromV2, v2CharData, v1CharData, WorldInfoBook } from './charData.mjs';
 import { SetCryptoBaseRng, CryptoCharData } from './charCrypto.mjs';
 import { v2CharWIbook2WIjson, WIjson2v2CharWIbook } from './WIjsonMaker.mjs';
+import { arraysEqual, clearEmptyDirs, nicerWriteFileSync } from './tools.mjs';
+import yaml from './yaml.mjs';
+import { keyScoreAdder, keyScoreRemover } from './keyScore.mjs';
 
 const cardFilePath = `${__dirname}/data/cardpath.txt`;
 const WIjsonFilePath = `${__dirname}/data/WIpath.txt`;
-
-/** @type {yaml.ToStringOptions} */
-const yamlConfig = {
-	lineWidth: Number.POSITIVE_INFINITY
-}
-//fuck ya, ill use tab everywhere
-/**
- * Converts a tab indent able YAML string to an object.
- * @param {string} yamlStr
- * @returns {object}
- */
-function yamlReading(yamlStr) {
-	yamlStr = yamlStr.replace(/\n\t+/g, m => m.replace(/\t/g, '  '))
-	yamlStr = yamlStr.replace(/\n\t+-\t\|/g, m => m.replace('-\t|', '- |'))
-	return yaml.parse(yamlStr, yamlConfig);
-}
-/**
- * Converts an object to a tab indented YAML string.
- * @param {object} yamlObj
- * @returns {string}
- */
-function yamlWriting(yamlObj) {
-	let yamlStr = yaml.stringify(yamlObj, yamlConfig)
-	yamlStr = yamlStr.replace(/\n(  )+/g, m => m.replace(/  /g, '\t'));
-	yamlStr = yamlStr.replace(/\n\t+- \|/g, m => m.replace('- |', '-\t|'))
-	return yamlStr
-}
-
-/**
- * Checks if two arrays are equal.
- * @param {Array} a - The first array.
- * @param {Array} b - The second array.
- * @return {boolean} True if the arrays are equal, false otherwise.
- */
-function arraysEqual(a, b) {
-	if (a === b) return true;
-	if (!a || !b) return false;
-	if (a.length !== b.length) return false;
-
-	for (var i = 0; i < a.length; ++i)
-		if (a[i] !== b[i])
-			return false;
-	return true;
-}
-
-/**
- * Removes all empty directories in a directory recursively.
- * @param {string} dirPath - The directory to clear.
- * @return {boolean} True if the directory was cleared successfully, false otherwise.
- */
-function clearEmptyDirs(dirPath) {
-	var files = fs.readdirSync(dirPath, { recursive: true });
-	var empty = true;
-	for (const file of files) {
-		var filePath = dirPath + '/' + file;
-		if (fs.lstatSync(filePath).isDirectory() && clearEmptyDirs(filePath)) continue
-		empty = false;
-	}
-	if (empty) fs.rmdirSync(dirPath);
-	return empty;
-}
-
-let keyscorespliter = "__worldinfo_keyscores__"
-
-/**
- * add key scores to the data
- * @param {WorldInfoEntry[]} data - The charbook data
- */
-function keyScoreAdder(data) {
-	for (const id in data) {
-		let entrie = data[id];
-		if (entrie?.extensions?.selectiveLogic == undefined) {
-			console.error('selectiveLogic not found: ', entrie);
-			continue
-		}
-		if (entrie.extensions.selectiveLogic == world_info_logic.AND_ALL || entrie.extensions.selectiveLogic == world_info_logic.AND_ANY)
-			continue
-		do {
-			let secondary_keysSet = [...entrie.secondary_keys];
-			let oldlen = entrie.secondary_keys.length;
-			for (const key of secondary_keysSet) {
-				if (key.startsWith('<-<') && key.endsWith('>->')) {
-					let keyscore = data.filter(e => e.content == key)[0];
-					if (!keyscore) {
-						console.log(`keyscore not found: ${key}`);
-						continue
-					}
-					entrie.secondary_keys.push(keyscorespliter);
-					entrie.secondary_keys = entrie.secondary_keys.concat(keyscore.keys);
-				}
-			}
-			entrie.secondary_keys = [...new Set(entrie.secondary_keys)];
-			if (oldlen == entrie.secondary_keys.length) break
-		} while (true)
-	}
-}
-/**
- * remove key scores from the data
- * @param {WorldInfoEntry[]} data - The charbook data
- */
-function keyScoreRemover(data) {
-	for (const id in data) {
-		let entrie = data[id];
-		let index = entrie.secondary_keys.findIndex(x => x == keyscorespliter);
-		if (index > -1) // 移除keyscorespliter及其后的所有元素
-			entrie.secondary_keys = entrie.secondary_keys.slice(0, index)
-	}
-}
 
 /**
  * Class for reading and writing card information.
@@ -178,6 +72,7 @@ class CardFileInfo_t {
 	 * @return {void}
 	 */
 	writeCardPath(value) {
+		if (value === this.cardPath) return;
 		fs.writeFileSync(cardFilePath, value);
 	}
 
@@ -213,6 +108,7 @@ class CardFileInfo_t {
 	 * @return {void}
 	 */
 	writeWIjsonPath(value) {
+		if (value === this.WIjsonPath) return;
 		fs.writeFileSync(WIjsonFilePath, value);
 	}
 
@@ -253,7 +149,7 @@ class CardFileInfo_t {
 			};
 		}
 		keyScoreRemover(this.v1metaData.data.character_book.entries)
-		this.metaData = yamlReading(fs.readFileSync(yamlFilePath, 'utf8'));
+		this.metaData = yaml.readFileSync(yamlFilePath);
 		this.v1metaData.create_date = this.metaData.create_date;
 		this.v1metaData.data.extensions.fav = this.metaData.extensions.fav;
 		let ver = this.v1metaData.data.character_version;
@@ -292,11 +188,7 @@ class CardFileInfo_t {
 				let data = v2CharWIbook2WIjson(CharInfo.data.character_book);
 				delete data.originalData;
 				let dataStr = JSON.stringify(data, null, '\t') + '\n';
-				let originalData;
-				if (fs.existsSync(this.WIjsonPath))
-					originalData = fs.readFileSync(this.WIjsonPath, 'utf8');
-				if (originalData != dataStr)
-					fs.writeFileSync(this.WIjsonPath, dataStr);
+				nicerWriteFileSync(this.WIjsonPath, dataStr);
 				// Save the character book entries to a PNG file
 				defaultHandler(CharInfo, SavePath);
 			}
@@ -311,15 +203,27 @@ class CardFileInfo_t {
 		var data = { ...this.metaData, create_date: this.v1metaData.create_date }
 		delete data.character_book
 		var packageJson = JSON.parse(fs.readFileSync(packageJsonFilePath, 'utf8'));
-		packageJson.version = data.character_version;
-		fs.writeFileSync(packageJsonFilePath, JSON.stringify(packageJson, null, '\t') + '\n');
+		if (packageJson.version != data.character_version) {
+			packageJson.version = data.character_version;
+			fs.writeFileSync(packageJsonFilePath, JSON.stringify(packageJson, null, '\t') + '\n');
+		}
 		delete data.character_version
-		// 考虑到regex_scripts不常更新，我们跳过它的处理
+		var originalData;
+		for (const script of data.extensions.regex_scripts) {
+			var filePath = regex_scripts_path + '/' + script.scriptName + '.json';
+			var scriptStr = JSON.stringify(script, null, '\t') + '\n';
+			nicerWriteFileSync(filePath, scriptStr);
+		}
+		var regexDir = fs.readdirSync(regex_scripts_path);
+		for (const key of regexDir) {
+			var filePath = regex_scripts_path + '/' + key;
+			if (!data.extensions.regex_scripts.find(x => x.scriptName == key.replace(/\.json$/, '')))
+				fs.unlinkSync(filePath);
+		}
 		delete data.extensions.regex_scripts
-		fs.writeFileSync(CharReadMeFilePath, data.creator_notes);
+		nicerWriteFileSync(CharReadMeFilePath, data.creator_notes);
 		delete data.creator_notes
-		var yamlStr = yamlWriting(data);
-		fs.writeFileSync(yamlFilePath, yamlStr);
+		yaml.writeFileSync(yamlFilePath, data);
 		if (!fs.existsSync(character_book_path + '/entries'))
 			fs.mkdirSync(character_book_path + '/entries');
 		var character_book = this.character_book;
@@ -368,13 +272,8 @@ class CardFileInfo_t {
 					filePath = filePath + '/index.yaml';
 				else
 					filePath = filePath + '.yaml';
-				var yamlStr = yamlWriting(entrie);
 				dataArray.push(filePath.replace(/\\/g, '/'));
-				if (fs.existsSync(filePath)) {
-					var originalData = fs.readFileSync(filePath, 'utf8');
-					if (originalData == yamlStr) continue
-				}
-				fs.writeFileSync(filePath, yamlStr);
+				yaml.writeFileSync(filePath, entrie);
 			}
 			else
 				disabledDatas.push(entrie);
@@ -390,19 +289,16 @@ class CardFileInfo_t {
 		data.index_list = data.index_list.filter(x => x)
 		data.display_index_list = data.display_index_list.filter(x => x)
 		if (arraysEqual(data.index_list, data.display_index_list)) delete data.display_index_list
-		yamlStr = yamlWriting(data);
-		fs.writeFileSync(character_book_path + '/index.yaml', yamlStr);
-		if (disabledDatas.length) {
-			yamlStr = yamlWriting(disabledDatas);
-			fs.writeFileSync(character_book_path + '/disabled_entries.yaml', yamlStr);
-		}
+		yaml.writeFileSync(character_book_path + '/index.yaml', data);
+		if (disabledDatas.length)
+			yaml.writeFileSync(character_book_path + '/disabled_entries.yaml', disabledDatas);
 	}
 	/**
 	 * Reads data files and populates the metaData, v1metaData, and character_book properties.
 	 * @return {void}
 	 */
 	readDataFiles() {
-		this.metaData = yamlReading(fs.readFileSync(yamlFilePath, 'utf8'));
+		this.metaData = yaml.readFileSync(yamlFilePath);
 		var packageJson = JSON.parse(fs.readFileSync(packageJsonFilePath, 'utf8'));
 		this.metaData.character_version = packageJson.version;
 		this.metaData.creator_notes = fs.readFileSync(CharReadMeFilePath, 'utf8');
@@ -414,7 +310,7 @@ class CardFileInfo_t {
 			var jsonStr = fs.readFileSync(filePath, 'utf8');
 			this.metaData.extensions.regex_scripts.push(JSON.parse(jsonStr));
 		}
-		this.metaData.character_book = this.character_book = yamlReading(fs.readFileSync(character_book_path + '/index.yaml', 'utf8'));
+		this.metaData.character_book = this.character_book = yaml.readFileSync(character_book_path + '/index.yaml');
 		this.character_book.entries = [];
 		var character_book_dir = fs.readdirSync(character_book_path + '/entries', { recursive: true }).filter(x => x.endsWith('.yaml'));
 		this.character_book.display_index_list ??= this.character_book.index_list
@@ -423,8 +319,7 @@ class CardFileInfo_t {
 		delete this.character_book.display_index_list
 		for (const key of character_book_dir) {
 			var filePath = character_book_path + '/entries/' + key;
-			var yamlStr = fs.readFileSync(filePath, 'utf8');
-			var data = yamlReading(yamlStr);
+			var data = yaml.readFileSync(filePath);
 			var fileName = data.comment || data.keys[0] || key.replace(/\.yaml$/, '');
 			data.id = index_list.indexOf(fileName);
 			data.extensions.display_index = display_index_list.indexOf(fileName);
@@ -433,8 +328,7 @@ class CardFileInfo_t {
 			this.character_book.entries[data.id] = data;
 		}
 		if (fs.existsSync(character_book_path + '/disabled_entries.yaml')) {
-			var yamlStr = fs.readFileSync(character_book_path + '/disabled_entries.yaml', 'utf8');
-			var datas = yamlReading(yamlStr);
+			var datas = yaml.readFileSync(character_book_path + '/disabled_entries.yaml');
 			for (const data of datas) {
 				var key = data.comment || data.keys[0];
 				data.id = index_list.indexOf(key);

@@ -1,6 +1,6 @@
 import { v2CharWIbook2WIjson } from "../../src/WIjsonMaker.mjs"
-import fs from 'fs';
 import path from "path";
+import { nicerWriteFileSync } from "../../src/tools.mjs";
 
 export default {
 	ext: 'json',
@@ -8,6 +8,6 @@ export default {
 	CharInfoHandler: (CharInfo, SavePath) => {
 		let WIjsonData = v2CharWIbook2WIjson(CharInfo.data.character_book);
 		delete WIjsonData.originalData;
-		fs.writeFileSync(path.dirname(SavePath) + `/${CharInfo.data.character_book.name}.json`, JSON.stringify(WIjsonData))
+		nicerWriteFileSync(path.dirname(SavePath) + `/${CharInfo.data.character_book.name}.json`, JSON.stringify(WIjsonData))
 	}
 }
