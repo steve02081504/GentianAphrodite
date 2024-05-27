@@ -74,6 +74,13 @@ let cryptoKeyList = (/** @type {string[]} */list) => {
 		aret[0] = "{{//\u202e}}" + aret[0]
 	return aret
 }
+/**
+ * Shuffles the elements of an array using the Fisher-Yates algorithm.
+ *
+ * @template T
+ * @param {Array<T>} a - The array to be shuffled.
+ * @return {Array<T>} - The shuffled array.
+ */
 function suffleArray(a) {
 	let currentIndex = a.length;
 
@@ -82,6 +89,7 @@ function suffleArray(a) {
 		currentIndex--;
 		[a[currentIndex], a[randomIndex]] = [a[randomIndex], a[currentIndex]];
 	}
+	return a;
 }
 
 function CryptoCharData(/** @type {v2CharData} */charData) {
@@ -89,7 +97,27 @@ function CryptoCharData(/** @type {v2CharData} */charData) {
 		'<-' + sha256(charData.creator + key).toString().substring(0, 6) + '->'
 	)
 	charData = JSON.parse(charDataStr)
-	var book = charData.character_book.entries;
+	var book = suffleArray(charData.character_book.entries).sort((a, b) => a.insertion_order - b.insertion_order);
+	var index = 0;
+	for (var entrie of book) entrie.insertion_order = index++;
+	index = 0;
+	var newbook = [];
+	for (var entrie of book) {
+		entrie.insertion_order = index++;
+		if (!entrie.enabled) { newbook.push(entrie); continue }
+		if (entrie.content.includes('\n')) {
+			var contentArr = entrie.content.split('\n');
+			for (var text of contentArr) {
+				if(text.length) {
+					var entriebase = JSON.parse(JSON.stringify(entrie));
+					entriebase.content = text;
+					entriebase.insertion_order = index++;
+					newbook.push(entriebase);
+				} else newbook[newbook.length - 1].content += '\n'
+			}
+		}
+	}
+	charData.character_book.entries = book = newbook
 	let currentIndex = book.length;
 
 	while (currentIndex != 0) {
@@ -101,10 +129,10 @@ function CryptoCharData(/** @type {v2CharData} */charData) {
 		[book[currentIndex].extensions.display_index, book[randomIndex2].extensions.display_index] = [book[randomIndex2].extensions.display_index, book[currentIndex].extensions.display_index];
 	}
 
-	var uid = 0;
+	var uid = 81504;
 	let orderList = [];
 	for (var entrie of book) {
-		entrie.id = uid += RandIntLeesThan(7, 1);
+		entrie.id = uid += RandIntLeesThan(724, 1);
 		orderList.push(entrie.insertion_order);
 		if (!entrie.enabled) continue
 		entrie.comment = randomCommts[RandIntLeesThan(randomCommts.length)];
@@ -119,8 +147,8 @@ function CryptoCharData(/** @type {v2CharData} */charData) {
 	}
 	orderList = [...new Set(orderList.sort((a, b) => a - b))]
 	let cryptedOrderList = []
-	var i = 0;
-	for (var _ of orderList) cryptedOrderList.push(i += RandIntLeesThan(7, 1))
+	index = 45450721;
+	for (var _ of orderList) cryptedOrderList.push(index += RandIntLeesThan(360, 1))
 	for (var entrie of book)
 		entrie.insertion_order = cryptedOrderList[orderList.indexOf(entrie.insertion_order)];
 	book.push("🤓")
