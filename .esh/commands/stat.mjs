@@ -24,4 +24,4 @@ let stat = {
 	].join('\n')).replace(/\n+/g, '\n')).length
 }
 encoder.free();
-console.log(stat);
+console.dir(stat,{ depth: null });
