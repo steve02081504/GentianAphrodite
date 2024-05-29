@@ -4,6 +4,7 @@ import { fileURLToPath, pathToFileURL } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const charDataPath = `${__dirname}/../char_data`;
 const yamlFilePath = `${__dirname}/../char_data/index.yaml`;
 const CharReadMeFilePath = `${__dirname}/../char_data/index.md`;
 const character_book_path = `${__dirname}/../char_data/character_book`;
@@ -208,7 +209,8 @@ class CardFileInfo_t {
 			fs.writeFileSync(packageJsonFilePath, JSON.stringify(packageJson, null, '\t') + '\n');
 		}
 		delete data.character_version
-		var originalData;
+		if (!fs.existsSync(charDataPath)) fs.mkdirSync(charDataPath);
+		if (!fs.existsSync(regex_scripts_path)) fs.mkdirSync(regex_scripts_path);
 		for (const script of data.extensions.regex_scripts) {
 			var filePath = regex_scripts_path + '/' + script.scriptName + '.json';
 			var scriptStr = JSON.stringify(script, null, '\t') + '\n';
