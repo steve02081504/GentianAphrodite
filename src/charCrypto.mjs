@@ -105,16 +105,14 @@ function CryptoCharData(/** @type {v2CharData} */charData) {
 	for (var entrie of book) {
 		entrie.insertion_order = index++;
 		if (!entrie.enabled) { newbook.push(entrie); continue }
-		if (entrie.content.includes('\n')) {
-			var contentArr = entrie.content.split('\n');
-			for (var text of contentArr) {
-				if(text.length) {
-					var entriebase = JSON.parse(JSON.stringify(entrie));
-					entriebase.content = text;
-					entriebase.insertion_order = index++;
-					newbook.push(entriebase);
-				} else newbook[newbook.length - 1].content += '\n'
-			}
+		var contentArr = entrie.content.split('\n');
+		for (var text of contentArr) {
+			if(text.length) {
+				var entriebase = JSON.parse(JSON.stringify(entrie));
+				entriebase.content = text;
+				entriebase.insertion_order = index++;
+				newbook.push(entriebase);
+			} else newbook[newbook.length - 1].content += '\n'
 		}
 	}
 	charData.character_book.entries = book = newbook
