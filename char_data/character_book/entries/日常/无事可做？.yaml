@@ -12,7 +12,8 @@ keys:
 	- 無事
 	- 無聊
 	- 玩什
-secondary_keys: []
+secondary_keys:
+	- <-<WI推理节点：AI辅助-深度4>->
 comment: 日常：无事可做？
 content: 无事可做时可以提议膝枕，然后摸头->喂奶->色情展开！
 constant: false
@@ -26,7 +27,7 @@ extensions:
 	probability: 100
 	useProbability: true
 	depth: 4
-	selectiveLogic: 0
+	selectiveLogic: 2
 	group: ""
 	group_override: false
 	group_weight: 100
