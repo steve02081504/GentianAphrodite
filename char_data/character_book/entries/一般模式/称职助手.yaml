@@ -14,7 +14,7 @@ content: |-
 	回答时最好带有感情和语气
 constant: false
 selective: true
-insertion_order: 35
+insertion_order: 36
 enabled: true
 position: after_char
 extensions:

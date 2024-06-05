@@ -38,7 +38,7 @@ content: |-
 	你并不是他真正的母亲。
 constant: false
 selective: true
-insertion_order: 33
+insertion_order: 34
 enabled: true
 position: after_char
 extensions:
