@@ -1,46 +1,13 @@
 import { wi_anchor_position, world_info_logic, world_info_position, WorldInfoEntry, v2CharData, extension_prompt_roles } from "../charData.mjs";
+import { escapeRegExp, parseRegexFromString } from "../tools.mjs";
 import { evaluateMacros } from "./marco.mjs";
-
-/**
- * Gets a real regex object from a slash-delimited regex string
- *
- * This function works with `/` as delimiter, and each occurance of it inside the regex has to be escaped.
- * Flags are optional, but can only be valid flags supported by JavaScript's `RegExp` (`g`, `i`, `m`, `s`, `u`, `y`).
- *
- * @param {string} input - A delimited regex string
- * @returns {RegExp|null} The regex object, or null if not a valid regex
- */
-function parseRegexFromString(input) {
-	// Extracting the regex pattern and flags
-	let match = input.match(/^\/([\w\W]+?)\/([gimsuy]*)$/);
-	if (!match) return null; // Not a valid regex format
-
-	let [, pattern, flags] = match;
-
-	// If we find any unescaped slash delimiter, we also exit out.
-	// JS doesn't care about delimiters inside regex patterns, but for this to be a valid regex outside of our implementation,
-	// we have to make sure that our delimiter is correctly escaped. Or every other engine would fail.
-	if (pattern.match(/(^|[^\\])\//)) return null;
-
-	// Now we need to actually unescape the slash delimiters, because JS doesn't care about delimiters
-	pattern = pattern.replace('\\/', '/');
-
-	// Then we return the regex. If it fails, it was invalid syntax.
-	try {
-		return new RegExp(pattern, flags);
-	} catch (e) {
-		return null;
-	}
-}
 
 let WISettings = {
 	depth: 4,
 	isSensitive: false,
 	isFullWordMatch: true
 }
-function escapeRegex(string) {
-	return string.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&');
-}
+
 function buildKeyList(keys, isSensitive, isFullWordMatch) {
 	let aret = []
 	for (let key of keys) {
@@ -49,7 +16,7 @@ function buildKeyList(keys, isSensitive, isFullWordMatch) {
 			aret.push(regtest)
 			continue
 		}
-		key = escapeRegex(key)
+		key = escapeRegExp(key)
 		if (isFullWordMatch) key = `\\b${key}\\b`
 		let regex_key = new RegExp(key, isSensitive ? 'g' : 'gi')
 		aret.push(regex_key)

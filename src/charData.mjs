@@ -15,6 +15,20 @@ const world_info_position = {
 	EMTop: 5,
 	EMBottom: 6,
 };
+/**
+ * @enum {number} Where the regex script should be applied
+ */
+const regex_placement = {
+	/**
+	 * @deprecated MD Display is deprecated. Do not use.
+	 */
+	MD_DISPLAY: 0,
+	USER_INPUT: 1,
+	AI_OUTPUT: 2,
+	SLASH_COMMAND: 3,
+	// 4 - sendAs (legacy)
+	WORLD_INFO: 5,
+};
 /** @enum {number} */
 const wi_anchor_position = {
 	before: 0,
@@ -460,4 +474,7 @@ function GetV1CharDataFromV2(data) {
 	delete data.create_date
 	return aret
 }
-export { v2CharData, v1CharData, GetV1CharDataFromV2, WorldInfoBook, WorldInfoEntry, world_info_logic, world_info_position, wi_anchor_position, extension_prompt_roles }
+export {
+	v2CharData, v1CharData, GetV1CharDataFromV2, WorldInfoBook, WorldInfoEntry,
+	regex_placement, world_info_logic, world_info_position, wi_anchor_position, extension_prompt_roles
+}
