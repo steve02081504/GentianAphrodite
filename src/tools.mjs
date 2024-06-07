@@ -49,4 +49,16 @@ function clearEmptyDirs(dirPath) {
 	return empty;
 }
 
-export { arraysEqual, nicerWriteFileSync, clearEmptyDirs }
+/**
+ * Recursively removes all instances of simple Marcos placeholders in the given object.
+ *
+ * @param {object|string} object - The object or string to search for placeholders.
+ * @return {object|string} - The object or string with all instances of simple Marcos placeholders removed.
+ */
+function remove_simple_marcos(object) {
+	if (Object(object) instanceof String) return object.replace(/{{\/\/([\s\S]*?)}}/g, '').replace(/\{\{user\}\}/i, 'user').replace(/\{\{char\}\}/i, 'char');
+	for (const key in object) object[key] = remove_simple_marcos(object[key])
+	return object
+}
+
+export { arraysEqual, nicerWriteFileSync, clearEmptyDirs, remove_simple_marcos }

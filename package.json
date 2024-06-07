@@ -13,11 +13,15 @@
 	"author": "steve02081504",
 	"devDependencies": {
 		"crypto-js": "^4.2.0",
+		"lz-string": "^1.5.0",
 		"png-chunk-text": "^1.0.0",
 		"png-chunks-encode": "^1.0.0",
 		"png-chunks-extract": "^1.0.0",
 		"seedrandom": "^3.0.5",
 		"tiktoken": "^1.0.15",
 		"yaml": "^2.4.1"
+	},
+	"dependencies": {
+		"buffer": "^6.0.3"
 	}
 }

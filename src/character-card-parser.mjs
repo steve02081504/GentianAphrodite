@@ -75,8 +75,13 @@ const parse = (cardUrl, format) => {
 	throw new Error('Unsupported format');
 };
 
+export {
+	parse,
+	write,
+	read
+};
 export default {
 	parse,
 	write,
-	read,
-};
+	read
+}
