@@ -1,5 +1,5 @@
 import sha256 from 'crypto-js/sha256.js';
-import { WorldInfoEntry, v2CharData } from "./charData.mjs";
+import { WorldInfoEntry, extension_prompt_roles, v2CharData, world_info_position } from "./charData.mjs";
 import { evaluateMacros } from "./engine/marco.mjs";
 import { GetActivedWorldInfoEntries } from "./engine/world_info.mjs";
 import { get_token_size } from "./get_token_size.mjs";
@@ -38,16 +38,12 @@ export function promptBuilder(
 		charVersion: charData.character_version,
 		char_version: charData.character_version,
 	}
-	let mes_examples = charData.mes_example.split(/<START>/gi).filter(e => e)
 	if (Object(chatLog) instanceof String)
 		chatLog = [{
 			role: "user",
 			content: chatLog
 		}]
 
-	let WIs = charData?.character_book?.entries ?
-		GetActivedWorldInfoEntries(charData.character_book.entries, chatLog, env) :
-		[]
 	let aret = {
 		system_prompt: charData.system_prompt,
 		personality: charData.personality,
@@ -62,20 +58,105 @@ export function promptBuilder(
 		chat_log: chatLog
 	}
 	for (let key in aret) if (Object(aret[key]) instanceof String) aret[key] = evaluateMacros(aret[key], env)
+	let WIs = charData?.character_book?.entries ?
+		GetActivedWorldInfoEntries(charData.character_book.entries, chatLog, env) :
+		[]
+	let mes_examples = charData.mes_example.split(/<START>/gi).filter(e => e)
+	let before_EMEntries = []
+	let after_EMEntries = []
+	let ANTopEntries = []
+	let ANBottomEntries = []
+	let WIDepthEntries = []
+	function add_WI(
+		/** @type {WorldInfoEntry} */
+		entry
+	) {
+		let content = entry.content
+		switch (entry.extensions.position) {
+			case world_info_position.before:
+				aret.WIs_before_char.push(entry);
+				break;
+			case world_info_position.after:
+				aret.WIs_after_char.push(entry);
+				break;
+			case world_info_position.EMTop:
+				before_EMEntries.unshift(entry)
+				break;
+			case world_info_position.EMBottom:
+				after_EMEntries.unshift(entry)
+				break;
+			case world_info_position.ANTop:
+				ANTopEntries.unshift(content);
+				break;
+			case world_info_position.ANBottom:
+				ANBottomEntries.unshift(content);
+				break;
+			case world_info_position.atDepth: {
+				const existingDepthIndex = WIDepthEntries.findIndex((e) => e.depth === (entry.depth ?? DEFAULT_DEPTH) && e.extensions.role === entry.extensions.role);
+				if (existingDepthIndex !== -1) {
+					WIDepthEntries[existingDepthIndex].entries.unshift(content);
+				} else {
+					WIDepthEntries.push({
+						depth: entry.extensions?.depth || 0,
+						entries: [content],
+						role: entry.extensions.role,
+					});
+				}
+				break;
+			}
+			default:
+				break;
+		}
+	}
 	let constant_WIs = WIs.filter(e => e.constant)
-	WIs = WIs.filter(e => !e.constant)
-	for (let WI of constant_WIs)
-		aret["WIs_" + WI.position].push(WI)
+	WIs = WIs.filter(e => !e.constant).sort((a, b) => a.extensions.position == b.extensions.position ? a.insertion_order - b.insertion_order : a.extensions.position - b.extensions.position)
+	for (let WI of constant_WIs) add_WI(WI)
 	let token_now = get_token_size(aret)
 
 	while (token_now < token_budget && WIs.length > 0) {
 		let WI = WIs.pop()
-		aret["WIs_" + WI.position].push(WI)
+		add_WI(WI)
 		token_now += get_token_size(WI.content)
 	}
 	aret.WIs_before_char = aret.WIs_before_char.sort((a, b) => a.insertion_order - b.insertion_order).map(e => e.content)
 	aret.WIs_after_char = aret.WIs_after_char.sort((a, b) => a.insertion_order - b.insertion_order).map(e => e.content)
 
+	let aothr_notes = charData.extensions.depth_prompt.prompt
+	aothr_notes = `${ANTopEntries.join('\n')}\n${aothr_notes}\n${ANBottomEntries.join('\n')}`.replace(/(^\n)|(\n$)/g, '');
+
+	let new_chat_log = []
+	for (let index = 0; index < chatLog.length; index++) {
+		let WIDepth = WIDepthEntries.filter((e) => e.depth === index)
+		for (let entrie of WIDepth) {
+			let role;
+			switch (entrie.role) {
+				case extension_prompt_roles.ASSISTANT:
+					role = 'assistant';
+					break;
+				case extension_prompt_roles.USER:
+					role = 'user';
+					break;
+				case extension_prompt_roles.SYSTEM:
+					role = 'system';
+					break;
+			}
+			new_chat_log.unshift({
+				role: role,
+				content: entrie.entries.join('\n'),
+			})
+		}
+		if (index == charData.extensions.depth_prompt.depth) {
+			new_chat_log.unshift({
+				role: charData.extensions.depth_prompt.role,
+				content: aothr_notes
+			})
+		}
+		const message = chatLog[index];
+		new_chat_log.unshift(message)
+	}
+	aret.chat_log = new_chat_log
+
+	mes_examples = [...before_EMEntries, ...mes_examples, ...after_EMEntries].filter(e => e)
 	while (token_now < token_budget && mes_examples.length > 0) {
 		let mes_example = mes_examples.pop()
 		aret.mes_examples.push(mes_example)

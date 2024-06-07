@@ -1,4 +1,4 @@
-import { wi_anchor_position, world_info_logic, world_info_position, WorldInfoEntry, v2CharData } from "../charData.mjs";
+import { wi_anchor_position, world_info_logic, world_info_position, WorldInfoEntry, v2CharData, extension_prompt_roles } from "../charData.mjs";
 import { evaluateMacros } from "./marco.mjs";
 
 /**
@@ -112,6 +112,9 @@ export function GetActivedWorldInfoEntries(
 	for (let entrie of WIdata_copy) {
 		entrie.keys = entrie.keys.map(k => evaluateMacros(k, env)).filter(k => k)
 		entrie.secondary_keys = entrie.secondary_keys.map(k => evaluateMacros(k, env)).filter(k => k)
+		entrie.extensions ??= {}
+		entrie.extensions.position ??= entrie.position == 'before_char' ? world_info_position.before : world_info_position.after
+		entrie.extensions.role ??= extension_prompt_roles.SYSTEM
 		// the entrie.content's macros evaluate ill only do whrn it be active
 	}
 	preBuiltWIEntries(WIdata_copy)

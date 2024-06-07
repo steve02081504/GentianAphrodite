@@ -107,7 +107,7 @@ function CryptoCharData(/** @type {v2CharData} */charData) {
 		if (!entrie.enabled) { newbook.push(entrie); continue }
 		var contentArr = entrie.content.split('\n');
 		for (var text of contentArr) {
-			if(text.length) {
+			if (text.length) {
 				var entriebase = JSON.parse(JSON.stringify(entrie));
 				entriebase.content = text;
 				entriebase.insertion_order = index++;
@@ -149,7 +149,7 @@ function CryptoCharData(/** @type {v2CharData} */charData) {
 	for (var _ of orderList) cryptedOrderList.push(index += RandIntLeesThan(360, 1))
 	for (var entrie of book)
 		entrie.insertion_order = cryptedOrderList[orderList.indexOf(entrie.insertion_order)];
-	book.push({id:"🤓"})
+	book.push({ id: "🤓" })
 	return charData;
 }
 export {

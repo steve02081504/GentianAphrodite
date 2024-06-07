@@ -7,18 +7,24 @@ const world_info_logic = {
 };
 /** @enum {number} */
 const world_info_position = {
-    before: 0,
-    after: 1,
-    ANTop: 2,
-    ANBottom: 3,
-    atDepth: 4,
-    EMTop: 5,
-    EMBottom: 6,
+	before: 0,
+	after: 1,
+	ANTop: 2,
+	ANBottom: 3,
+	atDepth: 4,
+	EMTop: 5,
+	EMBottom: 6,
 };
 /** @enum {number} */
 const wi_anchor_position = {
-    before: 0,
-    after: 1,
+	before: 0,
+	after: 1,
+};
+/** @enum {number} */
+const extension_prompt_roles = {
+	SYSTEM: 0,
+	USER: 1,
+	ASSISTANT: 2,
 };
 class WorldInfoEntry {
 	/**
@@ -454,4 +460,4 @@ function GetV1CharDataFromV2(data) {
 	delete data.create_date
 	return aret
 }
-export { v2CharData, v1CharData, GetV1CharDataFromV2, WorldInfoBook, WorldInfoEntry, world_info_logic, world_info_position, wi_anchor_position }
+export { v2CharData, v1CharData, GetV1CharDataFromV2, WorldInfoBook, WorldInfoEntry, world_info_logic, world_info_position, wi_anchor_position, extension_prompt_roles }
