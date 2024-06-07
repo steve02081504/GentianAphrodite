@@ -5,6 +5,21 @@ const world_info_logic = {
 	NOT_ANY: 2,
 	AND_ALL: 3,
 };
+/** @enum {number} */
+const world_info_position = {
+    before: 0,
+    after: 1,
+    ANTop: 2,
+    ANBottom: 3,
+    atDepth: 4,
+    EMTop: 5,
+    EMBottom: 6,
+};
+/** @enum {number} */
+const wi_anchor_position = {
+    before: 0,
+    after: 1,
+};
 class WorldInfoEntry {
 	/**
 	 * the id of the entry
@@ -439,4 +454,4 @@ function GetV1CharDataFromV2(data) {
 	delete data.create_date
 	return aret
 }
-export { v2CharData, v1CharData, GetV1CharDataFromV2, WorldInfoBook, WorldInfoEntry, world_info_logic }
+export { v2CharData, v1CharData, GetV1CharDataFromV2, WorldInfoBook, WorldInfoEntry, world_info_logic, world_info_position, wi_anchor_position }
