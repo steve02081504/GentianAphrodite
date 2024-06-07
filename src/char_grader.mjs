@@ -1,7 +1,7 @@
 import { read } from './character-card-parser.mjs';
 import { arraysEqual, remove_simple_marcos } from './tools.mjs';
 import lzString from 'lz-string';
-import get_token_size from './get_token_size.mjs';
+import { get_token_size } from './get_token_size.mjs';
 
 
 export function char_grader(arg, progress_stream = console.log) {
