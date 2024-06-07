@@ -82,24 +82,6 @@ export function promptBuilder(
 	) {
 		let content = entry.content
 		switch (entry.extensions.position) {
-			case world_info_position.before:
-				aret.WIs_before_char.push(entry);
-				break;
-			case world_info_position.after:
-				aret.WIs_after_char.push(entry);
-				break;
-			case world_info_position.EMTop:
-				before_EMEntries.unshift(entry)
-				break;
-			case world_info_position.EMBottom:
-				after_EMEntries.unshift(entry)
-				break;
-			case world_info_position.ANTop:
-				ANTopEntries.unshift(content);
-				break;
-			case world_info_position.ANBottom:
-				ANBottomEntries.unshift(content);
-				break;
 			case world_info_position.atDepth: {
 				const existingDepthIndex = WIDepthEntries.findIndex((e) => e.depth === (entry.depth ?? DEFAULT_DEPTH) && e.extensions.role === entry.extensions.role);
 				if (existingDepthIndex !== -1) {
@@ -114,9 +96,22 @@ export function promptBuilder(
 				break;
 			}
 			default:
+				[
+					aret.WIs_before_char,
+					aret.WIs_after_char,
+					ANTopEntries,
+					ANBottomEntries,
+					null,
+					before_EMEntries,
+					after_EMEntries
+				][entry.extensions.position].unshift(entry);
 				break;
 		}
 	}
+	before_EMEntries = before_EMEntries.map(e => e.content)
+	after_EMEntries = after_EMEntries.map(e => e.content)
+	ANTopEntries = ANTopEntries.map(e => e.content)
+	ANBottomEntries = ANBottomEntries.map(e => e.content)
 	let constant_WIs = WIs.filter(e => e.constant)
 	WIs = WIs.filter(e => !e.constant).sort((a, b) => a.extensions.position == b.extensions.position ? a.insertion_order - b.insertion_order : a.extensions.position - b.extensions.position)
 	for (let WI of constant_WIs) add_WI(WI)
@@ -137,18 +132,7 @@ export function promptBuilder(
 	for (let index = 0; index < chatLog.length; index++) {
 		let WIDepth = WIDepthEntries.filter((e) => e.depth === index)
 		for (let entrie of WIDepth) {
-			let role;
-			switch (entrie.role) {
-				case extension_prompt_roles.ASSISTANT:
-					role = 'assistant';
-					break;
-				case extension_prompt_roles.USER:
-					role = 'user';
-					break;
-				case extension_prompt_roles.SYSTEM:
-					role = 'system';
-					break;
-			}
+			let role = ['system', 'user', 'assistant'][entrie.role];
 			new_chat_log.unshift({
 				role: role,
 				content: entrie.entries.join('\n'),
