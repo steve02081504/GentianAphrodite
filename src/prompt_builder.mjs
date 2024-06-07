@@ -7,7 +7,7 @@ import { get_token_size } from "./get_token_size.mjs";
 export let chat_metadata = {
 	chat_log: []
 }
-export function saveMetadataDebounced() {}
+export function saveMetadataDebounced() { }
 export function getChatIdHash() {
 	if (chat_metadata.chat_log.length)
 		sha256(JSON.stringify(chat_metadata.chat_log[chat_metadata.chat_log.length - 1])).toString();
