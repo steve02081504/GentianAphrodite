@@ -1,5 +1,6 @@
 import { simplized, traditionalized } from "./chs2t.mjs";
 import { WorldInfoBook, WorldInfoEntry, world_info_logic } from "./charData.mjs";
+import regexgen from 'regexgen'
 
 /**
  * Iterates WI data array and performs specific operations on it.
