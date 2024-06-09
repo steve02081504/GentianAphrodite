@@ -103,4 +103,24 @@ function escapeRegExp(string) {
 	return string.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&');
 }
 
-export { arraysEqual, nicerWriteFileSync, clearEmptyDirs, remove_simple_marcos, parseRegexFromString, escapeRegExp };
+/**
+ * Recursively creates a deep copy of the given object.
+ *
+ * @param {object} object - The object to be copied.
+ * @return {object} A deep copy of the object.
+ */
+function deepCopy(object, weakMap = new WeakMap()) {
+	if (!object || !(object instanceof Object)) return object
+
+	if (weakMap.has(object)) return weakMap.get(object);
+
+	let target = Array.isArray(object) ? [] : {}
+	weakMap.set(object, target);
+	for (const key in object)
+		if (Object.hasOwnProperty.call(object, key)) target[key] = deepCopy(object[key], weakMap);
+	Object.setPrototypeOf(target, Object.getPrototypeOf(object));
+
+	return target
+}
+
+export { arraysEqual, nicerWriteFileSync, clearEmptyDirs, remove_simple_marcos, parseRegexFromString, escapeRegExp, deepCopy };

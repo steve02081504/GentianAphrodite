@@ -1,5 +1,5 @@
 import { wi_anchor_position, world_info_logic, world_info_position, WorldInfoEntry, v2CharData, extension_prompt_roles } from "../charData.mjs";
-import { escapeRegExp, parseRegexFromString } from "../tools.mjs";
+import { deepCopy, escapeRegExp, parseRegexFromString } from "../tools.mjs";
 import { evaluateMacros } from "./marco.mjs";
 
 let WISettings = {
@@ -74,7 +74,7 @@ export function GetActivedWorldInfoEntries(
 	env
 ) {
 	/** @type {WorldInfoEntry[]} */
-	let WIdata_copy = JSON.parse(JSON.stringify(WIentries.filter(e => e.enabled)))
+	let WIdata_copy = deepCopy(WIentries.filter(e => e.enabled))
 	let aret = []
 	for (let entrie of WIdata_copy) {
 		entrie.keys = entrie.keys.map(k => evaluateMacros(k, env)).filter(k => k)
