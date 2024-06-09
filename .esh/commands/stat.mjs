@@ -21,7 +21,7 @@ let stat = {
 		charData.system_prompt, charData.extensions.depth_prompt.prompt,
 		charData.first_mes, ...charData.alternate_greetings, ...charData.extensions.group_greetings,
 		...enabledWIs.map(_ => _.content),
-	].join('\n')).replace(/\n+/g, '\n')).length
+	].join('\n')).replace(/\n+/g, '\n'))
 }
 encoder_free()
 console.dir(stat, { depth: null });
