@@ -70,7 +70,7 @@ export function promptBuilder(
 				e.content = e.content.replace(script.findRegex, script.replaceString)
 		WIs = WIs.filter(e => e.content)
 	}
-	let mes_examples = charData.mes_example.split(/<START>/gi).filter(e => e)
+	let mes_examples = charData.mes_example.split(/\n<START>/gi).map(e => e.trim()).filter(e => e)
 	let before_EMEntries = []
 	let after_EMEntries = []
 	let ANTopEntries = []

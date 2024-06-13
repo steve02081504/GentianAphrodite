@@ -1,8 +1,8 @@
 // from https://github.com/SillyTavern/SillyTavern
+// license as AGPL-3.0 license
 
 import { chat_metadata, saveMetadataDebounced } from "../prompt_builder.mjs";
 
-// license as AGPL-3.0 license
 function getLocalVariable(name, args = {}) {
 	if (!chat_metadata.variables) {
 		chat_metadata.variables = {};
