@@ -18,7 +18,7 @@ function buildKeyList(keys, isSensitive, isFullWordMatch) {
 		}
 		key = escapeRegExp(key)
 		if (isFullWordMatch) key = `\\b${key}\\b`
-		let regex_key = new RegExp(key, isSensitive ? 'g' : 'gi')
+		let regex_key = new RegExp(key, isSensitive ? 'ug' : 'ugi')
 		aret.push(regex_key)
 	}
 	return aret

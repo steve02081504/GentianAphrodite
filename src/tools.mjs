@@ -123,4 +123,24 @@ function deepCopy(object, weakMap = new WeakMap()) {
 	return target
 }
 
-export { arraysEqual, nicerWriteFileSync, clearEmptyDirs, remove_simple_marcos, parseRegexFromString, escapeRegExp, deepCopy };
+/**
+ * Replaces Unicode escape sequences in a string with their corresponding characters.
+ *
+ * @param {string} str - The input string possibly containing Unicode escape sequences.
+ * @return {string} The string with Unicode escape sequences replaced by actual characters.
+ */
+function unescapeUnicode(str) {
+	if (!(Object(str) instanceof String)) str = str.toString()
+	return str.replace(/\\u([0-9a-f]{4})/gi, (match, p1) => String.fromCharCode(parseInt(p1, 16)))
+}
+
+export {
+	arraysEqual,
+	nicerWriteFileSync,
+	clearEmptyDirs,
+	remove_simple_marcos,
+	parseRegexFromString,
+	escapeRegExp,
+	deepCopy,
+	unescapeUnicode
+};
