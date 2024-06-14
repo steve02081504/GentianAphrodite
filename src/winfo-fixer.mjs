@@ -1,5 +1,7 @@
 import { simplized, traditionalized } from "./chs2t.mjs"
 import { WorldInfoBook, WorldInfoEntry, world_info_logic } from "./charData.mjs"
+import { parseRegexFromString } from "./tools.mjs"
+import { is_WILogicNode } from "./WILN.mjs"
 
 /**
  * Iterates WI data array and performs specific operations on it.
@@ -12,19 +14,20 @@ function reRule(data) {
 	for (const id in data) {
 		let entrie = data[id]
 		entrie.extensions.exclude_recursion = true
-		entrie.extensions.prevent_recursion = !(entrie.content.startsWith('<-<') && entrie.content.endsWith('>->'))
+		entrie.extensions.prevent_recursion = !is_WILogicNode(entrie.content)
 		for (const key of [...entrie.keys, ...entrie.secondary_keys]) {
-			if (key.startsWith('<-<') && key.endsWith('>->')) continue // 跳过推理节点
+			if (is_WILogicNode(key)) continue // 跳过推理节点
 			// 判断是否包含中日韩文字符
 			if (/\p{Unified_Ideograph}/u.test(key))
 				entrie.extensions.match_whole_words = false
 		}
 		let keySet = [...entrie.keys]
 		for (const key of keySet) {
-			if (key.startsWith('<-<') && key.endsWith('>->')) {
+			if (is_WILogicNode(key)) {
 				entrie.extensions.exclude_recursion = false
 				continue // 跳过推理节点
 			}
+			else if(parseRegexFromString(key)) continue // 跳过正则
 			if (key.indexOf(' '))
 				entrie.keys.push(key.replace(/\s+/g, ''))
 			entrie.keys.push(simplized(key))
@@ -32,11 +35,12 @@ function reRule(data) {
 		}
 		let secondary_keysSet = [...entrie.secondary_keys]
 		for (const key of secondary_keysSet) {
-			if (key.startsWith('<-<') && key.endsWith('>->')) {
+			if (is_WILogicNode(key)) {
 				if (entrie.extensions.selectiveLogic == world_info_logic.AND_ALL || entrie.extensions.selectiveLogic == world_info_logic.AND_ANY)
 					entrie.extensions.exclude_recursion = false
 				continue // 跳过推理节点
 			}
+			else if(parseRegexFromString(key)) continue // 跳过正则
 			if (key.indexOf(' '))
 				entrie.secondary_keys.push(key.replace(/\s+/g, ''))
 			entrie.secondary_keys.push(simplized(key))

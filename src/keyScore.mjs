@@ -1,3 +1,4 @@
+import { is_WILogicNode } from "./WILN.mjs"
 import { world_info_logic } from "./charData.mjs"
 
 let keyscorespliter = "__worldinfo_keyscores__"
@@ -19,7 +20,7 @@ function keyScoreAdder(data) {
 			let secondary_keysSet = [...entrie.secondary_keys]
 			let oldlen = entrie.secondary_keys.length
 			for (const key of secondary_keysSet)
-				if (key.startsWith('<-<') && key.endsWith('>->')) {
+				if (is_WILogicNode(key)) {
 					let keyscore = data.filter(e => e.content == key)[0]
 					if (!keyscore) {
 						console.log(`keyscore not found: ${key}`)
