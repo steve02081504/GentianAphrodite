@@ -1,6 +1,6 @@
-import yaml from 'yaml';
-import fs from 'fs';
-import { nicerWriteFileSync } from './tools.mjs';
+import yaml from 'yaml'
+import fs from 'fs'
+import { nicerWriteFileSync } from './tools.mjs'
 /** @type {yaml.ToStringOptions} */
 const yamlConfig = {
 	lineWidth: Number.POSITIVE_INFINITY
@@ -14,7 +14,7 @@ const yamlConfig = {
 function yamlParse(yamlStr) {
 	yamlStr = yamlStr.replace(/\n\t+/g, m => m.replace(/\t/g, '  '))
 	yamlStr = yamlStr.replace(/\n\t+-\t\|/g, m => m.replace('-\t|', '- |'))
-	return yaml.parse(yamlStr, yamlConfig);
+	return yaml.parse(yamlStr, yamlConfig)
 }
 /**
  * Converts an object to a tab indented YAML string.
@@ -23,7 +23,7 @@ function yamlParse(yamlStr) {
  */
 function yamlStringify(yamlObj) {
 	let yamlStr = yaml.stringify(yamlObj, yamlConfig)
-	yamlStr = yamlStr.replace(/\n(  )+/g, m => m.replace(/  /g, '\t'));
+	yamlStr = yamlStr.replace(/\n(  )+/g, m => m.replace(/  /g, '\t'))
 	yamlStr = yamlStr.replace(/\n\t+- \|/g, m => m.replace('- |', '-\t|'))
 	return yamlStr
 }

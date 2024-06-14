@@ -1,5 +1,5 @@
-import { simplized, traditionalized } from "./chs2t.mjs";
-import { WorldInfoBook, WorldInfoEntry, world_info_logic } from "./charData.mjs";
+import { simplized, traditionalized } from "./chs2t.mjs"
+import { WorldInfoBook, WorldInfoEntry, world_info_logic } from "./charData.mjs"
 
 /**
  * Iterates WI data array and performs specific operations on it.
@@ -10,27 +10,27 @@ import { WorldInfoBook, WorldInfoEntry, world_info_logic } from "./charData.mjs"
  */
 function reRule(data) {
 	for (const id in data) {
-		let entrie = data[id];
+		let entrie = data[id]
 		entrie.extensions.exclude_recursion = true
 		entrie.extensions.prevent_recursion = !(entrie.content.startsWith('<-<') && entrie.content.endsWith('>->'))
 		for (const key of [...entrie.keys, ...entrie.secondary_keys]) {
 			if (key.startsWith('<-<') && key.endsWith('>->')) continue // 跳过推理节点
 			// 判断是否包含中日韩文字符
 			if (/\p{Unified_Ideograph}/u.test(key))
-				entrie.extensions.match_whole_words = false;
+				entrie.extensions.match_whole_words = false
 		}
-		let keySet = [...entrie.keys];
+		let keySet = [...entrie.keys]
 		for (const key of keySet) {
 			if (key.startsWith('<-<') && key.endsWith('>->')) {
 				entrie.extensions.exclude_recursion = false
 				continue // 跳过推理节点
 			}
 			if (key.indexOf(' '))
-				entrie.keys.push(key.replace(/\s+/g, ''));
-			entrie.keys.push(simplized(key));
-			entrie.keys.push(traditionalized(key));
+				entrie.keys.push(key.replace(/\s+/g, ''))
+			entrie.keys.push(simplized(key))
+			entrie.keys.push(traditionalized(key))
 		}
-		let secondary_keysSet = [...entrie.secondary_keys];
+		let secondary_keysSet = [...entrie.secondary_keys]
 		for (const key of secondary_keysSet) {
 			if (key.startsWith('<-<') && key.endsWith('>->')) {
 				if (entrie.extensions.selectiveLogic == world_info_logic.AND_ALL || entrie.extensions.selectiveLogic == world_info_logic.AND_ANY)
@@ -38,9 +38,9 @@ function reRule(data) {
 				continue // 跳过推理节点
 			}
 			if (key.indexOf(' '))
-				entrie.secondary_keys.push(key.replace(/\s+/g, ''));
-			entrie.secondary_keys.push(simplized(key));
-			entrie.secondary_keys.push(traditionalized(key));
+				entrie.secondary_keys.push(key.replace(/\s+/g, ''))
+			entrie.secondary_keys.push(simplized(key))
+			entrie.secondary_keys.push(traditionalized(key))
 		}
 	}
 }
@@ -50,16 +50,16 @@ function reRule(data) {
  * @param {WorldInfoEntry[]} data - The data containing entries to process.
  */
 function reIndex(data) {
-	let displayIndexArray = [];
+	let displayIndexArray = []
 	for (const key in data)
-		displayIndexArray.push(data[key].extensions.display_index);
-	let orderedIndexArray = displayIndexArray.sort((a, b) => a - b);
-	let aret = [];
+		displayIndexArray.push(data[key].extensions.display_index)
+	let orderedIndexArray = displayIndexArray.sort((a, b) => a - b)
+	let aret = []
 	for (const key in data) {
-		data[key].id = data[key].extensions.display_index = orderedIndexArray.indexOf(data[key].extensions.display_index);
-		aret[data[key].id] = data[key];
+		data[key].id = data[key].extensions.display_index = orderedIndexArray.indexOf(data[key].extensions.display_index)
+		aret[data[key].id] = data[key]
 	}
-	return aret;
+	return aret
 }
 
 /**
@@ -68,13 +68,13 @@ function reIndex(data) {
  * @returns {Object|Array} The data with duplicate entries removed.
  */
 function removeDuplicates(data) {
-	if (typeof data == 'string') return data;
-	for (const key in data) {
-		data[key] = removeDuplicates(data[key]);
-	}
+	if (typeof data == 'string') return data
+	for (const key in data)
+		data[key] = removeDuplicates(data[key])
+
 	if (Array.isArray(data))
 		return [...new Set(data)].sort()
-	return data;
+	return data
 }
 
 /**
@@ -82,10 +82,10 @@ function removeDuplicates(data) {
  * @param {WorldInfoBook} data - The charbook data
  */
 function winfoFixer(data) {
-	reRule(data.entries);
+	reRule(data.entries)
 	data = removeDuplicates(data)
 	data.entries = reIndex(data.entries)
-	return data;
+	return data
 }
 
 export default winfoFixer

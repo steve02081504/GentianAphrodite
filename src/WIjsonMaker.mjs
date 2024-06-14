@@ -1,4 +1,4 @@
-import { WorldInfoBook, WorldInfoEntry } from "./charData.mjs";
+import { WorldInfoBook, WorldInfoEntry } from "./charData.mjs"
 /**
  * @typedef {object} WIjsonData
  * @property {{[key: `${number}`]: WIjsonEntry}} entries

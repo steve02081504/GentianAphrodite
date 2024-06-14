@@ -1,9 +1,9 @@
-import CardFileInfo from "../../src/cardinfo.mjs";
-import repl from "repl";
+import CardFileInfo from "../../src/cardinfo.mjs"
+import repl from "repl"
 
 
-CardFileInfo.readDataFiles();
+CardFileInfo.readDataFiles()
 repl.start({
 	prompt: '> ',
 	useGlobal: true,
-}).context.CardInfo = CardFileInfo;
+}).context.CardInfo = CardFileInfo

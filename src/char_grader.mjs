@@ -1,17 +1,17 @@
-import { read } from './character-card-parser.mjs';
-import { arraysEqual, remove_simple_marcos } from './tools.mjs';
-import lzString from 'lz-string';
-import { get_token_size } from './get_token_size.mjs';
+import { read } from './character-card-parser.mjs'
+import { arraysEqual, remove_simple_marcos } from './tools.mjs'
+import lzString from 'lz-string'
+import { get_token_size } from './get_token_size.mjs'
 
 
 export function char_grader(arg, progress_stream = console.log) {
 	progress_stream("Initializing...")
-	let cardsize = 0;
+	let cardsize = 0
 	if (arg instanceof ArrayBuffer || arg instanceof Uint8Array) {
 		cardsize = arg.byteLength
-		arg = read(arg);
+		arg = read(arg)
 	}
-	if (Object(arg) instanceof String) arg = JSON.parse(arg.replace(/\\r\\n/g, '\\n'));
+	if (Object(arg) instanceof String) arg = JSON.parse(arg.replace(/\\r\\n/g, '\\n'))
 	/** @type {import('./charData.mjs').v1CharData} */
 	let char = arg
 	var score_details = {
@@ -43,9 +43,9 @@ export function char_grader(arg, progress_stream = console.log) {
 				arraysEqual(entry.secondary_keys, last_entry.secondary_keys) &&
 				entry.constant === last_entry.constant &&
 				entry.position === last_entry.position
-			) {
+			)
 				last_entry.content += '\n' + entry.content
-			}
+
 			else {
 				new_book.push(entry)
 				index++
@@ -185,7 +185,7 @@ export function char_grader(arg, progress_stream = console.log) {
 		let unique_keys = [...new Set(key_array)]
 		let key_num = unique_keys.length
 		BaseGrading('unique_key_num', key_num, 'unique keys', 2, 0, 1 / 1.15)
-		key_num = key_array.length - key_num;
+		key_num = key_array.length - key_num
 		BaseGrading('multi_time_key_num', key_num, 'multi time keys', 0.4)
 		for (let key of unique_keys)
 			if (key.match(/、|，/gi))

@@ -13,6 +13,7 @@
 	"author": "steve02081504",
 	"devDependencies": {
 		"crypto-js": "^4.2.0",
+		"eslint": "^9.4.0",
 		"lz-string": "^1.5.0",
 		"png-chunk-text": "^1.0.0",
 		"png-chunks-encode": "^1.0.0",

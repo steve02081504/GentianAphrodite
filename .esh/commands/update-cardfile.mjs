@@ -1,4 +1,4 @@
-import CardFileInfo from "../../src/cardinfo.mjs";
+import CardFileInfo from "../../src/cardinfo.mjs"
 
-CardFileInfo.readDataFiles();
-CardFileInfo.saveCardInfo();
+CardFileInfo.readDataFiles()
+CardFileInfo.saveCardInfo()

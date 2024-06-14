@@ -1,6 +1,6 @@
-import { wi_anchor_position, world_info_logic, world_info_position, WorldInfoEntry, v2CharData, extension_prompt_roles } from "../charData.mjs";
-import { deepCopy, escapeRegExp, parseRegexFromString } from "../tools.mjs";
-import { evaluateMacros } from "./marco.mjs";
+import { wi_anchor_position, world_info_logic, world_info_position, WorldInfoEntry, v2CharData, extension_prompt_roles } from "../charData.mjs"
+import { deepCopy, escapeRegExp, parseRegexFromString } from "../tools.mjs"
+import { evaluateMacros } from "./marco.mjs"
 
 let WISettings = {
 	depth: 4,
@@ -88,26 +88,26 @@ export function GetActivedWorldInfoEntries(
 	let recursion_WIs = []
 	let recursion_WI_size = 0
 	let WIdata_new = WIdata_copy
-	for (let entrie of WIdata_copy) {
+	for (let entrie of WIdata_copy)
 		if (entrie.constant || entrie.isActived(chatLog, recursion_WIs)) {
 			entrie.content = evaluateMacros(entrie.content, env)
 			if (!entrie.extensions.prevent_recursion) recursion_WIs.push(entrie.content)
 			aret.push(entrie)
 			WIdata_new = WIdata_new.filter(e => e !== entrie)
 		}
-	}
+
 	WIdata_copy = WIdata_new.filter(e => !e.extensions.exclude_recursion)
 	do {
 		recursion_WI_size = recursion_WIs.length
 		let WIdata_new = [...WIdata_copy]
-		for (let entrie of WIdata_copy) {
+		for (let entrie of WIdata_copy)
 			if (entrie.isActived(chatLog, recursion_WIs)) {
 				entrie.content = evaluateMacros(entrie.content, env)
 				if (!entrie.extensions.prevent_recursion) recursion_WIs.push(entrie.content)
 				aret.push(entrie)
 				WIdata_new = WIdata_new.filter(e => e !== entrie)
 			}
-		}
+
 		WIdata_copy = WIdata_new
 	} while (recursion_WI_size < recursion_WIs.length)
 	for (let entrie of aret) delete entrie.isActived

@@ -4,7 +4,7 @@ const world_info_logic = {
 	NOT_ALL: 1,
 	NOT_ANY: 2,
 	AND_ALL: 3,
-};
+}
 /** @enum {number} */
 const world_info_position = {
 	before: 0,
@@ -14,7 +14,7 @@ const world_info_position = {
 	atDepth: 4,
 	EMTop: 5,
 	EMBottom: 6,
-};
+}
 /**
  * @enum {number} Where the regex script should be applied
  */
@@ -28,18 +28,18 @@ const regex_placement = {
 	SLASH_COMMAND: 3,
 	// 4 - sendAs (legacy)
 	WORLD_INFO: 5,
-};
+}
 /** @enum {number} */
 const wi_anchor_position = {
 	before: 0,
 	after: 1,
-};
+}
 /** @enum {number} */
 const extension_prompt_roles = {
 	SYSTEM: 0,
 	USER: 1,
 	ASSISTANT: 2,
-};
+}
 class WorldInfoEntry {
 	/**
 	 * the id of the entry

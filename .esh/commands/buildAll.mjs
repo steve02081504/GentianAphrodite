@@ -1,5 +1,5 @@
-import CardFileInfo from "../../src/cardinfo.mjs";
+import CardFileInfo from "../../src/cardinfo.mjs"
 
-CardFileInfo.readDataFiles();
+CardFileInfo.readDataFiles()
 for (let v of [,'static','WIjson'])
-	CardFileInfo.Build(v);
+	CardFileInfo.Build(v)

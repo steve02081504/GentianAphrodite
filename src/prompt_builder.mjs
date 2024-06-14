@@ -1,9 +1,9 @@
-import sha256 from 'crypto-js/sha256.js';
-import { WorldInfoEntry, extension_prompt_roles, regex_placement, v2CharData, world_info_position } from "./charData.mjs";
-import { evaluateMacros } from "./engine/marco.mjs";
-import { GetActivedWorldInfoEntries } from "./engine/world_info.mjs";
-import { get_token_size } from "./get_token_size.mjs";
-import { parseRegexFromString } from './tools.mjs';
+import sha256 from 'crypto-js/sha256.js'
+import { WorldInfoEntry, extension_prompt_roles, regex_placement, v2CharData, world_info_position } from "./charData.mjs"
+import { evaluateMacros } from "./engine/marco.mjs"
+import { GetActivedWorldInfoEntries } from "./engine/world_info.mjs"
+import { get_token_size } from "./get_token_size.mjs"
+import { parseRegexFromString } from './tools.mjs'
 
 export let chat_metadata = {
 	chat_log: []
@@ -11,11 +11,11 @@ export let chat_metadata = {
 export function saveMetadataDebounced() { }
 export function getChatIdHash() {
 	if (chat_metadata.chat_log.length)
-		sha256(JSON.stringify(chat_metadata.chat_log[chat_metadata.chat_log.length - 1])).toString();
+		sha256(JSON.stringify(chat_metadata.chat_log[chat_metadata.chat_log.length - 1])).toString()
 	return 'bro'
 }
 export function getStringHash(str) {
-	return sha256(str).toString();
+	return sha256(str).toString()
 }
 
 export function promptBuilder(
@@ -83,17 +83,17 @@ export function promptBuilder(
 		let content = entry.content
 		switch (entry.extensions.position) {
 			case world_info_position.atDepth: {
-				const existingDepthIndex = WIDepthEntries.findIndex((e) => e.depth === (entry.depth ?? DEFAULT_DEPTH) && e.extensions.role === entry.extensions.role);
-				if (existingDepthIndex !== -1) {
-					WIDepthEntries[existingDepthIndex].entries.unshift(content);
-				} else {
+				const existingDepthIndex = WIDepthEntries.findIndex((e) => e.depth === (entry.depth ?? DEFAULT_DEPTH) && e.extensions.role === entry.extensions.role)
+				if (existingDepthIndex !== -1)
+					WIDepthEntries[existingDepthIndex].entries.unshift(content)
+				else
 					WIDepthEntries.push({
 						depth: entry.extensions?.depth || 0,
 						entries: [content],
 						role: entry.extensions.role,
-					});
-				}
-				break;
+					})
+
+				break
 			}
 			default:
 				[
@@ -104,8 +104,8 @@ export function promptBuilder(
 					null,
 					before_EMEntries,
 					after_EMEntries
-				][entry.extensions.position].unshift(entry);
-				break;
+				][entry.extensions.position].unshift(entry)
+				break
 		}
 	}
 	before_EMEntries = before_EMEntries.map(e => e.content)
@@ -126,25 +126,25 @@ export function promptBuilder(
 	aret.WIs_after_char = aret.WIs_after_char.sort((a, b) => a.insertion_order - b.insertion_order).map(e => e.content)
 
 	let aothr_notes = charData.extensions.depth_prompt.prompt
-	aothr_notes = `${ANTopEntries.join('\n')}\n${aothr_notes}\n${ANBottomEntries.join('\n')}`.replace(/(^\n)|(\n$)/g, '');
+	aothr_notes = `${ANTopEntries.join('\n')}\n${aothr_notes}\n${ANBottomEntries.join('\n')}`.replace(/(^\n)|(\n$)/g, '')
 
 	let new_chat_log = []
 	for (let index = 0; index < chatLog.length; index++) {
 		let WIDepth = WIDepthEntries.filter((e) => e.depth === index)
 		for (let entrie of WIDepth) {
-			let role = ['system', 'user', 'assistant'][entrie.role];
+			let role = ['system', 'user', 'assistant'][entrie.role]
 			new_chat_log.unshift({
 				role: role,
 				content: entrie.entries.join('\n'),
 			})
 		}
-		if (index == charData.extensions.depth_prompt.depth) {
+		if (index == charData.extensions.depth_prompt.depth)
 			new_chat_log.unshift({
 				role: charData.extensions.depth_prompt.role,
 				content: aothr_notes
 			})
-		}
-		const message = chatLog[index];
+
+		const message = chatLog[index]
 		new_chat_log.unshift(message)
 	}
 	aret.chat_log = new_chat_log

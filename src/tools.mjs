@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'fs'
 /**
  * Checks if two arrays are equal.
  * @param {Array} a - The first array.
@@ -6,14 +6,14 @@ import fs from 'fs';
  * @return {boolean} True if the arrays are equal, false otherwise.
  */
 function arraysEqual(a, b) {
-	if (a === b) return true;
-	if (!a || !b) return false;
-	if (a.length !== b.length) return false;
+	if (a === b) return true
+	if (!a || !b) return false
+	if (a.length !== b.length) return false
 
 	for (var i = 0; i < a.length; ++i)
 		if (a[i] !== b[i])
-			return false;
-	return true;
+			return false
+	return true
 }
 
 /**
@@ -27,9 +27,9 @@ function arraysEqual(a, b) {
 function nicerWriteFileSync(filePath, data, encoding = 'utf8') {
 	var oldData
 	if (fs.existsSync(filePath))
-		oldData = fs.readFileSync(filePath, encoding);
+		oldData = fs.readFileSync(filePath, encoding)
 	if (oldData != data)
-		fs.writeFileSync(filePath, data, encoding);
+		fs.writeFileSync(filePath, data, encoding)
 }
 
 /**
@@ -38,15 +38,15 @@ function nicerWriteFileSync(filePath, data, encoding = 'utf8') {
  * @return {boolean} True if the directory was cleared successfully, false otherwise.
  */
 function clearEmptyDirs(dirPath) {
-	var files = fs.readdirSync(dirPath, { recursive: true });
-	var empty = true;
+	var files = fs.readdirSync(dirPath, { recursive: true })
+	var empty = true
 	for (const file of files) {
-		var filePath = dirPath + '/' + file;
+		var filePath = dirPath + '/' + file
 		if (fs.lstatSync(filePath).isDirectory() && clearEmptyDirs(filePath)) continue
-		empty = false;
+		empty = false
 	}
-	if (empty) fs.rmdirSync(dirPath);
-	return empty;
+	if (empty) fs.rmdirSync(dirPath)
+	return empty
 }
 
 /**
@@ -56,7 +56,7 @@ function clearEmptyDirs(dirPath) {
  * @return {object|string} - The object or string with all instances of simple Marcos placeholders removed.
  */
 function remove_simple_marcos(object) {
-	if (Object(object) instanceof String) return object.replace(/{{\/\/([\s\S]*?)}}/g, '').replace(/\{\{user\}\}/i, 'user').replace(/\{\{char\}\}/i, 'char');
+	if (Object(object) instanceof String) return object.replace(/{{\/\/([\s\S]*?)}}/g, '').replace(/\{\{user\}\}/i, 'user').replace(/\{\{char\}\}/i, 'char')
 	for (const key in object) object[key] = remove_simple_marcos(object[key])
 	return object
 }
@@ -72,24 +72,24 @@ function remove_simple_marcos(object) {
  */
 function parseRegexFromString(input) {
 	// Extracting the regex pattern and flags
-	let match = input.match(/^\/([\w\W]+?)\/([gimsuy]*)$/);
-	if (!match) return null; // Not a valid regex format
+	let match = input.match(/^\/([\w\W]+?)\/([gimsuy]*)$/)
+	if (!match) return null // Not a valid regex format
 
-	let [, pattern, flags] = match;
+	let [, pattern, flags] = match
 
 	// If we find any unescaped slash delimiter, we also exit out.
 	// JS doesn't care about delimiters inside regex patterns, but for this to be a valid regex outside of our implementation,
 	// we have to make sure that our delimiter is correctly escaped. Or every other engine would fail.
-	if (pattern.match(/(^|[^\\])\//)) return null;
+	if (pattern.match(/(^|[^\\])\//)) return null
 
 	// Now we need to actually unescape the slash delimiters, because JS doesn't care about delimiters
-	pattern = pattern.replace('\\/', '/');
+	pattern = pattern.replace('\\/', '/')
 
 	// Then we return the regex. If it fails, it was invalid syntax.
 	try {
-		return new RegExp(pattern, flags);
+		return new RegExp(pattern, flags)
 	} catch (e) {
-		return null;
+		return null
 	}
 }
 
@@ -100,7 +100,7 @@ function parseRegexFromString(input) {
  * @return {string} The escaped string.
  */
 function escapeRegExp(string) {
-	return string.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&');
+	return string.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&')
 }
 
 /**
@@ -112,13 +112,13 @@ function escapeRegExp(string) {
 function deepCopy(object, weakMap = new WeakMap()) {
 	if (!object || !(object instanceof Object)) return object
 
-	if (weakMap.has(object)) return weakMap.get(object);
+	if (weakMap.has(object)) return weakMap.get(object)
 
 	let target = Array.isArray(object) ? [] : {}
-	weakMap.set(object, target);
+	weakMap.set(object, target)
 	for (const key in object)
-		if (Object.hasOwnProperty.call(object, key)) target[key] = deepCopy(object[key], weakMap);
-	Object.setPrototypeOf(target, Object.getPrototypeOf(object));
+		if (Object.hasOwnProperty.call(object, key)) target[key] = deepCopy(object[key], weakMap)
+	Object.setPrototypeOf(target, Object.getPrototypeOf(object))
 
 	return target
 }
@@ -143,4 +143,4 @@ export {
 	escapeRegExp,
 	deepCopy,
 	unescapeUnicode
-};
+}
