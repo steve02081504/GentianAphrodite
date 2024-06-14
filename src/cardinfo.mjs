@@ -150,9 +150,11 @@ class CardFileInfo_t {
 			}
 		}
 		keyScoreRemover(this.v1metaData.data.character_book.entries)
-		this.metaData = yaml.readFileSync(yamlFilePath)
-		this.v1metaData.create_date = this.metaData.create_date
-		this.v1metaData.data.extensions.fav = this.metaData.extensions.fav
+		if (fs.existsSync(yamlFilePath)) {
+			this.metaData = yaml.readFileSync(yamlFilePath)
+			this.v1metaData.create_date = this.metaData.create_date
+			this.v1metaData.data.extensions.fav = this.metaData.extensions.fav
+		}
 		let ver = this.v1metaData.data.character_version
 		if (ver) {
 			metaDataStr = JSON.stringify(this.v1metaData)
@@ -211,6 +213,7 @@ class CardFileInfo_t {
 		delete data.character_version
 		if (!fs.existsSync(charDataPath)) fs.mkdirSync(charDataPath)
 		if (!fs.existsSync(regex_scripts_path)) fs.mkdirSync(regex_scripts_path)
+		data.extensions.regex_scripts ??= []
 		for (const script of data.extensions.regex_scripts) {
 			var filePath = regex_scripts_path + '/' + script.scriptName + '.json'
 			var scriptStr = JSON.stringify(script, null, '\t') + '\n'
@@ -227,7 +230,7 @@ class CardFileInfo_t {
 		delete data.creator_notes
 		yaml.writeFileSync(yamlFilePath, data)
 		if (!fs.existsSync(character_book_path + '/entries'))
-			fs.mkdirSync(character_book_path + '/entries')
+			fs.mkdirSync(character_book_path + '/entries', { recursive: true })
 		var character_book = this.character_book
 		data = { ...character_book }
 		delete data.entries
