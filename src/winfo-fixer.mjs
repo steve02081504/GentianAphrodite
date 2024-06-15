@@ -1,6 +1,6 @@
 import { simplized, traditionalized } from "./chs2t.mjs"
 import { WorldInfoBook, WorldInfoEntry, world_info_logic } from "./charData.mjs"
-import { parseRegexFromString } from "./tools.mjs"
+import { parseRegexFromString, removeDuplicates } from "./tools.mjs"
 import { is_WILogicNode } from "./WILN.mjs"
 
 /**
@@ -72,21 +72,6 @@ function reIndex(data) {
 		aret[data[key].id] = data[key]
 	}
 	return aret
-}
-
-/**
- * Removes duplicate entries from the array or object tree.
- * @param {Object|Array} data - The data containing entries to process.
- * @returns {Object|Array} The data with duplicate entries removed.
- */
-function removeDuplicates(data) {
-	if (typeof data == 'string') return data
-	for (const key in data)
-		data[key] = removeDuplicates(data[key])
-
-	if (Array.isArray(data))
-		return [...new Set(data)].sort()
-	return data
 }
 
 /**

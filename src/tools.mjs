@@ -134,6 +134,21 @@ function unescapeUnicode(str) {
 	return str.replace(/\\u([0-9a-f]{4})/gi, (match, p1) => String.fromCharCode(parseInt(p1, 16)))
 }
 
+/**
+ * Removes duplicate entries from the array or object tree.
+ * @param {Object|Array} data - The data containing entries to process.
+ * @returns {Object|Array} The data with duplicate entries removed.
+ */
+function removeDuplicates(data) {
+	if (typeof data == 'string') return data
+	for (const key in data)
+		data[key] = removeDuplicates(data[key])
+
+	if (Array.isArray(data))
+		return [...new Set(data)].sort()
+	return data
+}
+
 export {
 	arraysEqual,
 	nicerWriteFileSync,
@@ -142,5 +157,6 @@ export {
 	parseRegexFromString,
 	escapeRegExp,
 	deepCopy,
-	unescapeUnicode
+	unescapeUnicode,
+	removeDuplicates
 }
