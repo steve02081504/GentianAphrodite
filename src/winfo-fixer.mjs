@@ -4,6 +4,16 @@ import { parseRegexFromString } from "./tools.mjs"
 import { is_WILogicNode } from "./WILN.mjs"
 
 /**
+ * Checks if a given key is a common key.
+ *
+ * @param {string} key - The key to check.
+ * @return {boolean} Returns true if the key is a common key, false otherwise.
+ */
+function is_common_key(key) {
+	return !(is_WILogicNode(key) || parseRegexFromString(key))
+}
+
+/**
  * Iterates WI data array and performs specific operations on it.
  * 1. If the key or secondary key contains Chinese characters, the match_whole_words property is set to false.
  * 2. Add the simplized and traditionalized versions of the key and secondary key to the key and secondary key arrays.
@@ -22,30 +32,28 @@ function reRule(data) {
 				entrie.extensions.match_whole_words = false
 		}
 		let keySet = [...entrie.keys]
-		for (const key of keySet) {
-			if (is_WILogicNode(key)) {
-				entrie.extensions.exclude_recursion = false
-				continue // 跳过推理节点
-			}
-			else if(parseRegexFromString(key)) continue // 跳过正则
-			if (key.indexOf(' '))
-				entrie.keys.push(key.replace(/\s+/g, ''))
-			entrie.keys.push(simplized(key))
-			entrie.keys.push(traditionalized(key))
-		}
 		let secondary_keysSet = [...entrie.secondary_keys]
-		for (const key of secondary_keysSet) {
-			if (is_WILogicNode(key)) {
-				if (entrie.extensions.selectiveLogic == world_info_logic.AND_ALL || entrie.extensions.selectiveLogic == world_info_logic.AND_ANY)
-					entrie.extensions.exclude_recursion = false
-				continue // 跳过推理节点
+		if (keySet.filter(is_WILogicNode).length) entrie.extensions.exclude_recursion = false
+		if (secondary_keysSet.filter(is_WILogicNode).length)
+			if (entrie.extensions.selectiveLogic == world_info_logic.AND_ALL || entrie.extensions.selectiveLogic == world_info_logic.AND_ANY)
+				entrie.extensions.exclude_recursion = false;
+		[
+			{
+				set: keySet,
+				array: entrie.keys
+			},
+			{
+				set: secondary_keysSet,
+				array: entrie.secondary_keys
 			}
-			else if(parseRegexFromString(key)) continue // 跳过正则
-			if (key.indexOf(' '))
-				entrie.secondary_keys.push(key.replace(/\s+/g, ''))
-			entrie.secondary_keys.push(simplized(key))
-			entrie.secondary_keys.push(traditionalized(key))
-		}
+		].forEach(({ set, array }) => {
+			set.filter(is_common_key).forEach(key => {
+				if (key.indexOf(' '))
+					array.push(key.replace(/\s+/g, ''))
+				array.push(simplized(key))
+				array.push(traditionalized(key))
+			})
+		})
 	}
 }
 
