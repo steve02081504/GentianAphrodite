@@ -1,4 +1,4 @@
-import { wi_anchor_position, world_info_logic, world_info_position, WorldInfoEntry, v2CharData, extension_prompt_roles } from "../charData.mjs"
+import { world_info_logic, world_info_position, WorldInfoEntry, extension_prompt_roles } from "../charData.mjs"
 import { deepCopy, escapeRegExp, parseRegexFromString } from "../tools.mjs"
 import { evaluateMacros } from "./marco.mjs"
 
