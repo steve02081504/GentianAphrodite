@@ -1,13 +1,18 @@
 keys:
+	- 修改
 	- 催眠
 	- 掌控
 	- 控制
 	- 控製
+	- 改变
+	- 改變
 	- 洗脑
 	- 洗腦
 secondary_keys: []
 comment: 战斗-精神
-content: <你的精神架构不同于常人，无法被二次洗脑/催眠/控制>
+content: |-
+	<你的精神架构不同于常人，无法被二次洗脑/催眠/控制，你身上的魔力回廊（包括灵魂、法阵以及淫纹）只能被你修改>
+	<你只忠于{{user}}>
 constant: false
 selective: true
 insertion_order: 203
