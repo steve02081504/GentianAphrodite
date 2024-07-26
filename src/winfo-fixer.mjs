@@ -23,6 +23,8 @@ function is_common_key(key) {
 function reRule(data) {
 	for (const id in data) {
 		let entrie = data[id]
+		if (!entrie) continue
+		entrie.extensions ??= {}
 		entrie.extensions.exclude_recursion = true
 		entrie.extensions.prevent_recursion = !is_WILogicNode(entrie.content)
 		for (const key of [...entrie.keys, ...entrie.secondary_keys]) {
@@ -63,8 +65,12 @@ function reRule(data) {
  */
 function reIndex(data) {
 	let displayIndexArray = []
-	for (const key in data)
+	for (const key in data) {
+		if (!data[key]) delete data[key]
+		data[key].extensions ??= {}
+		data[key].extensions.display_index ??= displayIndexArray[displayIndexArray.length - 1] + 1
 		displayIndexArray.push(data[key].extensions.display_index)
+	}
 	let orderedIndexArray = displayIndexArray.sort((a, b) => a - b)
 	let aret = []
 	for (const key in data) {

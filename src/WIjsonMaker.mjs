@@ -23,7 +23,8 @@ export function v2CharWIbook2WIjson(book) {
 export function WIjson2v2CharWIbook(json) {
 	let aret = { ...json.originalData, entries: [] }
 	for (let id in json.entries)
-		aret.entries[id] = WIjsonEntry2v2CharWIentry(json.entries[id])
+		if (json.entries[id])
+			aret.entries[id] = WIjsonEntry2v2CharWIentry(json.entries[id])
 	return aret
 }
 /**
