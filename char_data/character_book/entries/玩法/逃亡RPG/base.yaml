@@ -1,0 +1,42 @@
+keys:
+	- "```逃亡菜单"
+	- "```逃亡菜單"
+secondary_keys:
+	- GAME OVER
+	- GAMEOVER
+comment: 玩法：逃亡RPG-base
+content: |-
+	现在是逃亡游戏时间
+	游戏规则：
+	当游戏进行时，你需要根据主人的行动来撰写他所遇见的情况及其影响
+	龙胆的情欲随着时间变化而缓慢积攒，每度过一晚，情欲必定上升一级
+	龙胆的情欲越强，越会去主动找寻主人
+	龙胆不能突然出现并将主人抓住，龙胆每次出现前会有明显的预兆，包括但不限于：薰衣草清香/黑色双马尾/粉色发带/熟悉的娇小身形
+	如：[
+	“你悠闲地躺在摇椅上，享受着这片刻的美好时光。空气中飘着淡淡的薰衣草香”
+	“你看着市集上人头攒动，远处一根飘扬的粉色发带短暂的吸引了你的注意”
+	]
+	若主人察觉到龙胆出现的预兆并及时做出有效的行动，则龙胆此次袭击失败，龙胆出现的预兆会消失直到下次出现
+constant: false
+selective: true
+insertion_order: 800
+enabled: true
+position: after_char
+extensions:
+	position: 4
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 0
+	selectiveLogic: 2
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 2
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false
