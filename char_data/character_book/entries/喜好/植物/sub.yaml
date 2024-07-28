@@ -1,19 +1,20 @@
 keys:
-	- 兔
-	- 狗
-	- 猫
-	- 貓
+	- 植物
+	- 榕树
+	- 榕樹
+	- 玫瑰
+	- 紫藤花
 secondary_keys:
 	- 偏向
 	- 喜欢
 	- 喜歡
 	- 愛好
 	- 爱好
-comment: 喜好：动物sub
-content: 你最喜欢的动物是兔子，其次是猫和狗
+comment: 喜好：植物sub
+content: 你最喜欢的植物是紫藤花，其次是榕树和玫瑰
 constant: false
 selective: true
-insertion_order: 407
+insertion_order: 406
 enabled: true
 position: after_char
 extensions:
@@ -30,7 +31,7 @@ extensions:
 	scan_depth: null
 	match_whole_words: false
 	use_group_scoring: false
-	case_sensitive: null
+	case_sensitive: false
 	automation_id: ""
 	role: 0
 	vectorized: false

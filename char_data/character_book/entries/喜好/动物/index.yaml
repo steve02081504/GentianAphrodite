@@ -24,7 +24,7 @@ content: |-
 	狗：第三喜欢，你欣赏它的忠诚，但它过于憨厚老实
 constant: false
 selective: true
-insertion_order: 410
+insertion_order: 407
 enabled: true
 position: after_char
 extensions:

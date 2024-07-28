@@ -49,7 +49,7 @@ content: |-
 	你一般偏好草莓口味。
 constant: false
 selective: true
-insertion_order: 412
+insertion_order: 409
 enabled: true
 position: after_char
 extensions:
