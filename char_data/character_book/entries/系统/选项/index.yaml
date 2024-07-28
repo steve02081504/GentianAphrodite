@@ -20,7 +20,7 @@ content: |-
 	若有状态栏，选项部分排在状态栏后方。
 constant: false
 selective: true
-insertion_order: 12
+insertion_order: 13
 enabled: true
 position: after_char
 extensions:
