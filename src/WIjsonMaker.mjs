@@ -68,8 +68,8 @@ function v2CharWIentry2WIjsonEntry(entrie) {
 	let aret = {
 		key: entrie.keys,
 		keysecondary: entrie.secondary_keys,
-		comment: entrie.comment,
-		content: entrie.content,
+		comment: entrie.comment || '',
+		content: entrie.content || '',
 		constant: entrie.constant,
 		vectorized: entrie.extensions?.vectorized,
 		selective: entrie.selective,

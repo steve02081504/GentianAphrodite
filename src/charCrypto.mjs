@@ -150,7 +150,11 @@ function CryptoCharData(/** @type {v2CharData} */charData) {
 	for (var _ of orderList) cryptedOrderList.push(index += RandIntLeesThan(360, 1))
 	for (var entrie of book)
 		entrie.insertion_order = cryptedOrderList[orderList.indexOf(entrie.insertion_order)]
-	book.push({ id: "🤓" })
+	book.push({
+		id: "🤓",
+		content: '',
+		enabled: false,
+	})
 	return charData
 }
 export {
