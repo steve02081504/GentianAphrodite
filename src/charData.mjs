@@ -449,6 +449,8 @@ class v1CharData {
 	 */
 	data
 }
+var move_pepos = ['name', 'description', 'personality', 'scenario', 'first_mes', 'mes_example', 'tags', 'create_by', 'create_date']
+var extension_pepos = ['talkativeness', 'fav']
 /**
  * Retrieves V1 character data from V2 data.
  *
@@ -458,9 +460,7 @@ class v1CharData {
 function GetV1CharDataFromV2(data) {
 	/** @type {v1CharData} */
 	var aret = {}
-	var move_pepos = ['name', 'description', 'personality', 'scenario', 'first_mes', 'mes_example', 'tags', 'create_by', 'create_date']
 	for (const key of move_pepos) if (data[key]) aret[key] = data[key]
-	var extension_pepos = ['talkativeness', 'fav']
 	for (const key of extension_pepos) aret[key] = data.extensions[key]
 	aret = {
 		...aret,
@@ -474,7 +474,24 @@ function GetV1CharDataFromV2(data) {
 	delete data.create_date
 	return aret
 }
+/**
+ * Retrieves V2 character data from V1 data.
+ *
+ * @param {v1CharData} data - The V1 data object containing character information.
+ * @returns {v2CharData} The V2 character data extracted from the V1 data.
+ */
+function GetV2CharDataFromV1(data) {
+	if (data.data) return data.data
+	/** @type {v2CharData} */
+	var aret = { extensions: {} }
+	for (const key of move_pepos) if (data[key]) aret[key] = data[key]
+	for (const key of extension_pepos) aret.extensions[key] = data[key]
+	aret.creator_notes = data.creatorcomment
+	delete aret.create_date
+	data.data = aret
+	return aret
+}
 export {
-	v2CharData, v1CharData, GetV1CharDataFromV2, WorldInfoBook, WorldInfoEntry,
+	v2CharData, v1CharData, GetV1CharDataFromV2, GetV2CharDataFromV1, WorldInfoBook, WorldInfoEntry,
 	regex_placement, world_info_logic, world_info_position, wi_anchor_position, extension_prompt_roles
 }

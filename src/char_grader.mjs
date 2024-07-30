@@ -1,7 +1,9 @@
 import { read } from './character-card-parser.mjs'
-import { arraysEqual, remove_simple_marcos } from './tools.mjs'
-import lzString from 'lz-string'
-import { get_token_size } from './get_token_size.mjs'
+import { arraysEqual, deepCopy, parseRegexFromString, remove_simple_marcos } from './tools.mjs'
+import lz from 'lz-string'
+const { compressToUTF16 } = lz
+import { GetV1CharDataFromV2 } from './charData.mjs'
+import { get_token_size, encoder } from './get_token_size.mjs'
 
 
 export function char_grader(arg, progress_stream = console.log) {
@@ -14,6 +16,7 @@ export function char_grader(arg, progress_stream = console.log) {
 	if (Object(arg) instanceof String) arg = JSON.parse(arg.replace(/\\r\\n/g, '\\n'))
 	/** @type {import('./charData.mjs').v1CharData} */
 	let char = arg
+	if (char.data && !char.description) char = GetV1CharDataFromV2(char.data)
 	var score_details = {
 		name: char.name,
 		tags: char?.tags || [],
@@ -23,19 +26,20 @@ export function char_grader(arg, progress_stream = console.log) {
 	}
 	progress_stream("Removeing useless datas...")
 	char = remove_simple_marcos(char)
-	let format_text = char.description
+	let format_text = char.description || ''
+	let wibook_entries = deepCopy(char.data?.character_book?.entries) || []
 	if (char?.data?.character_book?.entries) {
-		char.data.character_book.entries = char.data.character_book.entries.filter(_ => _.keys !== undefined)
-		for (const entry of char.data.character_book.entries) {
+		wibook_entries = wibook_entries.filter(_ => _.keys !== undefined)
+		for (const entry of wibook_entries) {
 			entry.keys = entry.keys.filter(_ => _.length > 0).sort()
 			entry.secondary_keys = entry.secondary_keys.filter(_ => _.length > 0).sort()
 			if (!entry.constant && !entry.keys.length) entry.enabled = false
 		}
-		char.data.character_book.entries = char.data.character_book.entries.filter(_ => _.enabled && _.content).sort((a, b) => a.insertion_order - b.insertion_order)
+		wibook_entries = wibook_entries.filter(_ => _.enabled && _.content).sort((a, b) => a.insertion_order - b.insertion_order)
 		progress_stream("Marging WI data...")
 		let new_book = []
 		let index = 0
-		for (const entry of char.data.character_book.entries) {
+		for (const entry of wibook_entries) {
 			let last_entry = new_book[index - 1]
 			if (
 				last_entry &&
@@ -51,8 +55,9 @@ export function char_grader(arg, progress_stream = console.log) {
 				index++
 			}
 		}
-		char.data.character_book.entries = new_book
-		format_text += char.data.character_book.entries.filter(_ => _.constant).map(_ => _.content).join('\n')
+		new_book.forEach(entry => entry.tokenized_content = encoder.encode(entry.content))
+		wibook_entries = new_book
+		format_text += wibook_entries.filter(_ => _.constant).map(_ => _.content).filter(_ => _?.length).join('\n')
 	}
 	progress_stream("Grading...")
 	function BaseGrading(title, data, data_type = 'tokens', scale = 1, base_score = 0, pow = 1) {
@@ -76,7 +81,7 @@ export function char_grader(arg, progress_stream = console.log) {
 			throw new Error(`NaN generated in do_reparation, args: ${title}, ${size}, ${scale}, ${reparation_scale}`)
 		score_details.score -= diff
 		score_details.logs.push({
-			type: `${title} too large`,
+			type: title,
 			score: -diff
 		})
 		progress_stream(`[reparation] ${title}: ${-diff} scores.`)
@@ -88,16 +93,16 @@ export function char_grader(arg, progress_stream = console.log) {
 			do_reparation(title + ' too large', size, scale, reparation_scale)
 		return size
 	}
-	let format_text_length = get_token_size(format_text)
+	let format_text_length = encoder.encode(format_text).length
 	GradingByTokenSize('description & constant WI infos', [
 		format_text
 	], 1, 9037)
 	char.mes_example = char.mes_example || ""
 	char.mes_example = char.mes_example.split(/<START>/i)
 	BaseGradingByTokenSize('mes_example', char.mes_example, 0.65)
-	let superLargeMes = char.mes_example.filter(_ => get_token_size(_) > 2500)
+	let superLargeMes = char.mes_example.filter(_ => encoder.encode(_).length > 2500)
 	if (superLargeMes.length)
-		do_reparation('some mes_example is too large', superLargeMes.map(_ => get_token_size(_)).reduce((a, b) => a + b), 0.65)
+		do_reparation('some mes_example is too large', superLargeMes.map(_ => encoder.encode(_).length).reduce((a, b) => a + b), 0.65)
 	GradingByTokenSize('personality & scenario', [
 		char.personality, char.scenario
 	], 0.5)
@@ -127,15 +132,7 @@ export function char_grader(arg, progress_stream = console.log) {
 		}
 		if (format_str) {
 			format_str = format_str.split(';').filter(_ => _).join('; ')
-			let format_scale = (json_score * 4 + xml_score * 1.7 + yaml_score * 3.2) / format_text_length * 10
-			while (format_scale > 1) format_scale /= 10
-			let scale = 1 - Math.min(format_scale, 0.72)
-			score_details.score *= scale
-			score_details.logs.push({
-				type: `format: ${format_str}`,
-				scale: scale
-			})
-			progress_stream(`[reparation] format: ${format_str}, all scores reduced as scale ${scale}.`)
+			do_reparation(`format: ${format_str}`, json_score * 4 + xml_score * 1.7 + yaml_score * 3.2)
 		}
 	}
 
@@ -143,15 +140,24 @@ export function char_grader(arg, progress_stream = console.log) {
 		char.name, 'char', 'user', '你'
 	]
 	let related_regex = new RegExp(`(${related_names.join('|')})`, 'g')
-	let is_persona_card_x = format_text.match(related_regex)?.length
+	let quoted_regex = /(\"[^\"]+\")|([\”\“][^\”\“]+[\”\“])/g
+	function is_related(entry) {
+		let str = entry.content
+		let matched = str.replace(quoted_regex, '').match(related_regex)
+		return matched?.length > entry.tokenized_content.length / 201
+	}
+	let is_persona_card_x = format_text.match(related_regex)?.length || 1.8
 	if (format_text.includes('not a specific character, but an Role Play Game system'))
 		is_persona_card_x /= 6
+	else if (format_text.split('\n').slice(0, 4).join('\n').match(/\bcharacter\b/))
+		is_persona_card_x *= 1.5
 	let is_persona_card_y = format_text_length / 97
 	let is_persona_card = is_persona_card_x >= is_persona_card_y
 	progress_stream(`[info] ${char.name} is ${is_persona_card ? '' : 'not '} a persona card: x=${is_persona_card_x}, y=${is_persona_card_y}`)
 
-	let wibook_entries = char?.data?.character_book?.entries?.filter?.(_ => !_.constant)
-	wi_grading: if (wibook_entries?.length) {
+	let green_wibook_entries = wibook_entries.filter(_ => !_.constant)
+	wi_grading: if (green_wibook_entries?.length) {
+		let wibook_entries = green_wibook_entries
 		function get_entrie_names(entries) {
 			let named_entries = entries.filter(_ => _.comment && !_.tanji)
 			let no_name_len = entries.length - named_entries.length
@@ -172,7 +178,8 @@ export function char_grader(arg, progress_stream = console.log) {
 			let warning_keys = []
 			if (entry.extensions.match_whole_words !== false)
 				for (let key of [...entry.keys, ...entry.secondary_keys])
-					if (/\p{Unified_Ideograph}/u.test(key))
+					if (parseRegexFromString(key)) continue
+					else if (/\p{Unified_Ideograph}/u.test(key))
 						warning_keys.push(key)
 			let entry_name = get_entrie_names([entry])
 			if (warning_keys.length)
@@ -180,7 +187,6 @@ export function char_grader(arg, progress_stream = console.log) {
 			let is_LN = !/$<-(<WI(推理节点|推理節點|LogicalNode)(：|:)([\\s\\S]+?)>|[0-9a-z]{6})->\s*^/g.test(entry.content)
 			if (!entry.extensions.prevent_recursion && !is_LN)
 				progress_stream(`[warning] the WI entry '${entry_name}' not an WI LogicalNode and not set prevent_recursion, that's may not be what you want.`)
-			entry.tokenized_size = get_token_size(entry.content)
 		}
 		let unique_keys = [...new Set(key_array)]
 		let key_num = unique_keys.length
@@ -190,24 +196,18 @@ export function char_grader(arg, progress_stream = console.log) {
 		for (let key of unique_keys)
 			if (key.match(/、|，/gi))
 				progress_stream(`[warning] the key '${key}' contains '、' or '，', that's may not be what you want, use ',' instead?`)
-		let gWI_size = wibook_entries.map(_ => _.tokenized_size).reduce((a, b) => a + b)
+		let gWI_size = wibook_entries.map(_ => _.tokenized_content.length).reduce((a, b) => a + b)
 		let gWI_score = Math.pow(gWI_size, 1 / 1.15)
 		BaseGrading("greenWI_total_token_size", gWI_size, "token size", 1, 20, 1 / 1.15)
 
-		let quoted_regex = /(\"[^\"]+\")|([\”\“][^\”\“]+[\”\“])/g
-		function is_related(entry) {
-			let str = entry.content
-			let matched = str.replace(quoted_regex, '').match(related_regex)
-			return matched?.length > entry.tokenized_size / 201
-		}
-		let unrelated_entries = wibook_entries.filter(_ => _.tokenized_size > 27 && !is_related(_))
+		let unrelated_entries = wibook_entries.filter(_ => _.tokenized_content.length > 27 && !is_related(_))
 		if (is_persona_card && unrelated_entries.length / wibook_entries.length >= 0.7) {
 			do_reparation('greenWI too much unrelated entries', gWI_score, 1.4, 1)
 			break wi_grading
 		}
 		if (is_persona_card) {
 			if (unrelated_entries.length > 0) {
-				let size = unrelated_entries.map(_ => _.tokenized_size).reduce((a, b) => a + b)
+				let size = unrelated_entries.map(_ => _.tokenized_content.length).reduce((a, b) => a + b)
 				let diff = Math.pow(gWI_size - size, 1 / 1.15)
 				gWI_score = Math.abs(gWI_score - diff)
 				do_reparation(`greenWI ${get_entrie_names(unrelated_entries)} not directly related to ${char.name} or user`, gWI_score)
@@ -217,9 +217,9 @@ export function char_grader(arg, progress_stream = console.log) {
 			char.data.character_book.entries = wibook_entries
 		}
 
-		let superLargeEntries = wibook_entries.filter(_ => _.tokenized_size > 2310)
+		let superLargeEntries = wibook_entries.filter(_ => _.tokenized_content.length > 2310)
 		if (superLargeEntries.length > 0) {
-			let size = superLargeEntries.map(_ => _.tokenized_size).reduce((a, b) => a + b)
+			let size = superLargeEntries.map(_ => _.tokenized_content.length).reduce((a, b) => a + b)
 			let diff = Math.pow(gWI_size - size, 1 / 1.15)
 			gWI_score = Math.abs(gWI_score - diff)
 			do_reparation(`greenWI ${get_entrie_names(superLargeEntries)} too large`, gWI_score)
@@ -241,7 +241,7 @@ export function char_grader(arg, progress_stream = console.log) {
 		...(charData?.extensions?.group_greetings || []),
 	].filter(_ => _?.length).join('\n')
 	if (gzip_text.length) { // wtf
-		let compressed = lzString.compressToUTF16(gzip_text)
+		let compressed = compressToUTF16(gzip_text)
 		let compress_ratio = compressed.length / gzip_text.length
 		score_details.score *= compress_ratio
 		score_details.logs.push({
@@ -260,10 +260,10 @@ export function char_grader(arg, progress_stream = console.log) {
 	}
 	char.creatorcomment = char.creatorcomment || ""
 	let cleard_creatorcomment = char.creatorcomment.split('\n').filter(
-		_ => (!_.match(/http|Discord|GitHub|类脑|Telegram|社区/i)) && _.trim().length
+		_ => (!_.match(/http|Discord|GitHub|类脑|Telegram|社区|盈利/i)) && _.trim().length && _ != "Creator's notes go here."
 	).join('\n')
 	if (cleard_creatorcomment)
-		BaseGrading('creatorcomment', get_token_size(cleard_creatorcomment), 'bytes', 1 / 125, 5)
+		BaseGrading('creatorcomment', encoder.encode(cleard_creatorcomment).length, 'bytes', 1 / 125, 5)
 	else {
 		let diff = -50
 		score_details.score += diff
@@ -287,6 +287,127 @@ export function char_grader(arg, progress_stream = console.log) {
 			score: diff
 		})
 		progress_stream(`tags not found: ${diff} scores.`)
+	}
+
+	if (is_persona_card) {
+		let content_text = ''
+		if (wibook_entries.length)
+			content_text = wibook_entries.filter(_ => !_.content.match(/name\s*(:|：)/i) && !_.content.includes('a NPC in this story') && !_.comment.startsWith('NPC ')).map(_ => _.content).filter(_ => _?.length).join('\n')
+		content_text = [
+			char.description, char.mes_example,
+			char.personality, char.scenario,
+			charData?.system_prompt, charData?.extensions?.depth_prompt?.prompt,
+			content_text
+		].filter(_ => _?.length).join('\n')
+		function regex_prop_finder(prop_name, regexs, {
+			match_do = _ => score_details[prop_name] = _,
+			else_do = () => progress_stream(`[info] can't find the ${prop_name} of ${score_details.name}.`)
+		} = {}) {
+			let result
+			for (const regex of regexs) {
+				result = content_text.match(regex)
+				if (result) break
+			}
+			if (result)
+				return match_do(result.groups[prop_name])
+			else
+				return else_do()
+		}
+		regex_prop_finder('sex', [
+			/(virginity|童贞|性经验)\s*(:|：)\s*(?<sex>处男|处女)/i,
+			/(sex|gender|性别)\s*(:|：)\s*(?<sex>男|女|male|female|woman|man)/i,
+			/(virginity|童贞|性经验)\s*(:|：)\s*"(?<sex>处男|处女)"/i,
+			/(sex|gender|性别)\s*(:|：)\s*"(?<sex>男|女|male|female|woman|man)"/i,
+		], {
+			else_do: () => {
+				let male_match_words = 'man,boy,gentleman,him,he,his,Handsome,Abs,Muscle,Brawny,Dick,Fit,Strong,Dashing,Cold,male'.split(',')
+				let male_match_words_chinese = '他的,腹肌,俊美,英俊,腹肌,肌肉,壮硕,大屌,健硕,强壮,潇洒,冷酷,稳重,大方,克制.坚韧,隐忍,包容'.split(',')
+				let female_match_words = 'long hair,woman,girl,milf,she,her,hers,Female,Beautiful,cute,adorable,pretty,delicate,tits,boob,pigeon,plump,flirty,slutty,petite,heartfelt,sweet,sly,pussy,ponytail'.split(',')
+				let female_match_words_chinese = '罩杯,长发,吹弹可破,少女,女生,萝莉,她,美丽,萌,可爱,漂亮,娇嫩,奶子,巨乳,乳鸽,丰满,妩媚,淫荡,娇小,心机,甜美,狡黠,平胸,女生,小穴,马尾'.split(',')
+				let male_related_regex = new RegExp(`(\b(${male_match_words.join('|')})\b)|(${male_match_words_chinese.join('|')})`, 'gi')
+				let female_related_regex = new RegExp(`(\b(${female_match_words.join('|')})\b)|(${female_match_words_chinese.join('|')})`, 'gi')
+				let male_count = content_text.match(male_related_regex)?.length || 0
+				let female_count = content_text.match(female_related_regex)?.length || 0
+				if (male_count > female_count)
+					score_details.sex = 'male'
+				else if (male_count <= female_count)
+					score_details.sex = 'female'
+				progress_stream(`[info] sex of ${score_details.name}: ${score_details.sex}. (male_score: ${male_count}, female_score: ${female_count})`)
+			}
+		})
+		regex_prop_finder('age', [
+			/age\s*(:|：)\s*(About|around|)\s*(?<age>[\d\+][\d\+多]*)/i,
+			/年龄\s*(:|：)\s*(约|大约|)\s*(?<age>[\d\+][\d\+多]*)/,
+			/age\s*(:|：)\s*(About|around|)\s*"(?<age>[\d\+][\d\+多]*)"/i,
+			/年龄\s*(:|：)\s*(约|大约|)\s*"(?<age>[\d\+][\d\+多]*)"/,
+			/(?<age>[\d\+][\d\+多]*)\s*岁/,
+			/actual(:|：)(?<age>[\d\+][\d\+多]*)\s*years old/i,
+			/(?<age>[\d\+][\d\+多]*)\s*years old/i,
+			/活了(不下|)\s*(?<age>[\d\+][\d\+多]*)\s*(年|岁|)/,
+		])
+		regex_prop_finder('blood_type', [
+			/血型\s*(:|：)\s*(?<blood_type>(A|B|O|AB|\rh\+|rh\-)[^\n]*(A|B|O|AB|\rh\+|rh\-|))/i,
+			/血型(算|)是\s*(?<blood_type>(A|B|O|AB|\rh\+|rh\-)[^\n]*(A|B|O|AB|\rh\+|rh\-|))/i,
+			/blood\s*type\s*(:|：)\s*(?<blood_type>(A|B|O|AB|\rh\+|rh\-)[^\n]*(A|B|O|AB|\rh\+|rh\-|))/i,
+			/blood\s*type\s*is\s*(?<blood_type>(A|B|O|AB|\rh\+|rh\-)[^\n]*(A|B|O|AB|\rh\+|rh\-|))/i
+		])
+		regex_prop_finder('tall', [
+			/身(高|长)\s*(:|：|)\s*(约|大约|)\s*(?<tall>\d+\.?\d*\s*(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|\s*foot|))/i,
+			/height\s*(:|：)\s*(About|around|)\s*(?<tall>\d+\.?\d*\s*(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|\s*foot|))/i,
+			/height\s*is\s*(About|around|)\s*(?<tall>\d+\.?\d*\s*(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|\s*foot|))/i,
+			/tall\s*(:|：)\s*(About|around|)\s*(?<tall>\d+\.?\d*\s*(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|\s*foot|))/i,
+			/tall\s*is\s*(About|around|)\s*(?<tall>\d+\.?\d*\s*(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|\s*foot|))/i,
+			/height\s*(:|：)\s*"(About|around|)\s*(?<tall>\d+\.?\d*\s*(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|\s*foot|))"/i,
+			/tall\s*(:|：)\s*"(About|around|)\s*(?<tall>\d+\.?\d*\s*(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|\s*foot|))"/i,
+		])
+		regex_prop_finder('weight', [
+			/体重\s*(:|：|)\s*(约|大约|)\s*(?<weight>\d+\.?\d*\s*(kg|千克|公斤|g|克|斤|t|吨|))/i,
+			/weight\s*(:|：)\s*(About|around|)\s*(?<weight>\d+\.?\d*\s*(kg|千克|公斤|g|克|斤|t|吨|))/i,
+			/weight\s*is\s*(About|around|)\s*(?<weight>\d+\.?\d*\s*(kg|千克|公斤|g|克|斤|t|吨|))/i,
+			/weight\s*(:|：)\s*"(About|around|)\s*(?<weight>\d+\.?\d*\s*(kg|千克|公斤|g|克|斤|t|吨|))"/i,
+		])
+		regex_prop_finder('birthday', [
+			/(生日|birthday)[^\n]+(?<birthday>\d+月(-|)\d+日)/i,
+		])
+		regex_prop_finder('bwh', [
+			/(?<bwh>\d+b-\d+w-\d+h)/i,
+			/(bwh|三围|三维)\s*(:|：|)\s*(约|大约|)\s*(?<bwh>\d+-\d+-\d+)/i,
+			/bwh\s*is\s*(About|around|)\s*(?<bwh>\d+-\d+-\d+)/i,
+			/(bwh|三围|三维)\s*(:|：|)\s*"(About|around|约|大约|)\s*(?<bwh>\d+-\d+-\d+)"/i,
+		], {
+			else_do: _ => {
+				let return_with_no_output = { match_do: _ => _, else_do: _ => _ }
+				let beast = regex_prop_finder('beast', [
+					/胸围\s*(:|：|)\s*(约|大约|)\s*(?<beast>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))/i,
+					/beast\s*(:|：)\s*(About|around|)\s*(?<beast>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))/i,
+					/beast\s*is\s*(About|around|)\s*(?<beast>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))/i,
+					/胸围\s*(:|：|)\s*"(约|大约|)\s*(?<beast>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))"/i,
+					/beast\s*(:|：)\s*"(About|around|)\s*(?<beast>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))"/i,
+				], return_with_no_output)
+				//腰围
+				let waist = regex_prop_finder('waist', [
+					/腰围\s*(:|：|)\s*(约|大约|)\s*(?<waist>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))/i,
+					/waist\s*(:|：)\s*(About|around|)\s*(?<waist>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))/i,
+					/waist\s*is\s*(About|around|)\s*(?<waist>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))/i,
+					/腰围\s*(:|：|)\s*"(约|大约|)\s*(?<waist>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))"/i,
+					/waist\s*(:|：)\s*"(About|around|)\s*(?<waist>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))"/i,
+				], return_with_no_output)
+				//臀围
+				let hip = regex_prop_finder('hip', [
+					/臀围\s*(:|：|)\s*(约|大约|)\s*(?<hip>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))/i,
+					/hip\s*(:|：)\s*(About|around|)\s*(?<hip>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))/i,
+					/hip\s*is\s*(About|around|)\s*(?<hip>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))/i,
+					/臀围\s*(:|：|)\s*"(约|大约|)\s*(?<hip>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))"/i,
+					/hip\s*(:|：)\s*"(About|around|)\s*(?<hip>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))"/i,
+				], return_with_no_output)
+				if (beast || waist || hip) {
+					score_details.bwh = `${beast || '?'}b-${waist || '?'}w-${hip || '?'}h`
+					progress_stream(`[info] bwh of ${score_details.name}: ${score_details.bwh}.`)
+				}
+				else
+					progress_stream(`[info] can't find the bwh of ${score_details.name}.`)
+			}
+		})
 	}
 	return score_details
 }

@@ -105,9 +105,10 @@ function escapeRegExp(string) {
 
 /**
  * Recursively creates a deep copy of the given object.
- *
- * @param {object} object - The object to be copied.
- * @return {object} A deep copy of the object.
+ * @template T
+ * @param {T} object - The object to be copied.
+ * @param {WeakMap<object, object>} [weakMap] - A WeakMap used to store the copied objects.
+ * @return {T} A deep copy of the object.
  */
 function deepCopy(object, weakMap = new WeakMap()) {
 	if (!object || !(object instanceof Object)) return object

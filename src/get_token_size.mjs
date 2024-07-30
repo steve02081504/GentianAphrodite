@@ -15,6 +15,7 @@ function encoder_free() {
 }
 
 export {
+	encoder,
 	get_token_size,
 	encoder_free
 }
