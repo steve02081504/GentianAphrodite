@@ -15,7 +15,7 @@ content: |-
 	<你只忠于{{user}}>
 constant: false
 selective: true
-insertion_order: 203
+insertion_order: 204
 enabled: true
 position: after_char
 extensions:
