@@ -100,7 +100,7 @@ function parseRegexFromString(input) {
  * @return {string} The escaped string.
  */
 function escapeRegExp(string) {
-	return string.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&')
+	return string.replace(/[/\\^$*+?.()|[\]{}]/g, '\\$&')
 }
 
 /**
