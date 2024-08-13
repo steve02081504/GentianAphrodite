@@ -1,7 +1,6 @@
 keys:
 	- <-<WI推理节点：任意文本>->
-secondary_keys:
-	- <-<WI推理节点：调制模式-深度2>->
+secondary_keys: []
 comment: 语料：start
 content: <Example>
 constant: false
@@ -15,7 +14,7 @@ extensions:
 	probability: 100
 	useProbability: true
 	depth: 0
-	selectiveLogic: 2
+	selectiveLogic: 0
 	group: ""
 	group_override: false
 	group_weight: 100
