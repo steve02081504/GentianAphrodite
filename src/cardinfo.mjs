@@ -150,6 +150,10 @@ class CardFileInfo_t {
 			}
 		}
 		keyScoreRemover(this.v1metaData.data.character_book.entries)
+		let group_greetings_set = new Set([...this.v1metaData.data.group_only_greetings??[], ...(this.v1metaData.data.extensions.group_greetings??[])].filter(x => x))
+		if (group_greetings_set.size)
+			this.v1metaData.data.extensions.group_greetings = [...group_greetings_set]
+		delete this.v1metaData.data.group_only_greetings
 		if (fs.existsSync(yamlFilePath)) {
 			this.metaData = yaml.readFileSync(yamlFilePath)
 			this.v1metaData.create_date = this.metaData.create_date
@@ -228,6 +232,9 @@ class CardFileInfo_t {
 		delete data.extensions.regex_scripts
 		nicerWriteFileSync(CharReadMeFilePath, data.creator_notes)
 		delete data.creator_notes
+		delete data.extensions.world
+		if (!data?.extensions?.depth_prompt?.prompt)
+			delete data.extensions.depth_prompt
 		yaml.writeFileSync(yamlFilePath, data)
 		if (!fs.existsSync(character_book_path + '/entries'))
 			fs.mkdirSync(character_book_path + '/entries', { recursive: true })
@@ -316,6 +323,7 @@ class CardFileInfo_t {
 			this.metaData.extensions.regex_scripts.push(JSON.parse(jsonStr))
 		}
 		this.metaData.character_book = this.character_book = yaml.readFileSync(character_book_path + '/index.yaml')
+		this.metaData.extensions.world = this.character_book.name
 		this.character_book.entries = []
 		var character_book_dir = fs.readdirSync(character_book_path + '/entries', { recursive: true }).filter(x => x.endsWith('.yaml'))
 		this.character_book.display_index_list ??= this.character_book.index_list
@@ -366,6 +374,9 @@ class CardFileInfo_t {
 			character_version: VerId,
 			create_date: this.v1metaData.create_date
 		})
+		charData.group_only_greetings ??= []
+		if (charData.extensions.group_greetings)
+			charData.group_only_greetings = charData.extensions.group_greetings
 		keyScoreAdder(charData.character_book.entries)
 		var charDataStr = JSON.stringify(GetV1CharDataFromV2({ ...charData }))
 		keyScoreRemover(charData.character_book.entries)
