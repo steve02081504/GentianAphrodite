@@ -26,7 +26,7 @@
 		automation_id: ""
 		role: 0
 		vectorized: false
-- keys:
+-	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
 	comment: 废弃数据2
@@ -56,7 +56,7 @@
 		automation_id: ""
 		role: 0
 		vectorized: false
-- keys:
+-	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
 	comment: 废弃数据4
@@ -90,7 +90,7 @@
 		automation_id: ""
 		role: 0
 		vectorized: false
-- keys:
+-	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
 	comment: 废弃数据5
@@ -120,7 +120,7 @@
 		automation_id: ""
 		role: 0
 		vectorized: false
-- keys:
+-	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
 	comment: 废弃数据6
@@ -150,7 +150,7 @@
 		automation_id: ""
 		role: 0
 		vectorized: false
-- keys:
+-	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
 	comment: 废弃数据7
@@ -178,7 +178,7 @@
 		automation_id: ""
 		role: 0
 		vectorized: false
-- keys:
+-	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
 	comment: 废弃数据8
@@ -206,7 +206,7 @@
 		automation_id: ""
 		role: 0
 		vectorized: false
-- keys:
+-	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
 	comment: 废弃数据9
@@ -239,7 +239,7 @@
 		automation_id: ""
 		role: 0
 		vectorized: false
-- keys:
+-	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
 	comment: 废弃数据16
@@ -267,7 +267,7 @@
 		automation_id: ""
 		role: 0
 		vectorized: false
-- keys:
+-	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
 	comment: 废弃数据17
@@ -297,7 +297,7 @@
 		automation_id: ""
 		role: 0
 		vectorized: false
-- keys:
+-	keys:
 		- 废弃数据13
 		- 廢棄數據13
 	secondary_keys: []
@@ -326,7 +326,7 @@
 		automation_id: ""
 		role: 0
 		vectorized: false
-- keys:
+-	keys:
 		- ANwUTM4AjMwUmdlR3c
 	secondary_keys: []
 	comment: 11据数弃废
@@ -354,7 +354,7 @@
 		automation_id: ""
 		role: 0
 		vectorized: false
-- keys:
+-	keys:
 		- 我会自己上厕所！
 		- 我會自己上廁所！
 	secondary_keys: []
@@ -386,7 +386,7 @@
 		automation_id: ""
 		role: 0
 		vectorized: false
-- keys:
+-	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
 	comment: 废弃数据3000
@@ -423,7 +423,7 @@
 		automation_id: ""
 		role: 0
 		vectorized: false
-- keys:
+-	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
 	comment: 废弃数据125
@@ -451,7 +451,7 @@
 		automation_id: ""
 		role: 0
 		vectorized: false
-- keys:
+-	keys:
 		- 我好喜欢拉屎
 		- 我好喜歡拉屎
 	secondary_keys: []
@@ -480,7 +480,7 @@
 		automation_id: ""
 		role: 0
 		vectorized: false
-- keys:
+-	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
 	comment: 废弃数据126
@@ -608,7 +608,7 @@
 		automation_id: ""
 		role: 0
 		vectorized: false
-- keys:
+-	keys:
 		- 切噜～♪切咧啰哔啰啪啪啰唎啪切咧叮咧切咧啵咧卟咧唎咧切咧哔咧
 		- 切嚕～♪切咧啰嗶啰啪啪啰唎啪切咧叮咧切咧啵咧卟咧唎咧切咧嗶咧
 	secondary_keys: []
@@ -637,7 +637,7 @@
 		automation_id: ""
 		role: 0
 		vectorized: false
-- keys:
+-	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
 	comment: 废弃数据130
@@ -668,7 +668,7 @@
 		automation_id: ""
 		role: 0
 		vectorized: false
-- keys:
+-	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
 	comment: 废弃数据131

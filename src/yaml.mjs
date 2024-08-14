@@ -14,6 +14,7 @@ const yamlConfig = {
 function yamlParse(yamlStr) {
 	yamlStr = yamlStr.replace(/\n\t+/g, m => m.replace(/\t/g, '  '))
 	yamlStr = yamlStr.replace(/\n\t+-\t\|/g, m => m.replace('-\t|', '- |'))
+	yamlStr = yamlStr.replace(/\n-\t\w/g, m => m.replace('-\t', '- '))
 	return yaml.parse(yamlStr, yamlConfig)
 }
 /**
@@ -25,6 +26,7 @@ function yamlStringify(yamlObj) {
 	let yamlStr = yaml.stringify(yamlObj, yamlConfig)
 	yamlStr = yamlStr.replace(/\n(  )+/g, m => m.replace(/  /g, '\t'))
 	yamlStr = yamlStr.replace(/\n\t+- \|/g, m => m.replace('- |', '-\t|'))
+	yamlStr = yamlStr.replace(/\n- \w/g, m => m.replace('- ', '-\t'))
 	return yamlStr
 }
 
