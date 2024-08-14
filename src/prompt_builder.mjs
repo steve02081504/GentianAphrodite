@@ -125,7 +125,7 @@ export function promptBuilder(
 	aret.WIs_before_char = aret.WIs_before_char.sort((a, b) => a.insertion_order - b.insertion_order).map(e => e.content)
 	aret.WIs_after_char = aret.WIs_after_char.sort((a, b) => a.insertion_order - b.insertion_order).map(e => e.content)
 
-	let aothr_notes = charData.extensions.depth_prompt.prompt
+	let aothr_notes = charData?.extensions?.depth_prompt?.prompt
 	aothr_notes = `${ANTopEntries.join('\n')}\n${aothr_notes}\n${ANBottomEntries.join('\n')}`.replace(/(^\n)|(\n$)/g, '')
 
 	let new_chat_log = []
@@ -138,9 +138,9 @@ export function promptBuilder(
 				content: entrie.entries.join('\n'),
 			})
 		}
-		if (index == charData.extensions.depth_prompt.depth)
+		if (charData?.extensions?.depth_prompt?.prompt && index == charData?.extensions?.depth_prompt?.depth)
 			new_chat_log.unshift({
-				role: charData.extensions.depth_prompt.role,
+				role: charData?.extensions?.depth_prompt?.role,
 				content: aothr_notes
 			})
 
