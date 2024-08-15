@@ -12,17 +12,17 @@
 	},
 	"author": "steve02081504",
 	"devDependencies": {
-		"crypto-js": "^4.2.0",
-		"eslint": "^9.4.0",
-		"lz-string": "^1.5.0",
-		"png-chunk-text": "^1.0.0",
-		"png-chunks-encode": "^1.0.0",
-		"png-chunks-extract": "^1.0.0",
-		"seedrandom": "^3.0.5",
-		"llama3-tokenizer-js": "^1.2.0",
-		"yaml": "^2.4.1"
+		"crypto-js": "latest",
+		"eslint": "latest",
+		"lz-string": "latest",
+		"png-chunk-text": "latest",
+		"png-chunks-encode": "latest",
+		"png-chunks-extract": "latest",
+		"seedrandom": "latest",
+		"llama3-tokenizer-js": "latest",
+		"yaml": "latest"
 	},
 	"dependencies": {
-		"buffer": "^6.0.3"
+		"buffer": "latest"
 	}
 }
