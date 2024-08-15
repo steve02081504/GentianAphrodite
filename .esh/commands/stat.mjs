@@ -1,7 +1,7 @@
 import CardFileInfo from "../../src/cardinfo.mjs"
 import { keyScoreAdder } from "../../src/keyScore.mjs"
 import { remove_simple_marcos } from "../../src/tools.mjs"
-import { encoder_free, get_token_size } from "../../src/get_token_size.mjs"
+import { encoder, get_token_size } from "../../src/get_token_size.mjs"
 
 CardFileInfo.readDataFiles(); keyScoreAdder(CardFileInfo.character_book.entries)
 let charData = CardFileInfo.metaData, enabledWIs = CardFileInfo.character_book.entries.filter(_ => _.enabled)
@@ -23,5 +23,5 @@ let stat = {
 		...enabledWIs.map(_ => _.content),
 	].join('\n')).replace(/\n+/g, '\n'))
 }
-encoder_free()
+encoder.free()
 console.dir(stat, { depth: null })

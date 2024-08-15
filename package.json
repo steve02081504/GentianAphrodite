@@ -19,7 +19,7 @@
 		"png-chunks-encode": "^1.0.0",
 		"png-chunks-extract": "^1.0.0",
 		"seedrandom": "^3.0.5",
-		"tiktoken": "^1.0.15",
+		"llama3-tokenizer-js": "^1.2.0",
 		"yaml": "^2.4.1"
 	},
 	"dependencies": {
