@@ -83,7 +83,7 @@ export function promptBuilder(
 		let content = entry.content
 		switch (entry.extensions.position) {
 			case world_info_position.atDepth: {
-				const existingDepthIndex = WIDepthEntries.findIndex((e) => e.depth === (entry.depth ?? DEFAULT_DEPTH) && e.extensions.role === entry.extensions.role)
+				const existingDepthIndex = WIDepthEntries.findIndex((e) => e.depth === (entry.depth ?? DEFAULT_DEPTH) && e.role === entry.extensions.role)
 				if (existingDepthIndex !== -1)
 					WIDepthEntries[existingDepthIndex].entries.unshift(content)
 				else
@@ -108,12 +108,8 @@ export function promptBuilder(
 				break
 		}
 	}
-	before_EMEntries = before_EMEntries.map(e => e.content)
-	after_EMEntries = after_EMEntries.map(e => e.content)
-	ANTopEntries = ANTopEntries.map(e => e.content)
-	ANBottomEntries = ANBottomEntries.map(e => e.content)
 	let constant_WIs = WIs.filter(e => e.constant)
-	WIs = WIs.filter(e => !e.constant).sort((a, b) => a.extensions.position == b.extensions.position ? a.insertion_order - b.insertion_order : a.extensions.position - b.extensions.position)
+	WIs = WIs.filter(e => !e.constant).sort((a, b) => a.extensions.position - b.extensions.position || a.insertion_order - b.insertion_order)
 	for (let WI of constant_WIs) add_WI(WI)
 	let token_now = get_token_size(aret)
 
@@ -122,11 +118,16 @@ export function promptBuilder(
 		add_WI(WI)
 		token_now += get_token_size(WI.content)
 	}
+	before_EMEntries = before_EMEntries.map(e => e.content)
+	after_EMEntries = after_EMEntries.map(e => e.content)
+	ANTopEntries = ANTopEntries.map(e => e.content)
+	ANBottomEntries = ANBottomEntries.map(e => e.content)
 	aret.WIs_before_char = aret.WIs_before_char.sort((a, b) => a.insertion_order - b.insertion_order).map(e => e.content)
 	aret.WIs_after_char = aret.WIs_after_char.sort((a, b) => a.insertion_order - b.insertion_order).map(e => e.content)
 
 	let aothr_notes = charData?.extensions?.depth_prompt?.prompt
-	aothr_notes = `${ANTopEntries.join('\n')}\n${aothr_notes}\n${ANBottomEntries.join('\n')}`.replace(/(^\n)|(\n$)/g, '')
+	if(aothr_notes)
+		aothr_notes = `${ANTopEntries.join('\n')}\n${aothr_notes}\n${ANBottomEntries.join('\n')}`.replace(/(^\n)|(\n$)/g, '')
 
 	let new_chat_log = []
 	for (let index = 0; index < chatLog.length; index++) {
