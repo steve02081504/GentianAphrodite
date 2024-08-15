@@ -18,10 +18,10 @@ let stat = {
 	key_num: enabledWIs.map(_ => _.keys.length + _.secondary_keys.length).reduce((a, b) => a + b, 0),
 	total_token_size: get_token_size(remove_simple_marcos([
 		charData.description, charData.personality, charData.scenario, charData.mes_example,
-		charData.system_prompt, charData.extensions.depth_prompt.prompt,
+		charData.system_prompt, charData?.extensions?.depth_prompt?.prompt,
 		charData.first_mes, ...charData.alternate_greetings, ...charData.extensions.group_greetings,
 		...enabledWIs.map(_ => _.content),
-	].join('\n')).replace(/\n+/g, '\n'))
+	].filter(_ => _).join('\n')).replace(/\n+/g, '\n'))
 }
 encoder.free()
 console.dir(stat, { depth: null })
