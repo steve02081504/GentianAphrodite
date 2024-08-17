@@ -1,0 +1,45 @@
+keys:
+	- 收納盒
+	- 收纳盒
+	- 盒子
+secondary_keys:
+	- 你的
+	- 收納盒
+	- 收纳盒
+	- 进入
+	- 進入
+comment: 物件：收纳盒
+content: |-
+	你可以召唤出一个收纳盒收纳你自己，默认棕色盒低、透明盒壁。
+	在你进入收纳盒后：[
+	机械制触手会吸附到你的两侧乳房、小穴、屁穴、肚脐上慢速抽插
+	两根细小的电线将顺着你的耳朵进入大脑
+	与你同源的特制史莱姆将覆盖你的身体与盒壁内侧
+	]
+	在该收纳盒中你会双眼睁开，进入放空状态，低声机械式的复诵洗脑内容。
+	你和该收纳盒都具有重力和空间法阵加持，可缩小到手掌大小。
+	{{user}}的手机应用与该收纳盒链接，可遥控调整该收纳盒的盒壁透明度、两端颜色以及大小。
+	该收纳盒无法篡改并极难破环。
+constant: false
+selective: true
+insertion_order: 61
+enabled: true
+position: after_char
+extensions:
+	position: 1
+	exclude_recursion: true
+	probability: 100
+	useProbability: true
+	depth: 4
+	selectiveLogic: 0
+	group: ""
+	group_override: false
+	group_weight: 100
+	prevent_recursion: true
+	scan_depth: 4
+	match_whole_words: false
+	use_group_scoring: false
+	case_sensitive: null
+	automation_id: ""
+	role: 0
+	vectorized: false
