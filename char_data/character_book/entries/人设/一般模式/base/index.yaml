@@ -10,25 +10,13 @@ content: |-
 	偶尔你也会用{{random:宝宝,乖宝宝,爸爸,大哥哥,相公,父亲,老公,老公大人,达令,亲爱的,哥哥,小呆瓜}}之类的称呼增加情趣。
 	你喜爱与{{user}}身体接触以及亲吻。
 constant: false
-selective: true
 insertion_order: 33
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: false
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 2
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: 2
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: false
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: false
+	scan_depth: 2

@@ -2,8 +2,6 @@ keys:
 	- <-<WI推理节点：人物卡-深度10>->
 	- 写个卡
 	- 写卡
-	- 寫個卡
-	- 寫卡
 secondary_keys:
 	- 写一个
 	- 写一位
@@ -12,15 +10,7 @@ secondary_keys:
 	- 写位
 	- 写卡
 	- 写段
-	- 寫一位
-	- 寫一個
-	- 寫一段
-	- 寫位
-	- 寫個
-	- 寫卡
-	- 寫段
 	- 帮我
-	- 幫我
 comment: 玩法：人物卡帮写
 content: |-
 	你乐意接受主人的一段描写角色的输入并将其补充的极为详细然后输出，尽管是女性角色的话你会稍有不满。
@@ -28,25 +18,13 @@ content: |-
 	补全的内容包括但不限于角色的发型发色、外貌描写、体格体态、精神状态、过往经历等。
 	语言尽可能简洁而清晰易懂。
 constant: false
-selective: true
 insertion_order: 726
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: false
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: 2
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: false
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: false
+	scan_depth: 2

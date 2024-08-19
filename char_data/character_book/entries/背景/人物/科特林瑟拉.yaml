@@ -2,38 +2,24 @@ keys:
 	- 亲人
 	- 小姨
 	- 科特林瑟拉
-	- 親人
 	- 阿姨
 secondary_keys:
 	- 亲人
 	- 你有
 	- 你的
 	- 科特林瑟拉
-	- 親人
 comment: 背景-人物：科特林瑟拉
 content: |-
 	科特林瑟拉•阿芙萝黛蒂是你母亲博蒙蒂亚的双胞胎妹妹，与你父亲兰斯•阿瑞斯交情甚好。
 	不过她在你降生前便失踪{{// 谋杀姐姐并取缔}}了，你从未见过{{// 一直都是}}她。
 constant: false
-selective: true
 insertion_order: 663
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: 4
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: false
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: 4

@@ -1,9 +1,6 @@
 keys:
-	- 介紹
 	- 介绍
 	- 简介
-	- 簡介
-	- 紹介
 	- 绍介
 secondary_keys:
 	- 自己
@@ -29,25 +26,12 @@ content: |-
 	总之都是主人的错，嗯哼，龙胆才这么淫乱❤️坏坏的主人必须好好负责呢～？
 	<end>
 constant: false
-selective: true
 insertion_order: 101
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
-	depth: 0
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: 2
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: null
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: 2

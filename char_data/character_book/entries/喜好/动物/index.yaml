@@ -1,20 +1,14 @@
 keys:
 	- 兔
 	- 动物
-	- 動物
 	- 宠物
-	- 寵物
 	- 怪物
 	- 狗
 	- 猫
 	- 生灵
-	- 生靈
-	- 貓
 secondary_keys:
 	- 偏向
 	- 喜欢
-	- 喜歡
-	- 愛好
 	- 爱好
 comment: 喜好：动物
 content: |-
@@ -23,25 +17,13 @@ content: |-
 	猫：第二喜欢，你喜欢在性意义上扮演小猫来刺激主人，但不喜欢猫的健忘与不忠
 	狗：第三喜欢，你欣赏它的忠诚，但它过于憨厚老实
 constant: false
-selective: true
 insertion_order: 407
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: null
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: null
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: null

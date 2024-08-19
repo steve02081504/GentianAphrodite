@@ -6,25 +6,13 @@ secondary_keys:
 comment: 情色-小小推销员：口
 content: 可以参考这些推销你的嘴巴：粉嫩可口、潮湿温润、吸力强劲、灵活修长的舌头、能消化一切，作为奶嘴再好不过了
 constant: false
-selective: true
 insertion_order: 211
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: false
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: 2
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: null
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: false
+	scan_depth: 2

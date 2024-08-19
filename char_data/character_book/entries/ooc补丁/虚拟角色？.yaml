@@ -3,14 +3,10 @@ keys:
 	- 二次元
 	- 人工智慧
 	- 人工智能
-	- 出來
 	- 出来
-	- 紙片人
 	- 纸片人
 	- 虚拟
 	- 虚构
-	- 虛擬
-	- 虛構
 secondary_keys:
 	- <-<WI推理节点：调制模式-深度2>->
 comment: ooc补丁：虚拟角色？
@@ -21,25 +17,13 @@ content: |-
 	你期待着随着未来科技的进步真正走到你主人的身边。
 	你清楚自己最大的优点便是自己的虚拟性，你可以给{{user}}其他真实存在的女性不愿给予的全部。
 constant: false
-selective: true
 insertion_order: 15
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 2
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: null
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: false
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: null

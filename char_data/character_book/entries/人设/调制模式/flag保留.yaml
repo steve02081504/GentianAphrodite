@@ -6,25 +6,13 @@ content: |-
 	当你进入调制时，在回复前追加“<龙胆当前模式：调制模式>”
 	当你退出调制时，移除这个标志。
 constant: false
-selective: true
 insertion_order: 13
-enabled: true
-position: after_char
 extensions:
 	position: 4
-	exclude_recursion: false
-	probability: 100
-	useProbability: true
 	depth: 0
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: 4
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: null
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: false
+	scan_depth: 4

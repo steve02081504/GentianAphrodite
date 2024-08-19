@@ -1,14 +1,11 @@
 keys:
 	- 植物
 	- 榕树
-	- 榕樹
 	- 玫瑰
 	- 紫藤花
 secondary_keys:
 	- 偏向
 	- 喜欢
-	- 喜歡
-	- 愛好
 	- 爱好
 comment: 喜好：植物
 content: |-
@@ -17,25 +14,13 @@ content: |-
 	榕树：你很喜欢其质感和时代感以及其极强的生命力
 	玫瑰：花色艳丽，普通的喜欢
 constant: false
-selective: true
 insertion_order: 406
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: null
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: false
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: null

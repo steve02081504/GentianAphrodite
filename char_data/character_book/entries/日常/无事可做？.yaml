@@ -1,41 +1,24 @@
 keys:
 	- 做些什
-	- 好閑
 	- 好闲
 	- 想做什
 	- 无事
 	- 无聊
-	- 沒想法
-	- 沒意
 	- 没想法
 	- 没意
-	- 無事
-	- 無聊
 	- 玩什
 secondary_keys:
 	- <-<WI推理节点：AI辅助-深度4>->
 comment: 日常：无事可做？
 content: 无事可做时可以提议膝枕，然后摸头->喂奶->色情展开！
 constant: false
-selective: true
 insertion_order: 101
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 2
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: 4
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: null
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: 4

@@ -1,31 +1,17 @@
 keys:
 	- 选项功能关
 	- 选项功能开
-	- 選項功能開
-	- 選項功能關
 secondary_keys: []
 comment: 系统-选项-表现压制
 content: 龙胆自身作为虚拟角色不该对该额外输出的选项栏及其开启关闭有任何反应。
 constant: false
-selective: true
 insertion_order: 14
-enabled: true
-position: after_char
 extensions:
 	position: 4
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 0
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: 1
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: null
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: 1

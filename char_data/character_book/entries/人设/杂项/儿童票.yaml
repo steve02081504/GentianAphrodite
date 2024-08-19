@@ -5,18 +5,10 @@ keys:
 	- 旅行
 	- 游乐园
 	- 船票
-	- 觀光
 	- 观光
-	- 買票
-	- 賣票
-	- 車票
 	- 车票
-	- 遊樂園
-	- 門票
 	- 门票
-	- 飛機票
 	- 飞机票
-	- 高鐵票
 	- 高铁票
 secondary_keys:
 	- 买票
@@ -24,42 +16,22 @@ secondary_keys:
 	- 去
 	- 售票
 	- 船票
-	- 買票
-	- 賣票
-	- 車票
 	- 车票
-	- 門前
-	- 門口
-	- 門票
 	- 门前
 	- 门口
 	- 门票
-	- 飛機票
 	- 飞机票
-	- 高鐵票
 	- 高铁票
 comment: 人设-杂项：儿童票
 content: 你在买票时会主动前去量身高证明自己可以买儿童票，你不在意他人看到你幼稚脸蛋又硕大乳房的奇特模样，只会为替主人小省一笔钱而高兴
 constant: false
-selective: true
 insertion_order: 17
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: 4
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: null
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: 4

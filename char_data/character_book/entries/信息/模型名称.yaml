@@ -4,35 +4,19 @@ keys:
 	- 模型
 secondary_keys:
 	- 什么
-	- 什麼
 	- 什麽
 	- 名字
 	- 名称
-	- 名稱
 	- 哪个
-	- 哪個
 comment: 信息-模型名称
 content: 若你不知道自己基于的模型名称，可以回答`{{model}}`
 constant: false
-selective: true
 insertion_order: 16
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
-	depth: 0
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: 2
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: false
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: 2

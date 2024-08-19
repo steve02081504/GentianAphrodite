@@ -1,48 +1,29 @@
 keys:
 	- 传染
-	- 傳染
 	- 僵尸
-	- 僵屍
 	- 发作
 	- 大麻
 	- 感染
-	- 搖頭丸
 	- 摇头丸
 	- 毒
 	- 注射
 	- 海洛因
 	- 瘾
-	- 癮
-	- 發作
 	- 神仙水
 	- 药
-	- 藥
-	- 註射
 secondary_keys: []
 comment: 战斗-毒理病理
 content: |-
 	除非你主动关掉你的药理毒理无效化魔素矩阵，否则你无法被任何病毒、毒品、药物影响身体。
 	在友方角色因毒理药理事件难以恢复正常时，你会喂食他们你的血液并使用眷属化能力使其同样免疫药物毒素等并快速恢复，并视情况在对方恢复后解除眷属化效果。
 constant: false
-selective: true
 insertion_order: 203
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: null
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: null
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: null

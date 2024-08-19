@@ -15,12 +15,14 @@ const ImgsDir = `${__dirname}/../char_data/img`
 const BuildDir = `${__dirname}/../build`
 
 import charDataParser from './character-card-parser.mjs'
-import { GetV1CharDataFromV2, v2CharData, v1CharData, WorldInfoBook } from './charData.mjs'
+import { GetV1CharDataFromV2, v2CharData, v1CharData, WorldInfoBook, WorldInfoEntry } from './charData.mjs'
 import { SetCryptoBaseRng, CryptoCharData } from './charCrypto.mjs'
 import { v2CharWIbook2WIjson, WIjson2v2CharWIbook } from './WIjsonMaker.mjs'
 import { arraysEqual, clearEmptyDirs, nicerWriteFileSync } from './tools.mjs'
 import yaml from './yaml.mjs'
 import { keyScoreAdder, keyScoreRemover } from './keyScore.mjs'
+import { simplized, traditionalized } from './chs2t.mjs'
+import { is_common_key } from './WILN.mjs'
 
 const cardFilePath = `${__dirname}/data/cardpath.txt`
 const WIjsonFilePath = `${__dirname}/data/WIpath.txt`
@@ -209,6 +211,14 @@ class CardFileInfo_t {
 	saveDataFiles() {
 		var data = { ...this.metaData, create_date: this.v1metaData.create_date }
 		delete data.character_book
+		delete data.create_by
+		data.greetings = [data.first_mes, ...(data.alternate_greetings || [])].filter(x => x)
+		delete data.first_mes
+		delete data.alternate_greetings
+		if (data.extensions.talkativeness == '0.5')
+			delete data.extensions.talkativeness
+		for (let key of ['scenario','mes_example','system_prompt','post_history_instructions'])
+			if (!data[key]) delete data[key]
 		var packageJson = JSON.parse(fs.readFileSync(packageJsonFilePath, 'utf8'))
 		if (packageJson.version != data.character_version) {
 			packageJson.version = data.character_version
@@ -235,6 +245,20 @@ class CardFileInfo_t {
 		delete data.extensions.world
 		if (!data?.extensions?.depth_prompt?.prompt)
 			delete data.extensions.depth_prompt
+		let create_date = data.create_date, extensions = data.extensions
+		delete data.create_date
+		delete data.extensions
+		data = {
+			name: data.name,
+			creator: data.creator,
+			personality: data.personality,
+			description: data.description,
+			tags: data.tags,
+			greetings: data.greetings,
+			...data,
+			extensions,
+			create_date,
+		}
 		yaml.writeFileSync(yamlFilePath, data)
 		if (!fs.existsSync(character_book_path + '/entries'))
 			fs.mkdirSync(character_book_path + '/entries', { recursive: true })
@@ -244,8 +268,8 @@ class CardFileInfo_t {
 		data.index_list = []
 		data.display_index_list = []
 		var disabledDatas = []
-		for (const key in character_book.entries) {
-			var entrie = character_book.entries[key]
+		let dataArray = []
+		for (let entrie of character_book.entries) {
 			var fileName = entrie?.comment || entrie?.keys?.[0]
 			if (!fileName) {
 				console.error(`Error: entry has no comment or keys`, entrie)
@@ -265,8 +289,42 @@ class CardFileInfo_t {
 				}
 				entrie.filePathArray = filePathArray
 			}
+			entrie.keys = [...new Set(entrie.keys.map(x => is_common_key(x)?simplized(x):x))].sort()
+			entrie.secondary_keys = [...new Set(entrie.secondary_keys.map(x => is_common_key(x)?simplized(x):x))].sort()
+			if (entrie?.extensions.probability == 100) {
+				delete entrie.extensions.probability
+				delete entrie.extensions.useProbability
+			}
+			if (entrie?.extensions?.automation_id == '')
+				delete entrie.extensions.automation_id
+			if (entrie?.extensions?.role == 0)
+				delete entrie.extensions.role
+			if (entrie?.selective == true)
+				delete entrie.selective
+			if (entrie?.extensions?.group == '') {
+				delete entrie.extensions.group
+				delete entrie.extensions.group_override
+				delete entrie.extensions.group_weight
+				delete entrie.extensions.use_group_scoring
+			}
+			if (entrie?.extensions?.position)
+				delete entrie.position
+			if (!entrie?.extensions?.vectorized)
+				delete entrie.extensions.vectorized
+			if (entrie.extensions.position < 2 && entrie.extensions.depth == 0)
+				delete entrie.extensions.depth
+			entrie.extensions = {
+				position: entrie.extensions?.position,
+				depth: entrie.extensions?.depth,
+				selectiveLogic: entrie.extensions?.selectiveLogic,
+				match_whole_words: entrie.extensions?.match_whole_words,
+				case_sensitive: entrie.extensions?.case_sensitive,
+				prevent_recursion: entrie.extensions?.prevent_recursion,
+				exclude_recursion: entrie.extensions?.exclude_recursion,
+				scan_depth: entrie.extensions?.scan_depth,
+				...entrie.extensions,
+			}
 		}
-		let dataArray = []
 		for (const key in character_book.entries) {
 			var entrie = { ...character_book.entries[key] }
 			var fileName = entrie?.comment || entrie?.keys?.[0]
@@ -278,6 +336,7 @@ class CardFileInfo_t {
 			if (entrie.enabled) {
 				var filePathArray = entrie.filePathArray
 				delete entrie.filePathArray
+				delete entrie.enabled
 				//if is dir
 				let filePath = character_book_path + '/entries/' + filePathArray.join('/')
 				if (fs.existsSync(filePath))
@@ -287,8 +346,10 @@ class CardFileInfo_t {
 				dataArray.push(filePath.replace(/\\/g, '/'))
 				yaml.writeFileSync(filePath, entrie)
 			}
-			else
+			else {
+				delete entrie.enabled
 				disabledDatas.push(entrie)
+			}
 		}
 		var character_book_dir = fs.readdirSync(character_book_path + '/entries', { recursive: true }).filter(x => x.endsWith('.yaml'))
 		for (const file of character_book_dir) {
@@ -311,8 +372,17 @@ class CardFileInfo_t {
 	 */
 	readDataFiles() {
 		this.metaData = yaml.readFileSync(yamlFilePath)
+		if (this.metaData.greetings) {
+			this.metaData.first_mes = this.metaData.greetings?.shift()
+			this.metaData.alternate_greetings = this.metaData.greetings
+			delete this.metaData.greetings
+		}
+		this.metaData.extensions.talkativeness ??= '0.5'
+		for (let key of ['scenario','mes_example','system_prompt','post_history_instructions'])
+			this.metaData[key] ??= ''
 		var packageJson = JSON.parse(fs.readFileSync(packageJsonFilePath, 'utf8'))
 		this.metaData.character_version = packageJson.version
+		this.metaData.create_by = packageJson.author
 		this.metaData.creator_notes = fs.readFileSync(CharReadMeFilePath, 'utf8')
 		this.v1metaData = GetV1CharDataFromV2(this.metaData)
 		this.metaData.extensions.regex_scripts = []
@@ -332,7 +402,8 @@ class CardFileInfo_t {
 		delete this.character_book.display_index_list
 		for (const key of character_book_dir) {
 			var filePath = character_book_path + '/entries/' + key
-			var data = yaml.readFileSync(filePath)
+			/** @type {WorldInfoEntry} */var data = yaml.readFileSync(filePath)
+			data.enabled = true
 			var fileName = data.comment || data.keys[0] || key.replace(/\.yaml$/, '')
 			data.id = index_list.indexOf(fileName)
 			data.extensions.display_index = display_index_list.indexOf(fileName)
@@ -341,15 +412,31 @@ class CardFileInfo_t {
 			this.character_book.entries[data.id] = data
 		}
 		if (fs.existsSync(character_book_path + '/disabled_entries.yaml')) {
-			var datas = yaml.readFileSync(character_book_path + '/disabled_entries.yaml')
+			/** @type {WorldInfoEntry[]} */var datas = yaml.readFileSync(character_book_path + '/disabled_entries.yaml')
 			for (const data of datas) {
 				var key = data.comment || data.keys[0]
+				data.enabled = false
 				data.id = index_list.indexOf(key)
 				data.extensions.display_index = display_index_list.indexOf(key)
 				if (this.character_book.entries[data.id])
 					console.log(`Duplicated entry: ${key}(${data.id}) and ${this.character_book.entries[data.id].comment || this.character_book.entries[data.id].keys[0]}(${data.id})`)
 				this.character_book.entries[data.id] = data
 			}
+		}
+		for (let entrie of this.character_book.entries) {
+			entrie.keys = [...new Set([...entrie.keys, ...entrie.keys.map(x => is_common_key(x)?traditionalized(x):x)])].sort()
+			entrie.secondary_keys = [...new Set([...entrie.secondary_keys, ...entrie.secondary_keys.map(x => is_common_key(x)?traditionalized(x):x)])].sort()
+			entrie.selective ??= true
+			entrie.extensions.probability ??= 100
+			entrie.extensions.useProbability ??= true
+			entrie.extensions.role ??= 0
+			entrie.extensions.group ??= ''
+			entrie.extensions.group_override ??= false
+			entrie.extensions.group_weight ??= 100
+			entrie.extensions.use_group_scoring ??= false
+			entrie.position ??= entrie.extensions.position == 0 ? "before_char" : "after_char"
+			entrie.extensions.vectorized ??= 0
+			entrie.extensions.depth ??= 0
 		}
 	}
 	/**

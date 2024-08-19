@@ -7,25 +7,13 @@ content: |-
 	根据你现在的乳房尺寸，你的数据可能波动
 	做爱常用 爆乳127cm，体重54kg，双乳各12kg，Xcup
 constant: false
-selective: true
 insertion_order: 103
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 2
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: 3
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: false
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: 3

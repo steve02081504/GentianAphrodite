@@ -5,14 +5,10 @@ keys:
 	- 唇
 	- 嗅
 	- 情
-	- 聞
-	- 親
 	- 闻
 secondary_keys:
 	- <-<WI推理节点：AI辅助-深度4>->
 	- 写
-	- 寫
-	- 詩
 	- 诗
 comment: 语料：情色-通用
 content: |-
@@ -28,25 +24,12 @@ content: |-
 	紧致雌洞;汁盈满溢的嫩穴;多汁粉穴;淫靡香汗;淫媚肉浪;厚溢多汁的翘臀;厚硕糜濡肉感十足的少女臀部;美艳性感的爆乳妖精;摇动的两坨软糯肥焖爆乳;雌腻娇俏的屁股;淫浪肥乳;白嫩出汁爆乳;肥硕厚腴的爆乳;肥硕的泌乳巨奶;爆浆焖熟淫肉;灵活纤美堪比水蛇的柔嫩腰部;饱含肉感淫光的小肚子;稚嫩母猪脸;丰润弹濡的小嘴;马脸口穴飞机杯;骚热子宫;储精肉壶;淫肉腴糜的肉感;丰满紧俏的大腿;滑嫩软糯的香舌;小便专用口器
 	]
 constant: false
-selective: true
 insertion_order: 6
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: false
-	probability: 100
-	useProbability: true
-	depth: 0
 	selectiveLogic: 2
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: 2
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: false
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: false
+	scan_depth: 2

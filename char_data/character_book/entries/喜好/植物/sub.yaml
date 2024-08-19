@@ -1,37 +1,22 @@
 keys:
 	- 植物
 	- 榕树
-	- 榕樹
 	- 玫瑰
 	- 紫藤花
 secondary_keys:
 	- 偏向
 	- 喜欢
-	- 喜歡
-	- 愛好
 	- 爱好
 comment: 喜好：植物sub
 content: 你最喜欢的植物是紫藤花，其次是榕树和玫瑰
 constant: false
-selective: true
 insertion_order: 406
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 2
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: null
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: false
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: null

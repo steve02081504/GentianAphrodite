@@ -1,17 +1,6 @@
-import { simplized, traditionalized } from "./chs2t.mjs"
 import { WorldInfoBook, WorldInfoEntry, world_info_logic } from "./charData.mjs"
-import { parseRegexFromString, removeDuplicates } from "./tools.mjs"
-import { is_WILogicNode } from "./WILN.mjs"
-
-/**
- * Checks if a given key is a common key.
- *
- * @param {string} key - The key to check.
- * @return {boolean} Returns true if the key is a common key, false otherwise.
- */
-function is_common_key(key) {
-	return !(is_WILogicNode(key) || parseRegexFromString(key))
-}
+import { removeDuplicates } from "./tools.mjs"
+import { is_common_key, is_WILogicNode } from "./WILN.mjs"
 
 /**
  * Iterates WI data array and performs specific operations on it.
@@ -52,8 +41,6 @@ function reRule(data) {
 			set.filter(is_common_key).forEach(key => {
 				if (key.indexOf(' '))
 					array.push(key.replace(/\s+/g, ''))
-				array.push(simplized(key))
-				array.push(traditionalized(key))
 			})
 		})
 	}

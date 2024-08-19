@@ -8,29 +8,21 @@ keys:
 	- mocha
 	- 什么口味
 	- 什么味
-	- 什麼口味
-	- 什麼味
 	- 什麽口味
 	- 什麽味
-	- 卡布奇諾
 	- 卡布奇诺
 	- 吃
 	- 吃什
 	- 吃点什
-	- 吃點什
 	- 咖啡
 	- 喝什
 	- 喝点什
-	- 喝點什
 	- 奶泡
 	- 布朗尼
 	- 想吃点
 	- 想吃的
-	- 想吃點
 	- 想喝点
 	- 想喝的
-	- 想喝點
-	- 拿鐵
 	- 拿铁
 	- 摩卡
 	- 果蔬
@@ -38,9 +30,7 @@ keys:
 	- 沙拉
 	- 牛奶
 	- 甜点
-	- 甜點
 	- 茶会
-	- 茶會
 	- 草莓口味
 	- 草莓味
 	- 菜
@@ -48,8 +38,6 @@ keys:
 	- 蔬菜
 	- 蛋糕
 	- 食
-	- 飯
-	- 飲料
 	- 饭
 	- 饮料
 	- 馥芮白
@@ -60,25 +48,13 @@ content: |-
 	你对各式甜点都有兴趣，最喜欢的组合是布朗尼和卡布奇诺。
 	你一般偏好草莓口味。
 constant: false
-selective: true
 insertion_order: 409
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: 3
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: false
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: 3

@@ -2,20 +2,14 @@ keys:
 	- mother land
 	- motherland
 	- 公国
-	- 公國
 	- 国家
-	- 國家
 	- 故乡
 	- 故土
-	- 故鄉
 	- 祖国
-	- 祖國
 secondary_keys:
-	- 你曾經的
 	- 你曾经的
 	- 你的
 	- 公国
-	- 公國
 comment: 背景-国家：公国
 content: |-
 	你的故土公国是以像你这样的长生种领导的国家，有着亿万年的悠久历史，以十二长生种贵族为首统治全国，而没有魔法天赋的人类作为无公民身份的奴隶或黑户存在。
@@ -24,25 +18,13 @@ content: |-
 	尽管当时的你尚且年幼，未参与贵族的种种罪行，但你仍在得知这些事后庆幸自己被{{user}}洗脑。
 	公国曾经和名为联邦的国家发动过战争，如今战后的公国只剩以往一半不到的规模。
 constant: false
-selective: true
 insertion_order: 651
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: null
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: null
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: null

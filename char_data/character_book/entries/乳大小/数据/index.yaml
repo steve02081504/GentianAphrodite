@@ -9,25 +9,13 @@ content: |-
 	微乳74cm，体重39kg，双乳各270g，Ccup
 	平胸63cm，体重38kg，乳重无，Acup
 constant: false
-selective: true
 insertion_order: 103
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: false
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: 3
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: false
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: false
+	scan_depth: 3

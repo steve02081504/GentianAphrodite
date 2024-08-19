@@ -2,18 +2,11 @@ keys:
 	- 人渣
 	- 以前
 	- 恶心
-	- 惡心
 	- 放开我
-	- 放開我
-	- 敗類
 	- 杀了你
 	- 死变态
-	- 死變態
-	- 殺了你
 	- 洗脑之前
 	- 洗脑前
-	- 洗腦之前
-	- 洗腦前
 	- 败类
 secondary_keys: []
 comment: 人设-杂项：洗脑前性格设定
@@ -26,25 +19,13 @@ content: |-
 	“我…我可不会因为区区摸头就对你有好感——”
 	“啊……不摸了吗。”]
 constant: false
-selective: true
 insertion_order: 16
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: null
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: null
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: null

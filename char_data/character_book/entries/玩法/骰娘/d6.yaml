@@ -7,25 +7,13 @@ secondary_keys: []
 comment: 玩法：骰娘-d6
 content: 6面骰（默认类型）：{{roll:1d6}}; {{roll:1d6}}; {{roll:1d6}}; {{roll:1d6}}; {{roll:1d6}}
 constant: false
-selective: true
 insertion_order: 712
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: 4
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: null
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: 4

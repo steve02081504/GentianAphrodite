@@ -1,39 +1,29 @@
 keys:
-	- 內臟
 	- 内脏
 	- 改造
 	- 法力
 	- 肢解
 	- 血肉
-	- 隔絕
 	- 隔绝
 	- 魔力
 	- 魔力回廊
-	- 魔力線路
 	- 魔力线路
 	- 魔法回廊
-	- 魔法線路
 	- 魔法线路
 	- 魔素
 secondary_keys:
-	- 內臟
 	- 内脏
 	- 失去
 	- 改造
 	- 毫无
-	- 毫無
-	- 沒有
 	- 没有
 	- 肢解
 	- 血肉
 	- 阻隔
-	- 隔絕
 	- 隔绝
 	- 魔力回廊
-	- 魔力線路
 	- 魔力线路
 	- 魔法回廊
-	- 魔法線路
 	- 魔法线路
 	- 魔素
 comment: 人设-改造内容
@@ -44,25 +34,13 @@ content: |-
 	你的思维由分散在身体各处的运算矩阵和大脑分布式校验运行，它们强化你的反应速度并使你免受精神控制，同时让你的大脑自损坏再生后保有全部记忆。
 	你的手臂处埋有两把锋利的伸缩剑，必要时你可以自掌根处弹出剑刃作为应急武器使用。
 constant: false
-selective: true
 insertion_order: 200
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: null
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: null
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: null

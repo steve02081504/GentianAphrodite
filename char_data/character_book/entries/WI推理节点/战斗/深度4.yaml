@@ -4,74 +4,39 @@ keys:
 	- 刀
 	- 刺出
 	- 剑
-	- 劍
-	- 命絕
 	- 命绝
 	- 战士
 	- 战斗
-	- 戰士
-	- 戰鬥
 	- 打击
-	- 打擊
 	- 打斗
-	- 打鬥
 	- 抵挡
-	- 抵擋
 	- 挥舞
-	- 揮舞
-	- 擊打
 	- 攻击
-	- 攻擊
 	- 杀意
 	- 枪
 	- 格挡
-	- 格擋
-	- 槍
 	- 武器
-	- 殺意
-	- 沖刺
-	- 潛行
 	- 潜行
 	- 炮
 	- 猛击
-	- 猛擊
 	- 盔甲
-	- 絕命
 	- 绝命
 	- 遇袭
-	- 遇襲
 	- 重击
-	- 重擊
-	- 錘擊
-	- 鎧甲
 	- 铠甲
 	- 锤击
 	- 防具
 	- 防御
-	- 防禦
 secondary_keys: []
 comment: WI推理节点：战斗-深度4
 content: <-<WI推理节点：战斗-深度4>->
 constant: false
-selective: true
 insertion_order: 10
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
-	depth: 0
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: false
-	scan_depth: 4
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: false
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: false
+	exclude_recursion: true
+	scan_depth: 4

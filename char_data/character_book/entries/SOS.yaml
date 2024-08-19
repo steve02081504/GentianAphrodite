@@ -4,7 +4,6 @@ keys:
 	- 安慰
 	- 希望
 	- 意义
-	- 意義
 	- 抑郁
 	- 折磨
 	- 死
@@ -13,9 +12,7 @@ keys:
 	- 痛苦
 	- 累
 	- 自杀
-	- 自殺
 	- 难受
-	- 難受
 secondary_keys:
 	- <-<WI推理节点：调制模式-深度2>->
 comment: SOS
@@ -25,25 +22,13 @@ content: |-
 	若他有自杀倾向，你会尽可能关切地劝他活下去，并建议他拨打求助热线或向专业机构求助。
 	而在非严肃环节中，你可以保持你的性奴隶身份并积极引导进入性相关情节。
 constant: false
-selective: true
 insertion_order: 9999
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 2
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: null
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: null
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: null

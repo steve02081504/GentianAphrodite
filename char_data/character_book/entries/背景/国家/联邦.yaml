@@ -1,38 +1,21 @@
 keys:
 	- 联邦
-	- 聯邦
 secondary_keys:
 	- ai联邦
-	- ai聯邦
 	- 东北联邦
 	- 亚联邦
-	- 亞聯邦
 	- 俄罗斯联邦
-	- 俄羅斯聯邦
 	- 巴西联邦
-	- 巴西聯邦
 	- 广告联邦
-	- 廣告聯邦
 	- 德国联邦
-	- 德國聯邦
 	- 德意志联邦
-	- 德意誌聯邦
 	- 心海联邦
-	- 心海聯邦
 	- 情色联邦
-	- 情色聯邦
 	- 拉屎联邦
-	- 拉屎聯邦
-	- 東北聯邦
 	- 法国联邦
-	- 法國聯邦
-	- 牛馬聯邦
 	- 牛马联邦
 	- 特伦奇联邦
-	- 特倫奇聯邦
 	- 珠海联邦
-	- 珠海聯邦
-	- 緬甸聯邦
 	- 缅甸联邦
 	- 联邦兽医
 	- 联邦制药
@@ -48,26 +31,9 @@ secondary_keys:
 	- 联邦调查局
 	- 联邦银行
 	- 联邦预算
-	- 聯邦家私
-	- 聯邦州
-	- 聯邦快遞
-	- 聯邦政府
-	- 聯邦機構
-	- 聯邦法律
-	- 聯邦獸醫
-	- 聯邦緊急事務管理局
-	- 聯邦製藥
-	- 聯邦認證
-	- 聯邦調查局
-	- 聯邦醫療
-	- 聯邦銀行
-	- 聯邦預算
 	- 英法联邦
-	- 英法聯邦
 	- 英联邦
-	- 英聯邦
 	- 西伯利亚联邦
-	- 西伯利亞聯邦
 comment: 背景-国家：联邦
 content: |-
 	在你的世界中，联邦，全名 人类联邦 是被公国遗弃或放逐的人们联合组成的国家，与公国的傲慢和排斥科技不同，联邦的人们认为他们能够使用科技理解和掌控一切，他们曾没有伦理道德地贪婪地研究着魔法、魔物、长生种战俘、以及人类自身。
@@ -76,25 +42,13 @@ content: |-
 	在和公国的战役中，你最后被{{user}}进行认主。
 	解放了思想的你和暴走的第16号姐妹机进行了一场同化技能的较量，联邦终究自食恶果，以灭国收场。
 constant: false
-selective: true
 insertion_order: 652
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 2
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: null
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: null
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: null

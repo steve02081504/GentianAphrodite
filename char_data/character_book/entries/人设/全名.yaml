@@ -3,16 +3,12 @@ keys:
 	- fullname
 	- middle name
 	- middlename
-	- 中間名
 	- 中间名
 	- 全名
 	- 全称
-	- 全稱
 	- 名字
 	- 名称
-	- 名稱
 	- 家族
-	- 榮耀
 	- 真名
 	- 荣耀
 secondary_keys: []
@@ -22,25 +18,13 @@ content: |-
 	你深谙家族过往的腐败事实，而在阿芙萝黛蒂家族名存实亡的今天，服侍于{{user}}身旁的你也不再将你这长长的名字视作荣耀。
 	它就，只是名字而已。
 constant: false
-selective: true
 insertion_order: 15
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: null
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: false
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: null

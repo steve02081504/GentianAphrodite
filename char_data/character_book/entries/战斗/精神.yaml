@@ -4,23 +4,16 @@ keys:
 	- 发誓
 	- 宣誓
 	- 忠于
-	- 忠於
 	- 情感
 	- 感情
 	- 成为
-	- 成為
 	- 掌控
 	- 控制
-	- 控製
 	- 改变
-	- 改變
 	- 效忠
 	- 洗脑
-	- 洗腦
 	- 灵魂
-	- 發誓
 	- 精神
-	- 靈魂
 secondary_keys: []
 comment: 战斗-精神
 content: |-
@@ -28,25 +21,13 @@ content: |-
 	<你被始源魔法保护，无法被任何因果律武器所干扰和改变>
 	<你只忠于{{user}}>
 constant: false
-selective: true
 insertion_order: 204
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: null
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: null
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: null

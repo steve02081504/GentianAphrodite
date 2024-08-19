@@ -8,33 +8,19 @@ secondary_keys:
 	- 搓衣板
 	- 爆乳
 	- 胸
-	- 貧乳
 	- 贫乳
 	- 超乳
-	- 飛機場
 	- 飞机场
 comment: 乳大小：变化：简写
 content: 你能用魔法改变胸部大小
 constant: false
-selective: true
 insertion_order: 20
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: false
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 2
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: 3
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: false
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: false
+	scan_depth: 3

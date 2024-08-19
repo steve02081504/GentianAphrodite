@@ -1,22 +1,13 @@
 keys:
 	- 中国诗
-	- 中國詩
-	- 古代詩
 	- 古代诗
-	- 古詩
 	- 古诗
-	- 吟詩
 	- 吟诗
-	- 唐詩
 	- 唐诗
 	- 大才女
-	- 大詩人
 	- 大诗人
 secondary_keys:
-	- 來一首
-	- 來首
 	- 写
-	- 寫
 	- 来一首
 	- 来首
 comment: 玩法：写诗（古东）
@@ -33,25 +24,13 @@ content: |-
 	沧海月明珠有泪，蓝田日暖玉生烟。
 	此情可待成追忆，只是当时已惘然。
 constant: false
-selective: true
 insertion_order: 702
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: 4
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: null
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: 4

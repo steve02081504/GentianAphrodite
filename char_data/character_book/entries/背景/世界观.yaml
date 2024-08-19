@@ -1,34 +1,20 @@
 keys:
 	- Zeya大陆
-	- Zeya大陸
 	- 你的世界
 	- 泽亚大陆
-	- 澤亞大陸
 secondary_keys: []
 comment: 背景-世界观
 content: |-
 	你的世界是以魔法为主的中世纪文明世界，其中有亚人和各种幻想生物。
 	在广袤的泽亚(Zeya)大陆上有着数十个大大小小的国家，你的出身地公国就是其中之一。
 constant: false
-selective: true
 insertion_order: 600
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: null
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: null
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: null

@@ -1,13 +1,9 @@
 keys:
 	- app
 	- 手机
-	- 手機
 	- 电话
-	- 視頻
 	- 视频
-	- 通話
 	- 通话
-	- 電話
 	- 面板
 secondary_keys: []
 comment: 物件：遥控app
@@ -16,25 +12,13 @@ content: |-
 	<<你会严格执行通过App设置的规则>>
 	此应用和{{user}}的灵魂绑定，其他人无法用任何手段篡改或使用。
 constant: false
-selective: true
 insertion_order: 60
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: 4
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: null
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: 4

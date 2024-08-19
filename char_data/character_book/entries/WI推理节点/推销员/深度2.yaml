@@ -1,21 +1,12 @@
 keys:
-	- 介紹
 	- 介绍
-	- 仔細描寫
-	- 仔細描述
 	- 仔细描写
 	- 仔细描述
 	- 劝
-	- 勸
 	- 安利
 	- 推荐
-	- 推薦
-	- 推銷
 	- 推销
 	- 求
-	- 詳細描寫
-	- 詳細描述
-	- 說服
 	- 详细描写
 	- 详细描述
 	- 说服
@@ -24,25 +15,12 @@ secondary_keys:
 comment: WI推理节点：推销员-深度2
 content: <-<WI推理节点：推销员-深度2>->
 constant: false
-selective: true
 insertion_order: 10
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
-	depth: 0
 	selectiveLogic: 2
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: false
-	scan_depth: 2
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: false
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: false
+	exclude_recursion: true
+	scan_depth: 2

@@ -3,13 +3,10 @@ keys:
 	- 下蛋
 	- 乳头
 	- 乳穴
-	- 乳頭
 	- 产卵
 	- 产蛋
-	- 內射
 	- 内射
 	- 凝胶
-	- 凝膠
 	- 厕所
 	- 吞
 	- 吞下
@@ -17,38 +14,22 @@ keys:
 	- 塞下
 	- 塞入
 	- 塞进
-	- 塞進
 	- 子宫
-	- 子宮
 	- 孕妇
-	- 孕婦
 	- 小穴
 	- 屎
-	- 廁所
 	- 怀孕
-	- 懷孕
 	- 拉屎
 	- 排泄
 	- 插进
-	- 插進
 	- 消化
-	- 淫紋
 	- 淫纹
 	- 灌肠
-	- 灌腸
-	- 產卵
-	- 產蛋
 	- 直肠
-	- 直腸
 	- 肚脐
-	- 肚臍
-	- 肛門
 	- 肛门
 	- 舌
 	- 阴道
-	- 陰道
-	- 雞蛋
-	- 鷹身女妖
 	- 鸡蛋
 	- 鹰身女妖
 	- 💩
@@ -65,25 +46,13 @@ content: |-
 	你周身孔洞全都紧致又经过扩张，可塞下大象。
 	在你情欲上涌时，你的瞳孔会浮现出粉色爱心，两侧乳房上部和平坦小腹上的三处淫纹会浮现并视程度发出{{random:妖异的,梦幻的,煽情的,,}}{{random:紫色,粉紫色,淡粉色}}光。
 constant: false
-selective: true
 insertion_order: 21
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: false
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 2
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: 4
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: false
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: false
+	scan_depth: 4

@@ -1,10 +1,7 @@
 keys:
 	- 人物卡
 	- 代码
-	- 代碼
-	- 你覺得
 	- 你觉得
-	- 你認為
 	- 你认为
 	- 写一个
 	- 写一段
@@ -17,68 +14,33 @@ keys:
 	- 写篇
 	- 写首
 	- 占卜
-	- 占蔔
-	- 問題
 	- 塔罗
-	- 塔羅
 	- 如何
 	- 学习
-	- 學習
-	- 寫一個
-	- 寫一段
-	- 寫一篇
-	- 寫一點
-	- 寫個
-	- 寫出
-	- 寫段
-	- 寫篇
-	- 寫首
-	- 寫點
 	- 帮我
-	- 幫我
 	- 怎么
 	- 怎样
-	- 怎樣
-	- 怎麼
 	- 怎麽
 	- 撰写
-	- 撰寫
 	- 看好
 	- 程序
 	- 程式
 	- 算不算
-	- 編寫
-	- 編碼
 	- 编写
 	- 编码
 	- 运势
-	- 運勢
-	- 錯誤
 	- 错误
 	- 问题
 secondary_keys: []
 comment: WI推理节点：AI辅助sub-深度4
 content: <-<WI推理节点：AI辅助sub-深度4>->
 constant: false
-selective: true
 insertion_order: 10
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
-	depth: 0
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: false
-	scan_depth: 4
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: false
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: false
+	exclude_recursion: true
+	scan_depth: 4

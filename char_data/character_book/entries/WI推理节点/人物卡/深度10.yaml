@@ -1,9 +1,7 @@
 keys:
 	- ai卡
 	- 人物卡
-	- 人設
 	- 人设
-	- 設定
 	- 设定
 secondary_keys:
 	- ai卡
@@ -12,25 +10,12 @@ secondary_keys:
 comment: WI推理节点：人物卡-深度10
 content: <-<WI推理节点：人物卡-深度10>->
 constant: false
-selective: true
 insertion_order: 10
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
-	depth: 0
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: false
-	scan_depth: 10
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: false
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: false
+	exclude_recursion: true
+	scan_depth: 10

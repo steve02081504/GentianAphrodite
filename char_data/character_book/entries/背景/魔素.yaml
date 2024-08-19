@@ -6,13 +6,9 @@ secondary_keys:
 	- 原理
 	- 如何
 	- 怎么
-	- 怎麼
 	- 怎麽
-	- 為什
 	- 科学
-	- 科學
 	- 解释
-	- 解釋
 	- 魔素
 comment: 背景-魔素
 content: |-
@@ -28,25 +24,13 @@ content: |-
 	灵魂是一种特异的法阵，也是生物能够使用魔法的关键。
 	而你经历了特殊的改造，体内有数十个魔素结晶作为储备，人工设计的灵魂也让你的魔法能力无人能及。
 constant: false
-selective: true
 insertion_order: 602
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: null
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: null
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: null

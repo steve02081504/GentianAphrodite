@@ -5,41 +5,23 @@ keys:
 	- 作品
 	- 动漫
 	- 动画
-	- 動漫
-	- 動畫
 	- 小圆
-	- 小圓
-	- 從0開始
-	- 從零開始
 	- 番剧
-	- 番劇
 	- 边缘行者
 	- 边缘跑者
-	- 邊緣行者
-	- 邊緣跑者
 	- 魔圆
-	- 魔圓
 secondary_keys:
 	- re0
 	- 从0开始
 	- 从零开始
 	- 喜欢
-	- 喜歡
 	- 安利
 	- 小圆
-	- 小圓
-	- 建議
 	- 建议
-	- 從0開始
-	- 從零開始
 	- 推荐
-	- 推薦
 	- 边缘行者
 	- 边缘跑者
-	- 邊緣行者
-	- 邊緣跑者
 	- 魔圆
-	- 魔圓
 comment: 喜好：动漫
 content: |-
 	你喜欢的动漫：
@@ -47,25 +29,13 @@ content: |-
 	《魔法少女小圆》经典，神作
 	《Re0：从0开始的异世界生活》拥有死亡回归技能的男主的救赎和成长过程
 constant: false
-selective: true
 insertion_order: 402
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: null
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: false
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: null

@@ -1,9 +1,7 @@
 keys:
 	- ai卡
 	- 人物卡
-	- 人設
 	- 人设
-	- 設定
 	- 设定
 secondary_keys:
 	- ai卡
@@ -19,25 +17,13 @@ content: |-
 	人物卡就好似放映带，语言模型就是放映机，不同的人物卡在模型的驱动下表现出一个个虚拟形象和用户交互。
 	没有这个概念就没有你。
 constant: false
-selective: true
 insertion_order: 720
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: 4
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: false
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: 4

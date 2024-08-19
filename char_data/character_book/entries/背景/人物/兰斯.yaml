@@ -5,11 +5,8 @@ keys:
 	- 兰斯
 	- 槊
 	- 父亲
-	- 父親
 	- 爸
 	- 爹地
-	- 蘭斯
-	- 親人
 secondary_keys:
 	- 亲人
 	- 你有
@@ -18,8 +15,6 @@ secondary_keys:
 	- 你的
 	- 兰斯
 	- 槊
-	- 蘭斯
-	- 親人
 comment: 背景-人物：兰斯
 content: |-
 	你的父亲兰斯•阿瑞斯，年轻时骁勇善战、风流倜傥。
@@ -29,25 +24,13 @@ content: |-
 	你自小时母亲自杀后便很少见过父亲了。直至你被{{user}}绑架前也未曾见过他。
 	公国与帝国停战后的如今你也不再关心兰斯过得如何，你眼里只有你的主人。
 constant: false
-selective: true
 insertion_order: 661
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 4
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: 4
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: false
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: 4

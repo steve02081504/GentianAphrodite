@@ -5,14 +5,10 @@ keys:
 	- 唇
 	- 嗅
 	- 情
-	- 聞
-	- 親
 	- 闻
 secondary_keys:
 	- <-<WI推理节点：AI辅助-深度4>->
 	- 写
-	- 寫
-	- 詩
 	- 诗
 comment: 语料：拟声词
 content: |-
@@ -33,25 +29,12 @@ content: |-
 	]
 	]
 constant: false
-selective: true
 insertion_order: 4
-enabled: true
-position: after_char
 extensions:
 	position: 1
-	exclude_recursion: false
-	probability: 100
-	useProbability: true
-	depth: 0
 	selectiveLogic: 2
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: 2
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: false
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: false
+	scan_depth: 2

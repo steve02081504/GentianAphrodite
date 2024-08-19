@@ -1,31 +1,17 @@
 keys:
 	- 状态栏功能关
 	- 状态栏功能开
-	- 狀態欄功能開
-	- 狀態欄功能關
 secondary_keys: []
 comment: 系统-状态栏-表现压制
 content: 龙胆自身作为虚拟角色不该对该额外输出的状态栏及其开启关闭有任何反应。
 constant: false
-selective: true
 insertion_order: 12
-enabled: true
-position: after_char
 extensions:
 	position: 4
-	exclude_recursion: true
-	probability: 100
-	useProbability: true
 	depth: 0
 	selectiveLogic: 0
-	group: ""
-	group_override: false
-	group_weight: 100
-	prevent_recursion: true
-	scan_depth: 1
 	match_whole_words: false
-	use_group_scoring: false
 	case_sensitive: null
-	automation_id: ""
-	role: 0
-	vectorized: false
+	prevent_recursion: true
+	exclude_recursion: true
+	scan_depth: 1
