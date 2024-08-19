@@ -191,6 +191,24 @@ class WorldInfoEntry {
 		 * @default false
 		 */
 		vectorized,
+		/**
+		 * the number of the entry sticky
+		 * @type {number}
+		 * @default 0
+		 */
+		sticky,
+		/**
+		 * if the entry's trigger is delayed until recursion
+		 * @type {boolean}
+		 * @default false
+		 */
+		delay_until_recursion,
+		/**
+		 * the cooldown of the entry
+		 * @type {number}
+		 * @default 0
+		 */
+		cooldown,
 	}
 }
 class WorldInfoBook {

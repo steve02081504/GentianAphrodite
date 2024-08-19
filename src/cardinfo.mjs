@@ -321,7 +321,10 @@ class CardFileInfo_t {
 				case_sensitive: entrie.extensions?.case_sensitive,
 				prevent_recursion: entrie.extensions?.prevent_recursion,
 				exclude_recursion: entrie.extensions?.exclude_recursion,
+				delay_until_recursion: entrie.extensions?.delay_until_recursion,
 				scan_depth: entrie.extensions?.scan_depth,
+				sticky: entrie.extensions?.sticky,
+				cooldown: entrie.extensions?.cooldown,
 				...entrie.extensions,
 			}
 		}
@@ -435,7 +438,7 @@ class CardFileInfo_t {
 			entrie.extensions.group_weight ??= 100
 			entrie.extensions.use_group_scoring ??= false
 			entrie.position ??= entrie.extensions.position == 0 ? "before_char" : "after_char"
-			entrie.extensions.vectorized ??= 0
+			entrie.extensions.vectorized ??= false
 			entrie.extensions.depth ??= 0
 		}
 	}

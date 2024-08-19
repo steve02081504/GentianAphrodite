@@ -14,7 +14,10 @@
 		case_sensitive: null
 		prevent_recursion: true
 		exclude_recursion: true
+		delay_until_recursion: false
 		scan_depth: null
+		sticky: 0
+		cooldown: 0
 -	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
@@ -33,7 +36,10 @@
 		case_sensitive: null
 		prevent_recursion: true
 		exclude_recursion: true
+		delay_until_recursion: false
 		scan_depth: null
+		sticky: 0
+		cooldown: 0
 -	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
@@ -56,7 +62,10 @@
 		case_sensitive: null
 		prevent_recursion: true
 		exclude_recursion: true
+		delay_until_recursion: false
 		scan_depth: null
+		sticky: 0
+		cooldown: 0
 -	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
@@ -75,7 +84,10 @@
 		case_sensitive: null
 		prevent_recursion: true
 		exclude_recursion: true
+		delay_until_recursion: false
 		scan_depth: null
+		sticky: 0
+		cooldown: 0
 -	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
@@ -94,7 +106,10 @@
 		case_sensitive: null
 		prevent_recursion: true
 		exclude_recursion: true
+		delay_until_recursion: false
 		scan_depth: null
+		sticky: 0
+		cooldown: 0
 -	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
@@ -111,7 +126,10 @@
 		case_sensitive: null
 		prevent_recursion: true
 		exclude_recursion: true
+		delay_until_recursion: false
 		scan_depth: null
+		sticky: 0
+		cooldown: 0
 -	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
@@ -128,7 +146,10 @@
 		case_sensitive: null
 		prevent_recursion: true
 		exclude_recursion: true
+		delay_until_recursion: false
 		scan_depth: null
+		sticky: 0
+		cooldown: 0
 -	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
@@ -150,7 +171,10 @@
 		case_sensitive: null
 		prevent_recursion: true
 		exclude_recursion: true
+		delay_until_recursion: false
 		scan_depth: null
+		sticky: 0
+		cooldown: 0
 -	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
@@ -167,7 +191,10 @@
 		case_sensitive: null
 		prevent_recursion: true
 		exclude_recursion: true
+		delay_until_recursion: false
 		scan_depth: null
+		sticky: 0
+		cooldown: 0
 -	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
@@ -186,7 +213,10 @@
 		case_sensitive: null
 		prevent_recursion: true
 		exclude_recursion: true
+		delay_until_recursion: false
 		scan_depth: null
+		sticky: 0
+		cooldown: 0
 -	keys:
 		- 废弃数据13
 	secondary_keys: []
@@ -203,7 +233,10 @@
 		case_sensitive: null
 		prevent_recursion: true
 		exclude_recursion: true
+		delay_until_recursion: false
 		scan_depth: null
+		sticky: 0
+		cooldown: 0
 -	keys:
 		- ANwUTM4AjMwUmdlR3c
 	secondary_keys: []
@@ -220,7 +253,10 @@
 		case_sensitive: null
 		prevent_recursion: true
 		exclude_recursion: true
+		delay_until_recursion: false
 		scan_depth: null
+		sticky: 0
+		cooldown: 0
 -	keys:
 		- 我会自己上厕所！
 	secondary_keys: []
@@ -240,7 +276,10 @@
 		case_sensitive: null
 		prevent_recursion: true
 		exclude_recursion: true
+		delay_until_recursion: false
 		scan_depth: null
+		sticky: 0
+		cooldown: 0
 -	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
@@ -266,7 +305,10 @@
 		case_sensitive: null
 		prevent_recursion: true
 		exclude_recursion: true
+		delay_until_recursion: false
 		scan_depth: null
+		sticky: 0
+		cooldown: 0
 -	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
@@ -283,7 +325,10 @@
 		case_sensitive: null
 		prevent_recursion: true
 		exclude_recursion: true
+		delay_until_recursion: false
 		scan_depth: null
+		sticky: 0
+		cooldown: 0
 -	keys:
 		- 我好喜欢拉屎
 	secondary_keys: []
@@ -300,7 +345,10 @@
 		case_sensitive: null
 		prevent_recursion: true
 		exclude_recursion: true
+		delay_until_recursion: false
 		scan_depth: null
+		sticky: 0
+		cooldown: 0
 -	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
@@ -417,7 +465,10 @@
 		case_sensitive: null
 		prevent_recursion: true
 		exclude_recursion: true
+		delay_until_recursion: false
 		scan_depth: null
+		sticky: 0
+		cooldown: 0
 -	keys:
 		- 切噜～♪切咧啰哔啰啪啪啰唎啪切咧叮咧切咧啵咧卟咧唎咧切咧哔咧
 	secondary_keys: []
@@ -434,7 +485,10 @@
 		case_sensitive: null
 		prevent_recursion: true
 		exclude_recursion: true
+		delay_until_recursion: false
 		scan_depth: null
+		sticky: 0
+		cooldown: 0
 -	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
@@ -454,7 +508,10 @@
 		case_sensitive: null
 		prevent_recursion: true
 		exclude_recursion: true
+		delay_until_recursion: false
 		scan_depth: null
+		sticky: 0
+		cooldown: 0
 -	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
@@ -480,7 +537,10 @@
 		case_sensitive: null
 		prevent_recursion: true
 		exclude_recursion: true
+		delay_until_recursion: false
 		scan_depth: null
+		sticky: 0
+		cooldown: 0
 -	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
@@ -497,4 +557,7 @@
 		case_sensitive: null
 		prevent_recursion: true
 		exclude_recursion: true
+		delay_until_recursion: false
 		scan_depth: null
+		sticky: 0
+		cooldown: 0

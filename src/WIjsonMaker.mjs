@@ -93,7 +93,11 @@ function v2CharWIentry2WIjsonEntry(entrie) {
 		role: entrie.extensions?.position == 4 ? entrie.extensions?.role : null,
 		uid: entrie.id,
 		preventRecursion: entrie.extensions?.prevent_recursion,
-		displayIndex: entrie.extensions?.display_index
+		displayIndex: entrie.extensions?.display_index,
+		delayUntilRecursion: entrie.extensions?.delay_until_recursion,
+		sticky: entrie.extensions?.sticky,
+		cooldown: entrie.extensions?.cooldown,
+		delay: entrie.extensions?.delay,
 	}
 	if (entrie.tanji) {
 		delete aret.content
@@ -147,6 +151,9 @@ function WIjsonEntry2v2CharWIentry(json) {
 			role: json.role || 0,
 			display_index: json.displayIndex,
 			vectorized: json.vectorized,
+			delay_until_recursion: json.delayUntilRecursion,
+			sticky: json.sticky,
+			cooldown: json.cooldown,
 		}
 	}
 }
