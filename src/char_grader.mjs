@@ -2,13 +2,15 @@ import { read } from './character-card-parser.mjs'
 import { arraysEqual, deepCopy, parseRegexFromString, remove_simple_marcos } from './tools.mjs'
 import lz from 'lz-string'
 const { compressToUTF16 } = lz
-import { GetV1CharDataFromV2 } from './charData.mjs'
+import { GetV1CharDataFromV2, WorldInfoEntry, world_info_position, regex_placement } from './charData.mjs'
 import { get_token_size, encoder } from './get_token_size.mjs'
 
+const DEFAULT_DEPTH = 0
 
-export function char_grader(arg, progress_stream = console.log) {
+export async function char_grader(arg, progress_stream = console.log) {
 	progress_stream("Initializing...")
 	let cardsize = 0
+	if (arg instanceof Blob) arg = new Uint8Array(await arg.arrayBuffer())
 	if (arg instanceof ArrayBuffer || arg instanceof Uint8Array) {
 		cardsize = arg.byteLength
 		arg = read(arg)
@@ -18,7 +20,11 @@ export function char_grader(arg, progress_stream = console.log) {
 	let char = arg
 	if (char.data && !char.description) char = GetV1CharDataFromV2(char.data)
 	var score_details = {
+		full_data: char,
+		full_text: '',
 		name: char.name,
+		version: char?.data?.character_version,
+		creator: char?.data?.creator,
 		tags: char?.tags || [],
 		index: char?.creatorcomment,
 		logs: [],
@@ -147,9 +153,9 @@ export function char_grader(arg, progress_stream = console.log) {
 		return matched?.length > entry.tokenized_content.length / 201
 	}
 	let is_persona_card_x = format_text.match(related_regex)?.length || 1.8
-	if (format_text.includes('not a specific character, but an Role Play Game system'))
+	if (format_text.match(/not a specific character|Role Play Game system|RPG游戏系统|不是(一个|)特定(的|)角色|扮演[^\n]+(手机应用|app)/i))
 		is_persona_card_x /= 6
-	else if (format_text.split('\n').slice(0, 4).join('\n').match(/\bcharacter\b/))
+	else if (format_text.split('\n').slice(0, 4).join('\n').match(/\b(character|assistant needs to advance the story using)\b/i))
 		is_persona_card_x *= 1.5
 	let is_persona_card_y = format_text_length / 97
 	let is_persona_card = is_persona_card_x >= is_persona_card_y
@@ -170,6 +176,8 @@ export function char_grader(arg, progress_stream = console.log) {
 		}
 		BaseGrading('greenWI_entries', wibook_entries.length, 'green entries', 5)
 		let key_array = []
+		let match_whole_words_missing_num = 0
+		let prevent_recursion_missing_num = 0
 		for (let entry of wibook_entries) {
 			entry.keys = [...new Set(entry.keys)]
 			entry.secondary_keys = [...new Set(entry.secondary_keys)]
@@ -182,12 +190,20 @@ export function char_grader(arg, progress_stream = console.log) {
 					else if (/\p{Unified_Ideograph}/u.test(key))
 						warning_keys.push(key)
 			let entry_name = get_entrie_names([entry])
-			if (warning_keys.length)
+			if (warning_keys.length) {
 				progress_stream(`[warning] the key${warning_keys.length > 1 ? 's' : ''} '${warning_keys.join("', '")}' of WI entry '${entry_name}' contains Chinese like character, but match_whole_words is not false, that's may not be what you want.`)
+				match_whole_words_missing_num++
+			}
 			let is_LN = !/$<-(<WI(推理节点|推理節點|LogicalNode)(：|:)([\\s\\S]+?)>|[0-9a-z]{6})->\s*^/g.test(entry.content)
-			if (!entry.extensions.prevent_recursion && !is_LN)
+			if (!entry.extensions.prevent_recursion && !is_LN) {
 				progress_stream(`[warning] the WI entry '${entry_name}' not an WI LogicalNode and not set prevent_recursion, that's may not be what you want.`)
+				prevent_recursion_missing_num++
+			}
 		}
+		if (match_whole_words_missing_num)
+			do_reparation('match_whole_words missing', match_whole_words_missing_num, 7)
+		if (prevent_recursion_missing_num)
+			do_reparation('prevent_recursion missing', prevent_recursion_missing_num, 7)
 		let unique_keys = [...new Set(key_array)]
 		let key_num = unique_keys.length
 		BaseGrading('unique_key_num', key_num, 'unique keys', 2, 0, 1 / 1.15)
@@ -214,7 +230,6 @@ export function char_grader(arg, progress_stream = console.log) {
 				gWI_size -= size
 			}
 			wibook_entries = wibook_entries.filter(_ => !unrelated_entries.includes(_))
-			char.data.character_book.entries = wibook_entries
 		}
 
 		let superLargeEntries = wibook_entries.filter(_ => _.tokenized_content.length > 2310)
@@ -225,22 +240,116 @@ export function char_grader(arg, progress_stream = console.log) {
 			do_reparation(`greenWI ${get_entrie_names(superLargeEntries)} too large`, gWI_score)
 			gWI_size -= size
 		}
-		wibook_entries = wibook_entries.filter(_ => !superLargeEntries.includes(_))
+		// wibook_entries = wibook_entries.filter(_ => !superLargeEntries.includes(_))
 	}
 	if (charData?.alternate_greetings)
 		BaseGrading('alternate_greetings', charData.alternate_greetings.length, 'alternate greetings', 30)
-	if (charData?.extensions?.group_greetings?.length)
-		BaseGrading('group_greetings', charData.extensions.group_greetings.length, 'group greetings', 20)
+	let group_greetings_set = new Set([...(charData?.extensions?.group_greetings ?? []), ...(charData?.group_only_greetings ?? [])].filter(x => x))
+	if (group_greetings_set.size > 0)
+		BaseGrading('group_greetings', group_greetings_set.size, 'group greetings', 20)
 	// 通过gzip压缩人物数据来得知数据冗余度，比较压缩率来同步缩放分数
+	let WIs = char.data?.character_book?.entries?.filter(_ => _.enabled) || []
+	if (charData?.extensions?.regex_scripts) {
+		let WI_regex_scripts = charData.extensions.regex_scripts.filter(e => e.placement.includes(regex_placement.WORLD_INFO))
+		for (let script of WI_regex_scripts) script.findRegex = parseRegexFromString(script.findRegex)
+		for (let e of WIs)
+			for (let script of WI_regex_scripts)
+				e.content = e.content.replace(script.findRegex, script.replaceString)
+		WIs = WIs.filter(e => e.content)
+	}
+	let mes_examples = charData.mes_example.split(/\n<START>/gi).map(e => e.trim()).filter(e => e)
+	let before_EMEntries = []
+	let after_EMEntries = []
+	let ANTopEntries = []
+	let ANBottomEntries = []
+	let WIDepthEntries = []
+	let WIs_before_char = []
+	let WIs_after_char = []
+	function add_WI(
+		/** @type {WorldInfoEntry} */
+		entry
+	) {
+		let content = entry.content
+		switch (entry.extensions.position) {
+			case world_info_position.atDepth: {
+				const existingDepthIndex = WIDepthEntries.findIndex((e) => e.depth === (entry.depth ?? DEFAULT_DEPTH) && e.role === entry.extensions.role)
+				if (existingDepthIndex !== -1)
+					WIDepthEntries[existingDepthIndex].entries.unshift(content)
+				else
+					WIDepthEntries.push({
+						depth: entry.extensions?.depth || 0,
+						entries: [content],
+						role: entry.extensions.role,
+					})
+
+				break
+			}
+			default:
+				[
+					WIs_before_char,
+					WIs_after_char,
+					ANTopEntries,
+					ANBottomEntries,
+					null,
+					before_EMEntries,
+					after_EMEntries
+				][entry.extensions.position].unshift(entry)
+				break
+		}
+	}
+	WIs = WIs.sort((a, b) => a.extensions.position - b.extensions.position || a.insertion_order - b.insertion_order)
+	for (let WI of WIs) add_WI(WI)
+
+	WIs_before_char = WIs_before_char.sort((a, b) => a.insertion_order - b.insertion_order).map(e => e.content)
+	WIs_after_char = WIs_after_char.sort((a, b) => a.insertion_order - b.insertion_order).map(e => e.content)
+	before_EMEntries = before_EMEntries.map(e => e.content)
+	after_EMEntries = after_EMEntries.map(e => e.content)
+	ANTopEntries = ANTopEntries.map(e => e.content)
+	ANBottomEntries = ANBottomEntries.map(e => e.content)
+
+	let aothr_notes = charData?.extensions?.depth_prompt?.prompt
+	if (aothr_notes)
+		aothr_notes = `${ANTopEntries.join('\n')}\n${aothr_notes}\n${ANBottomEntries.join('\n')}`.replace(/(^\n)|(\n$)/g, '')
+
+	let new_chat_log = []
+	for (let index = 0; index < 1000; index++) {
+		let WIDepth = WIDepthEntries.filter((e) => e.depth === index)
+		for (let entrie of WIDepth) {
+			let role = ['system', 'user', 'assistant'][entrie.role]
+			new_chat_log.unshift({
+				role: role,
+				content: entrie.entries.join('\n'),
+			})
+		}
+		if (charData?.extensions?.depth_prompt?.prompt && index == charData?.extensions?.depth_prompt?.depth)
+			new_chat_log.unshift({
+				role: charData?.extensions?.depth_prompt?.role,
+				content: aothr_notes
+			})
+	}
+
+	mes_examples = [...before_EMEntries, ...mes_examples, ...after_EMEntries].filter(e => e)
+
 	let gzip_text = [
-		char.description, char.mes_example,
+		charData?.system_prompt,
+		...WIs_before_char,
 		char.personality, char.scenario,
-		charData?.system_prompt, charData?.extensions?.depth_prompt?.prompt,
-		...(char?.data?.character_book?.entries?.map?.(_ => _.content) || []),
+		char.description,
+		...WIs_after_char,
+		...mes_examples,
+		...new_chat_log.map(e => e.role + ':\n' + e.content),
+		char.first_mes,
 		...(charData?.alternate_greetings || []),
-		...(charData?.extensions?.group_greetings || []),
+		...group_greetings_set,
 	].filter(_ => _?.length).join('\n')
 	if (gzip_text.length) { // wtf
+		if (WIs.filter(_ => _.tanji).length == 0)
+			score_details.full_text = gzip_text
+		else {
+			let disabled_WIs = char.data?.character_book?.entries?.filter(_ => !_.enabled)
+			let rand_result = Math.floor(Math.random() * disabled_WIs.length)
+			score_details.full_text = disabled_WIs[rand_result]?.content || ''
+		}
 		let compressed = compressToUTF16(gzip_text)
 		let compress_ratio = compressed.length / gzip_text.length
 		score_details.score *= compress_ratio
@@ -249,6 +358,41 @@ export function char_grader(arg, progress_stream = console.log) {
 			scale: compress_ratio
 		})
 		progress_stream(`compress_ratio: ${compress_ratio}, all scores scaled as ${compress_ratio}.`)
+		let img_regexs = [
+			/data:image\/png;base64,/ig,
+			/\w+\.(png|jpg|jpeg)/ig
+		]
+		let image_set = new Set()
+		for (let regex of img_regexs) {
+			let imgs = gzip_text.match(regex)
+			if (imgs)
+				for (let img of imgs)
+					image_set.add(img)
+		}
+		let image_count = image_set.size
+		if (image_count > 0) {
+			// 通过png数量来追加分数
+			BaseGrading('image count', image_count, 'pictures', 20, 0, 0.75)
+			score_details.image_count = image_count
+		}
+
+		video_regexs = [
+			/data:video\/mp4;base64,/ig,
+			/\w+\.(mp4|webm|mkv|mov|avi|flv|wmv|mpeg|mpg|3gp)/ig
+		]
+		let video_set = new Set()
+		for (let regex of video_regexs) {
+			let videos = gzip_text.match(regex)
+			if (videos)
+				for (let video of videos)
+					video_set.add(video)
+		}
+		let video_count = video_set.size
+		if (video_count > 0) {
+			// 通过mp4数量来追加分数
+			BaseGrading('video count', video_count, 'videos', 40, 0, 0.80)
+			score_details.video_count = video_count
+		}
 	}
 
 	if (cardsize) {
@@ -260,10 +404,10 @@ export function char_grader(arg, progress_stream = console.log) {
 	}
 	char.creatorcomment = char.creatorcomment || ""
 	let cleard_creatorcomment = char.creatorcomment.split('\n').filter(
-		_ => (!_.match(/http|Discord|GitHub|类脑|Telegram|社区|盈利/i)) && _.trim().length && _ != "Creator's notes go here."
-	).join('\n')
+		_ => (!_.match(/http|Discord|GitHub|类脑|Telegram|社区|盈利|作者|盗卡|脑瘫|改我卡|抄我卡|改卡|抄卡/i)) && _.trim().length && _ != "Creator's notes go here."
+	).join('\n').replace(char.name, '').replace(char.data.creator, '')
 	if (cleard_creatorcomment)
-		BaseGrading('creatorcomment', encoder.encode(cleard_creatorcomment).length, 'bytes', 1 / 125, 5)
+		BaseGrading('creatorcomment', encoder.encode(cleard_creatorcomment).length, 'bytes', 1 / 125, 5, 1 / 1.03)
 	else {
 		let diff = -50
 		score_details.score += diff
@@ -288,11 +432,20 @@ export function char_grader(arg, progress_stream = console.log) {
 		})
 		progress_stream(`tags not found: ${diff} scores.`)
 	}
+	if (char.data.character_version.length > 13) {
+		let diff = -9
+		score_details.score += diff
+		score_details.logs.push({
+			type: 'character_version too long',
+			score: diff
+		})
+		progress_stream(`character_version too long: ${diff} scores.`)
+	}
 
 	if (is_persona_card) {
 		let content_text = ''
 		if (wibook_entries.length)
-			content_text = wibook_entries.filter(_ => !_.content.match(/name\s*(:|：)/i) && !_.content.includes('a NPC in this story') && !_.comment.startsWith('NPC ')).map(_ => _.content).filter(_ => _?.length).join('\n')
+			content_text = wibook_entries.filter(_ => _.enabled && (_.content.match(new RegExp(`name\\s*(:|：)\\s*${score_details.name}`, 'i')) || !_.content.match(/name\s*(:|：)/i)) && !_.content.includes('a NPC in this story') && !_.comment.startsWith('NPC ')).map(_ => _.content).filter(_ => _?.length).join('\n')
 		content_text = [
 			char.description, char.mes_example,
 			char.personality, char.scenario,
@@ -320,6 +473,11 @@ export function char_grader(arg, progress_stream = console.log) {
 			/(sex|gender|性别)\s*(:|：)\s*"(?<sex>男|女|male|female|woman|man)"/i,
 		], {
 			else_do: () => {
+				if (char.tags.filter(_ => _.match(/^(男性|男性角色|male)$/i)).length)
+					score_details.sex = 'male'
+				else if (char.tags.filter(_ => _.match(/^(女性|女性角色|female)$/i)).length)
+					score_details.sex = 'female'
+				if (score_details.sex) return
 				let male_match_words = 'man,boy,gentleman,him,he,his,Handsome,Abs,Muscle,Brawny,Dick,Fit,Strong,Dashing,Cold,male'.split(',')
 				let male_match_words_chinese = '他的,腹肌,俊美,英俊,腹肌,肌肉,壮硕,大屌,健硕,强壮,潇洒,冷酷,稳重,大方,克制.坚韧,隐忍,包容'.split(',')
 				let female_match_words = 'long hair,woman,girl,milf,she,her,hers,Female,Beautiful,cute,adorable,pretty,delicate,tits,boob,pigeon,plump,flirty,slutty,petite,heartfelt,sweet,sly,pussy,ponytail'.split(',')
@@ -336,14 +494,14 @@ export function char_grader(arg, progress_stream = console.log) {
 			}
 		})
 		regex_prop_finder('age', [
-			/age\s*(:|：)\s*(About|around|)\s*(?<age>[\d\+][\d\+多]*)/i,
-			/年龄\s*(:|：)\s*(约|大约|)\s*(?<age>[\d\+][\d\+多]*)/,
-			/age\s*(:|：)\s*(About|around|)\s*"(?<age>[\d\+][\d\+多]*)"/i,
-			/年龄\s*(:|：)\s*(约|大约|)\s*"(?<age>[\d\+][\d\+多]*)"/,
-			/(?<age>[\d\+][\d\+多]*)\s*岁/,
-			/actual(:|：)(?<age>[\d\+][\d\+多]*)\s*years old/i,
-			/(?<age>[\d\+][\d\+多]*)\s*years old/i,
-			/活了(不下|)\s*(?<age>[\d\+][\d\+多]*)\s*(年|岁|)/,
+			/age\s*(:|：)\s*(About|around|)\s*(?<age>[\d\+]+(多|个月|月|周|天|小时|分钟|分|month|week|day|hour|minute|)(s|))/i,
+			/年龄\s*(:|：)\s*(约|大约|)\s*(?<age>[\d\+]+(多|个月|月|周|天|小时|分钟|分|month|week|day|hour|minute|)(s|))/,
+			/age\s*(:|：)\s*(About|around|)\s*"(?<age>[\d\+]+(多|个月|月|周|天|小时|分钟|分|month|week|day|hour|minute|)(s|))"/i,
+			/年龄\s*(:|：)\s*(约|大约|)\s*"(?<age>[\d\+]+(多|个月|月|周|天|小时|分钟|分|month|week|day|hour|minute|)(s|))"/,
+			/(?<age>[\d\+]+(多|))\s*岁/,
+			/actual(:|：)(?<age>[\d\+]+(多|))\s*years old/i,
+			/(?<age>[\d\+]+(多|))\s*years old/i,
+			/活了(不下|)\s*(?<age>[\d\+]+(多|))\s*(年|岁|)/,
 		])
 		regex_prop_finder('blood_type', [
 			/血型\s*(:|：)\s*(?<blood_type>(A|B|O|AB|\rh\+|rh\-)[^\n]*(A|B|O|AB|\rh\+|rh\-|))/i,
@@ -367,7 +525,7 @@ export function char_grader(arg, progress_stream = console.log) {
 			/weight\s*(:|：)\s*"(About|around|)\s*(?<weight>\d+\.?\d*\s*(kg|千克|公斤|g|克|斤|t|吨|))"/i,
 		])
 		regex_prop_finder('birthday', [
-			/(生日|birthday)[^\n]+(?<birthday>\d+月(-|)\d+日)/i,
+			/(生日|birthday)[^\n]+(?<birthday>(\d+月(-|)\d+日)|((Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[^\d\n]+\d+(th|st|nd|rd)))/i,
 		])
 		regex_prop_finder('bwh', [
 			/(?<bwh>\d+b-\d+w-\d+h)/i,
