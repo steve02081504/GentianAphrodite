@@ -376,7 +376,7 @@ export async function char_grader(arg, progress_stream = console.log) {
 			score_details.image_count = image_count
 		}
 
-		video_regexs = [
+		let video_regexs = [
 			/data:video\/mp4;base64,/ig,
 			/\w+\.(mp4|webm|mkv|mov|avi|flv|wmv|mpeg|mpg|3gp)/ig
 		]
