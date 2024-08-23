@@ -7,10 +7,20 @@ import { get_token_size, encoder } from './get_token_size.mjs'
 
 const DEFAULT_DEPTH = 0
 
+/**
+ * @param {Blob|Uint8Array|string} arg
+ * @param {(string)=>void} progress_stream
+ * @returns
+ */
 export async function char_grader(arg, progress_stream = console.log) {
 	progress_stream("Initializing...")
 	let cardsize = 0
-	if (arg instanceof Blob) arg = new Uint8Array(await arg.arrayBuffer())
+	if (arg instanceof Blob) try {
+		arg = JSON.parse(await arg.text().replace(/\\r\\n/g, '\\n'))
+	}
+	catch (e) {
+		arg = new Uint8Array(await arg.arrayBuffer())
+	}
 	if (arg instanceof ArrayBuffer || arg instanceof Uint8Array) {
 		cardsize = arg.byteLength
 		arg = read(arg)
@@ -99,20 +109,20 @@ export async function char_grader(arg, progress_stream = console.log) {
 			do_reparation(title + ' too large', size, scale, reparation_scale)
 		return size
 	}
-	let format_text_length = encoder.encode(format_text).length
-	GradingByTokenSize('description & constant WI infos', [
+	let format_text_length = GradingByTokenSize('description & constant WI infos', [
 		format_text
 	], 1, 9037)
 	char.mes_example = char.mes_example || ""
-	char.mes_example = char.mes_example.split(/<START>/i)
-	BaseGradingByTokenSize('mes_example', char.mes_example, 0.65)
-	let superLargeMes = char.mes_example.filter(_ => encoder.encode(_).length > 2500)
+	char.mes_example = char.mes_example.split(/<START>/i).map(e => e.trim()).filter(e => e)
+	/** @type {number[]} */let mes_example_lengths = char.mes_example.map(get_token_size)
+	BaseGrading('mes_example', mes_example_lengths.reduce((a, b) => a + b, 0), 'tokens', 0.65, 0, 1 / 1.07)
+	let superLargeMes = mes_example_lengths.filter(_ => _.length > 2500)
 	if (superLargeMes.length)
-		do_reparation('some mes_example is too large', superLargeMes.map(_ => encoder.encode(_).length).reduce((a, b) => a + b), 0.65)
+		do_reparation('some mes_example is too large', superLargeMes.reduce((a, b) => a + b), 0.65)
 	GradingByTokenSize('personality & scenario', [
 		char.personality, char.scenario
 	], 0.5)
-	let charData = char.data
+	let charData = char.data || char
 	GradingByTokenSize('system_prompt & depth_prompt', [
 		charData?.system_prompt, charData?.extensions?.depth_prompt?.prompt
 	], 0.3)
@@ -143,7 +153,7 @@ export async function char_grader(arg, progress_stream = console.log) {
 	}
 
 	let related_names = [
-		char.name, 'char', 'user', '你'
+		...char?.name?.split(/·|•|৹|-/g), 'char', 'user', '你'
 	]
 	let related_regex = new RegExp(`(${related_names.join('|')})`, 'g')
 	let quoted_regex = /(\"[^\"]+\")|([\”\“][^\”\“]+[\”\“])/g
@@ -152,11 +162,17 @@ export async function char_grader(arg, progress_stream = console.log) {
 		let matched = str.replace(quoted_regex, '').match(related_regex)
 		return matched?.length > entry.tokenized_content.length / 201
 	}
-	let is_persona_card_x = format_text.match(related_regex)?.length || 1.8
+	if (char?.data?.extensions?.depth_prompt?.prompt) {
+		format_text += char.data.extensions.depth_prompt.prompt
+		format_text_length += get_token_size(char.data.extensions.depth_prompt.prompt)
+	}
+	let persona_related_names = related_names.filter(_ => _ != 'user')
+	let persona_related_regex = new RegExp(`(${persona_related_names.join('|')})`, 'g')
+	let is_persona_card_x = format_text.match(persona_related_regex)?.length || 1.8
 	if (format_text.match(/not a specific character|Role Play Game system|RPG游戏系统|不是(一个|)特定(的|)角色|扮演[^\n]+(手机应用|app)/i))
 		is_persona_card_x /= 6
-	else if (format_text.split('\n').slice(0, 4).join('\n').match(/\b(character|assistant needs to advance the story using)\b/i))
-		is_persona_card_x *= 1.5
+	else if (format_text.split('\n').slice(0, 4).join('\n').match(/(\b(character|assistant needs to advance the story using)\b)|char扮演/i))
+		is_persona_card_x *= 2.1
 	let is_persona_card_y = format_text_length / 97
 	let is_persona_card = is_persona_card_x >= is_persona_card_y
 	progress_stream(`[info] ${char.name} is ${is_persona_card ? '' : 'not '} a persona card: x=${is_persona_card_x}, y=${is_persona_card_y}`)
@@ -257,7 +273,7 @@ export async function char_grader(arg, progress_stream = console.log) {
 				e.content = e.content.replace(script.findRegex, script.replaceString)
 		WIs = WIs.filter(e => e.content)
 	}
-	let mes_examples = charData.mes_example.split(/\n<START>/gi).map(e => e.trim()).filter(e => e)
+	let mes_examples = char.mes_example
 	let before_EMEntries = []
 	let after_EMEntries = []
 	let ANTopEntries = []
@@ -404,10 +420,10 @@ export async function char_grader(arg, progress_stream = console.log) {
 	}
 	char.creatorcomment = char.creatorcomment || ""
 	let cleard_creatorcomment = char.creatorcomment.split('\n').filter(
-		_ => (!_.match(/http|Discord|GitHub|类脑|Telegram|社区|盈利|作者|盗卡|脑瘫|改我卡|抄我卡|改卡|抄卡/i)) && _.trim().length && _ != "Creator's notes go here."
-	).join('\n').replace(char.name, '').replace(char.data.creator, '')
+		_ => (!_.match(/http|Discord|GitHub|类脑|Telegram|社区|盈利|作者|盗卡|脑瘫|改我卡|抄我卡|改卡|抄卡|许可证|付费|免费/i)) && _.trim().length && _ != "Creator's notes go here."
+	).join('\n').replace(char.name, '').replace(char?.data?.creator, '')
 	if (cleard_creatorcomment)
-		BaseGrading('creatorcomment', encoder.encode(cleard_creatorcomment).length, 'bytes', 1 / 125, 5, 1 / 1.03)
+		BaseGrading('creatorcomment', get_token_size(cleard_creatorcomment), 'bytes', 1 / 125, 5, 1 / 1.03)
 	else {
 		let diff = -50
 		score_details.score += diff
@@ -432,7 +448,7 @@ export async function char_grader(arg, progress_stream = console.log) {
 		})
 		progress_stream(`tags not found: ${diff} scores.`)
 	}
-	if (char.data.character_version.length > 13) {
+	if (char?.data?.character_version?.length > 13) {
 		let diff = -9
 		score_details.score += diff
 		score_details.logs.push({
@@ -493,11 +509,20 @@ export async function char_grader(arg, progress_stream = console.log) {
 				progress_stream(`[info] sex of ${score_details.name}: ${score_details.sex}. (male_score: ${male_count}, female_score: ${female_count})`)
 			}
 		})
+		regex_prop_finder('cup', [
+			/(cup|罩杯|Breast size|BreastSize)(:|：)\s*(?<cup>([a-z])\4*(\+|-|))/i,
+			/(cup|罩杯|Breast size|BreastSize)(:|：)\s*"(?<cup>([a-z])\4*(\+|-|))"/i,
+			/\b(?<cup>([a-z])\2*(\+|))-cup\b/i,
+			/\b(?<cup>([a-z])\2*(\+|-|))\s*cup\b/i,
+			/(?<cup>([a-z])\2*(\+|-|))\s*罩杯/i
+		], {
+			else_do: _ => 0
+		})
 		regex_prop_finder('age', [
-			/age\s*(:|：)\s*(About|around|)\s*(?<age>[\d\+]+(多|个月|月|周|天|小时|分钟|分|month|week|day|hour|minute|)(s|))/i,
-			/年龄\s*(:|：)\s*(约|大约|)\s*(?<age>[\d\+]+(多|个月|月|周|天|小时|分钟|分|month|week|day|hour|minute|)(s|))/,
-			/age\s*(:|：)\s*(About|around|)\s*"(?<age>[\d\+]+(多|个月|月|周|天|小时|分钟|分|month|week|day|hour|minute|)(s|))"/i,
-			/年龄\s*(:|：)\s*(约|大约|)\s*"(?<age>[\d\+]+(多|个月|月|周|天|小时|分钟|分|month|week|day|hour|minute|)(s|))"/,
+			/age\s*(:|：)\s*(?<age>(About|around|~|)\s*[\d\+]+(多|个月|月|周|天|小时|分钟|分|month|week|day|hour|minute|)(s|))/i,
+			/年龄\s*(:|：)\s*(?<age>(约|大约|~|)\s*[\d\+]+(多|个月|月|周|天|小时|分钟|分|month|week|day|hour|minute|)(s|))/,
+			/age\s*(:|：)\s*"(?<age>(About|around|~|)\s*[\d\+]+(多|个月|月|周|天|小时|分钟|分|month|week|day|hour|minute|)(s|))"/i,
+			/年龄\s*(:|：)\s*"(?<age>(约|大约|~|)\s*[\d\+]+(多|个月|月|周|天|小时|分钟|分|month|week|day|hour|minute|)(s|))"/,
 			/(?<age>[\d\+]+(多|))\s*岁/,
 			/actual(:|：)(?<age>[\d\+]+(多|))\s*years old/i,
 			/(?<age>[\d\+]+(多|))\s*years old/i,
