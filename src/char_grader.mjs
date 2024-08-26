@@ -41,7 +41,8 @@ export async function char_grader(arg, progress_stream = console.log) {
 		score: 0
 	}
 	progress_stream("Removeing useless datas...")
-	char = remove_simple_marcos(char)
+	const ori_char = char
+	char = remove_simple_marcos(deepCopy(char))
 	let format_text = char.description || ''
 	let wibook_entries = deepCopy(char.data?.character_book?.entries) || []
 	if (char?.data?.character_book?.entries) {
@@ -152,8 +153,11 @@ export async function char_grader(arg, progress_stream = console.log) {
 		}
 	}
 
+	let char_names = [
+		...char?.name?.split(/\(|\[|\{|【|（/g)?.[0]?.split(/·|•|৹|-/g), 'char', char?.name?.endsWith('版') ? char?.name?.substring(0, -3) : ''
+	].filter(_ => _)
 	let related_names = [
-		...char?.name?.split(/·|•|৹|-/g), 'char', 'user', '你'
+		'user', '你', ...char_names
 	]
 	let related_regex = new RegExp(`(${related_names.join('|')})`, 'g')
 	let quoted_regex = /(\"[^\"]+\")|([\”\“][^\”\“]+[\”\“])/g
@@ -169,10 +173,24 @@ export async function char_grader(arg, progress_stream = console.log) {
 	let persona_related_names = related_names.filter(_ => _ != 'user')
 	let persona_related_regex = new RegExp(`(${persona_related_names.join('|')})`, 'g')
 	let is_persona_card_x = format_text.match(persona_related_regex)?.length || 1.8
-	if (format_text.match(/not a specific character|Role Play Game system|RPG游戏系统|不是(一个|)特定(的|)角色|扮演[^\n]+(手机应用|app)/i))
-		is_persona_card_x /= 6
-	else if (format_text.split('\n').slice(0, 4).join('\n').match(/(\b(character|assistant needs to advance the story using)\b)|char扮演/i))
+	let not_persona_match = format_text.match(/not a (single|specific) character|Role Play Game system|RPG游戏系统|不是(一个|)特定(的|)角色|roleplay as NPCs|扮演[^\n.。]+(手机应用|app)/ig)
+	if (not_persona_match)
+		is_persona_card_x /= not_persona_match.length * 6
+	else if (format_text.match(/(\b(assistant needs to advance the story using)\b)|char扮演/i))
 		is_persona_card_x *= 2.1
+	{
+		let name_regex = new RegExp(`(${related_names.join('|')})[^\\n。.]*(他|她|\\b(he|she)\\b)`, 'i')
+		if (format_text.match(name_regex))
+			is_persona_card_x *= 1.3
+		name_regex = new RegExp(`char[^\\n。.]*(扮演|roleplay as)(${related_names.join('|')})`, 'i')
+		if (format_text.match(name_regex))
+			is_persona_card_x *= 3
+		let first_few_lines = format_text.split('\n').slice(0, 4).join('\n')
+		if (first_few_lines.match(/\bcharacter\b/i))
+			is_persona_card_x *= 2.3
+		if (first_few_lines.match(/(^|\n)\s*"?(name|姓名|名字|名称)"?(\b|:|：|\<\/td\>\s*\<td\>)/i))
+			is_persona_card_x *= 2.4
+	}
 	let is_persona_card_y = format_text_length / 97
 	let is_persona_card = is_persona_card_x >= is_persona_card_y
 	progress_stream(`[info] ${char.name} is ${is_persona_card ? '' : 'not '} a persona card: x=${is_persona_card_x}, y=${is_persona_card_y}`)
@@ -200,11 +218,16 @@ export async function char_grader(arg, progress_stream = console.log) {
 			key_array.push(...entry.keys)
 			key_array.push(...entry.secondary_keys)
 			let warning_keys = []
-			if (entry.extensions.match_whole_words !== false)
-				for (let key of [...entry.keys, ...entry.secondary_keys])
-					if (parseRegexFromString(key)) continue
-					else if (/\p{Unified_Ideograph}/u.test(key))
-						warning_keys.push(key)
+
+			for (let key of [...entry.keys, ...entry.secondary_keys])
+				if (parseRegexFromString(key)) continue
+				else {
+					if (key.match(/^\/([\w\W]+?)\/([gimsuy]*)$/))
+						progress_stream(`[warning] the key '${key}' of WI entry '${get_entrie_names([entry])}' is not a valid regex.`)
+					if (entry.extensions.match_whole_words !== false)
+						if (/\p{Unified_Ideograph}/u.test(key))
+							warning_keys.push(key)
+				}
 			let entry_name = get_entrie_names([entry])
 			if (warning_keys.length) {
 				progress_stream(`[warning] the key${warning_keys.length > 1 ? 's' : ''} '${warning_keys.join("', '")}' of WI entry '${entry_name}' contains Chinese like character, but match_whole_words is not false, that's may not be what you want.`)
@@ -409,6 +432,24 @@ export async function char_grader(arg, progress_stream = console.log) {
 			BaseGrading('video count', video_count, 'videos', 40, 0, 0.80)
 			score_details.video_count = video_count
 		}
+
+		let audio_regexs = [
+			/data:audio\/mp3;base64,/ig,
+			/\w+\.(mp3|wav|ogg)/ig
+		]
+		let audio_set = new Set()
+		for (let regex of audio_regexs) {
+			let audios = gzip_text.match(regex)
+			if (audios)
+				for (let audio of audios)
+					audio_set.add(audio)
+		}
+		let audio_count = audio_set.size
+		if (audio_count > 0) {
+			// 通过mp3数量来追加分数
+			BaseGrading('audio count', audio_count, 'audios', 12, 0, 0.80)
+			score_details.audio_count = audio_count
+		}
 	}
 
 	if (cardsize) {
@@ -418,9 +459,24 @@ export async function char_grader(arg, progress_stream = console.log) {
 		if (cardsizeMB > 100)
 			do_reparation('card size too large', cardsizeMB)
 	}
+	{
+		let ori_grettings = [
+			ori_char.first_mes, ...(ori_char.data?.alternate_greetings || []),
+		].filter(_ => _)
+		let name_marco_removed_greetings = ori_grettings.map(_ => _.replace(/\{\{(char|user)\}\}/ig, ''))
+		let not_marco_name_apper_time = name_marco_removed_greetings.join().match(/(\b|\p{Unified_Ideograph})(char|user)(\b|\p{Unified_Ideograph})/igu)?.length
+		if (not_marco_name_apper_time)
+			do_reparation('char|user but not marco in greetings', not_marco_name_apper_time, 3)
+		let ori_group_greetings_set = new Set([...(ori_char.data?.extensions?.group_greetings ?? []), ...(ori_char.data?.group_only_greetings ?? [])].filter(x => x))
+		let ori_group_greetings = [...ori_group_greetings_set]
+		let name_marco_removed_group_greetings = ori_group_greetings.map(_ => _.replace(/\{\{(char|user)\}\}/ig, ''))
+		let not_marco_group_apper_time = name_marco_removed_group_greetings.join().match(/(\b|\p{Unified_Ideograph})(char|user)(\b|\p{Unified_Ideograph})/igu)?.length
+		if (not_marco_group_apper_time)
+			do_reparation('char|user but not marco in group greetings', not_marco_group_apper_time, 2)
+	}
 	char.creatorcomment = char.creatorcomment || ""
 	let cleard_creatorcomment = char.creatorcomment.split('\n').filter(
-		_ => (!_.match(/http|Discord|GitHub|类脑|Telegram|社区|盈利|作者|盗卡|脑瘫|改我卡|抄我卡|改卡|抄卡|许可证|付费|免费/i)) && _.trim().length && _ != "Creator's notes go here."
+		_ => (!_.match(/http|Discord|GitHub|类脑|Telegram|QQ|社区|盈利|作者|盗卡|脑瘫|改我卡|抄我卡|改卡|抄卡|许可证|付费|免费/i)) && _.trim().length && _ != "Creator's notes go here."
 	).join('\n').replace(char.name, '').replace(char?.data?.creator, '')
 	if (cleard_creatorcomment)
 		BaseGrading('creatorcomment', get_token_size(cleard_creatorcomment), 'bytes', 1 / 125, 5, 1 / 1.03)
@@ -461,32 +517,41 @@ export async function char_grader(arg, progress_stream = console.log) {
 	if (is_persona_card) {
 		let content_text = ''
 		if (wibook_entries.length)
-			content_text = wibook_entries.filter(_ => _.enabled && (_.content.match(new RegExp(`name\\s*(:|：)\\s*${score_details.name}`, 'i')) || !_.content.match(/name\s*(:|：)/i)) && !_.content.includes('a NPC in this story') && !_.comment.startsWith('NPC ')).map(_ => _.content).filter(_ => _?.length).join('\n')
+			content_text = wibook_entries.filter(_ => _.enabled && (_.content.match(new RegExp(`name\\s*(:|：|\<\/td\>\s*\<td\>)\\s*${score_details.name}`, 'i')) || !_.content.match(/name\s*(:|：|\<\/td\>\s*\<td\>)/i)) && !_.content.includes('a NPC in this story') && !_.comment.startsWith('NPC ')).map(_ => _.content).filter(_ => _?.length).join('\n')
 		content_text = [
 			char.description, char.mes_example,
 			char.personality, char.scenario,
-			charData?.system_prompt, charData?.extensions?.depth_prompt?.prompt,
+			char.first_mes,
+			...(char.data?.alternate_greetings || []),
+			charData.system_prompt, charData.extensions?.depth_prompt?.prompt,
 			content_text
-		].filter(_ => _?.length).join('\n')
+		].filter(_ => _).join('\n')
 		function regex_prop_finder(prop_name, regexs, {
 			match_do = _ => score_details[prop_name] = _,
-			else_do = () => progress_stream(`[info] can't find the ${prop_name} of ${score_details.name}.`)
+			else_do = () => score_details[prop_name] ? 0 : progress_stream(`[info] can't find the ${prop_name} of ${score_details.name}.`)
 		} = {}) {
 			let result
 			for (const regex of regexs) {
 				result = content_text.match(regex)
 				if (result) break
 			}
-			if (result)
-				return match_do(result.groups[prop_name])
-			else
-				return else_do()
+			if (result) {
+				let final_result = result.groups[prop_name].replace(result.groups.remove || '', '').trim()
+				if (final_result)
+					return match_do(final_result)
+			}
+			return else_do()
 		}
+		// 有些卡片的卡片名和角色名是两码事——
+		regex_prop_finder('name', [
+			/\b"?(全名|full\s*name)"?\s*(:|：|\<\/td\>\s*\<td\>)\s*"?(?<name>[^\|\(\)（）\{\}。\n]+)"?/i,
+			/全名是\s*["'`]?(?<name>[^\|\(\)（）\{\}。"'`\n]+)/i,
+			/\b"?(name|姓名|角色名|名称|名字)"?\s*(:|：|\<\/td\>\s*\<td\>)\s*"?(?<name>[^\|\(\)（）\{\}。\n]+)"?/i,
+		])
+		score_details.name = score_details.name.replace(/\{\{char\}\}/i, char.name).trim()
 		regex_prop_finder('sex', [
-			/(virginity|童贞|性经验)\s*(:|：)\s*(?<sex>处男|处女)/i,
-			/(sex|gender|性别)\s*(:|：)\s*(?<sex>男|女|male|female|woman|man)/i,
-			/(virginity|童贞|性经验)\s*(:|：)\s*"(?<sex>处男|处女)"/i,
-			/(sex|gender|性别)\s*(:|：)\s*"(?<sex>男|女|male|female|woman|man)"/i,
+			/"?(virginity|童贞|性经验)"?\s*(:|：|\<\/td\>\s*\<td\>)\s*"?(?<sex>处男|处女)"?/i,
+			/"?(sex|gender|性别)"?\s*(:|：|\<\/td\>\s*\<td\>)\s*"?(?<sex>男|女|male|female|woman|man)"?/i,
 		], {
 			else_do: () => {
 				if (char.tags.filter(_ => _.match(/^(男性|男性角色|male)$/i)).length)
@@ -510,8 +575,7 @@ export async function char_grader(arg, progress_stream = console.log) {
 			}
 		})
 		regex_prop_finder('cup', [
-			/(cup|罩杯|Breast size|BreastSize)(:|：)\s*(?<cup>([a-z])\4*(\+|-|))/i,
-			/(cup|罩杯|Breast size|BreastSize)(:|：)\s*"(?<cup>([a-z])\4*(\+|-|))"/i,
+			/"?(cup|罩杯|Breast size|BreastSize)"?(:|：|\<\/td\>\s*\<td\>)\s*"?(?<cup>([a-z])\4*(\+|-|))"?/i,
 			/\b(?<cup>([a-z])\2*(\+|))-cup\b/i,
 			/\b(?<cup>([a-z])\2*(\+|-|))\s*cup\b/i,
 			/(?<cup>([a-z])\2*(\+|-|))\s*罩杯/i
@@ -519,73 +583,109 @@ export async function char_grader(arg, progress_stream = console.log) {
 			else_do: _ => 0
 		})
 		regex_prop_finder('age', [
-			/age\s*(:|：)\s*(?<age>(About|around|~|)\s*[\d\+]+(多|个月|月|周|天|小时|分钟|分|month|week|day|hour|minute|)(s|))/i,
-			/年龄\s*(:|：)\s*(?<age>(约|大约|~|)\s*[\d\+]+(多|个月|月|周|天|小时|分钟|分|month|week|day|hour|minute|)(s|))/,
-			/age\s*(:|：)\s*"(?<age>(About|around|~|)\s*[\d\+]+(多|个月|月|周|天|小时|分钟|分|month|week|day|hour|minute|)(s|))"/i,
-			/年龄\s*(:|：)\s*"(?<age>(约|大约|~|)\s*[\d\+]+(多|个月|月|周|天|小时|分钟|分|month|week|day|hour|minute|)(s|))"/,
+			/"?age"?\s*(:|：|\<\/td\>\s*\<td\>)\s*"?(?<age>(About|around|~|)\s*[\d\+]+(多|个月|月|周|天|小时|分钟|分|month|week|day|hour|minute|)(s|))"?/i,
+			/"?年龄"?\s*(:|：|\<\/td\>\s*\<td\>)\s*"?(?<age>(约|大约|~|)\s*[\d\+]+(多|个月|月|周|天|小时|分钟|分|month|week|day|hour|minute|)(s|))"?/,
 			/(?<age>[\d\+]+(多|))\s*岁/,
-			/actual(:|：)(?<age>[\d\+]+(多|))\s*years old/i,
-			/(?<age>[\d\+]+(多|))\s*years old/i,
+			/actual(:|：|\<\/td\>\s*\<td\>)(?<age>[\d\+]+)\s*years old/i,
+			/(?<age>[\d\+]+)\s*years old/i,
+			/(?<age>[\d\+]+)\s*-year(s|)-old/i,
 			/活了(不下|)\s*(?<age>[\d\+]+(多|))\s*(年|岁|)/,
 		])
 		regex_prop_finder('blood_type', [
-			/血型\s*(:|：)\s*(?<blood_type>(A|B|O|AB|\rh\+|rh\-)[^\n]*(A|B|O|AB|\rh\+|rh\-|))/i,
+			/"?血型"?\s*(:|：|\<\/td\>\s*\<td\>)\s*"?(?<blood_type>(A|B|O|AB|\rh\+|rh\-)[^\n]*(A|B|O|AB|\rh\+|rh\-|))"?/i,
 			/血型(算|)是\s*(?<blood_type>(A|B|O|AB|\rh\+|rh\-)[^\n]*(A|B|O|AB|\rh\+|rh\-|))/i,
-			/blood\s*type\s*(:|：)\s*(?<blood_type>(A|B|O|AB|\rh\+|rh\-)[^\n]*(A|B|O|AB|\rh\+|rh\-|))/i,
+			/"?blood\s*type"?\s*(:|：|\<\/td\>\s*\<td\>)\s*"?(?<blood_type>(A|B|O|AB|\rh\+|rh\-)[^\n]*(A|B|O|AB|\rh\+|rh\-|))"?/i,
 			/blood\s*type\s*is\s*(?<blood_type>(A|B|O|AB|\rh\+|rh\-)[^\n]*(A|B|O|AB|\rh\+|rh\-|))/i
 		])
 		regex_prop_finder('tall', [
-			/身(高|长)\s*(:|：|)\s*(约|大约|)\s*(?<tall>\d+\.?\d*\s*(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|\s*foot|))/i,
-			/height\s*(:|：)\s*(About|around|)\s*(?<tall>\d+\.?\d*\s*(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|\s*foot|))/i,
+			/身(高|长)\s*(:|：|\<\/td\>\s*\<td\>|)\s*(约|大约|)\s*(?<tall>\d+\.?\d*\s*(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|\s*foot|))/i,
+			/"?height"?\s*(:|：|\<\/td\>\s*\<td\>|)\s*"?(About|around|)\s*(?<tall>\d+\.?\d*\s*(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|\s*foot|))"?/i,
 			/height\s*is\s*(About|around|)\s*(?<tall>\d+\.?\d*\s*(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|\s*foot|))/i,
-			/tall\s*(:|：)\s*(About|around|)\s*(?<tall>\d+\.?\d*\s*(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|\s*foot|))/i,
+			/"?tall"?\s*(:|：|\<\/td\>\s*\<td\>|)\s*"?(About|around|)\s*(?<tall>\d+\.?\d*\s*(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|\s*foot|))"?/i,
 			/tall\s*is\s*(About|around|)\s*(?<tall>\d+\.?\d*\s*(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|\s*foot|))/i,
-			/height\s*(:|：)\s*"(About|around|)\s*(?<tall>\d+\.?\d*\s*(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|\s*foot|))"/i,
-			/tall\s*(:|：)\s*"(About|around|)\s*(?<tall>\d+\.?\d*\s*(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|\s*foot|))"/i,
+			/(?<tall>\d+\.?\d*\s*(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|\s*foot|))( tall|的身高)/i,
 		])
 		regex_prop_finder('weight', [
-			/体重\s*(:|：|)\s*(约|大约|)\s*(?<weight>\d+\.?\d*\s*(kg|千克|公斤|g|克|斤|t|吨|))/i,
-			/weight\s*(:|：)\s*(About|around|)\s*(?<weight>\d+\.?\d*\s*(kg|千克|公斤|g|克|斤|t|吨|))/i,
+			/"?体重"?\s*(:|：|\<\/td\>\s*\<td\>|)\s*"?(约|大约|)\s*(?<weight>\d+\.?\d*\s*(kg|千克|公斤|g|克|斤|t|吨|))"?/i,
+			/"?weight"?\s*(:|：|\<\/td\>\s*\<td\>|)\s*"?(About|around|)\s*(?<weight>\d+\.?\d*\s*(kg|千克|公斤|g|克|斤|t|吨|))"?/i,
 			/weight\s*is\s*(About|around|)\s*(?<weight>\d+\.?\d*\s*(kg|千克|公斤|g|克|斤|t|吨|))/i,
-			/weight\s*(:|：)\s*"(About|around|)\s*(?<weight>\d+\.?\d*\s*(kg|千克|公斤|g|克|斤|t|吨|))"/i,
+			/weighs (?<weight>\d+\.?\d*\s*(kg|千克|公斤|g|克|斤|t|吨|))/i,
 		])
 		regex_prop_finder('birthday', [
-			/(生日|birthday)[^\n]+(?<birthday>(\d+月(-|)\d+日)|((Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[^\d\n]+\d+(th|st|nd|rd)))/i,
+			/(生日|birthday)[^\n]+(?<birthday>(\d+月(-|)\d+日(?<remove>[^\d\n]*)(\d+(时|小时|点)(-|))?(\d+(分|分钟)(-|))?(\d+(秒|秒钟)(-|))?(\d+(毫秒|毫秒钟))?)|((Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[^\d\n]+\d+(th|st|nd|rd)))/i,
 		])
 		regex_prop_finder('bwh', [
 			/(?<bwh>\d+b-\d+w-\d+h)/i,
-			/(bwh|三围|三维)\s*(:|：|)\s*(约|大约|)\s*(?<bwh>\d+-\d+-\d+)/i,
+			/"?(bwh|三围|三维)"?\s*(:|：|\<\/td\>\s*\<td\>|)\s*"?(About|around|约|大约|)\s*(?<bwh>\d+-\d+-\d+)"?/i,
 			/bwh\s*is\s*(About|around|)\s*(?<bwh>\d+-\d+-\d+)/i,
-			/(bwh|三围|三维)\s*(:|：|)\s*"(About|around|约|大约|)\s*(?<bwh>\d+-\d+-\d+)"/i,
 		], {
 			else_do: _ => {
 				let return_with_no_output = { match_do: _ => _, else_do: _ => _ }
+				let auto_calc_flag = false
+				// 默认：胸围＝身高×0.535，腰围＝身高×0.365，臀围＝身高×0.565
+				let height_num = parseFloat(score_details?.tall?.match(/[\d\.]+/)[0])
+				/** @type {string} */let height_unit = score_details?.tall?.match(/[^\d\.]+/)[0]
+				let auto_calc
+				if (!isNaN(height_num) && score_details.sex.match(/^(处女|女|girl|women|female)$/i)) {
+					if (height_unit.match(/^(m|米)$/i)) {
+						height_num *= 100; height_unit = ''
+					}
+					else if (height_unit.match(/^(dm|分米)$/i)) {
+						height_num *= 10; height_unit = ''
+					}
+					else if (height_unit.match(/^(cm|厘米)$/i))
+						height_unit = ''
+					auto_calc = {
+						b: (height_num * 0.535).toFixed(1) + height_unit,
+						w: (height_num * 0.365).toFixed(1) + height_unit,
+						h: (height_num * 0.565).toFixed(1) + height_unit
+					}
+					// 若有罩杯信息，则根据罩杯信息补正胸围计算结果
+					if (score_details.cup && !height_unit) {
+						let cup_ap = score_details.cup[0].toUpperCase().charCodeAt(0)
+						if (cup_ap >= 'A'.charCodeAt(0) && cup_ap <= 'Z'.charCodeAt(0)) {
+							let cup_num = cup_ap - 'A'.charCodeAt(0) + 1
+							// 下胸围平均值为 身高 × 0.485
+							let b_base = height_num * 0.485
+							// 罩杯值= （胸圍−下胸圍−11）/2，则胸圍= 罩杯值*2 + 11 + 下胸圍
+							auto_calc.b = (cup_num * 2 + 11 + b_base).toFixed(1)
+						}
+					}
+				}
 				let beast = regex_prop_finder('beast', [
-					/胸围\s*(:|：|)\s*(约|大约|)\s*(?<beast>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))/i,
-					/beast\s*(:|：)\s*(About|around|)\s*(?<beast>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))/i,
+					/"?胸围"?\s*(:|：|\<\/td\>\s*\<td\>|)\s*"?(约|大约|)\s*(?<beast>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))"?/i,
+					/"?beast"?\s*(:|：|\<\/td\>\s*\<td\>)\s*"?(About|around|)\s*(?<beast>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))"?/i,
 					/beast\s*is\s*(About|around|)\s*(?<beast>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))/i,
-					/胸围\s*(:|：|)\s*"(约|大约|)\s*(?<beast>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))"/i,
-					/beast\s*(:|：)\s*"(About|around|)\s*(?<beast>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))"/i,
 				], return_with_no_output)
+				if (!beast && auto_calc) {
+					beast = auto_calc.b
+					auto_calc_flag = true
+				}
 				//腰围
 				let waist = regex_prop_finder('waist', [
-					/腰围\s*(:|：|)\s*(约|大约|)\s*(?<waist>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))/i,
-					/waist\s*(:|：)\s*(About|around|)\s*(?<waist>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))/i,
+					/"?腰围"?\s*(:|：|\<\/td\>\s*\<td\>|)\s*"?(约|大约|)\s*(?<waist>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))"?/i,
+					/"?waist"?\s*(:|：|\<\/td\>\s*\<td\>)\s*"?(About|around|)\s*(?<waist>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))"?/i,
 					/waist\s*is\s*(About|around|)\s*(?<waist>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))/i,
-					/腰围\s*(:|：|)\s*"(约|大约|)\s*(?<waist>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))"/i,
-					/waist\s*(:|：)\s*"(About|around|)\s*(?<waist>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))"/i,
 				], return_with_no_output)
+				if (!waist && auto_calc) {
+					waist = auto_calc.w
+					auto_calc_flag = true
+				}
 				//臀围
 				let hip = regex_prop_finder('hip', [
-					/臀围\s*(:|：|)\s*(约|大约|)\s*(?<hip>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))/i,
-					/hip\s*(:|：)\s*(About|around|)\s*(?<hip>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))/i,
+					/"?臀围"?\s*(:|：|\<\/td\>\s*\<td\>|)\s*"?(约|大约|)\s*(?<hip>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))"?/i,
+					/"?hip"?\s*(:|：|\<\/td\>\s*\<td\>)\s*"?(About|around|)\s*(?<hip>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))"?/i,
 					/hip\s*is\s*(About|around|)\s*(?<hip>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))/i,
-					/臀围\s*(:|：|)\s*"(约|大约|)\s*(?<hip>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))"/i,
-					/hip\s*(:|：)\s*"(About|around|)\s*(?<hip>\d+(cm|厘米|英尺|dm|m|km|光年|分米|米|千米|km|公里|英里|))"/i,
 				], return_with_no_output)
+				if (!hip && auto_calc) {
+					hip = auto_calc.h
+					auto_calc_flag = true
+				}
 				if (beast || waist || hip) {
+					let auto_calc_decl = auto_calc_flag ? '[auto-calculated(NOT in card)] ' : ''
 					score_details.bwh = `${beast || '?'}b-${waist || '?'}w-${hip || '?'}h`
-					progress_stream(`[info] bwh of ${score_details.name}: ${score_details.bwh}.`)
+					progress_stream(`[info] ${auto_calc_decl}bwh of ${score_details.name}: ${score_details.bwh}.`)
+					score_details.bwh = auto_calc_decl + score_details.bwh
 				}
 				else
 					progress_stream(`[info] can't find the bwh of ${score_details.name}.`)
