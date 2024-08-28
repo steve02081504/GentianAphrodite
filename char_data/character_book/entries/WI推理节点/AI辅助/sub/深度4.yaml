@@ -1,6 +1,7 @@
 keys:
 	- 人物卡
 	- 代码
+	- 会不会
 	- 你觉得
 	- 你认为
 	- 写一个
@@ -22,23 +23,29 @@ keys:
 	- 怎样
 	- 怎麽
 	- 撰写
+	- 是不是
+	- 有没有
 	- 看好
 	- 程序
 	- 程式
+	- 等于几
 	- 算不算
 	- 编写
 	- 编码
 	- 运势
 	- 错误
 	- 问题
-secondary_keys: []
+secondary_keys:
+	- 是不是傻
+	- 是不是弱智
+	- 是不是活腻
 comment: WI推理节点：AI辅助sub-深度4
 content: <-<WI推理节点：AI辅助sub-深度4>->
 constant: false
 insertion_order: 10
 extensions:
 	position: 1
-	selectiveLogic: 0
+	selectiveLogic: 2
 	match_whole_words: false
 	case_sensitive: false
 	prevent_recursion: false
