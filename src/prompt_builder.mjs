@@ -104,7 +104,7 @@ export function promptBuilder(
 					null,
 					before_EMEntries,
 					after_EMEntries
-				][entry.extensions.position].unshift(entry)
+				][entry.extensions.position || 0].unshift(entry)
 				break
 		}
 	}
