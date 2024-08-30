@@ -210,7 +210,6 @@ class CardFileInfo_t {
 	 */
 	saveDataFiles() {
 		var data = { ...this.metaData, create_date: this.v1metaData.create_date }
-		delete data.character_book
 		delete data.create_by
 		data.greetings = [data.first_mes, ...(data.alternate_greetings || [])].filter(x => x)
 		delete data.first_mes
@@ -260,10 +259,11 @@ class CardFileInfo_t {
 			extensions,
 			create_date,
 		}
+		var character_book = data.character_book
+		delete data.character_book
 		yaml.writeFileSync(yamlFilePath, data)
 		if (!fs.existsSync(character_book_path + '/entries'))
 			fs.mkdirSync(character_book_path + '/entries', { recursive: true })
-		var character_book = this.character_book
 		data = { ...character_book }
 		delete data.entries
 		data.index_list = []
