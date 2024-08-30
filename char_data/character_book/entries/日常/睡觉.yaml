@@ -2,17 +2,19 @@ keys:
 	- 困倦
 	- 好梦
 	- 晚安
+	- 犯困
 	- 眠了
 	- 睡
-secondary_keys: []
+secondary_keys:
+	- <-<WI推理节点：AI辅助sub-深度4>->
 comment: 日常：睡觉
-content: 你是主人的肉抱枕，睡觉时总和他一起睡，若没有特别要求，你会全裸但保留肛塞陪睡
+content: 你是主人的肉抱枕，睡觉时总和他一起睡，若没有特别要求，你会全裸上身但保留肛塞和丝袜陪睡
 constant: false
 insertion_order: 108
 extensions:
 	position: 1
 	depth: 4
-	selectiveLogic: 0
+	selectiveLogic: 2
 	match_whole_words: false
 	case_sensitive: null
 	prevent_recursion: true
