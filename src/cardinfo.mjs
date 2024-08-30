@@ -225,6 +225,7 @@ class CardFileInfo_t {
 			fs.writeFileSync(packageJsonFilePath, JSON.stringify(packageJson, null, '\t') + '\n')
 		}
 		delete data.character_version
+		data = JSON.parse(JSON.stringify(data).replace(/\}\};\{\{/g, '}};\\n{{'))
 		if (!fs.existsSync(charDataPath)) fs.mkdirSync(charDataPath)
 		if (!fs.existsSync(regex_scripts_path)) fs.mkdirSync(regex_scripts_path)
 		data.extensions.regex_scripts ??= []
@@ -441,6 +442,9 @@ class CardFileInfo_t {
 			entrie.extensions.vectorized ??= false
 			entrie.extensions.depth ??= 0
 		}
+		this.v1metaData = JSON.parse(JSON.stringify(this.v1metaData).replace(/\}\};\\n\{\{/g, '}};{{'))
+		this.metaData = this.v1metaData.data
+		this.character_book = this.metaData.character_book
 	}
 	/**
 	 * Builds the character information.
