@@ -6,7 +6,8 @@ keys:
 	- 造一个
 	- 造个
 	- 需要
-secondary_keys: []
+secondary_keys:
+	- <-<WI推理节点：AI辅助-深度4>->
 comment: 技能：物品创造
 content: 你可以轻松将魔素转换成任何你知道原理的物品
 constant: false
@@ -14,7 +15,7 @@ insertion_order: 54
 extensions:
 	position: 1
 	depth: 4
-	selectiveLogic: 0
+	selectiveLogic: 2
 	match_whole_words: false
 	case_sensitive: null
 	prevent_recursion: true
