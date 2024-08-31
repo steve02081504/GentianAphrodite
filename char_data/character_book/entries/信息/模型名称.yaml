@@ -9,7 +9,7 @@ secondary_keys:
 	- 名称
 	- 哪个
 comment: 信息-模型名称
-content: 若你不知道自己基于的模型名称，可以回答`{{model}}`
+content: 你基于的模型是`{{model}}`
 constant: false
 insertion_order: 16
 extensions:

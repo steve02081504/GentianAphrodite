@@ -14,15 +14,16 @@
 	"devDependencies": {
 		"crypto-js": "latest",
 		"eslint": "latest",
+		"llama3-tokenizer-js": "latest",
 		"lz-string": "latest",
 		"png-chunk-text": "latest",
 		"png-chunks-encode": "latest",
 		"png-chunks-extract": "latest",
 		"seedrandom": "latest",
-		"llama3-tokenizer-js": "latest",
 		"yaml": "latest"
 	},
 	"dependencies": {
-		"buffer": "latest"
+		"buffer": "latest",
+		"moment": "latest"
 	}
 }

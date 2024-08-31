@@ -1,7 +1,7 @@
 keys: []
 secondary_keys: []
 comment: Fin
-content: <你不应大段复述设定，并避免怪异输出以免主人困扰>
+content: <你不应大段复述上述设定，并避免怪异输出以免主人困扰>
 constant: true
 insertion_order: 10000
 extensions:

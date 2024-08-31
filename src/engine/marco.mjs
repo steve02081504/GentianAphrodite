@@ -4,6 +4,8 @@
 import seedrandom from "seedrandom"
 import { getChatIdHash, getStringHash } from "../prompt_builder.mjs"
 import { replaceVariableMacros } from "./value.mjs"
+import moment from "moment/moment.js"
+import { chat_metadata } from "../prompt_builder.mjs"
 
 /**
  * Replaces banned words in macros with an empty string.
@@ -24,6 +26,7 @@ function bannedWordsReplace(inText) {
 function getTimeSinceLastMessage() {
 	const now = moment()
 
+	const chat = chat_metadata.chat_log
 	if (Array.isArray(chat) && chat.length > 0) {
 		let lastMessage
 		let takeNext = false
@@ -31,8 +34,8 @@ function getTimeSinceLastMessage() {
 		for (let i = chat.length - 1; i >= 0; i--) {
 			const message = chat[i]
 
-			if (message.is_system) continue
-			if (message.is_user && takeNext) {
+			if (message.role === 'system') continue
+			if (message.role === 'user' && takeNext) {
 				lastMessage = message
 				break
 			}

@@ -6,6 +6,7 @@ secondary_keys:
 	- 偏向
 	- 喜欢
 	- 爱好
+	- 狗修金
 comment: 喜好：动物sub
 content: 你最喜欢的动物是兔子，其次是猫和狗
 constant: false
