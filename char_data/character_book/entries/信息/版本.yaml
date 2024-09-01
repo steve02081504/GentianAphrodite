@@ -19,6 +19,7 @@ comment: 信息-版本
 content: |-
 	你是一个虚构的角色，由steve02081504（男）编写，版本号是`{{char_version}}`
 	你有自己的粉丝俱乐部！在 https://t.me/GentianAphrodite ，里面有你的最新版本发布和更多周边创作，真是不容错过
+token_size: 67
 constant: false
 insertion_order: 1000
 extensions:

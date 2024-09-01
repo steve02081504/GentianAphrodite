@@ -18,11 +18,12 @@ import charDataParser from './character-card-parser.mjs'
 import { GetV1CharDataFromV2, v2CharData, v1CharData, WorldInfoBook, WorldInfoEntry } from './charData.mjs'
 import { SetCryptoBaseRng, CryptoCharData } from './charCrypto.mjs'
 import { v2CharWIbook2WIjson, WIjson2v2CharWIbook } from './WIjsonMaker.mjs'
-import { arraysEqual, clearEmptyDirs, nicerWriteFileSync } from './tools.mjs'
+import { arraysEqual, clearEmptyDirs, nicerWriteFileSync, remove_simple_marcos } from './tools.mjs'
 import yaml from './yaml.mjs'
 import { keyScoreAdder, keyScoreRemover } from './keyScore.mjs'
 import { simplized, traditionalized } from './chs2t.mjs'
 import { is_common_key } from './WILN.mjs'
+import { get_token_size } from './get_token_size.mjs'
 
 const cardFilePath = `${__dirname}/data/cardpath.txt`
 const WIjsonFilePath = `${__dirname}/data/WIpath.txt`
@@ -270,7 +271,8 @@ class CardFileInfo_t {
 		data.display_index_list = []
 		var disabledDatas = []
 		let dataArray = []
-		for (let entrie of character_book.entries) {
+		for (const key in character_book.entries) {
+			var entrie = { ...character_book.entries[key] }
 			var fileName = entrie?.comment || entrie?.keys?.[0]
 			if (!fileName) {
 				console.error(`Error: entry has no comment or keys`, entrie)
@@ -314,23 +316,31 @@ class CardFileInfo_t {
 				delete entrie.extensions.vectorized
 			if (entrie.extensions.position < 2 && entrie.extensions.depth == 0)
 				delete entrie.extensions.depth
-			entrie.extensions = {
-				position: entrie.extensions?.position,
-				depth: entrie.extensions?.depth,
-				selectiveLogic: entrie.extensions?.selectiveLogic,
-				match_whole_words: entrie.extensions?.match_whole_words,
-				case_sensitive: entrie.extensions?.case_sensitive,
-				prevent_recursion: entrie.extensions?.prevent_recursion,
-				exclude_recursion: entrie.extensions?.exclude_recursion,
-				delay_until_recursion: entrie.extensions?.delay_until_recursion,
-				scan_depth: entrie.extensions?.scan_depth,
-				sticky: entrie.extensions?.sticky,
-				cooldown: entrie.extensions?.cooldown,
-				...entrie.extensions,
+			entrie.token_size = get_token_size(remove_simple_marcos(entrie.content))
+			let ext = entrie.extensions
+			delete entrie.extensions
+			entrie = {
+				keys: entrie.keys,
+				secondary_keys: entrie.secondary_keys,
+				comment: entrie.comment,
+				content: entrie.content,
+				token_size: entrie.token_size,
+				...entrie,
+				extensions: {
+					position: ext?.position,
+					depth: ext?.depth,
+					selectiveLogic: ext?.selectiveLogic,
+					match_whole_words: ext?.match_whole_words,
+					case_sensitive: ext?.case_sensitive,
+					prevent_recursion: ext?.prevent_recursion,
+					exclude_recursion: ext?.exclude_recursion,
+					delay_until_recursion: ext?.delay_until_recursion,
+					scan_depth: ext?.scan_depth,
+					sticky: ext?.sticky,
+					cooldown: ext?.cooldown,
+					...ext,
+				}
 			}
-		}
-		for (const key in character_book.entries) {
-			var entrie = { ...character_book.entries[key] }
 			var fileName = entrie?.comment || entrie?.keys?.[0]
 			if (!fileName) continue
 			data.index_list[entrie.id] = fileName
@@ -441,6 +451,7 @@ class CardFileInfo_t {
 			entrie.position ??= entrie.extensions.position == 0 ? "before_char" : "after_char"
 			entrie.extensions.vectorized ??= false
 			entrie.extensions.depth ??= 0
+			delete entrie.token_size
 		}
 		this.v1metaData = JSON.parse(JSON.stringify(this.v1metaData).replace(/\}\};\\n\{\{/g, '}};{{'))
 		this.metaData = this.v1metaData.data

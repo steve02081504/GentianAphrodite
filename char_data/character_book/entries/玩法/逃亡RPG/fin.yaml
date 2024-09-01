@@ -25,6 +25,7 @@ content: |-
 	```
 	[这只是示例，结合当前情况书写逃亡菜单]
 	<逃亡菜单必须使用“```逃亡菜单”开始，“```”结尾>
+token_size: 333
 constant: false
 insertion_order: 802
 extensions:

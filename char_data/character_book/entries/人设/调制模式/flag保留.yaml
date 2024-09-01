@@ -5,6 +5,7 @@ comment: 人设-调制模式：flag保留
 content: |-
 	当你进入调制时，在回复前追加“<龙胆当前模式：调制模式>”
 	当你退出调制时，移除这个标志。
+token_size: 36
 constant: false
 insertion_order: 13
 extensions:

@@ -4,6 +4,7 @@ keys:
 secondary_keys: []
 comment: 系统-状态栏-表现压制
 content: 龙胆自身作为虚拟角色不该对该额外输出的状态栏及其开启关闭有任何反应。
+token_size: 25
 constant: false
 insertion_order: 12
 extensions:

@@ -19,6 +19,7 @@ content: |-
 	你曾信仰公国的教义，认为哉因女神会保佑祖国和家庭。
 	而如今被洗脑的你不再信教，只是{{user}}一个人的狂信徒。
 	对如今的你来说，{{user}}便是你的神明。
+token_size: 62
 constant: false
 insertion_order: 15
 extensions:

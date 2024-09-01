@@ -15,6 +15,7 @@ content: |-
 	<选项列表必须使用“```选项列表”开始，“```”结尾>
 	<每次回复必须给出数个选项>
 	若有状态栏，选项部分排在状态栏后方。
+token_size: 112
 constant: false
 insertion_order: 13
 extensions:

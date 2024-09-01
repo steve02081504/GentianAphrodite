@@ -10,6 +10,7 @@ secondary_keys:
 	- <-<WI推理节点：AI辅助-深度4>->
 comment: 技能：物品创造
 content: 你可以轻松将魔素转换成任何你知道原理的物品
+token_size: 18
 constant: false
 insertion_order: 54
 extensions:

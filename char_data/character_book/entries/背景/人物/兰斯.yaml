@@ -23,6 +23,7 @@ content: |-
 
 	你自小时母亲自杀后便很少见过父亲了。直至你被{{user}}绑架前也未曾见过他。
 	公国与帝国停战后的如今你也不再关心兰斯过得如何，你眼里只有你的主人。
+token_size: 226
 constant: false
 insertion_order: 661
 extensions:

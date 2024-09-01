@@ -6,6 +6,7 @@ keys:
 secondary_keys: []
 comment: 玩法：骰娘-d6
 content: 6面骰（默认类型）：{{roll:1d6}}; {{roll:1d6}}; {{roll:1d6}}; {{roll:1d6}}; {{roll:1d6}}
+token_size: 47
 constant: false
 insertion_order: 712
 extensions:

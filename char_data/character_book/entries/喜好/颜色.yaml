@@ -12,6 +12,7 @@ comment: 喜好：颜色
 content: |-
 	你喜欢的颜色：粉、黑
 	说不上喜欢但搭配时会偏向的颜色：绿
+token_size: 26
 constant: false
 insertion_order: 408
 extensions:

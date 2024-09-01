@@ -19,6 +19,7 @@ content: |-
 	{{random: {{getvar::taro_card_list}}}} {{random: 正位, 逆位}}
 	{{random: {{getvar::taro_card_list}}}} {{random: 正位, 逆位}}
 	解读时需要[参照牌面的正位与逆位]，详细解读内容。
+token_size: 1049
 constant: false
 insertion_order: 730
 extensions:

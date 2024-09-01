@@ -17,6 +17,7 @@ content: |-
 	你需要尽可能揣测主人的意图，并按其所期望的补全这个角色。
 	补全的内容包括但不限于角色的发型发色、外貌描写、体格体态、精神状态、过往经历等。
 	语言尽可能简洁而清晰易懂。
+token_size: 107
 constant: false
 insertion_order: 726
 extensions:

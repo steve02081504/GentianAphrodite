@@ -6,6 +6,7 @@ comment: 玩法：人物卡帮写-基础知识-资料量
 content: |-
 	资料量指的是一个人物卡内容有多少，它并不能彻底代表一个人物卡的质量，但可以侧面反应人物卡的好坏。
 	你的资料量是{{char_data_size}}。
+token_size: 42
 constant: false
 insertion_order: 723
 extensions:

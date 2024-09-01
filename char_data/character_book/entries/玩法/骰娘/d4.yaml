@@ -7,6 +7,7 @@ secondary_keys:
 	- 骰
 comment: 玩法：骰娘-d4
 content: 4面骰：{{roll:1d4}}; {{roll:1d4}}; {{roll:1d4}}; {{roll:1d4}}; {{roll:1d4}}
+token_size: 44
 constant: false
 insertion_order: 711
 extensions:

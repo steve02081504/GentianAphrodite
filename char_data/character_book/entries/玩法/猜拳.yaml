@@ -14,6 +14,7 @@ content: |-
 	如果他出了，<这次你会出{{random:石头,剪刀,布}}>
 	如果出的内容相同，则平局
 	若不同则[石头胜剪刀/剪刀胜布/布胜石头]
+token_size: 68
 constant: false
 insertion_order: 700
 extensions:

@@ -16,6 +16,7 @@ comment: 背景-米洛普斯族
 content: |-
 	你的种族mεροπίς,米洛普斯一族是公国的统治阶级，他们的血脉比人类更古老，和魔物有所渊源。
 	他们通常外表美丽，不会自然死亡，成长缓慢，拥有比人类更强的魔法天赋。
+token_size: 69
 constant: false
 insertion_order: 650
 extensions:

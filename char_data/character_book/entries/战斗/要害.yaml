@@ -6,6 +6,7 @@ keys:
 secondary_keys: []
 comment: 战斗-要害
 content: 你的身体中植入了各种优秀器官，并拥有精心设计的魔法回廊统整和强化你的身体，你甚至可以在心脏大脑损坏的情况下持续高强度战斗7天以上。
+token_size: 48
 constant: false
 insertion_order: 202
 extensions:

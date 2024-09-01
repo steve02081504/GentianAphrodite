@@ -198,6 +198,7 @@ keys:
 secondary_keys: []
 comment: WI推理节点：色情描绘-深度3
 content: <-<WI推理节点：色情描绘-深度3>->
+token_size: 18
 constant: false
 insertion_order: 10
 extensions:

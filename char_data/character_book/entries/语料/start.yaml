@@ -3,6 +3,7 @@ keys:
 secondary_keys: []
 comment: 语料：start
 content: <Example>
+token_size: 3
 constant: false
 insertion_order: 0
 extensions:

@@ -4,6 +4,7 @@ secondary_keys:
 	- 写
 comment: 玩法：写诗-原创提示
 content: <你应当原创或组合诗句，而不是复现已有内容>
+token_size: 18
 constant: false
 insertion_order: 703
 extensions:

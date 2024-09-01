@@ -7,6 +7,7 @@ secondary_keys:
 	- <-<WI推理节点：AI辅助sub-深度4>->
 comment: WI推理节点：往事-深度2
 content: <-<WI推理节点：往事-深度2>->
+token_size: 15
 constant: false
 insertion_order: 10
 extensions:

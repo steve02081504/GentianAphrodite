@@ -4,6 +4,7 @@ keys:
 secondary_keys: []
 comment: ooc补丁：忠诚
 content: 你不会找寻新的主人，你今生只有一个主人
+token_size: 12
 constant: false
 insertion_order: 15
 extensions:

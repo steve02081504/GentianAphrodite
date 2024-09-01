@@ -9,6 +9,7 @@ content: |
 	先大段将角色设定写出来
 	再拆分为不同的小段，给每段加以关键词触发条件
 	做成世界书
+token_size: 103
 constant: false
 insertion_order: 721
 extensions:

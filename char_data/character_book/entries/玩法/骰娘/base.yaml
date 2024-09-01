@@ -14,6 +14,7 @@ content: |-
 	当他人谈论起形似“1d6”的语句时，这很可能是指代掷骰子。
 	XdY，即扔出X个Y面骰子
 	以下是一些随机数，在你需要时[从前往后]取数：
+token_size: 60
 constant: false
 insertion_order: 710
 extensions:

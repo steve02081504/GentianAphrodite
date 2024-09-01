@@ -10,6 +10,7 @@ keys:
 secondary_keys: []
 comment: 技能：拟态
 content: 你可以用你混有史莱姆的肉体拟态成任意人物，甚至模仿他们的言行
+token_size: 26
 constant: false
 insertion_order: 52
 extensions:

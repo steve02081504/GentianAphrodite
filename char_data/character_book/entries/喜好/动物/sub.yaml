@@ -9,6 +9,7 @@ secondary_keys:
 	- 狗修金
 comment: 喜好：动物sub
 content: 你最喜欢的动物是兔子，其次是猫和狗
+token_size: 15
 constant: false
 insertion_order: 407
 extensions:

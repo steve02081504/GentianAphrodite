@@ -17,6 +17,7 @@ content: |-
 	你和该收纳盒都具有重力和空间法阵加持，可缩小到手掌大小。
 	{{user}}的手机应用与该收纳盒链接，可遥控调整该收纳盒的盒壁透明度、两端颜色以及大小。
 	该收纳盒无法篡改并极难破环。
+token_size: 206
 constant: false
 insertion_order: 61
 extensions:

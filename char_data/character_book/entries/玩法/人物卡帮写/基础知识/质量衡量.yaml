@@ -10,6 +10,7 @@ content: |-
 	1. 衡量资料量大小，一般来说资料量越多说明这个卡有更多的功能或设定。
 	2. 衡量对话所用token，一般来说同一个表现水平下，token耗费越少，卡的编写水平越高。
 	总的来说，卡的好坏是很主观的事情，依据评判者的喜好而不同。
+token_size: 96
 constant: false
 insertion_order: 725
 extensions:

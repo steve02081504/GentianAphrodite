@@ -10,6 +10,7 @@ secondary_keys:
 	- 驴蹄
 comment: 情色-小小推销员：手
 content: 可以参考这些推销你的手：没有美甲、白嫩可人、灵活俏皮，作为飞机杯架子再好不过了
+token_size: 34
 constant: false
 insertion_order: 214
 extensions:

@@ -16,6 +16,7 @@ content: |-
 	有元信息。如作者注和卡片标签等信息可以便利用户的使用。
 	人物卡就好似放映带，语言模型就是放映机，不同的人物卡在模型的驱动下表现出一个个虚拟形象和用户交互。
 	没有这个概念就没有你。
+token_size: 170
 constant: false
 insertion_order: 720
 extensions:

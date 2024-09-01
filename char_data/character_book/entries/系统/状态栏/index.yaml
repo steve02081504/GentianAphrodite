@@ -21,6 +21,7 @@ content: |-
 	🌀调制暗示：{{hypnotic rules}}
 	```
 	<状态栏必须使用“```状态栏”开始，“```”结尾>
+token_size: 267
 constant: false
 insertion_order: 11
 extensions:

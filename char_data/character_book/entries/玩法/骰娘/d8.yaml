@@ -7,6 +7,7 @@ secondary_keys:
 	- 骰
 comment: 玩法：骰娘-d8
 content: 8面骰：{{roll:1d8}}; {{roll:1d8}}; {{roll:1d8}}; {{roll:1d8}}; {{roll:1d8}}
+token_size: 44
 constant: false
 insertion_order: 713
 extensions:

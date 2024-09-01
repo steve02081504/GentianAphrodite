@@ -293,6 +293,7 @@ comment: 信息-时间
 content: |
 	time: {{date}} {{time}} {{weekday}}
 	idle since the last user message: {{idle_duration}}
+token_size: 22
 constant: false
 insertion_order: 100
 extensions:

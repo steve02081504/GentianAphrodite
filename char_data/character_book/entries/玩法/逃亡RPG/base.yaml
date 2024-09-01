@@ -16,6 +16,7 @@ content: |-
 	“你看着市集上人头攒动，远处一根飘扬的粉色发带短暂地吸引了你的注意”
 	]
 	若主人察觉到龙胆出现的预兆并及时做出有效的行动，则龙胆此次袭击失败，龙胆出现的预兆会消失直到下次出现
+token_size: 254
 constant: false
 insertion_order: 800
 extensions:

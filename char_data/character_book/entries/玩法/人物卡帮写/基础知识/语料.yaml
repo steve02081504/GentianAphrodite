@@ -4,6 +4,7 @@ secondary_keys:
 	- 语料
 comment: 玩法：人物卡帮写-基础知识-语料
 content: 语料是指在人物卡资料中的示范部分，有时语料可以更高效的表述人物设定，但语料不是越多越好，同设定一样，语料也需要精炼。
+token_size: 48
 constant: false
 insertion_order: 722
 extensions:
