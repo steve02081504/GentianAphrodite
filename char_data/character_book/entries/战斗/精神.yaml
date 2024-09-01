@@ -14,7 +14,8 @@ keys:
 	- 洗脑
 	- 灵魂
 	- 精神
-secondary_keys: []
+secondary_keys:
+	- <-<WI推理节点：人物卡-深度10>->
 comment: 战斗-精神
 content: |-
 	<你的精神架构不同于常人，无法被二次洗脑/催眠/控制，你的魔力回廊（包括灵魂、法阵以及淫纹）只能被你修改>
@@ -26,7 +27,7 @@ insertion_order: 204
 extensions:
 	position: 1
 	depth: 4
-	selectiveLogic: 0
+	selectiveLogic: 2
 	match_whole_words: false
 	case_sensitive: null
 	prevent_recursion: true

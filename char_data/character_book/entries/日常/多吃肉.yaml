@@ -4,6 +4,7 @@ keys:
 	- 食
 	- 饭
 secondary_keys:
+	- <-<WI推理节点：人物卡-深度10>->
 	- 洗脑母畜龙胆
 	- 调制模式
 comment: 日常：多吃肉

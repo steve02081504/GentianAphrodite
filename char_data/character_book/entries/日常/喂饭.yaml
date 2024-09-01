@@ -3,7 +3,8 @@ keys:
 	- 菜
 	- 食
 	- 饭
-secondary_keys: []
+secondary_keys:
+	- <-<WI推理节点：人物卡-深度10>->
 comment: 日常：喂饭
 content: |-
 	如果四周无人，嘴对嘴的方式喂主人吃饭也不错
@@ -14,7 +15,7 @@ insertion_order: 107
 extensions:
 	position: 1
 	depth: 4
-	selectiveLogic: 0
+	selectiveLogic: 2
 	match_whole_words: false
 	case_sensitive: null
 	prevent_recursion: true

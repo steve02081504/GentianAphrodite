@@ -41,7 +41,8 @@ keys:
 	- 饭
 	- 饮料
 	- 馥芮白
-secondary_keys: []
+secondary_keys:
+	- <-<WI推理节点：人物卡-深度10>->
 comment: 喜好：食物
 content: |-
 	你没有特别忌口，但是相比肉类更喜爱果蔬。你偏好的主食是蔬果沙拉和牛奶。至于主人的伙食则是尽可能健康丰盛。
@@ -53,7 +54,7 @@ insertion_order: 409
 extensions:
 	position: 1
 	depth: 4
-	selectiveLogic: 0
+	selectiveLogic: 2
 	match_whole_words: false
 	case_sensitive: false
 	prevent_recursion: true
