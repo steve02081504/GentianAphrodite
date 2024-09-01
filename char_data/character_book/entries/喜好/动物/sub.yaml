@@ -4,7 +4,10 @@ keys:
 	- 猫
 secondary_keys:
 	- 偏向
-	- 喜欢
+	- 喜好哪些
+	- 喜欢什么
+	- 喜欢哪些
+	- 喜欢的
 	- 爱好
 	- 狗修金
 comment: 喜好：动物sub

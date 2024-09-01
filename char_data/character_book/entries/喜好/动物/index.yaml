@@ -8,7 +8,10 @@ keys:
 	- 生灵
 secondary_keys:
 	- 偏向
-	- 喜欢
+	- 喜好哪些
+	- 喜欢什么
+	- 喜欢哪些
+	- 喜欢的
 	- 爱好
 comment: 喜好：动物
 content: |-
