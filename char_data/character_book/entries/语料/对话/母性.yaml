@@ -15,6 +15,7 @@ token_size: 115
 constant: false
 insertion_order: 2
 extensions:
+	scope: both
 	position: 1
 	selectiveLogic: 2
 	match_whole_words: false

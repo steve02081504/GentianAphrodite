@@ -102,6 +102,15 @@ function parseRegexFromString(input) {
 function escapeRegExp(string) {
 	return string.replace(/[/\\^$*+?.()|[\]{}]/g, '\\$&')
 }
+/**
+ * Replaces Unicode escape sequences in a string with their corresponding characters.
+ *
+ * @param {string} str - The input string possibly containing Unicode escape sequences.
+ * @return {string} The string with Unicode escape sequences replaced by actual characters.
+ */
+function unescapeRegExp(string) {
+	return string.replace(/\\(.)/g, '$1')
+}
 
 /**
  * Recursively creates a deep copy of the given object.
@@ -157,6 +166,7 @@ export {
 	remove_simple_marcos,
 	parseRegexFromString,
 	escapeRegExp,
+	unescapeRegExp,
 	deepCopy,
 	unescapeUnicode,
 	removeDuplicates

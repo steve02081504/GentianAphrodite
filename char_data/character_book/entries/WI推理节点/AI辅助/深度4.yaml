@@ -31,9 +31,9 @@ keys:
 	- 如何在
 	- 学习
 	- 帮我
-	- 怎么
+	- 怎么做
+	- 怎么样才
 	- 怎样
-	- 怎麽
 	- 撰写
 	- 文献
 	- 是什么
@@ -71,6 +71,7 @@ token_size: 16
 constant: false
 insertion_order: 10
 extensions:
+	scope: user
 	position: 1
 	selectiveLogic: 0
 	match_whole_words: false

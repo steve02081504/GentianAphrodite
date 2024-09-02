@@ -18,15 +18,60 @@ import charDataParser from './character-card-parser.mjs'
 import { GetV1CharDataFromV2, v2CharData, v1CharData, WorldInfoBook, WorldInfoEntry } from './charData.mjs'
 import { SetCryptoBaseRng, CryptoCharData } from './charCrypto.mjs'
 import { v2CharWIbook2WIjson, WIjson2v2CharWIbook } from './WIjsonMaker.mjs'
-import { arraysEqual, clearEmptyDirs, nicerWriteFileSync, remove_simple_marcos } from './tools.mjs'
+import { arraysEqual, clearEmptyDirs, escapeRegExp, nicerWriteFileSync, parseRegexFromString, remove_simple_marcos, unescapeRegExp } from './tools.mjs'
 import yaml from './yaml.mjs'
 import { keyScoreAdder, keyScoreRemover } from './keyScore.mjs'
 import { simplized, traditionalized } from './chs2t.mjs'
-import { is_common_key } from './WILN.mjs'
 import { get_token_size } from './get_token_size.mjs'
+import { is_WILogicNode } from './WILN.mjs'
 
 const cardFilePath = `${__dirname}/data/cardpath.txt`
 const WIjsonFilePath = `${__dirname}/data/WIpath.txt`
+
+function make_userscope(str) {
+	if (is_WILogicNode(str)) return str
+	if (parseRegexFromString(str)) return `/{{user}}:.*${str.substr(1)}`
+	return `/{{user}}:.*${escapeRegExp(str)}/`
+}
+function make_bothscope(str) {
+	if (is_WILogicNode(str)) return str
+	if (parseRegexFromString(str)) return `/({{user}}|{{char}}):.*${str.substr(1)}`
+	return `/({{user}}|{{char}}):.*${escapeRegExp(str)}/`
+}
+/**
+ * @param {string} str
+ * @returns {string}
+ */
+function unmake_scope(str) {
+	if (is_WILogicNode(str)) return str
+	if (str.startsWith('/{{user}}:.*') && str.endsWith('/')) {
+		let s = str.slice('/{{user}}:.*'.length)
+		let reg = '/' + s, norm = unescapeRegExp(s.slice(0, s.length - 1))
+		if (`/${escapeRegExp(norm)}/` == reg) return norm
+		if (parseRegexFromString(reg)) return reg
+		return norm
+	}
+	if (str.startsWith('/({{user}}|{{char}}):.*') && str.endsWith('/')) {
+		let s = str.slice('/({{user}}|{{char}}):.*'.length)
+		let reg = '/' + s, norm = unescapeRegExp(s.slice(0, s.length - 1))
+		if (`/${escapeRegExp(norm)}/` == reg) return norm
+		if (parseRegexFromString(reg)) return reg
+		return norm
+	}
+	return str
+}
+function pack_key_scope(str) {
+	if (str.startsWith('u:')) return make_userscope(str.substr(2))
+	if (str.startsWith('b:')) return make_bothscope(str.substr(2))
+	return str
+}
+function unpack_key_scope(str) {
+	if (str.startsWith('/{{user}}:.*') && str.endsWith('/'))
+		str = 'u:' + unmake_scope(str)
+	if (str.startsWith('/({{user}}|{{char}}):.*') && str.endsWith('/'))
+		str = 'b:' + unmake_scope(str)
+	return str
+}
 
 /**
  * Class for reading and writing card information.
@@ -292,8 +337,9 @@ class CardFileInfo_t {
 				}
 				entrie.filePathArray = filePathArray
 			}
-			entrie.keys = [...new Set(entrie.keys.map(x => is_common_key(x)?simplized(x):x))].sort()
-			entrie.secondary_keys = [...new Set(entrie.secondary_keys.map(x => is_common_key(x)?simplized(x):x))].sort()
+			let unpack_key_scope_mapper = entrie.extensions?.scope ? unmake_scope : unpack_key_scope
+			entrie.keys = [...new Set(entrie.keys.map(simplized))].map(unpack_key_scope_mapper).sort()
+			entrie.secondary_keys = [...new Set(entrie.secondary_keys.map(simplized))].map(unpack_key_scope_mapper).sort()
 			if (entrie?.extensions.probability == 100) {
 				delete entrie.extensions.probability
 				delete entrie.extensions.useProbability
@@ -327,6 +373,7 @@ class CardFileInfo_t {
 				token_size: entrie.token_size,
 				...entrie,
 				extensions: {
+					scope: ext?.scope,
 					position: ext?.position,
 					depth: ext?.depth,
 					selectiveLogic: ext?.selectiveLogic,
@@ -438,8 +485,21 @@ class CardFileInfo_t {
 			}
 		}
 		for (let entrie of this.character_book.entries) {
-			entrie.keys = [...new Set([...entrie.keys, ...entrie.keys.map(x => is_common_key(x)?traditionalized(x):x)])].sort()
-			entrie.secondary_keys = [...new Set([...entrie.secondary_keys, ...entrie.secondary_keys.map(x => is_common_key(x)?traditionalized(x):x)])].sort()
+			entrie.keys = [...new Set([...entrie.keys, ...entrie.keys.map(x => is_WILogicNode(x) ? x : traditionalized(x))])].map(pack_key_scope).sort()
+			entrie.secondary_keys = [...new Set([...entrie.secondary_keys, ...entrie.secondary_keys.map(x => is_WILogicNode(x) ? x : traditionalized(x))])].map(pack_key_scope).sort()
+			if (entrie.extensions?.scope)
+				switch (entrie.extensions.scope) {
+					case 'user':
+						entrie.keys = entrie.keys.map(make_userscope).sort()
+						entrie.secondary_keys = entrie.secondary_keys.map(make_userscope).sort()
+						break
+					case 'both':
+						entrie.keys = entrie.keys.map(make_bothscope).sort()
+						entrie.secondary_keys = entrie.secondary_keys.map(make_bothscope).sort()
+						break
+					default:
+						console.error(`Error: scope '${entrie.extensions.scope}' not supported`)
+				}
 			entrie.selective ??= true
 			entrie.extensions.probability ??= 100
 			entrie.extensions.useProbability ??= true

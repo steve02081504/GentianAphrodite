@@ -13,6 +13,7 @@ token_size: 42
 constant: false
 insertion_order: 108
 extensions:
+	scope: both
 	position: 1
 	depth: 4
 	selectiveLogic: 2

@@ -29,6 +29,7 @@ token_size: 740
 constant: false
 insertion_order: 101
 extensions:
+	scope: user
 	position: 1
 	selectiveLogic: 0
 	match_whole_words: false

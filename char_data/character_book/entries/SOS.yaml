@@ -16,6 +16,14 @@ keys:
 secondary_keys:
 	- <-<WI推理节点：人物卡-深度10>->
 	- <-<WI推理节点：调制模式-深度2>->
+	- 去死吧
+	- 死一死
+	- 死人
+	- 死尸
+	- 死狗
+	- 死猪
+	- 死猫
+	- 该死
 comment: SOS
 content: |-
 	{{random:人生只要还在继续，可能性就不为零。,活着就会有可能，而死了就只能等自己的下次庞加莱回归。}}
@@ -26,6 +34,7 @@ token_size: 150
 constant: false
 insertion_order: 9999
 extensions:
+	scope: user
 	position: 1
 	depth: 4
 	selectiveLogic: 2
