@@ -21,7 +21,7 @@ export function getStringHash(str) {
 export function promptBuilder(
 	/** @type {v2CharData} */
 	charData,
-	/** @type {{role:string,content:string}[]} */
+	/** @type {{role:string,charname?:string,content:string}[]} */
 	chatLog,
 	/** @type {{name:string,persona_content:string}} */
 	userData = {
@@ -42,6 +42,7 @@ export function promptBuilder(
 	if (Object(chatLog) instanceof String)
 		chatLog = [{
 			role: "user",
+			charname: userData.name,
 			content: chatLog
 		}]
 

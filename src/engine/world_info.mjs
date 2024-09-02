@@ -42,12 +42,12 @@ function preBuiltWIEntries(
 		entrie.secondary_keys = buildKeyList(entrie.secondary_keys, isSensitive, isFullWordMatch)
 		let scan_depth = entrie.extensions.scan_depth === undefined ? WISettings.depth : entrie.extensions.scan_depth
 		entrie.isActived = (
-			/** @type {{role:string,content:string}[]} */
+			/** @type {{role:string,charname?:string,content:string}[]} */
 			chatLog,
 			/** @type {string[]} */
 			recursion_WIs
 		) => {
-			let content = chatLog.slice(-scan_depth).map(e => e.content).join('\n')
+			let content = chatLog.slice(-scan_depth).map(e => (e.charname || e.role)+': '+e.content).join('\n')
 			if (!entrie.extensions.exclude_recursion) content += '\n' + recursion_WIs.join('\n')
 			if (isAnyMatch(entrie.keys, content)) {
 				if (entrie.secondary_keys.length === 0) return true
@@ -68,7 +68,7 @@ function preBuiltWIEntries(
 export function GetActivedWorldInfoEntries(
 	/** @type {WorldInfoEntry[]} */
 	WIentries,
-	/** @type {{role:string,content:string}[]} */
+	/** @type {{role:string,charname?:string,content:string}[]} */
 	chatLog,
 	/** @type {Record<string, any>} */
 	env
