@@ -100,7 +100,7 @@ function parseRegexFromString(input) {
  * @return {string} The escaped string.
  */
 function escapeRegExp(string) {
-	return string.replace(/[/\\^$*+?.()|[\]{}]/g, '\\$&')
+	return string.replace(/[\/\\-\^\$\*\+\?\.\(\)\|\[\]\{\}]/g, '\\$&')
 }
 /**
  * Replaces Unicode escape sequences in a string with their corresponding characters.
@@ -110,6 +110,16 @@ function escapeRegExp(string) {
  */
 function unescapeRegExp(string) {
 	return string.replace(/\\(.)/g, '$1')
+}
+
+/**
+ * Replaces Unicode escape sequences in a string with their corresponding characters.
+ *
+ * @param {string} str - The input string possibly containing Unicode escape sequences.
+ * @return {string} The string with Unicode escape sequences replaced by actual characters.
+ */
+function unicodeEscapeToChar(str) {
+	return str.replace(/\\u[0-9a-fA-F]{4}/g, match=> String.fromCharCode(parseInt(match.replace("\\u", ""), 16)))
 }
 
 /**
@@ -167,6 +177,7 @@ export {
 	parseRegexFromString,
 	escapeRegExp,
 	unescapeRegExp,
+	unicodeEscapeToChar,
 	deepCopy,
 	unescapeUnicode,
 	removeDuplicates

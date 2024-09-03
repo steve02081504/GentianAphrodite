@@ -24,6 +24,7 @@ import { keyScoreAdder, keyScoreRemover } from './keyScore.mjs'
 import { simplized, traditionalized } from './chs2t.mjs'
 import { get_token_size } from './get_token_size.mjs'
 import { is_WILogicNode } from './WILN.mjs'
+import { WIbookCompiler } from './WIbookCompiler.mjs'
 
 const cardFilePath = `${__dirname}/data/cardpath.txt`
 const WIjsonFilePath = `${__dirname}/data/WIpath.txt`
@@ -248,7 +249,7 @@ class CardFileInfo_t {
 				defaultHandler(CharInfo, SavePath)
 			}
 
-		this.RunBuildCfg({ GetPngFile: _ => path, UseCrypto: false, CharInfoHandler: CharInfoHandler }, 'dev', this.cardPath)
+		this.RunBuildCfg({ GetPngFile: _ => path, UseCompiler: false, UseCrypto: false, CharInfoHandler: CharInfoHandler }, 'dev', this.cardPath)
 	}
 	/**
 	 * Saves the data files including meta data and character book entries.
@@ -530,6 +531,7 @@ class CardFileInfo_t {
 		Config = {
 			VerIdUpdater: _ => _,
 			DataUpdater: _ => _,
+			UseCompiler: true,
 			UseCrypto: true,
 			...Config
 		}
@@ -549,7 +551,9 @@ class CardFileInfo_t {
 		let data_size = charDataStr.length
 		let data_size_readable = (data_size / 1024.0).toFixed(2) + 'KB'
 		charDataStr = charDataStr.replace(/{{char_data_size}}/g, data_size_readable)
+		/** @type {v1CharData} */
 		let NewCharData = JSON.parse(charDataStr)
+		if (Config.UseCompiler) NewCharData.data.character_book.entries = WIbookCompiler(NewCharData.data.character_book.entries, NewCharData.data.creator)
 		if (Config.UseCrypto) NewCharData.data = CryptoCharData(NewCharData.data)
 		return NewCharData
 	}
@@ -562,6 +566,7 @@ class CardFileInfo_t {
 	 *   VerIdUpdater:(str: string) => string
 	 *   DataUpdater:(data: v2CharData) => v2CharData
 	 *   GetSavePath: (string) => string
+	 *   UseCompiler: boolean
 	 *   UseCrypto: boolean
 	 *   ext: string
 	 * }} SubVerCfg - The configuration object for the subversion.

@@ -1,7 +1,5 @@
-import sha256 from 'crypto-js/sha256.js'
 import seedrandom from 'seedrandom'
 import { v2CharData, WorldInfoEntry } from './charData.mjs'
-import { keyscorespliter } from './keyScore.mjs'
 import { deepCopy } from './tools.mjs'
 
 var randomCommts = [
@@ -94,10 +92,6 @@ function suffleArray(a) {
 }
 
 function CryptoCharData(/** @type {v2CharData} */charData) {
-	let charDataStr = JSON.stringify(charData).replace(/<-<WI(推理节点|推理節點|LogicalNode)(：|:)([\s\S]+?)>->/g, key =>
-		'<-' + sha256(charData.creator + key).toString().substring(0, 6) + '->'
-	)
-	charData = JSON.parse(charDataStr)
 	var book = suffleArray(charData.character_book.entries).sort((a, b) => a.insertion_order - b.insertion_order)
 	var index = 0
 	for (var entrie of book) entrie.insertion_order = index++
@@ -135,10 +129,8 @@ function CryptoCharData(/** @type {v2CharData} */charData) {
 		orderList.push(entrie.insertion_order)
 		if (!entrie.enabled) continue
 		entrie.comment = randomCommts[RandIntLeesThan(randomCommts.length)]
-		entrie.keys = entrie.keys.filter(x => x != keyscorespliter)
 		suffleArray(entrie.keys)
 		entrie.keys = cryptoKeyList(entrie.keys)
-		entrie.secondary_keys = entrie.secondary_keys.filter(x => x != keyscorespliter)
 		suffleArray(entrie.secondary_keys)
 		entrie.secondary_keys = cryptoKeyList(entrie.secondary_keys)
 		cryptoEntryContent(entrie)

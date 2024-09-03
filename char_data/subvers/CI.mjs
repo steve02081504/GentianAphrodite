@@ -9,6 +9,7 @@ let buildCfg = {
 		return path.join(__dirname, '../img/mini.png')
 	},
 	VerIdUpdater: (charVer) => charVer,
+	UseCompiler: false,
 	UseCrypto: false
 }
 export default buildCfg
