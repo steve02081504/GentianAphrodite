@@ -248,10 +248,28 @@ export async function char_grader(arg, progress_stream = console.log) {
 		if (prevent_recursion_missing_num)
 			do_reparation('prevent_recursion missing', prevent_recursion_missing_num, 7)
 		let unique_keys = [...new Set(key_array)]
-		let key_num = unique_keys.length
-		BaseGrading('unique_key_num', key_num, 'unique keys', 2, 0, 1 / 1.15)
-		key_num = key_array.length - key_num
-		BaseGrading('multi_time_key_num', key_num, 'multi time keys', 0.4)
+		let unique_reg_keys = unique_keys.filter(parseRegexFromString)
+		if (!unique_reg_keys.length) {
+			let key_num = unique_keys.length
+			BaseGrading('unique_key_num', key_num, 'unique keys', 2, 0, 1 / 1.15)
+			key_num = key_array.length - key_num
+			BaseGrading('multi_time_key_num', key_num, 'multi time keys', 0.4)
+		}
+		else {
+			let unique_str_keys = unique_keys.filter(key => !parseRegexFromString(key))
+			let reg_key_array = key_array.filter(parseRegexFromString)
+			let str_key_array = key_array.filter(key => !parseRegexFromString(key))
+
+			let str_key_num = unique_str_keys.length
+			BaseGrading('unique_str_key_num', str_key_num, 'unique str keys', 2, 0, 1 / 1.15)
+			str_key_num = str_key_array.length - str_key_num
+			BaseGrading('multi_time_str_key_num', str_key_num, 'multi time str keys', 0.4)
+
+			let unique_reg_key_length = unique_reg_keys.join('').length
+			BaseGrading('unique_reg_key_length', unique_reg_key_length, 'unique reg length', 0.32, 0, 1 / 1.15)
+			let reg_key_length = reg_key_array.join('').length - unique_reg_key_length
+			BaseGrading('reg_key_length', reg_key_length, 'multi time reg length', 0.12)
+		}
 		for (let key of unique_keys)
 			if (key.match(/、|，/gi))
 				progress_stream(`[warning] the key '${key}' contains '、' or '，', that's may not be what you want, use ',' instead?`)
