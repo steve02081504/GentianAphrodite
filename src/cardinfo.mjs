@@ -16,7 +16,7 @@ const BuildDir = `${__dirname}/../build`
 
 import charDataParser from './character-card-parser.mjs'
 import { GetV1CharDataFromV2, v2CharData, v1CharData, WorldInfoBook, WorldInfoEntry } from './charData.mjs'
-import { SetCryptoBaseRng, CryptoCharData } from './charCrypto.mjs'
+import { SetCryptoBaseRng, WIbookCrypto } from './WIbookCrypto.mjs'
 import { v2CharWIbook2WIjson, WIjson2v2CharWIbook } from './WIjsonMaker.mjs'
 import { arraysEqual, clearEmptyDirs, escapeRegExp, nicerWriteFileSync, parseRegexFromString, remove_simple_marcos, unescapeRegExp } from './tools.mjs'
 import yaml from './yaml.mjs'
@@ -554,7 +554,7 @@ class CardFileInfo_t {
 		/** @type {v1CharData} */
 		let NewCharData = JSON.parse(charDataStr)
 		if (Config.UseCompiler) NewCharData.data.character_book.entries = WIbookCompiler(NewCharData.data.character_book.entries, NewCharData.data.creator)
-		if (Config.UseCrypto) NewCharData.data = CryptoCharData(NewCharData.data)
+		if (Config.UseCrypto) NewCharData.data.character_book.entries = WIbookCrypto(NewCharData.data.character_book.entries)
 		return NewCharData
 	}
 	/**

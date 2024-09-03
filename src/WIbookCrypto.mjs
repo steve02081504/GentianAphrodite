@@ -62,7 +62,10 @@ let cryptoEntryContent = (/** @type {WorldInfoEntry} */entrie) => {
 let cryptoKeyList = (/** @type {string[]} */list) => {
 	let aret = []
 	for (let i = 0; i < list.length; i++) {
-		if (list[i].includes('{') || list[i].includes('}')) continue
+		if (list[i].includes('{') || list[i].includes('}')) {
+			aret.push(list[i])
+			continue
+		}
 		if (RandIntLeesThan(3) == 2) {
 			let rand = GetRandomCryptoStrBy(list[RandIntLeesThan(list.length)])
 			aret.push(`{{//${rand}}}`)
@@ -91,8 +94,8 @@ function suffleArray(a) {
 	return a
 }
 
-function CryptoCharData(/** @type {v2CharData} */charData) {
-	var book = suffleArray(charData.character_book.entries).sort((a, b) => a.insertion_order - b.insertion_order)
+function WIbookCrypto(/** @type {WorldInfoEntry[]} */book) {
+	book = book.sort((a, b) => a.insertion_order - b.insertion_order)
 	var index = 0
 	for (var entrie of book) entrie.insertion_order = index++
 	index = 0
@@ -110,7 +113,7 @@ function CryptoCharData(/** @type {v2CharData} */charData) {
 			} else newbook[newbook.length - 1].content += '\n'
 
 	}
-	charData.character_book.entries = book = newbook
+	book = newbook
 	let currentIndex = book.length
 
 	while (currentIndex != 0) {
@@ -147,10 +150,10 @@ function CryptoCharData(/** @type {v2CharData} */charData) {
 		content: '',
 		enabled: false,
 	})
-	return charData
+	return book
 }
 export {
-	CryptoCharData,
+	WIbookCrypto,
 	SetCryptoBaseRng,
-	CryptoCharData as default
+	WIbookCrypto as default
 }
