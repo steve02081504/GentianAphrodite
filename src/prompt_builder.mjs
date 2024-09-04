@@ -1,5 +1,5 @@
 import sha256 from 'crypto-js/sha256.js'
-import { WorldInfoEntry, extension_prompt_roles, regex_placement, v2CharData, world_info_position } from "./charData.mjs"
+import { WorldInfoEntry, regex_placement, v2CharData, world_info_position } from "./charData.mjs"
 import { evaluateMacros } from "./engine/marco.mjs"
 import { GetActivedWorldInfoEntries } from "./engine/world_info.mjs"
 import { get_token_size } from "./get_token_size.mjs"
@@ -8,6 +8,7 @@ import { parseRegexFromString } from './tools.mjs'
 export let chat_metadata = {
 	chat_log: []
 }
+const DEFAULT_DEPTH = 0
 export function saveMetadataDebounced() { }
 export function getChatIdHash() {
 	if (chat_metadata.chat_log.length)
@@ -39,6 +40,7 @@ export function promptBuilder(
 		charVersion: charData.character_version,
 		char_version: charData.character_version,
 	}
+	chatLog ??= ''
 	if (Object(chatLog) instanceof String)
 		chatLog = [{
 			role: "user",
@@ -65,7 +67,7 @@ export function promptBuilder(
 		[]
 	if (charData?.extensions?.regex_scripts) {
 		let WI_regex_scripts = charData.extensions.regex_scripts.filter(e => e.placement.includes(regex_placement.WORLD_INFO))
-		for (let script of WI_regex_scripts) script.findRegex = parseRegexFromString(script.findRegex)
+		for (let script of WI_regex_scripts) script.findRegex = parseRegexFromString(String(script.findRegex))
 		for (let e of WIs)
 			for (let script of WI_regex_scripts)
 				e.content = e.content.replace(script.findRegex, script.replaceString)

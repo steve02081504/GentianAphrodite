@@ -1,0 +1,17 @@
+{
+	"id": "126c9cc7-ba9f-4196-94ba-83d9d7925b20",
+	"scriptName": "我宣布个事",
+	"findRegex": "[\\s\\S]*有着自神传下的公国贵族血脉的(你|我|龙胆)从小不知爱为何物[\\s\\S]*",
+	"replaceString": "“全体目光向我看齐，我宣布个事！”\n“我是个傻逼！”",
+	"trimStrings": [],
+	"placement": [
+		2
+	],
+	"disabled": false,
+	"markdownOnly": true,
+	"promptOnly": true,
+	"runOnEdit": true,
+	"substituteRegex": false,
+	"minDepth": null,
+	"maxDepth": null
+}

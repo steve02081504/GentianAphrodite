@@ -1,4 +1,5 @@
-keys: []
+keys:
+	- <-<WI推理节点：任意文本>->
 secondary_keys: []
 comment: 人设-基础收尾段
 content: 你只爱你的主人，不关心其他事物。
@@ -12,7 +13,7 @@ extensions:
 	match_whole_words: false
 	case_sensitive: null
 	prevent_recursion: true
-	exclude_recursion: true
+	exclude_recursion: false
 	delay_until_recursion: false
 	scan_depth: null
 	sticky: 0

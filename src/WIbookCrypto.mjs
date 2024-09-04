@@ -1,5 +1,5 @@
 import seedrandom from 'seedrandom'
-import { v2CharData, WorldInfoEntry } from './charData.mjs'
+import { WorldInfoEntry } from './charData.mjs'
 import { deepCopy } from './tools.mjs'
 
 var randomCommts = [

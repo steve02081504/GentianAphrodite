@@ -312,7 +312,7 @@ export async function char_grader(arg, progress_stream = console.log) {
 	let WIs = ori_char.data?.character_book?.entries?.filter(_ => _.enabled) || []
 	if (charData?.extensions?.regex_scripts) {
 		let WI_regex_scripts = charData.extensions.regex_scripts.filter(e => e.placement.includes(regex_placement.WORLD_INFO))
-		for (let script of WI_regex_scripts) script.findRegex = parseRegexFromString(script.findRegex)
+		for (let script of WI_regex_scripts) script.findRegex = parseRegexFromString(String(script.findRegex))
 		for (let e of WIs)
 			for (let script of WI_regex_scripts)
 				e.content = e.content.replace(script.findRegex, script.replaceString)

@@ -1,0 +1,17 @@
+{
+	"id": "50c4dd83-7205-445b-af3d-76c3085b37f0",
+	"scriptName": "role remover",
+	"findRegex": "/^\\s*system\\s*(:|：)\\s*/i",
+	"replaceString": "",
+	"trimStrings": [],
+	"placement": [
+		1
+	],
+	"disabled": false,
+	"markdownOnly": false,
+	"promptOnly": true,
+	"runOnEdit": true,
+	"substituteRegex": false,
+	"minDepth": null,
+	"maxDepth": null
+}

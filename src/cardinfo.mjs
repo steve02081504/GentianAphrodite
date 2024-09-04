@@ -341,6 +341,19 @@ class CardFileInfo_t {
 			let unpack_key_scope_mapper = entrie.extensions?.scope ? unmake_scope : unpack_key_scope
 			entrie.keys = [...new Set(entrie.keys.map(simplized))].map(unpack_key_scope_mapper).sort()
 			entrie.secondary_keys = [...new Set(entrie.secondary_keys.map(simplized))].map(unpack_key_scope_mapper).sort()
+			let all_keys = [...entrie.keys, ...entrie.secondary_keys]
+			let u_scope_key_count = all_keys.filter(x => x.startsWith('u:')).length
+			let b_scope_key_count = all_keys.filter(x => x.startsWith('b:')).length
+			if (u_scope_key_count > all_keys.length / 2) {
+				entrie.keys = entrie.keys.map(x => x.startsWith('u:') ? x.substring(2) : x)
+				entrie.secondary_keys = entrie.secondary_keys.map(x => x.startsWith('u:') ? x.substring(2) : x)
+				entrie.extensions.scope = 'user'
+			}
+			else if (b_scope_key_count > all_keys.length / 2) {
+				entrie.keys = entrie.keys.map(x => x.startsWith('b:') ? x.substring(2) : x)
+				entrie.secondary_keys = entrie.secondary_keys.map(x => x.startsWith('b:') ? x.substring(2) : x)
+				entrie.extensions.scope = 'both'
+			}
 			if (entrie?.extensions.probability == 100) {
 				delete entrie.extensions.probability
 				delete entrie.extensions.useProbability
