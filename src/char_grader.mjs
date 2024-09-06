@@ -156,7 +156,7 @@ export async function char_grader(arg, progress_stream = console.log) {
 	}
 
 	let char_names = [
-		...char?.name?.split(/\(|\[|\{|【|（/g)?.[0]?.split(/·|•|৹|-/g), 'char', char?.name?.endsWith('版') ? char?.name?.substring(0, -3) : ''
+		...char?.name?.split(/\(|\[|\{|【|（/g)?.[0]?.split(/·|•|৹|-|的|の/g), 'char', char?.name?.endsWith('版') ? char?.name?.substring(0, -3) : ''
 	].filter(_ => _)
 	let related_names = [
 		'user', '你', ...char_names
