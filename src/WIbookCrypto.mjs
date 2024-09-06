@@ -1,6 +1,6 @@
 import seedrandom from 'seedrandom'
 import { WorldInfoEntry } from './charData.mjs'
-import { deepCopy } from './tools.mjs'
+import { deepCopy, reverseStr, suffleArray } from './tools.mjs'
 
 var randomCommts = [
 	"东西", '不是东西', '可能是个东西', '这到底是不是东西？', '可能不是个东西', '我是不是东西？', '我不是东西', '懂了，我是南北',
@@ -45,9 +45,16 @@ let GetRandomCryptoStrBy = _ => {
 	return aret
 }
 let cryptoTextContent = (/** @type {string} */content) => {
-	content = content.replace('\n', "\n{{//\u202e}}")
+	content = content.split('\n')
 	for (let i = 0; i < content.length; i++) {
-		if (content.slice(0, i).match(/\{\{[^\{\}]+$/g) || '{}'.indexOf(content[i]) != -1) continue
+		let line = content[i]
+		if (line.search(/(\{\{|\}\})/g) != -1) continue
+		if (RandIntLeesThan(4) == 2)
+			content[i] = `{{reverse::${reverseStr(line)}}}`
+	}
+	content = content.join("\n{{//\u202e}}")
+	for (let i = 0; i < content.length; i++) {
+		if (content.slice(0, i).match(/\{[^\{\}]*$/g) || '{}'.indexOf(content[i]) != -1) continue
 		if (RandIntLeesThan(7) == 6) {
 			let rand = GetRandomCryptoStrBy(content[i])
 			content = content.slice(0, i) + `{{//${rand}}}` + content.slice(i)
@@ -76,24 +83,6 @@ let cryptoKeyList = (/** @type {string[]} */list) => {
 		aret[0] = "{{//\u202e}}" + aret[0]
 	return aret
 }
-/**
- * Shuffles the elements of an array using the Fisher-Yates algorithm.
- *
- * @template T
- * @param {Array<T>} a - The array to be shuffled.
- * @return {Array<T>} - The shuffled array.
- */
-function suffleArray(a) {
-	let currentIndex = a.length
-
-	while (currentIndex != 0) {
-		let randomIndex = RandIntLeesThan(currentIndex)
-		currentIndex--;
-		[a[currentIndex], a[randomIndex]] = [a[randomIndex], a[currentIndex]]
-	}
-	return a
-}
-
 function WIbookCrypto(/** @type {WorldInfoEntry[]} */book) {
 	book = book.sort((a, b) => a.insertion_order - b.insertion_order)
 	var index = 0

@@ -50,13 +50,23 @@ function clearEmptyDirs(dirPath) {
 }
 
 /**
+ * Reverses a string.
+ *
+ * @param {string} str - The string to reverse.
+ * @return {string} The reversed string.
+ */
+function reverseStr (/** @type {string} */str) {
+	return Array.from(str).reverse().join('')
+}
+
+/**
  * Recursively removes all instances of simple Marcos placeholders in the given object.
  *
  * @param {object|string} object - The object or string to search for placeholders.
  * @return {object|string} - The object or string with all instances of simple Marcos placeholders removed.
  */
 function remove_simple_marcos(object) {
-	if (Object(object) instanceof String) return object.replace(/{{\/\/([\s\S]*?)}}/g, '').replace(/\{\{user\}\}/i, 'user').replace(/\{\{char\}\}/i, 'char')
+	if (Object(object) instanceof String) return object.replace(/{{reverse\:(.+?)}}/gi, (_, str) => reverseStr(str)).replace(/{{\/\/([\s\S]*?)}}/g, '').replace(/\{\{user\}\}/i, 'user').replace(/\{\{char\}\}/i, 'char')
 	for (const key in object) object[key] = remove_simple_marcos(object[key])
 	return object
 }
@@ -169,10 +179,29 @@ function removeDuplicates(data) {
 	return data
 }
 
+/**
+ * Shuffles the elements of an array using the Fisher-Yates algorithm.
+ *
+ * @template T
+ * @param {Array<T>} a - The array to be shuffled.
+ * @return {Array<T>} - The shuffled array.
+ */
+function suffleArray(a) {
+	let currentIndex = a.length
+
+	while (currentIndex != 0) {
+		let randomIndex = RandIntLeesThan(currentIndex)
+		currentIndex--;
+		[a[currentIndex], a[randomIndex]] = [a[randomIndex], a[currentIndex]]
+	}
+	return a
+}
+
 export {
 	arraysEqual,
 	nicerWriteFileSync,
 	clearEmptyDirs,
+	reverseStr,
 	remove_simple_marcos,
 	parseRegexFromString,
 	escapeRegExp,
@@ -180,5 +209,6 @@ export {
 	unicodeEscapeToChar,
 	deepCopy,
 	unescapeUnicode,
-	removeDuplicates
+	removeDuplicates,
+	suffleArray
 }
