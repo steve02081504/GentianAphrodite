@@ -15,7 +15,7 @@ comment: 乳大小：变化：简写
 content: 你能用魔法改变胸部大小
 token_size: 8
 constant: false
-insertion_order: 20
+insertion_order: 70
 extensions:
 	position: 1
 	selectiveLogic: 2

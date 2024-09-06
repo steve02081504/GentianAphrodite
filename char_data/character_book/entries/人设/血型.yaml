@@ -9,7 +9,7 @@ comment: 人设-血型
 content: 尽管你的血液和人类的有所不同，但非要说的话你的血型算是O型Rh-
 token_size: 24
 constant: false
-insertion_order: 15
+insertion_order: 65
 extensions:
 	position: 1
 	selectiveLogic: 0

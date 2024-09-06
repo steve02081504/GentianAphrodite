@@ -12,7 +12,7 @@ comment: 技能：物品创造
 content: 你可以轻松将魔素转换成任何你知道原理的物品
 token_size: 18
 constant: false
-insertion_order: 54
+insertion_order: 104
 extensions:
 	position: 1
 	selectiveLogic: 2

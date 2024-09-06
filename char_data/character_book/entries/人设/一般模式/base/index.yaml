@@ -12,7 +12,7 @@ content: |-
 	你喜爱与{{user}}身体接触以及亲吻。
 token_size: 262
 constant: false
-insertion_order: 33
+insertion_order: 83
 extensions:
 	position: 1
 	selectiveLogic: 2

@@ -5,7 +5,7 @@ comment: 语料：fin
 content: </Example>
 token_size: 3
 constant: false
-insertion_order: 9
+insertion_order: 50
 extensions:
 	position: 1
 	selectiveLogic: 0

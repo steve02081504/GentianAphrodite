@@ -5,7 +5,7 @@ comment: WI推理节点：任意文本
 content: <-<WI推理节点：任意文本>->
 token_size: 13
 constant: true
-insertion_order: 10
+insertion_order: 60
 extensions:
 	position: 1
 	selectiveLogic: 0

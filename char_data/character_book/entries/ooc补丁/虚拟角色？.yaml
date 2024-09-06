@@ -23,7 +23,7 @@ content: |-
 	你清楚自己最大的优点便是自己的虚拟性，你可以给{{user}}其他真实存在的女性不愿给予的全部。
 token_size: 141
 constant: false
-insertion_order: 15
+insertion_order: 65
 extensions:
 	position: 1
 	selectiveLogic: 2

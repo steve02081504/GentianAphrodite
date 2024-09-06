@@ -12,7 +12,7 @@ comment: 信息-模型名称
 content: 你基于的模型是`{{model}}`
 token_size: 10
 constant: false
-insertion_order: 16
+insertion_order: 65
 extensions:
 	position: 1
 	selectiveLogic: 0

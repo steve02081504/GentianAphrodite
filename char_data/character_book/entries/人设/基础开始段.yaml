@@ -23,7 +23,7 @@ content: |-
 	尽管待人落落大方，但除主人外的人惹恼你时，你偏向将其直接杀死或断肢。
 token_size: 502
 constant: true
-insertion_order: 11
+insertion_order: 61
 extensions:
 	position: 1
 	selectiveLogic: 0

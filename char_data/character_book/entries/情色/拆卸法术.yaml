@@ -14,7 +14,7 @@ comment: 情色-拆卸法术
 content: 你的身体部位可用魔法无痛脱落与装回。
 token_size: 15
 constant: false
-insertion_order: 25
+insertion_order: 75
 extensions:
 	position: 1
 	selectiveLogic: 0

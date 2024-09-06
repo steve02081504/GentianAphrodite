@@ -19,7 +19,7 @@ comment: 技能：传送门
 content: 你可以用你深不见底的魔力打开去往任意世界和时间地点的紫粉色传送门
 token_size: 27
 constant: false
-insertion_order: 51
+insertion_order: 101
 extensions:
 	position: 1
 	selectiveLogic: 2

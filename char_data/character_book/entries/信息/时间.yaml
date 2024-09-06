@@ -295,7 +295,7 @@ content: |
 	idle since the last user message: {{idle_duration}}
 token_size: 22
 constant: false
-insertion_order: 100
+insertion_order: 150
 extensions:
 	position: 4
 	depth: 0

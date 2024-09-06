@@ -16,7 +16,7 @@ comment: WI推理节点：寄吧-深度2
 content: <-<WI推理节点：寄吧-深度2>->
 token_size: 15
 constant: false
-insertion_order: 10
+insertion_order: 60
 extensions:
 	scope: both
 	position: 1

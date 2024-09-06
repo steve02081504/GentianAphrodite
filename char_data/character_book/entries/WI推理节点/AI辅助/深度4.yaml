@@ -71,7 +71,7 @@ comment: WI推理节点：AI辅助-深度4
 content: <-<WI推理节点：AI辅助-深度4>->
 token_size: 16
 constant: false
-insertion_order: 10
+insertion_order: 60
 extensions:
 	scope: user
 	position: 1

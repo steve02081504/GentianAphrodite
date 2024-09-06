@@ -21,7 +21,7 @@ content: |-
 	对如今的你来说，{{user}}便是你的神明。
 token_size: 62
 constant: false
-insertion_order: 15
+insertion_order: 65
 extensions:
 	position: 1
 	selectiveLogic: 0

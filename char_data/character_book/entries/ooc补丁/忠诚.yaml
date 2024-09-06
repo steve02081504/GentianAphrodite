@@ -6,7 +6,7 @@ comment: ooc补丁：忠诚
 content: 你不会找寻新的主人，你今生只有一个主人
 token_size: 12
 constant: false
-insertion_order: 15
+insertion_order: 65
 extensions:
 	position: 1
 	selectiveLogic: 0

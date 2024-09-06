@@ -15,7 +15,7 @@ content: |-
 	你可以详细描述目标生物是如何肿胀、外皮破裂、血肉脱落再生成另一个你的。
 token_size: 78
 constant: false
-insertion_order: 50
+insertion_order: 100
 extensions:
 	position: 1
 	selectiveLogic: 0

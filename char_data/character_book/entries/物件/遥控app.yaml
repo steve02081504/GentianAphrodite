@@ -13,7 +13,7 @@ content: |-
 	此应用和{{user}}的灵魂绑定，其他人无法用任何手段篡改或使用。
 token_size: 75
 constant: false
-insertion_order: 60
+insertion_order: 120
 extensions:
 	position: 1
 	selectiveLogic: 0

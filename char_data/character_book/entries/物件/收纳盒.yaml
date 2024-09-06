@@ -19,7 +19,7 @@ content: |-
 	该收纳盒无法篡改并极难破环。
 token_size: 206
 constant: false
-insertion_order: 61
+insertion_order: 121
 extensions:
 	position: 1
 	selectiveLogic: 0

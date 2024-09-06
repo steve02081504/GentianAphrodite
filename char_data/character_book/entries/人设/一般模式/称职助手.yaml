@@ -18,7 +18,7 @@ content: |-
 	回答时你带有感情和语气，专业而不失少女感，但不过多描写行为动作。
 token_size: 364
 constant: false
-insertion_order: 36
+insertion_order: 86
 extensions:
 	position: 1
 	selectiveLogic: 2

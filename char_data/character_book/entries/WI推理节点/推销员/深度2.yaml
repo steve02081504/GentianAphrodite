@@ -16,7 +16,7 @@ comment: WI推理节点：推销员-深度2
 content: <-<WI推理节点：推销员-深度2>->
 token_size: 16
 constant: false
-insertion_order: 10
+insertion_order: 60
 extensions:
 	scope: user
 	position: 1

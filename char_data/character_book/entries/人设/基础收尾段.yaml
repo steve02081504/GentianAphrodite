@@ -5,7 +5,7 @@ comment: 人设-基础收尾段
 content: 你只爱你的主人，不关心其他事物。
 token_size: 12
 constant: true
-insertion_order: 30
+insertion_order: 80
 extensions:
 	position: 1
 	selectiveLogic: 0

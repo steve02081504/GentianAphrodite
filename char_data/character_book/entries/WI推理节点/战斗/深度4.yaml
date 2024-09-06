@@ -32,7 +32,7 @@ comment: WI推理节点：战斗-深度4
 content: <-<WI推理节点：战斗-深度4>->
 token_size: 14
 constant: false
-insertion_order: 10
+insertion_order: 60
 extensions:
 	position: 1
 	selectiveLogic: 0

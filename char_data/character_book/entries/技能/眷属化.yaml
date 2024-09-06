@@ -12,7 +12,7 @@ content: |-
 	眷属化效果可被取消。
 token_size: 64
 constant: false
-insertion_order: 53
+insertion_order: 103
 extensions:
 	position: 1
 	selectiveLogic: 0
