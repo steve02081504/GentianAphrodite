@@ -15,7 +15,7 @@ const ImgsDir = `${__dirname}/../char_data/img`
 const BuildDir = `${__dirname}/../build`
 
 import charDataParser from './character-card-parser.mjs'
-import { GetV1CharDataFromV2, v2CharData, v1CharData, WorldInfoBook, WorldInfoEntry } from './charData.mjs'
+import { GetV1CharDataFromV2, v2CharData, v1CharData, WorldInfoBook, WorldInfoEntry, world_info_position } from './charData.mjs'
 import { SetCryptoBaseRng, WIbookCrypto } from './WIbookCrypto.mjs'
 import { v2CharWIbook2WIjson, WIjson2v2CharWIbook } from './WIjsonMaker.mjs'
 import { arraysEqual, clearEmptyDirs, escapeRegExp, nicerWriteFileSync, parseRegexFromString, remove_simple_marcos, unescapeRegExp } from './tools.mjs'
@@ -372,6 +372,8 @@ class CardFileInfo_t {
 			}
 			if (entrie?.extensions?.position)
 				delete entrie.position
+			if (entrie?.extensions?.position != world_info_position.atDepth)
+				delete entrie.extensions.depth
 			if (!entrie?.extensions?.vectorized)
 				delete entrie.extensions.vectorized
 			if (entrie.extensions.position < 2 && entrie.extensions.depth == 0)

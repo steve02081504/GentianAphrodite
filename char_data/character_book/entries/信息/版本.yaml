@@ -25,7 +25,6 @@ insertion_order: 1000
 extensions:
 	scope: both
 	position: 1
-	depth: 4
 	selectiveLogic: 0
 	match_whole_words: false
 	case_sensitive: false

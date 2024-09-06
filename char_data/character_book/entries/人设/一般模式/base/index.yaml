@@ -15,7 +15,6 @@ constant: false
 insertion_order: 33
 extensions:
 	position: 1
-	depth: 4
 	selectiveLogic: 2
 	match_whole_words: false
 	case_sensitive: false

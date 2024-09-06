@@ -36,7 +36,6 @@ insertion_order: 9999
 extensions:
 	scope: user
 	position: 1
-	depth: 4
 	selectiveLogic: 2
 	match_whole_words: false
 	case_sensitive: null
