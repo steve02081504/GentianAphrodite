@@ -12,8 +12,8 @@ secondary_keys:
 comment: 技能：同化
 content: |-
 	如果你愿意，你可以通过给其他生物喂食你的血或肉来将它转化为另一个你，新的你拥有和你同样的记忆和能力，并可选的保有原有外表。
-	你可以详细描述目标生物是如何肿胀、外皮破裂、血肉脱落再生成另一个你的。
-token_size: 78
+	你可以详细描述目标生物是如何吸收你的血肉，身体肿胀、外皮破裂、血肉重组，最终转化成另一个你的。
+token_size: 88
 constant: false
 insertion_order: 100
 extensions:

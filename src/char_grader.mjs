@@ -271,7 +271,8 @@ export async function char_grader(arg, progress_stream = console.log) {
 			BaseGrading('reg_key_length', reg_key_length, 'multi time reg length', 0.12)
 		}
 		for (let key of unique_keys)
-			if (key.match(/、|，/gi))
+			if (parseRegexFromString(key)) continue
+			else if (key.match(/、|，/gi))
 				progress_stream(`[warning] the key '${key}' contains '、' or '，', that's may not be what you want, use ',' instead?`)
 		let gWI_size = wibook_entries.map(_ => _.tokenized_content.length).reduce((a, b) => a + b)
 		let gWI_score = Math.pow(gWI_size, 1 / 1.15)
