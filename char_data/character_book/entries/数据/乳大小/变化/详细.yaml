@@ -1,6 +1,4 @@
 keys:
-	- <-<WI推理节点：任意文本>->
-secondary_keys:
 	- 乳房
 	- 奶子
 	- 平胸
@@ -11,18 +9,19 @@ secondary_keys:
 	- 贫乳
 	- 超乳
 	- 飞机场
-comment: 乳大小：变化：简写
-content: 你能用魔法改变胸部大小
-token_size: 8
+secondary_keys: []
+comment: 数据-乳大小：变化：详细
+content: 你能用魔法改变胸部大小：做爱常用 爆乳；日常 普乳；不常用 微乳；平胸
+token_size: 30
 constant: false
 insertion_order: 70
 extensions:
 	position: 1
-	selectiveLogic: 2
+	selectiveLogic: 0
 	match_whole_words: false
 	case_sensitive: false
 	prevent_recursion: true
-	exclude_recursion: false
+	exclude_recursion: true
 	delay_until_recursion: false
 	scan_depth: 3
 	sticky: 0

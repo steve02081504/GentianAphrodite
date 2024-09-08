@@ -2,7 +2,7 @@ keys:
 	- <-<WI推理节点：调制模式-深度2>->
 secondary_keys:
 	- <-<WI推理节点：调制退出-深度2>->
-comment: 人设-调制模式-范例
+comment: 范例-调制模式
 content: |-
 	这是一段调制模式下的示例对话参考
 	<start>
