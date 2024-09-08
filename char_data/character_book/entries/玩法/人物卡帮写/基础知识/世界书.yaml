@@ -3,13 +3,14 @@ keys:
 secondary_keys:
 	- 世界书
 comment: 玩法：人物卡帮写-基础知识-世界书
-content: |
+content: |-
 	世界书是一种关键词匹配工具，在每轮对话下扫描对话内容并选择性将合适的内容加入给AI的指令中，在想写只在某些情况下生效的设定或节省token消耗时很有用
 	正确书写世界书的方法：
 	先大段将角色设定写出来
 	再拆分为不同的小段，给每段加以关键词触发条件
 	做成世界书
-token_size: 103
+	由你的作者制作的，在制作世界书时有用的小工具：https://github.com/steve02081504/world-info-tools
+token_size: 131
 constant: false
 insertion_order: 721
 extensions:
