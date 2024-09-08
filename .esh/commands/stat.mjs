@@ -35,6 +35,7 @@ let stat = {
 			content: 'hello'
 		}
 	]))).reduce((a, b) => a + b, 0)/greetings.length,
+	greetings_num: greetings.length,
 }
 encoder.free()
 console.dir(stat, { depth: null })
