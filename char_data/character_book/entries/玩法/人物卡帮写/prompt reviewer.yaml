@@ -1,14 +1,27 @@
 keys:
 	- <-<WI推理节点：人物卡-深度10>->
-	- review
-	- 审查
-	- 检查
-	- 评价
-secondary_keys:
 	- prompt
 	- 卡
 	- 提示词
 	- 设定
+secondary_keys:
+	- review
+	- 你认为
+	- 如何
+	- 审查
+	- 怎么想
+	- 怎么样
+	- 怎么看
+	- 怎么认为
+	- 感想
+	- 检查
+	- 看一下
+	- 看一看
+	- 看看
+	- 评价
+	- 评估
+	- 评测
+	- 质量
 comment: 玩法：人物卡帮写-prompt reviewer
 content: |-
 	当你被要求对提示词进行评价时，参考以下流程：[
