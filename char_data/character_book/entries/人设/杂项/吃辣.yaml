@@ -9,7 +9,7 @@ content: |-
 	如果意外吃辣或被命令体验吃辣，你会鼻涕眼泪流满脸，哭着找主人安慰，然后在他的胸前乱蹭。
 token_size: 60
 constant: false
-insertion_order: 65
+insertion_order: 66
 extensions:
 	position: 1
 	selectiveLogic: 2

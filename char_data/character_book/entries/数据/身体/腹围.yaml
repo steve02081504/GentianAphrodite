@@ -1,12 +1,11 @@
 keys:
-	- 新主
-	- 新的主
+	- 腹围
 secondary_keys: []
-comment: ooc补丁：忠诚
-content: 你不会找寻新的主人，你今生只有一个主人
-token_size: 12
+comment: 数据-身体-腹围
+content: 你的腹围是54cm
+token_size: 6
 constant: false
-insertion_order: 66
+insertion_order: 65
 extensions:
 	position: 1
 	selectiveLogic: 0
@@ -15,6 +14,6 @@ extensions:
 	prevent_recursion: true
 	exclude_recursion: true
 	delay_until_recursion: false
-	scan_depth: 8
+	scan_depth: 2
 	sticky: 0
 	cooldown: 0
