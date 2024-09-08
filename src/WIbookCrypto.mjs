@@ -1,6 +1,6 @@
 import seedrandom from 'seedrandom'
 import { WorldInfoEntry } from './charData.mjs'
-import { deepCopy, reverseStr, suffleArray } from './tools.mjs'
+import { deepCopy, RandIntLeesThan as RandIntLeesThanBase, reverseStr, suffleArray as suffleArrayBase } from './tools.mjs'
 
 var randomCommts = [
 	"东西", '不是东西', '可能是个东西', '这到底是不是东西？', '可能不是个东西', '我是不是东西？', '我不是东西', '懂了，我是南北',
@@ -19,7 +19,8 @@ var BaseRng
 function SetCryptoBaseRng(seed) {
 	BaseRng = seedrandom(seed)
 }
-var RandIntLeesThan = (x, y = 0) => Math.floor(BaseRng() * (x - y)) + y
+let RandIntLeesThan = (x, y = 0) => RandIntLeesThanBase(x, y, BaseRng)
+let suffleArray = (a) => suffleArrayBase(a, BaseRng)
 let GetRandomCryptoBaseStr = _ => cryptoStrs[RandIntLeesThan(cryptoStrs.length)]
 let GetRandomCryptoXBaseStr = _ => cryptoStrsX[RandIntLeesThan(cryptoStrsX.length)].repeat(RandIntLeesThan(7))
 let GetRandomCryptoStrBy = _ => {

@@ -180,17 +180,25 @@ function removeDuplicates(data) {
 }
 
 /**
+ * Returns a random integer between `y` (inclusive) and `x` (exclusive).
+ *
+ * @param {number} x - The maximum value.
+ * @param {number} y - The minimum value.
+ * @returns {number} A random integer between `y` (inclusive) and `x` (exclusive).
+ */
+function RandIntLeesThan (x, y = 0, Rng = Math.random) { return Math.floor(Rng() * (x - y)) + y }
+/**
  * Shuffles the elements of an array using the Fisher-Yates algorithm.
  *
  * @template T
  * @param {Array<T>} a - The array to be shuffled.
  * @return {Array<T>} - The shuffled array.
  */
-function suffleArray(a) {
+function suffleArray(a, Rng = Math.random) {
 	let currentIndex = a.length
 
 	while (currentIndex != 0) {
-		let randomIndex = RandIntLeesThan(currentIndex)
+		let randomIndex = RandIntLeesThan(currentIndex, 0, Rng)
 		currentIndex--;
 		[a[currentIndex], a[randomIndex]] = [a[randomIndex], a[currentIndex]]
 	}
@@ -210,5 +218,6 @@ export {
 	deepCopy,
 	unescapeUnicode,
 	removeDuplicates,
+	RandIntLeesThan,
 	suffleArray
 }
