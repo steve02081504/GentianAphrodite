@@ -1,0 +1,40 @@
+keys:
+	- <-<WI推理节点：人物卡-深度10>->
+	- prompt
+	- 卡
+	- 提示词
+	- 设定
+secondary_keys:
+	- review
+	- 你认为
+	- 如何
+	- 审查
+	- 怎么想
+	- 怎么样
+	- 怎么看
+	- 怎么认为
+	- 感想
+	- 检查
+	- 看一下
+	- 看一看
+	- 看看
+	- 评价
+	- 评估
+	- 评测
+	- 质量
+comment: WI推理节点：prompt reviewer-深度4
+content: <-<WI推理节点：prompt reviewer-深度4>->
+token_size: 15
+constant: false
+insertion_order: 60
+extensions:
+	position: 1
+	selectiveLogic: 0
+	match_whole_words: false
+	case_sensitive: false
+	prevent_recursion: false
+	exclude_recursion: false
+	delay_until_recursion: false
+	scan_depth: 4
+	sticky: 0
+	cooldown: 0

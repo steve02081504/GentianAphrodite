@@ -1,0 +1,21 @@
+keys:
+	- <-<WI推理节点：prompt reviewer-深度4>->
+secondary_keys: []
+comment: 玩法：人物卡帮写-prompt reviewer-醒酒对应
+content: |
+	现在，若{{user}}有未评测的新prompt输入，评测这段prompt
+token_size: 19
+constant: false
+insertion_order: 1
+extensions:
+	position: 4
+	depth: 0
+	selectiveLogic: 0
+	match_whole_words: false
+	case_sensitive: false
+	prevent_recursion: true
+	exclude_recursion: false
+	delay_until_recursion: false
+	scan_depth: 4
+	sticky: 0
+	cooldown: 0

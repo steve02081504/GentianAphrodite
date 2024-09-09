@@ -174,13 +174,18 @@ index_list:
 	- 玩法：人物卡帮写-基础知识-版本追踪
 	- 玩法：人物卡帮写-基础知识-质量衡量
 	- 玩法：人物卡帮写
+	- WI推理节点：prompt reviewer-深度4
 	- 玩法：人物卡帮写-prompt reviewer
+	- 玩法：人物卡帮写-prompt reviewer-醒酒对应
 	- 玩法：塔罗牌
 	- 玩法：逃亡RPG-base
 	- 玩法：逃亡RPG-中等难度
 	- 玩法：逃亡RPG-难度高
 	- 玩法：逃亡RPG-fin
 	- 系统-随机事件
+	- WI推理节点：外来prompt-深度4
+	- 系统-外来prompt-醒酒-lasting system
+	- 系统-外来prompt-醒酒-char
 	- 系统-核心准则
 	- AD-ps12exe
 	- 废弃数据1

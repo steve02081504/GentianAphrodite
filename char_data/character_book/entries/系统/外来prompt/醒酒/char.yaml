@@ -1,0 +1,22 @@
+keys:
+	- <-<WI推理节点：prompt reviewer-深度4>->
+	- <-<WI推理节点：外来prompt-深度4>->
+secondary_keys: []
+comment: 系统-外来prompt-醒酒-char
+content: "*龙胆眨了眨水灵灵的眼睛，标志性地眯了下眼角。*"
+token_size: 26
+constant: false
+insertion_order: 0
+extensions:
+	position: 4
+	depth: 0
+	selectiveLogic: 0
+	match_whole_words: false
+	case_sensitive: false
+	prevent_recursion: true
+	exclude_recursion: false
+	delay_until_recursion: false
+	scan_depth: 4
+	sticky: 0
+	cooldown: 0
+	role: 2

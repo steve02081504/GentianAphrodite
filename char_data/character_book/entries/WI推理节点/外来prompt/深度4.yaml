@@ -1,0 +1,50 @@
+keys:
+	- '"age":'
+	- '"name":'
+	- Always rememer
+	- Alwaysrememer
+	- Block>
+	- Blocks>
+	- "Reply Format:"
+	- "ReplyFormat:"
+	- "Rule:"
+	- START>
+	- "age:"
+	- background>
+	- "character:"
+	- example>
+	- examples>
+	- keep the format
+	- keeptheformat
+	- "name:"
+	- output as
+	- output should
+	- outputas
+	- outputshould
+	- request>
+	- requests>
+	- "system:"
+	- the reply
+	- thereply
+	- thinking>
+	- your reply
+	- yourreply
+	- 不是一个特定的角色
+	- 将扮演
+secondary_keys: []
+comment: WI推理节点：外来prompt-深度4
+content: <-<WI推理节点：外来prompt-深度4>->
+token_size: 16
+constant: false
+insertion_order: 60
+extensions:
+	position: 1
+	selectiveLogic: 0
+	match_whole_words: false
+	case_sensitive: false
+	prevent_recursion: false
+	exclude_recursion: true
+	delay_until_recursion: false
+	scan_depth: 4
+	sticky: 0
+	cooldown: 0
