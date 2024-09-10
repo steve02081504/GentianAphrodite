@@ -51,18 +51,15 @@ function reRule(data) {
  * @param {WorldInfoEntry[]} data - The data containing entries to process.
  */
 function reIndex(data) {
-	let displayIndexArray = []
-	for (const key in data) {
-		if (!data[key]) delete data[key]
-		data[key].extensions ??= {}
-		data[key].extensions.display_index ??= displayIndexArray[displayIndexArray.length - 1] + 1
-		displayIndexArray.push(data[key].extensions.display_index)
-	}
-	let orderedIndexArray = displayIndexArray.sort((a, b) => a - b)
+	let orderedIndexArray = Array.from({length: data.length}).map((v, i) => i)
 	let aret = []
+	data = data.sort((a, b) => a.extensions.display_index - b.extensions.display_index)
 	for (const key in data) {
-		data[key].id = data[key].extensions.display_index = orderedIndexArray.indexOf(data[key].extensions.display_index)
-		aret[data[key].id] = data[key]
+		data[key].extensions ??= {}
+		let id = orderedIndexArray.indexOf(data[key].extensions.display_index)
+		while (aret[id]) id++
+		data[key].id = data[key].extensions.display_index = id
+		aret[id] = data[key]
 	}
 	return aret
 }
