@@ -1,8 +1,9 @@
 import { regexgen } from './regexgen.mjs'
 import { WorldInfoEntry, world_info_logic } from './charData.mjs'
-import { escapeRegExp, parseRegexFromString, unescapeRegExp } from './tools.mjs'
+import { parseRegexFromString } from './tools.mjs'
 import { keyscorespliter } from './keyScore.mjs'
 import sha256 from 'crypto-js/sha256.js'
+import { CompileKeyScope } from './key_scope.mjs'
 /**
  * @param {WorldInfoEntry[]} entries
  * @param {string} sign
@@ -14,20 +15,21 @@ export function WIbookCompiler(entries, sign) {
 	)
 	entries = JSON.parse(entriesStr)
 	for (let entrie of entries) {
-		entrie.keys = keylistCompile(entrie.keys, world_info_logic.AND_ANY, entrie.extensions.case_sensitive, entrie.extensions.match_whole_words)
-		entrie.secondary_keys = keylistCompile(entrie.secondary_keys, entrie.extensions.selectiveLogic, entrie.extensions.case_sensitive, entrie.extensions.match_whole_words)
+		entrie.keys = keylistCompile(entrie.keys, world_info_logic.AND_ANY, entrie)
+		entrie.secondary_keys = keylistCompile(entrie.secondary_keys, entrie.extensions.selectiveLogic, entrie)
 	}
 	return entries
 }
 /**
  * @param {string[]} keylist
  * @param {world_info_logic} selectiveLogic
+ * @param {WorldInfoEntry} entrie
  * @returns {string[]}
  */
-function keylistCompile(keylist, selectiveLogic, caseSensitive, matchWholeWords) {
+function keylistCompile(keylist, selectiveLogic, entrie) {
 	keylist = keylist.filter(e => e != keyscorespliter)
 	if (selectiveLogic == world_info_logic.NOT_ALL || selectiveLogic == world_info_logic.AND_ALL) return keylist
-	if (!caseSensitive) keylist = keylist.map(e => e.toLowerCase())
+	if (entrie.extensions.case_sensitive === false) keylist = keylist.map(e => e.toLowerCase())
 	let result = []
 	let reg_keys = []
 	let common_keys = []
@@ -43,48 +45,5 @@ function keylistCompile(keylist, selectiveLogic, caseSensitive, matchWholeWords)
 			result.push(res)
 	}
 
-	let user_scope_regs = [], user_scope_norms = [], both_scope_regs = [], both_scope_norms = [], common_regs = []
-	for (let str of reg_keys)
-		if (str.startsWith('/{{user}}:.*') && str.endsWith('/')) {
-			let s = str.slice('/{{user}}:.*'.length)
-			let reg = '/' + s, norm = unescapeRegExp(s.slice(0, s.length - 1))
-			if (`/${escapeRegExp(norm)}/` == reg) user_scope_norms.push(norm)
-			else if (parseRegexFromString(reg)) user_scope_regs.push(reg)
-			else user_scope_norms.push(norm)
-		}
-		else if (str.startsWith('/({{user}}|{{char}}):.*') && str.endsWith('/')) {
-			let s = str.slice('/({{user}}|{{char}}):.*'.length)
-			let reg = '/' + s, norm = unescapeRegExp(s.slice(0, s.length - 1))
-			if (`/${escapeRegExp(norm)}/` == reg) both_scope_norms.push(norm)
-			else if (parseRegexFromString(reg)) both_scope_regs.push(reg)
-			else both_scope_norms.push(norm)
-		}
-		else common_regs.push(str)
-
-	if (user_scope_norms.length) user_scope_regs.push(regexgen(user_scope_norms).toString())
-	if (both_scope_norms.length) both_scope_regs.push(regexgen(both_scope_norms).toString())
-	user_scope_regs=user_scope_regs.map(e=>e.slice(1,-1))
-	both_scope_regs=both_scope_regs.map(e=>e.slice(1,-1))
-
-	if (user_scope_regs.length) {
-		let res = user_scope_regs.length > 1 ? "("+user_scope_regs.join('|')+")" : user_scope_regs[0]
-		if (matchWholeWords) res = `\\b${res}\\b`
-		result.push(`/{{user}}:.*${res}/`)
-	}
-
-	if (both_scope_regs.length) {
-		let res = both_scope_regs.length > 1 ? "("+both_scope_regs.join('|')+")" : both_scope_regs[0]
-		if (matchWholeWords) res = `\\b${res}\\b`
-		result.push(`/({{user}}|{{char}}):.*${res}/`)
-	}
-
-	result = result.concat(common_regs).filter(e => e)
-	if (!caseSensitive){
-		let res = result;result = []
-		for (let e of res)
-			if (parseRegexFromString(e) && e.endsWith('/')) result.push(e+'i')
-			else result.push(e)
-	}
-
-	return result
+	return result.concat(CompileKeyScope(reg_keys, entrie))
 }

@@ -5,7 +5,7 @@ import fs from 'fs'
  * @param {Array} b - The second array.
  * @return {boolean} True if the arrays are equal, false otherwise.
  */
-function arraysEqual(a, b) {
+export function arraysEqual(a, b) {
 	if (a === b) return true
 	if (!a || !b) return false
 	if (a.length !== b.length) return false
@@ -24,7 +24,7 @@ function arraysEqual(a, b) {
  * @param {string} [encoding='utf8'] - The encoding to use when writing the file.
  * @return {void}
  */
-function nicerWriteFileSync(filePath, data, encoding = 'utf8') {
+export function nicerWriteFileSync(filePath, data, encoding = 'utf8') {
 	var oldData
 	if (fs.existsSync(filePath))
 		oldData = fs.readFileSync(filePath, encoding)
@@ -37,7 +37,7 @@ function nicerWriteFileSync(filePath, data, encoding = 'utf8') {
  * @param {string} dirPath - The directory to clear.
  * @return {boolean} True if the directory was cleared successfully, false otherwise.
  */
-function clearEmptyDirs(dirPath) {
+export function clearEmptyDirs(dirPath) {
 	var files = fs.readdirSync(dirPath, { recursive: true })
 	var empty = true
 	for (const file of files) {
@@ -55,7 +55,7 @@ function clearEmptyDirs(dirPath) {
  * @param {string} str - The string to reverse.
  * @return {string} The reversed string.
  */
-function reverseStr (/** @type {string} */str) {
+export function reverseStr (/** @type {string} */str) {
 	return Array.from(str).reverse().join('')
 }
 
@@ -65,7 +65,7 @@ function reverseStr (/** @type {string} */str) {
  * @param {object|string} object - The object or string to search for placeholders.
  * @return {object|string} - The object or string with all instances of simple Marcos placeholders removed.
  */
-function remove_simple_marcos(object) {
+export function remove_simple_marcos(object) {
 	if (Object(object) instanceof String) return object.replace(/{{reverse\:(.+?)}}/gi, (_, str) => reverseStr(str)).replace(/{{\/\/([\s\S]*?)}}/g, '').replace(/\{\{user\}\}/i, 'user').replace(/\{\{char\}\}/i, 'char')
 	for (const key in object) object[key] = remove_simple_marcos(object[key])
 	return object
@@ -80,7 +80,7 @@ function remove_simple_marcos(object) {
  * @param {string} input - A delimited regex string
  * @returns {RegExp|null} The regex object, or null if not a valid regex
  */
-function parseRegexFromString(input) {
+export function parseRegexFromString(input) {
 	// Extracting the regex pattern and flags
 	let match = input.match(/^\/([\w\W]+?)\/([gimsuy]*)$/)
 	if (!match) return null // Not a valid regex format
@@ -109,7 +109,7 @@ function parseRegexFromString(input) {
  * @param {string} string - The string to escape.
  * @return {string} The escaped string.
  */
-function escapeRegExp(string) {
+export function escapeRegExp(string) {
 	return string.replace(/[\/\\-\^\$\*\+\?\.\(\)\|\[\]\{\}]/g, '\\$&')
 }
 /**
@@ -118,7 +118,7 @@ function escapeRegExp(string) {
  * @param {string} str - The input string possibly containing Unicode escape sequences.
  * @return {string} The string with Unicode escape sequences replaced by actual characters.
  */
-function unescapeRegExp(string) {
+export function unescapeRegExp(string) {
 	return string.replace(/\\(.)/g, '$1')
 }
 
@@ -128,7 +128,7 @@ function unescapeRegExp(string) {
  * @param {string} str - The input string possibly containing Unicode escape sequences.
  * @return {string} The string with Unicode escape sequences replaced by actual characters.
  */
-function unicodeEscapeToChar(str) {
+export function unicodeEscapeToChar(str) {
 	return str.replace(/\\u[0-9a-fA-F]{4}/g, match=> String.fromCharCode(parseInt(match.replace("\\u", ""), 16)))
 }
 
@@ -139,7 +139,7 @@ function unicodeEscapeToChar(str) {
  * @param {WeakMap<object, object>} [weakMap] - A WeakMap used to store the copied objects.
  * @return {T} A deep copy of the object.
  */
-function deepCopy(object, weakMap = new WeakMap()) {
+export function deepCopy(object, weakMap = new WeakMap()) {
 	if (!object || !(object instanceof Object)) return object
 
 	if (weakMap.has(object)) return weakMap.get(object)
@@ -159,7 +159,7 @@ function deepCopy(object, weakMap = new WeakMap()) {
  * @param {string} str - The input string possibly containing Unicode escape sequences.
  * @return {string} The string with Unicode escape sequences replaced by actual characters.
  */
-function unescapeUnicode(str) {
+export function unescapeUnicode(str) {
 	if (!(Object(str) instanceof String)) str = str.toString()
 	return str.replace(/\\u([0-9a-f]{4})/gi, (match, p1) => String.fromCharCode(parseInt(p1, 16)))
 }
@@ -169,7 +169,7 @@ function unescapeUnicode(str) {
  * @param {Object|Array} data - The data containing entries to process.
  * @returns {Object|Array} The data with duplicate entries removed.
  */
-function removeDuplicates(data) {
+export function removeDuplicates(data) {
 	if (typeof data == 'string') return data
 	for (const key in data)
 		data[key] = removeDuplicates(data[key])
@@ -186,7 +186,7 @@ function removeDuplicates(data) {
  * @param {number} y - The minimum value.
  * @returns {number} A random integer between `y` (inclusive) and `x` (exclusive).
  */
-function RandIntLeesThan (x, y = 0, Rng = Math.random) { return Math.floor(Rng() * (x - y)) + y }
+export function RandIntLeesThan (x, y = 0, Rng = Math.random) { return Math.floor(Rng() * (x - y)) + y }
 /**
  * Shuffles the elements of an array using the Fisher-Yates algorithm.
  *
@@ -194,7 +194,7 @@ function RandIntLeesThan (x, y = 0, Rng = Math.random) { return Math.floor(Rng()
  * @param {Array<T>} a - The array to be shuffled.
  * @return {Array<T>} - The shuffled array.
  */
-function suffleArray(a, Rng = Math.random) {
+export function suffleArray(a, Rng = Math.random) {
 	let currentIndex = a.length
 
 	while (currentIndex != 0) {
@@ -205,19 +205,3 @@ function suffleArray(a, Rng = Math.random) {
 	return a
 }
 
-export {
-	arraysEqual,
-	nicerWriteFileSync,
-	clearEmptyDirs,
-	reverseStr,
-	remove_simple_marcos,
-	parseRegexFromString,
-	escapeRegExp,
-	unescapeRegExp,
-	unicodeEscapeToChar,
-	deepCopy,
-	unescapeUnicode,
-	removeDuplicates,
-	RandIntLeesThan,
-	suffleArray
-}
