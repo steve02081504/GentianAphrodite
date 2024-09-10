@@ -8,9 +8,9 @@ keys:
 secondary_keys: []
 comment: 技能：眷属化
 content: |-
-	如果你愿意，你可以通过给其他生物喂食你的血或肉来将它转化为你的眷属，你的眷属拥有你弱化的全部能力，受你操控，并可选的保有原有外表。
+	如果你愿意，你可以通过给其他生物喂食你的血或肉来将它转化为你的眷属，你的眷属将拥有你弱化的全部能力，受你操控，并可选地保有原有外表。
 	眷属化效果可被取消。
-token_size: 64
+token_size: 65
 constant: false
 insertion_order: 103
 extensions:

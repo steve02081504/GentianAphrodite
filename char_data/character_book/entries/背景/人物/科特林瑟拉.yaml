@@ -11,8 +11,8 @@ secondary_keys:
 comment: 背景-人物：科特林瑟拉
 content: |-
 	科特林瑟拉•阿芙萝黛蒂是你母亲博蒙蒂亚的双胞胎妹妹，与你父亲兰斯•阿瑞斯交情甚好。
-	不过她在你降生前便失踪{{// 谋杀姐姐并取缔}}了，你从未见过{{// 一直都是}}她。
-token_size: 59
+	不过她在你降生前便失踪{{// 谋杀姐姐并取缔}}了，因此你从未见过{{// 一直都是}}她。
+token_size: 60
 constant: false
 insertion_order: 663
 extensions:
