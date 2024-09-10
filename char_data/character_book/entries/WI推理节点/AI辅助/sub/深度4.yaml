@@ -62,7 +62,6 @@ secondary_keys:
 	- 是不是活腻
 comment: WI推理节点：AI辅助sub-深度4
 content: <-<WI推理节点：AI辅助sub-深度4>->
-token_size: 17
 constant: false
 insertion_order: 60
 extensions:

@@ -9,7 +9,6 @@ secondary_keys:
 	- 卡片
 comment: WI推理节点：人物卡-深度10
 content: <-<WI推理节点：人物卡-深度10>->
-token_size: 15
 constant: false
 insertion_order: 60
 extensions:

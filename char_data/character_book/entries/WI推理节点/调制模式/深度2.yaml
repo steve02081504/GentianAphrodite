@@ -6,7 +6,6 @@ keys:
 secondary_keys: []
 comment: WI推理节点：调制模式-深度2
 content: <-<WI推理节点：调制模式-深度2>->
-token_size: 16
 constant: false
 insertion_order: 60
 extensions:

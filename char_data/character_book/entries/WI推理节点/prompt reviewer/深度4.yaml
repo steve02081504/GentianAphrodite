@@ -24,7 +24,6 @@ secondary_keys:
 	- 质量
 comment: WI推理节点：prompt reviewer-深度4
 content: <-<WI推理节点：prompt reviewer-深度4>->
-token_size: 15
 constant: false
 insertion_order: 60
 extensions:

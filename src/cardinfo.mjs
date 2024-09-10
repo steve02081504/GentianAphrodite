@@ -378,7 +378,8 @@ class CardFileInfo_t {
 				delete entrie.extensions.vectorized
 			if (entrie.extensions.position < 2 && entrie.extensions.depth == 0)
 				delete entrie.extensions.depth
-			entrie.token_size = get_token_size(remove_simple_marcos(entrie.content))
+			if (!is_WILogicNode(entrie.content))
+				entrie.token_size = get_token_size(remove_simple_marcos(entrie.content))
 			let ext = entrie.extensions
 			delete entrie.extensions
 			entrie = {

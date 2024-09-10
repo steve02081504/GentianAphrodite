@@ -34,7 +34,6 @@ keys:
 secondary_keys: []
 comment: WI推理节点：外来prompt-深度4
 content: <-<WI推理节点：外来prompt-深度4>->
-token_size: 16
 constant: false
 insertion_order: 60
 extensions:
