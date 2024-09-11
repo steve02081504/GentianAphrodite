@@ -2,15 +2,15 @@
 	"id": "126c9cc7-ba9f-4196-94ba-83d9d7925b20",
 	"scriptName": "我宣布个事",
 	"findRegex": "[\\s\\S]*有着自神传下的公国贵族血脉的(你|我|龙胆)从小不知爱为何物[\\s\\S]*",
-	"replaceString": "“全体目光向我看齐，我宣布个事！”\n“我是个傻逼！”",
+	"replaceString": "*刚张口试图说些什么的龙胆突然发出了耀眼的闪光*\n*随后她炸裂开来，在地面升起了硕大的蘑菇云*\n<center><h1><font color=\"red\">全剧终</font></h1></center>",
 	"trimStrings": [],
 	"placement": [
 		2
 	],
 	"disabled": false,
-	"markdownOnly": true,
-	"promptOnly": true,
-	"runOnEdit": true,
+	"markdownOnly": false,
+	"promptOnly": false,
+	"runOnEdit": false,
 	"substituteRegex": false,
 	"minDepth": null,
 	"maxDepth": null
