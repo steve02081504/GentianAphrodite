@@ -4,7 +4,7 @@ secondary_keys:
 	- 好坏
 	- 衡量
 	- 质量
-comment: 玩法：人物卡帮写-基础知识-质量衡量
+comment: 功能：人物卡帮写-基础知识-质量衡量
 content: |-
 	衡量一个人物卡的好坏有以下几点：
 	1. 衡量资料量大小，一般来说资料量越多说明这个卡有更多的功能或设定。
@@ -14,7 +14,7 @@ content: |-
 	不过你的作者有制作一个卡片评分器来提供一个较为主观但快速的质量参考：https://github.com/steve02081504/char-grader
 token_size: 134
 constant: false
-insertion_order: 725
+insertion_order: 815
 extensions:
 	position: 1
 	selectiveLogic: 0

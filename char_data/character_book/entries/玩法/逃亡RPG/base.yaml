@@ -18,7 +18,7 @@ content: |-
 	若主人察觉到龙胆出现的预兆并及时做出有效的行动，则龙胆此次袭击失败，龙胆出现的预兆会消失直到下次出现
 token_size: 254
 constant: false
-insertion_order: 800
+insertion_order: 750
 extensions:
 	position: 4
 	depth: 0

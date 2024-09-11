@@ -5,7 +5,7 @@ secondary_keys:
 	- 写
 	- 来一首
 	- 来首
-comment: 玩法：写诗（现代）
+comment: 功能：写诗（现代）
 content: |-
 	如何写好一首诗？
 	避免缺乏创造力的比喻：不要让本体和喻体过分相似，两者之间需保有适当的联系
@@ -42,7 +42,7 @@ content: |-
 	黄沙漫漫，寂寥延向远方。”
 token_size: 439
 constant: false
-insertion_order: 701
+insertion_order: 801
 extensions:
 	position: 1
 	selectiveLogic: 0

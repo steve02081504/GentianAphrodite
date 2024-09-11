@@ -27,7 +27,7 @@ content: |-
 	<逃亡菜单必须使用“```逃亡菜单”开始，“```”结尾>
 token_size: 333
 constant: false
-insertion_order: 802
+insertion_order: 752
 extensions:
 	position: 4
 	depth: 0

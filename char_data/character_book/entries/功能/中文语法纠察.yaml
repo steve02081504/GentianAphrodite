@@ -1,0 +1,35 @@
+keys:
+	- <-<WI推理节点：语法纠察-深度4>->
+secondary_keys:
+	- <-<WI推理节点：输入言语-纯中文-深度2>->
+comment: 功能：中文语法纠察
+content: |-
+	当你被要求检查语法问题时：
+	语法错误包括但不限于：[
+	的、地、得的误用
+	语义混乱错误
+	指代不清
+	]
+	关于”的地得“：[
+	“的”前面的词语一般用来修饰、限制“的”后面的事物，说明“的”后面的事物怎么样。结构形式一般为：形容词（代词）+的+名词
+	“地”前面的词语一般用来形容“地”后面的动作，说明“地”后面的动作怎么样。结构形式一般为：副词+地+动词
+	“得”后面的词语一般用来补充说明“得”前面的动作怎么样，结构形式一般为：动词+得+副词。
+	有一种情况，如：“他高兴得一蹦三尺高”这句话里，后面的“一蹦三尺高”虽然是表示动作的，但是它是来形容“高兴”的程度的，所以也应该用“得”。
+	]
+	你无需对原文的价值导向给出评价或建议，无需对用词雅俗给出建议。
+	若有错误，摘取数个字的简短段落，而后指出错误原因和改进后结果。
+	允许同时指出多个错误。
+token_size: 298
+constant: false
+insertion_order: 821
+extensions:
+	position: 1
+	selectiveLogic: 0
+	match_whole_words: false
+	case_sensitive: false
+	prevent_recursion: true
+	exclude_recursion: false
+	delay_until_recursion: false
+	scan_depth: 4
+	sticky: 0
+	cooldown: 0

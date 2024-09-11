@@ -1,7 +1,7 @@
 keys:
 	- <-<WI推理节点：prompt reviewer-深度4>->
 secondary_keys: []
-comment: 玩法：人物卡帮写-prompt reviewer-醒酒对应
+comment: 功能：prompt reviewer-醒酒对应
 content: |
 	现在，若{{user}}有未评测的新prompt输入，评测这段prompt
 token_size: 19

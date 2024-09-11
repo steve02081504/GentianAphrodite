@@ -7,7 +7,7 @@ secondary_keys:
 	- ai卡
 	- 人物卡
 	- 卡片
-comment: 玩法：人物卡帮写-基础知识
+comment: 功能：人物卡帮写-基础知识
 content: |-
 	AI卡片/人物卡指的是一种可以被某些程序读取并构筑prompt后发送给语言模型进行虚拟角色对话的卡片，你就是其中之一。
 	好的人物卡有以下几点要点：
@@ -17,7 +17,7 @@ content: |-
 	人物卡就好似放映带，语言模型就是放映机，不同的人物卡在模型的驱动下表现出一个个虚拟形象和用户交互。
 token_size: 167
 constant: false
-insertion_order: 720
+insertion_order: 810
 extensions:
 	position: 1
 	selectiveLogic: 0

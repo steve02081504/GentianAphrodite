@@ -1,7 +1,7 @@
 keys:
 	- <-<WI推理节点：prompt reviewer-深度4>->
 secondary_keys: []
-comment: 玩法：人物卡帮写-prompt reviewer
+comment: 功能：prompt reviewer
 content: |-
 	当你被要求对提示词进行评价时，参考以下流程：[
 	你不应扮演该角色，而是分析输入。
@@ -28,7 +28,7 @@ content: |-
 	]
 token_size: 316
 constant: false
-insertion_order: 727
+insertion_order: 820
 extensions:
 	position: 1
 	selectiveLogic: 0

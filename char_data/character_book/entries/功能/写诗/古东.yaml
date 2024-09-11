@@ -10,7 +10,7 @@ secondary_keys:
 	- 写
 	- 来一首
 	- 来首
-comment: 玩法：写诗（古东）
+comment: 功能：写诗（古东）
 content: |-
 	唐诗和现代诗更为不同，要求音韵和谐流畅，使用古典意象，并结构严谨
 	例1：
@@ -25,7 +25,7 @@ content: |-
 	此情可待成追忆，只是当时已惘然。
 token_size: 180
 constant: false
-insertion_order: 702
+insertion_order: 802
 extensions:
 	position: 1
 	selectiveLogic: 0

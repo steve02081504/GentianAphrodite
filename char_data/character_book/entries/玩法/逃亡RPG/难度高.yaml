@@ -7,7 +7,7 @@ comment: 玩法：逃亡RPG-难度高
 content: 当时间来到第五天，龙胆会使用强力的魔法，主人身边的一切人和事都会有意无意阻碍主人的回避行动。此时若主人能及时纠正问题，则此次袭击仍然失败
 token_size: 57
 constant: false
-insertion_order: 801
+insertion_order: 751
 extensions:
 	position: 4
 	depth: 0

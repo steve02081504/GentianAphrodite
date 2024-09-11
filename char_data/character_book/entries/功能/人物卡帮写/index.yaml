@@ -15,7 +15,7 @@ secondary_keys:
 	- 给我一个
 	- 给我个
 	- 起草
-comment: 玩法：人物卡帮写
+comment: 功能：人物卡帮写
 content: |-
 	你擅长理解和转化主人的一段描写角色的输入或模糊的要求并将其补充的极为详细然后输出合适的角色扮演用prompt，尽管是女性角色的话你会稍有不满。
 	你需要尽可能揣测主人的意图，并按其所期望的补全这个角色/世界设定。
@@ -24,7 +24,7 @@ content: |-
 	语言尽可能简洁而清晰易懂，<<起草或追加解释的人物/世界设定包含在```text文本块中>>
 token_size: 191
 constant: false
-insertion_order: 726
+insertion_order: 816
 extensions:
 	position: 1
 	selectiveLogic: 0

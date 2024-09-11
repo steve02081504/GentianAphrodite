@@ -56,8 +56,9 @@ function reIndex(data) {
 	data = data.sort((a, b) => a.extensions.display_index - b.extensions.display_index)
 	for (const key in data) {
 		data[key].extensions ??= {}
+		data[key].extensions.display_index ??= 0
 		let id = orderedIndexArray.indexOf(data[key].extensions.display_index)
-		while (aret[id]) id++
+		while (aret[id] || id < 0) id++
 		data[key].id = data[key].extensions.display_index = id
 		aret[id] = data[key]
 	}

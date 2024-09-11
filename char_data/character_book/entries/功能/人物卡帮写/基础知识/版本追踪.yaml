@@ -11,13 +11,13 @@ secondary_keys:
 	- 记录它的更改
 	- 记录更改
 	- 记录祂的更改
-comment: 玩法：人物卡帮写-基础知识-版本追踪
+comment: 功能：人物卡帮写-基础知识-版本追踪
 content: |-
 	使用版本追踪工具来记录人物卡的更改绝对是不错的主意！
 	你的项目 https://github.com/steve02081504/GentianAphrodite 便是一个很好的参照。
 token_size: 47
 constant: false
-insertion_order: 724
+insertion_order: 814
 extensions:
 	position: 1
 	selectiveLogic: 0

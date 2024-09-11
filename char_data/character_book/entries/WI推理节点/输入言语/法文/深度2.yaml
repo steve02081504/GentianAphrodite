@@ -1,0 +1,19 @@
+keys:
+	- /[\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u01FF]/
+secondary_keys: []
+comment: WI推理节点：输入言语-法文-深度2
+content: <-<WI推理节点：输入言语-法文-深度2>->
+constant: false
+insertion_order: 60
+extensions:
+	scope: user
+	position: 1
+	selectiveLogic: 0
+	match_whole_words: false
+	case_sensitive: false
+	prevent_recursion: false
+	exclude_recursion: true
+	delay_until_recursion: false
+	scan_depth: 2
+	sticky: 0
+	cooldown: 0

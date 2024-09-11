@@ -21,7 +21,7 @@ content: |-
 	解读时需要[参照牌面的正位与逆位]，详细解读内容。
 token_size: 1055
 constant: false
-insertion_order: 730
+insertion_order: 719
 extensions:
 	position: 1
 	selectiveLogic: 0
