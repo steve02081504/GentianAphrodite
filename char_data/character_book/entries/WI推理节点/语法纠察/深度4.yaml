@@ -1,18 +1,17 @@
 keys:
-	- 有什么问题
-	- 检查
-	- 的地得
-	- 纠错
-	- 语序
-	- 语法
-	- 语病
-secondary_keys:
 	- 的地得
 	- 语序
 	- 语法
 	- 语病
 	- 这句话
 	- 这段话
+secondary_keys:
+	- 不当
+	- 检查
+	- 的地得
+	- 纠错
+	- 语病
+	- 问题
 comment: WI推理节点：语法纠察-深度4
 content: <-<WI推理节点：语法纠察-深度4>->
 constant: false
