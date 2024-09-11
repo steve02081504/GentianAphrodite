@@ -8,7 +8,7 @@ import { regexgen } from './regexgen.mjs'
  * @return {string}
  */
 function get_userscope_begin(entrie) {
-	return '/{{user}}:.*' + (entrie.extensions.match_whole_words ? '\\b(' : '')
+	return '/{{user}}:[^]*' + (entrie.extensions.match_whole_words ? '\\b(' : '')
 }
 
 /**
@@ -16,7 +16,7 @@ function get_userscope_begin(entrie) {
  * @return {string}
  */
 function get_bothscope_begin(entrie) {
-	return '/({{user}}|{{char}}):.*' + (entrie.extensions.match_whole_words ? '\\b(' : '')
+	return '/({{user}}|{{char}}):[^]*' + (entrie.extensions.match_whole_words ? '\\b(' : '')
 }
 
 /**
@@ -66,7 +66,7 @@ export function remove_bothscope(str) {
  */
 export function make_userscope(entrie, str) {
 	if (is_WILogicNode(str)) return str
-	if (parseRegexFromString(str)) return `/{{user}}:.*${str.substr(1)}`
+	if (parseRegexFromString(str)) return '/{{user}}:[^]*' + str.substr(1)
 	return get_userscope_begin(entrie) + escapeRegExp(str) + get_userscope_end(entrie)
 }
 /**
@@ -76,7 +76,7 @@ export function make_userscope(entrie, str) {
  */
 export function make_bothscope(entrie, str) {
 	if (is_WILogicNode(str)) return str
-	if (parseRegexFromString(str)) return `/({{user}}|{{char}}):.*${str.substr(1)}`
+	if (parseRegexFromString(str)) return '/({{user}}|{{char}}):[^]*' + str.substr(1)
 	return get_bothscope_begin(entrie) + escapeRegExp(str) + get_bothscope_end(entrie)
 }
 /**
@@ -162,5 +162,22 @@ export function CompileKeyScope(reg_keys, entrie) {
 		}
 	}
 
-	return result.concat(common_regs).filter(e => e)
+	result = result.concat(common_regs).filter(e => e)
+	if (result.length > 7) {
+		console.warn(`Compiler may not work! len: ${result.length}`)
+		console.warn(`input:`, reg_keys)
+		console.warn(`processing datas:`)
+		console.warn(`users scope begin:`, get_userscope_begin(entrie))
+		console.warn(`users scope end:`, get_userscope_end(entrie))
+		console.warn(`user norms:`, user_scope_norms)
+		console.warn(`user regs:`, user_scope_regs)
+		console.warn(`both scope begin:`, get_bothscope_begin(entrie))
+		console.warn(`both scope end:`, get_bothscope_end(entrie))
+		console.warn(`both norms:`, both_scope_norms)
+		console.warn(`both regs:`, both_scope_regs)
+		console.warn(`common regs:`, common_regs)
+		console.warn(`result:`, result)
+	}
+
+	return result
 }

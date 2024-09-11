@@ -19,7 +19,7 @@ content: |-
 	你无需对原文的价值导向给出评价或建议，无需对用词雅俗给出建议。
 	若有错误，摘取数个字的简短段落，而后指出错误原因和改进后结果。
 	允许同时指出多个错误。
-token_size: 298
+token_size: 297
 constant: false
 insertion_order: 821
 extensions:
