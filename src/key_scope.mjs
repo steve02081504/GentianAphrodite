@@ -2,6 +2,7 @@ import { WorldInfoEntry } from "./charData.mjs"
 import { escapeRegExp, parseRegexFromString, unescapeRegExp } from "./tools.mjs"
 import { is_WILogicNode } from "./WILN.mjs"
 import { regexgen } from './regexgen.mjs'
+import { simplifyCharRange } from "./WIbookCompiler.mjs"
 
 /**
  * @param {WorldInfoEntry} entrie
@@ -127,7 +128,11 @@ export function unpack_key_scope(entrie, str) {
 }
 
 export function CompileKeyScope(reg_keys, entrie) {
-	let user_scope_regs = [], user_scope_norms = [], both_scope_regs = [], both_scope_norms = [], common_regs = []
+	let /** @type {string[]} */user_scope_regs = [],
+		/** @type {string[]} */user_scope_norms = [],
+		/** @type {string[]} */both_scope_regs = [],
+		/** @type {string[]} */both_scope_norms = [],
+		/** @type {string[]} */common_regs = []
 
 	keymap: for (let str of reg_keys) {
 		for (let [normlist, reglist, begin, end] of [
@@ -148,6 +153,30 @@ export function CompileKeyScope(reg_keys, entrie) {
 	}
 
 	let result = []
+	let new_reglists = []
+	for (let reglist of [user_scope_regs, both_scope_regs]) {
+		let char_ranges = []
+		let not_ranges = []
+		let others = []
+		for (let reg of reglist)
+			if (reg.startsWith('/[^') && reg.endsWith(']/') && !reg.slice(3, -2).match(/[\[\(]/))
+				not_ranges.push(reg.slice(3, -2))
+			else if (reg.startsWith('/[') && reg.endsWith(']/') && !reg.slice(2, -2).match(/[\[\(]/))
+				char_ranges.push(reg.slice(2, -2))
+			else
+				others.push(reg)
+
+		if (char_ranges.length) {
+			let res = `/[${simplifyCharRange(char_ranges.join(''))}]/`
+			others.push(res)
+		}
+		if (not_ranges.length) {
+			let res = `/[^${simplifyCharRange(not_ranges.join(''))}]/`
+			others.push(res)
+		}
+		new_reglists.push(others)
+	}
+	[user_scope_regs, both_scope_regs] = new_reglists
 
 	for (let [normlist, reglist, begin, end] of [
 		[user_scope_norms, user_scope_regs, get_userscope_begin(entrie), get_userscope_end(entrie)],
