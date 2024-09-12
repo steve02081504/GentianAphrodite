@@ -154,6 +154,7 @@ function WIjsonEntry2v2CharWIentry(json) {
 			delay_until_recursion: json.delayUntilRecursion,
 			sticky: json.sticky,
 			cooldown: json.cooldown,
+			delay: json.delay,
 		}
 	}
 }

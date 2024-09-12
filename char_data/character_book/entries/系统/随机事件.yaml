@@ -21,6 +21,7 @@ extensions:
 	delay_until_recursion: false
 	scan_depth: 2
 	sticky: 0
-	cooldown: 0
+	cooldown: 5
 	probability: 33
 	useProbability: true
+	delay: 5

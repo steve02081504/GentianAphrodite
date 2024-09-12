@@ -55,3 +55,4 @@ extensions:
 	scan_depth: null
 	sticky: 0
 	cooldown: 0
+	delay: 0
