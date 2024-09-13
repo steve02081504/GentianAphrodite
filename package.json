@@ -25,6 +25,7 @@
 	"dependencies": {
 		"buffer": "latest",
 		"moment": "latest",
-		"regexgen": "latest"
+		"regexgen": "latest",
+		"regexp-tree": "latest"
 	}
 }

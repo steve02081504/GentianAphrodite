@@ -1,20 +1,20 @@
 import { regexgen } from './regexgen.mjs'
 import { WorldInfoEntry, world_info_logic } from './charData.mjs'
-import { parseRegexFromString, unicodeEscapeToChar } from './tools.mjs'
+import { escapeRegExp, parseRegexFromString, unescapeRegExp, unicodeEscapeToChar } from './tools.mjs'
 import { keyscorespliter } from './keyScore.mjs'
-import sha256 from 'crypto-js/sha256.js'
-import { CompileKeyScope } from './key_scope.mjs'
+import regexp from 'regexp-tree'
+import { get_bothscope_begin, get_bothscope_end, get_userscope_begin, get_userscope_end } from './key_scope.mjs'
+import { is_CompiledWILogicNode, WILogicNodeCompiler } from './WILN.mjs'
 /**
  * @param {WorldInfoEntry[]} entries
  * @param {string} sign
  * @returns {WorldInfoEntry[]}
  */
 export function WIbookCompiler(entries, sign) {
-	let entriesStr = JSON.stringify(entries).replace(/<-<WI(推理节点|推理節點|LogicalNode)(：|:)([\s\S]+?)>->/g, key =>
-		'<-' + sha256(sign + key).toString().substring(0, 6) + '->'
-	)
-	entries = JSON.parse(entriesStr)
+	entries = WILogicNodeCompiler(entries, sign)
 	for (let entrie of entries) {
+		if (entrie.extensions.selectiveLogic == world_info_logic.NOT_ALL || entrie.extensions.selectiveLogic == world_info_logic.NOT_ANY)
+			entrie.secondary_keys = entrie.secondary_keys.filter(e => !is_CompiledWILogicNode(e))
 		entrie.keys = keylistCompile(entrie.keys, world_info_logic.AND_ANY, entrie)
 		entrie.secondary_keys = keylistCompile(entrie.secondary_keys, entrie.extensions.selectiveLogic, entrie)
 	}
@@ -45,46 +45,86 @@ function keylistCompile(keylist, selectiveLogic, entrie) {
 			result.push(res)
 	}
 
-	return result.concat(CompileKeyScope(reg_keys, entrie))
-}
+	let /** @type {string[]} */user_scope_regs = [],
+		/** @type {string[]} */user_scope_norms = [],
+		/** @type {string[]} */both_scope_regs = [],
+		/** @type {string[]} */both_scope_norms = [],
+		/** @type {string[]} */common_regs = []
 
-/**
- * @param {string} char_range
- * @returns {string} simplified char_range
- */
-export function simplifyCharRange(char_range) {
-	char_range = unicodeEscapeToChar(char_range)
-	let ranges = []
-	char_range = char_range.replace(/.-./g, e => {
-		let [min, max] = e.split('-').map(e => e.charCodeAt(0))
-		ranges.push({ min, max })
-		return ''
-	})
-	for (let char of char_range) ranges.push({ min: char.charCodeAt(0), max: char.charCodeAt(0) })
-
-	let len;do {
-		let simplified_ranges = [];len = ranges.length
-		for (let { min, max } of ranges) {
-			let found = false
-			for (let range of simplified_ranges) {
-				if (min - range.max <= 1)
-					if (max > range.max) {
-						range.max = max
-						found = true;break
-					}
-				if (range.min - max <= 1)
-					if (min < range.min) {
-						range.min = min
-						found = true;break
-					}
+	keymap: for (let str of reg_keys) {
+		for (let [normlist, reglist, begin, end] of [
+			[user_scope_norms, user_scope_regs, get_userscope_begin(entrie), get_userscope_end(entrie)],
+			[both_scope_norms, both_scope_regs, get_bothscope_begin(entrie), get_bothscope_end(entrie)]
+		])
+			if (str.startsWith(begin) && (str.endsWith(end) || str.endsWith('/'))) {
+				let s = str.slice(begin.length)
+				if (s.endsWith('/')) s = s.slice(0, -1)
+				else s = s.slice(0, -end.length)
+				let reg = `/${s}/`, norm = unescapeRegExp(s)
+				if (`/${escapeRegExp(norm)}/` == reg) normlist.push(norm)
+				else if (parseRegexFromString(reg)) reglist.push(reg)
+				else normlist.push(norm)
+				continue keymap
 			}
-			if (!found) simplified_ranges.push({ min, max })
+		common_regs.push(str)
+	}
+
+	let new_reglists = []
+	for (let reglist of [user_scope_regs, both_scope_regs]) {
+		let char_ranges = []
+		let not_ranges = []
+		let others = []
+		for (let reg of reglist)
+			if (reg.startsWith('/[^') && reg.endsWith(']/') && !reg.slice(3, -2).match(/[\[\(]/))
+				not_ranges.push(reg.slice(3, -2))
+			else if (reg.startsWith('/[') && reg.endsWith(']/') && !reg.slice(2, -2).match(/[\[\(]/))
+				char_ranges.push(reg.slice(2, -2))
+			else
+				others.push(reg)
+
+		if (char_ranges.length) {
+			let res = `/[${char_ranges.join('')}]/`
+			others.push(res)
 		}
-		ranges = simplified_ranges
-	} while (ranges.length != len)
-	return ranges.map(
-		({ min, max }) => min == max ?
-			String.fromCharCode(min) :
-			String.fromCharCode(min) + '-' + String.fromCharCode(max)
-	).join('')
+		if (not_ranges.length) {
+			let res = `/[^${not_ranges.join('')}]/`
+			others.push(res)
+		}
+		new_reglists.push(others)
+	}
+	[user_scope_regs, both_scope_regs] = new_reglists
+
+	for (let [normlist, reglist, begin, end] of [
+		[user_scope_norms, user_scope_regs, get_userscope_begin(entrie), get_userscope_end(entrie)],
+		[both_scope_norms, both_scope_regs, get_bothscope_begin(entrie), get_bothscope_end(entrie)]
+	]) {
+		if (normlist.length) reglist.push(regexgen(normlist).toString())
+
+		if (reglist.length) {
+			reglist = reglist.map(e => e.slice(1, -1))
+			let res = reglist.length > 1 ? reglist.join('|') : reglist[0]
+			result.push(begin + res + end)
+		}
+	}
+
+	result = result.concat(common_regs).filter(e => e).map(
+		e => parseRegexFromString(e) ? unicodeEscapeToChar(regexp.optimize(e).toString()) : e
+	)
+	if (result.length > 7) {
+		console.warn(`Compiler may not work! len: ${result.length}`)
+		console.warn(`input:`, reg_keys)
+		console.warn(`processing datas:`)
+		console.warn(`users scope begin:`, get_userscope_begin(entrie))
+		console.warn(`users scope end:`, get_userscope_end(entrie))
+		console.warn(`user norms:`, user_scope_norms)
+		console.warn(`user regs:`, user_scope_regs)
+		console.warn(`both scope begin:`, get_bothscope_begin(entrie))
+		console.warn(`both scope end:`, get_bothscope_end(entrie))
+		console.warn(`both norms:`, both_scope_norms)
+		console.warn(`both regs:`, both_scope_regs)
+		console.warn(`common regs:`, common_regs)
+		console.warn(`result:`, result)
+	}
+
+	return result
 }
