@@ -1,4 +1,5 @@
 import crypto from "crypto-js"
+import seedrandom from "seedrandom"
 import { world_info_logic, world_info_position, WorldInfoEntry, extension_prompt_roles } from "../charData.mjs"
 import { chat_metadata } from "../prompt_builder.mjs"
 import { deepCopy, escapeRegExp, parseRegexFromString } from "../tools.mjs"
@@ -60,6 +61,10 @@ function preBuiltWIEntries(
 			if(entrie.extensions.cooldown)
 				if (last_enabled_chat_length + entrie.extensions.cooldown <= chatLog.length)
 					return false
+			if (entrie.extensions.useProbability) {
+				const rng = seedrandom(entrie.uuid, { entropy: true })
+				if (rng() > entrie.extensions.probability/100) return false
+			}
 			let content = chatLog.slice(-scan_depth).map(e => (e.charname || e.role)+': '+e.content)
 			if (!entrie.extensions.exclude_recursion) content = content.concat(recursion_WIs)
 			content = content.join('\n\x01')
