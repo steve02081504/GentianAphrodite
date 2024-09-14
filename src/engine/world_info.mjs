@@ -1,4 +1,6 @@
+import { SHA256 } from "crypto-js"
 import { world_info_logic, world_info_position, WorldInfoEntry, extension_prompt_roles } from "../charData.mjs"
+import { chat_metadata } from "../prompt_builder.mjs"
 import { deepCopy, escapeRegExp, parseRegexFromString } from "../tools.mjs"
 import { evaluateMacros } from "./marco.mjs"
 
@@ -41,12 +43,23 @@ function preBuiltWIEntries(
 		entrie.keys = buildKeyList(entrie.keys, isSensitive, isFullWordMatch)
 		entrie.secondary_keys = buildKeyList(entrie.secondary_keys, isSensitive, isFullWordMatch)
 		let scan_depth = entrie.extensions.scan_depth === undefined ? WISettings.depth : entrie.extensions.scan_depth
+		entrie.uuid = SHA256(entrie.keys.join()+entrie.secondary_keys.join()+entrie.content).toString()
 		entrie.isActived = (
 			/** @type {{role:string,charname?:string,content:string}[]} */
 			chatLog,
 			/** @type {string[]} */
 			recursion_WIs
 		) => {
+			let last_enabled_chat_length = chat_metadata.enabled_WI_entries[entrie.uuid] ?? 0
+			if (entrie.extensions.delay)
+				if (entrie.extensions.delay > chat_metadata.chat_log.length)
+					return false
+			if (entrie.extensions.sticky)
+				if (last_enabled_chat_length + entrie.extensions.sticky >= chatLog.length)
+					return true
+			if(entrie.extensions.cooldown)
+				if (last_enabled_chat_length + entrie.extensions.cooldown <= chatLog.length)
+					return false
 			let content = chatLog.slice(-scan_depth).map(e => (e.charname || e.role)+': '+e.content).join('\n')
 			if (!entrie.extensions.exclude_recursion) content += '\n' + recursion_WIs.join('\n')
 			if (isAnyMatch(entrie.keys, content)) {
@@ -90,6 +103,7 @@ export function GetActivedWorldInfoEntries(
 	let WIdata_new = WIdata_copy
 	for (let entrie of WIdata_copy)
 		if (entrie.constant || entrie.isActived(chatLog, recursion_WIs)) {
+			chat_metadata.enabled_WI_entries[entrie.uuid] = chat_metadata.chat_log.length
 			entrie.content = evaluateMacros(entrie.content, env)
 			if (!entrie.extensions.prevent_recursion) recursion_WIs.push(entrie.content)
 			aret.push(entrie)
