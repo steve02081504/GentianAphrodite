@@ -46,7 +46,7 @@ export function promptBuilder(
 		chatLog = [{
 			role: "user",
 			charname: userData.name,
-			content: chatLog
+			content: evaluateMacros(chatLog, env)
 		}]
 
 	let aret = {
