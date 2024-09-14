@@ -6,7 +6,8 @@ import { get_token_size } from "./get_token_size.mjs"
 import { parseRegexFromString } from './tools.mjs'
 
 export let chat_metadata = {
-	chat_log: []
+	chat_log: [],
+	enabled_WI_entries: {}
 }
 const DEFAULT_DEPTH = 0
 export function saveMetadataDebounced() { }

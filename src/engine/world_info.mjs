@@ -1,4 +1,4 @@
-import { SHA256 } from "crypto-js"
+import crypto from "crypto-js"
 import { world_info_logic, world_info_position, WorldInfoEntry, extension_prompt_roles } from "../charData.mjs"
 import { chat_metadata } from "../prompt_builder.mjs"
 import { deepCopy, escapeRegExp, parseRegexFromString } from "../tools.mjs"
@@ -25,12 +25,12 @@ function buildKeyList(keys, isSensitive, isFullWordMatch) {
 	}
 	return aret
 }
-function isAnyMatch(/** @type {RegExp[]} */list, /** @type {string} */content) {
-	for (let key of list) if (key.test(content)) return true
+function isAnyMatch(/** @type {RegExp[]} */list, /** @type {string[]} */contents) {
+	for (let content of contents) for (let key of list) if (key.test(content)) return true
 	return false
 }
-function isAllMatch(/** @type {RegExp[]} */list, /** @type {string} */content) {
-	for (let key of list) if (!key.test(content)) return false
+function isAllMatch(/** @type {RegExp[]} */list, /** @type {string[]} */contents) {
+	for (let content of contents) for (let key of list) if (!key.test(content)) return false
 	return true
 }
 function preBuiltWIEntries(
@@ -43,7 +43,7 @@ function preBuiltWIEntries(
 		entrie.keys = buildKeyList(entrie.keys, isSensitive, isFullWordMatch)
 		entrie.secondary_keys = buildKeyList(entrie.secondary_keys, isSensitive, isFullWordMatch)
 		let scan_depth = entrie.extensions.scan_depth === undefined ? WISettings.depth : entrie.extensions.scan_depth
-		entrie.uuid = SHA256(entrie.keys.join()+entrie.secondary_keys.join()+entrie.content).toString()
+		entrie.uuid = crypto.SHA256(entrie.keys.join()+entrie.secondary_keys.join()+entrie.content).toString()
 		entrie.isActived = (
 			/** @type {{role:string,charname?:string,content:string}[]} */
 			chatLog,
@@ -60,8 +60,8 @@ function preBuiltWIEntries(
 			if(entrie.extensions.cooldown)
 				if (last_enabled_chat_length + entrie.extensions.cooldown <= chatLog.length)
 					return false
-			let content = chatLog.slice(-scan_depth).map(e => (e.charname || e.role)+': '+e.content).join('\n')
-			if (!entrie.extensions.exclude_recursion) content += '\n' + recursion_WIs.join('\n')
+			let content = chatLog.slice(-scan_depth).map(e => (e.charname || e.role)+': '+e.content)
+			if (!entrie.extensions.exclude_recursion) content.push(recursion_WIs.join('\n'))
 			if (isAnyMatch(entrie.keys, content)) {
 				if (entrie.secondary_keys.length === 0) return true
 				switch (entrie.extensions.selectiveLogic) {
