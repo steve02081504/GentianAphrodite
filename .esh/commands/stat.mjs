@@ -32,6 +32,7 @@ let stat = {
 			...enabledWIs.map(_ => _.content),
 		].filter(_ => _).join('\n')).replace(/\n+/g, '\n')),
 		base: get_token_size(promptBuilder(charData, 'hello')),
+		corpus: get_token_size(enabledWIs.filter(_ => _.comment.startsWith('语料')).map(_ => _.content)),
 		normal: greetings.map(greeting => get_token_size(promptBuilder(charData, [
 			{
 				role: 'assistant',
