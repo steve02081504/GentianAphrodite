@@ -194,6 +194,7 @@ index_list:
 	- 功能：prompt reviewer-醒酒对应
 	- WI推理节点：语法纠察-深度4
 	- 功能：中文语法纠察
+	- 功能：语料生成
 	- 系统-随机事件
 	- WI推理节点：外来prompt-深度4
 	- 系统-外来prompt-醒酒-lasting system
