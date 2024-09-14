@@ -2,12 +2,14 @@ import { WorldInfoEntry } from "./charData.mjs"
 import { escapeRegExp, parseRegexFromString, unescapeRegExp } from "./tools.mjs"
 import { is_WILogicNode } from "./WILN.mjs"
 
+let reg_userscope_begin = '/\x01{{user}}:[^\x01]*'
+let reg_bothscope_begin = '/\x01({{user}}|{{char}}):[^\x01]*'
 /**
  * @param {WorldInfoEntry} entrie
  * @return {string}
  */
 export function get_userscope_begin(entrie) {
-	return '/{{user}}:[^]*' + (entrie.extensions.match_whole_words ? '\\b(' : '')
+	return reg_userscope_begin + (entrie.extensions.match_whole_words ? '\\b(' : '')
 }
 
 /**
@@ -15,7 +17,7 @@ export function get_userscope_begin(entrie) {
  * @return {string}
  */
 export function get_bothscope_begin(entrie) {
-	return '/({{user}}|{{char}}):[^]*' + (entrie.extensions.match_whole_words ? '\\b(' : '')
+	return reg_bothscope_begin + (entrie.extensions.match_whole_words ? '\\b(' : '')
 }
 
 /**
@@ -65,7 +67,7 @@ export function remove_bothscope(str) {
  */
 export function make_userscope(entrie, str) {
 	if (is_WILogicNode(str)) return str
-	if (parseRegexFromString(str)) return '/{{user}}:[^]*' + str.substr(1)
+	if (parseRegexFromString(str)) return reg_userscope_begin + str.substr(1)
 	return get_userscope_begin(entrie) + escapeRegExp(str) + get_userscope_end(entrie)
 }
 /**
@@ -75,7 +77,7 @@ export function make_userscope(entrie, str) {
  */
 export function make_bothscope(entrie, str) {
 	if (is_WILogicNode(str)) return str
-	if (parseRegexFromString(str)) return '/({{user}}|{{char}}):[^]*' + str.substr(1)
+	if (parseRegexFromString(str)) return reg_bothscope_begin + str.substr(1)
 	return get_bothscope_begin(entrie) + escapeRegExp(str) + get_bothscope_end(entrie)
 }
 /**

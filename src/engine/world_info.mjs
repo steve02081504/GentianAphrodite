@@ -25,12 +25,12 @@ function buildKeyList(keys, isSensitive, isFullWordMatch) {
 	}
 	return aret
 }
-function isAnyMatch(/** @type {RegExp[]} */list, /** @type {string[]} */contents) {
-	for (let content of contents) for (let key of list) if (key.test(content)) return true
+function isAnyMatch(/** @type {RegExp[]} */list, /** @type {string} */content) {
+	for (let key of list) if (key.test(content)) return true
 	return false
 }
-function isAllMatch(/** @type {RegExp[]} */list, /** @type {string[]} */contents) {
-	for (let content of contents) for (let key of list) if (!key.test(content)) return false
+function isAllMatch(/** @type {RegExp[]} */list, /** @type {string} */content) {
+	for (let key of list) if (!key.test(content)) return false
 	return true
 }
 function preBuiltWIEntries(
@@ -61,7 +61,8 @@ function preBuiltWIEntries(
 				if (last_enabled_chat_length + entrie.extensions.cooldown <= chatLog.length)
 					return false
 			let content = chatLog.slice(-scan_depth).map(e => (e.charname || e.role)+': '+e.content)
-			if (!entrie.extensions.exclude_recursion) content.push(recursion_WIs.join('\n'))
+			if (!entrie.extensions.exclude_recursion) content = content.concat(recursion_WIs)
+			content = content.join('\n\x01')
 			if (isAnyMatch(entrie.keys, content)) {
 				if (entrie.secondary_keys.length === 0) return true
 				switch (entrie.extensions.selectiveLogic) {
