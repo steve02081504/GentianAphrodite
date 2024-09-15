@@ -1,7 +1,6 @@
 import { regexgen } from './regexgen.mjs'
 import { WorldInfoEntry, world_info_logic } from './charData.mjs'
 import { escapeRegExp, parseRegexFromString, unescapeRegExp, unicodeEscapeToChar } from './tools.mjs'
-import { keyscorespliter } from './keyScore.mjs'
 import regexp from 'regexp-tree'
 import { get_bothscope_begin, get_bothscope_end, get_userscope_begin, get_userscope_end } from './key_scope.mjs'
 import { is_CompiledWILogicNode, WILogicNodeCompiler } from './WILN.mjs'
@@ -27,7 +26,6 @@ export function WIbookCompiler(entries, sign) {
  * @returns {string[]}
  */
 function keylistCompile(keylist, selectiveLogic, entrie) {
-	keylist = keylist.filter(e => e != keyscorespliter)
 	if (selectiveLogic == world_info_logic.NOT_ALL || selectiveLogic == world_info_logic.AND_ALL) return keylist
 	if (entrie.extensions.case_sensitive === false) keylist = keylist.map(e => e.toLowerCase())
 	let result = []

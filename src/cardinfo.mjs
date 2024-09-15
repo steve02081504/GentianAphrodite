@@ -20,7 +20,6 @@ import { SetCryptoBaseRng, WIbookCrypto } from './WIbookCrypto.mjs'
 import { v2CharWIbook2WIjson, WIjson2v2CharWIbook } from './WIjsonMaker.mjs'
 import { arraysEqual, clearEmptyDirs, nicerWriteFileSync, remove_simple_marcos } from './tools.mjs'
 import yaml from './yaml.mjs'
-import { keyScoreAdder, keyScoreRemover } from './keyScore.mjs'
 import { simplized, traditionalized } from './chs2t.mjs'
 import { get_token_size } from './get_token_size.mjs'
 import { is_WILogicNode } from './WILN.mjs'
@@ -154,7 +153,6 @@ class CardFileInfo_t {
 				...WIjson2v2CharWIbook(JSON.parse(wijsonStr))
 			}
 		}
-		keyScoreRemover(this.v1metaData.data.character_book.entries)
 		let group_greetings_set = new Set([...this.v1metaData.data.group_only_greetings??[], ...(this.v1metaData.data.extensions.group_greetings??[])].filter(x => x))
 		if (group_greetings_set.size)
 			this.v1metaData.data.extensions.group_greetings = [...group_greetings_set]
@@ -518,9 +516,7 @@ class CardFileInfo_t {
 		charData.group_only_greetings ??= []
 		if (charData.extensions.group_greetings)
 			charData.group_only_greetings = charData.extensions.group_greetings
-		keyScoreAdder(charData.character_book.entries)
 		var charDataStr = JSON.stringify(GetV1CharDataFromV2({ ...charData }))
-		keyScoreRemover(charData.character_book.entries)
 		charDataStr = charDataStr.replace(/{{char_version_url_encoded}}/g, encodeURIComponent(VerId)).replace(/{{char_version}}/g, VerId)
 		let data_size = charDataStr.length
 		let data_size_readable = (data_size / 1024.0).toFixed(2) + 'KB'

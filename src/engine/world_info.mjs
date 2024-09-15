@@ -119,16 +119,13 @@ export function GetActivedWorldInfoEntries(
 	WIdata_copy = WIdata_new.filter(e => !e.extensions.exclude_recursion)
 	do {
 		recursion_WI_size = recursion_WIs.length
-		let WIdata_new = [...WIdata_copy]
 		for (let entrie of WIdata_copy)
 			if (entrie.isActived(chatLog, recursion_WIs)) {
 				entrie.content = evaluateMacros(entrie.content, env)
 				if (!entrie.extensions.prevent_recursion) recursion_WIs.push(entrie.content)
 				aret.push(entrie)
-				WIdata_new = WIdata_new.filter(e => e !== entrie)
 			}
-
-		WIdata_copy = WIdata_new
+			else recursion_WIs = recursion_WIs.filter(e => e !== entrie.content)
 	} while (recursion_WI_size < recursion_WIs.length)
 	for (let entrie of aret) delete entrie.isActived
 	return aret

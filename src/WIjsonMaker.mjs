@@ -95,6 +95,7 @@ function v2CharWIentry2WIjsonEntry(entrie) {
 		preventRecursion: entrie.extensions?.prevent_recursion,
 		displayIndex: entrie.extensions?.display_index,
 		delayUntilRecursion: entrie.extensions?.delay_until_recursion,
+		recursionForNotLogic: entrie.extensions?.recursion_for_not_logic || true,
 		sticky: entrie.extensions?.sticky,
 		cooldown: entrie.extensions?.cooldown,
 		delay: entrie.extensions?.delay,
