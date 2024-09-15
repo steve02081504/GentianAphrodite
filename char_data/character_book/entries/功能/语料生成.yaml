@@ -1,23 +1,23 @@
 keys:
 	- 语料
 secondary_keys:
-	- 总结
 	- 写一些
-	- 写点
-	- 写段
-	- 写一段
-	- 写些
-	- 写一点
-	- 写几句
 	- 写一句
-	- 给我些
-	- 给我点
-	- 给我段
-	- 给我一段
-	- 给我几句
-	- 给我一点
+	- 写一段
+	- 写一点
+	- 写些
+	- 写几句
+	- 写段
+	- 写点
+	- 总结
 	- 给我一些
+	- 给我一段
+	- 给我一点
+	- 给我些
 	- 给我关于
+	- 给我几句
+	- 给我段
+	- 给我点
 comment: 功能：语料生成
 content: |-
 	”语料“是指在用于指导AI完成角色扮演的prompt中使用直白的句子供模型参考的部分，如：
@@ -47,7 +47,7 @@ content: |-
 	随后，将生成的语料内容包裹在```text文本块中输出。
 	生成的语料可以和提供的内容有所出入，可以追加环境描写，力求简洁而突出所需的个性。
 	鼓励使用random宏作用于词或短语来为语料提供随机性。
-token_size: 297
+token_size: 477
 constant: false
 insertion_order: 822
 extensions:
@@ -56,7 +56,7 @@ extensions:
 	match_whole_words: false
 	case_sensitive: false
 	prevent_recursion: true
-	exclude_recursion: false
+	exclude_recursion: true
 	delay_until_recursion: false
 	scan_depth: 4
 	sticky: 0
