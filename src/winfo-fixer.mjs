@@ -10,8 +10,7 @@ import { is_common_key, is_WILogicNode } from "./WILN.mjs"
  * @param {WorldInfoEntry[]} data - The data containing entries to process.
  */
 function reRule(data) {
-	for (const id in data) {
-		let entrie = data[id]
+	for (const entrie of data) {
 		if (!entrie) continue
 		entrie.extensions ??= {}
 		entrie.extensions.exclude_recursion = true
@@ -65,6 +64,20 @@ function reIndex(data) {
 	return aret
 }
 
+function setScanOrder(data) {
+	for (const entrie of data) delete entrie.extensions.delay_until_recursion
+	let get_scan_order = entrie => {
+		if (!entrie.extensions.delay_until_recursion) {
+			let deps = [...entrie.keys, ...entrie.secondary_keys].filter(is_WILogicNode).map(
+				x => data.filter(y => y.content == x)[0]
+			)
+			entrie.extensions.delay_until_recursion = Math.max(-1, ...deps.map(get_scan_order)) + 1
+		}
+		return entrie.extensions.delay_until_recursion
+	}
+	data.map(get_scan_order)
+}
+
 /**
  * do the common fixes on winfo datas.
  * @param {WorldInfoBook} data - The charbook data
@@ -72,6 +85,7 @@ function reIndex(data) {
 function winfoFixer(data) {
 	reRule(data.entries)
 	data = removeDuplicates(data)
+	setScanOrder(data.entries)
 	data.entries = reIndex(data.entries)
 	return data
 }

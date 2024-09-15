@@ -42,6 +42,7 @@ export function WIjson2v2CharWIbook(json) {
 * @property {number} position
 * @property {boolean} disable
 * @property {boolean} excludeRecursion
+* @property {number} delayUntilRecursion
 * @property {number} probability
 * @property {boolean} useProbability
 * @property {number} depth
@@ -57,6 +58,9 @@ export function WIjson2v2CharWIbook(json) {
 * @property {number} uid
 * @property {boolean} preventRecursion
 * @property {number} displayIndex
+* @property {number} cooldown
+* @property {number} sticky
+* @property {number} delay
 */
 
 /**
@@ -95,7 +99,6 @@ function v2CharWIentry2WIjsonEntry(entrie) {
 		preventRecursion: entrie.extensions?.prevent_recursion,
 		displayIndex: entrie.extensions?.display_index,
 		delayUntilRecursion: entrie.extensions?.delay_until_recursion,
-		recursionForNotLogic: entrie.extensions?.recursion_for_not_logic || true,
 		sticky: entrie.extensions?.sticky,
 		cooldown: entrie.extensions?.cooldown,
 		delay: entrie.extensions?.delay,

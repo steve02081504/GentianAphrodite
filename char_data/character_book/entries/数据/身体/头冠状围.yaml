@@ -13,7 +13,7 @@ extensions:
 	case_sensitive: null
 	prevent_recursion: true
 	exclude_recursion: true
-	delay_until_recursion: false
+	delay_until_recursion: 0
 	scan_depth: 2
 	sticky: 0
 	cooldown: 0

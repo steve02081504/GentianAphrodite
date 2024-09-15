@@ -198,9 +198,9 @@ class WorldInfoEntry {
 		 */
 		sticky,
 		/**
-		 * if the entry's trigger is delayed until recursion
-		 * @type {boolean}
-		 * @default false
+		 * the entry's trigger is delayed until Nth recursion
+		 * @type {number}
+		 * @default 0
 		 */
 		delay_until_recursion,
 		/**

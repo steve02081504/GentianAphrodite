@@ -44,7 +44,7 @@ function preBuiltWIEntries(
 		entrie.keys = buildKeyList(entrie.keys, isSensitive, isFullWordMatch)
 		entrie.secondary_keys = buildKeyList(entrie.secondary_keys, isSensitive, isFullWordMatch)
 		let scan_depth = entrie.extensions.scan_depth === undefined ? WISettings.depth : entrie.extensions.scan_depth
-		entrie.uuid = crypto.SHA256(entrie.keys.join()+entrie.secondary_keys.join()+entrie.content).toString()
+		entrie.uuid = crypto.SHA256(entrie.keys.join() + entrie.secondary_keys.join() + entrie.content).toString()
 		entrie.isActived = (
 			/** @type {{role:string,charname?:string,content:string}[]} */
 			chatLog,
@@ -58,14 +58,14 @@ function preBuiltWIEntries(
 			if (entrie.extensions.sticky)
 				if (last_enabled_chat_length + entrie.extensions.sticky >= chatLog.length)
 					return true
-			if(entrie.extensions.cooldown)
+			if (entrie.extensions.cooldown)
 				if (last_enabled_chat_length + entrie.extensions.cooldown <= chatLog.length)
 					return false
 			if (entrie.extensions.useProbability) {
 				const rng = seedrandom(entrie.uuid, { entropy: true })
-				if (rng() > entrie.extensions.probability/100) return false
+				if (rng() > entrie.extensions.probability / 100) return false
 			}
-			let content = chatLog.slice(-scan_depth).map(e => (e.charname || e.role)+': '+e.content)
+			let content = chatLog.slice(-scan_depth).map(e => (e.charname || e.role) + ': ' + e.content)
 			if (!entrie.extensions.exclude_recursion) content = content.concat(recursion_WIs)
 			content = content.join('\n\x01')
 			if (isAnyMatch(entrie.keys, content)) {
@@ -117,16 +117,28 @@ export function GetActivedWorldInfoEntries(
 		}
 
 	WIdata_copy = WIdata_new.filter(e => !e.extensions.exclude_recursion)
-	do {
-		recursion_WI_size = recursion_WIs.length
-		for (let entrie of WIdata_copy)
-			if (entrie.isActived(chatLog, recursion_WIs)) {
-				entrie.content = evaluateMacros(entrie.content, env)
-				if (!entrie.extensions.prevent_recursion) recursion_WIs.push(entrie.content)
-				aret.push(entrie)
-			}
-			else recursion_WIs = recursion_WIs.filter(e => e !== entrie.content)
-	} while (recursion_WI_size < recursion_WIs.length)
+	/** @type {number[]} Represents the delay levels for entries that are delayed until recursion */
+	let availableRecursionDelayLevels = [...new Set(
+		WIdata_copy.map(entry => Number(entry.extensions.delay_until_recursion))
+	)].sort((a, b) => a - b);
+
+	for (let currentRecursionDelayLevel of availableRecursionDelayLevels) {
+		do {
+			recursion_WI_size = recursion_WIs.length
+			let WIdata_new = [...WIdata_copy]
+			for (let entrie of WIdata_copy)
+				if (entrie.isActived(chatLog, recursion_WIs)) {
+					if (entrie.extensions.delay_until_recursion > currentRecursionDelayLevel) continue
+					entrie.content = evaluateMacros(entrie.content, env)
+					if (!entrie.extensions.prevent_recursion) recursion_WIs.push(entrie.content)
+					aret.push(entrie)
+					WIdata_new = WIdata_new.filter(e => e !== entrie)
+				}
+
+			WIdata_copy = WIdata_new
+		} while (recursion_WI_size < recursion_WIs.length)
+	}
+
 	for (let entrie of aret) delete entrie.isActived
 	return aret
 }
