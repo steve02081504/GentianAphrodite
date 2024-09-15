@@ -8,8 +8,7 @@ let keyscorespliter = "__worldinfo_keyscores__"
  * @param {WorldInfoEntry[]} data - The charbook data
  */
 function keyScoreAdder(data) {
-	for (const id in data) {
-		let entrie = data[id]
+	for (const entrie of data) {
 		if (entrie?.extensions?.selectiveLogic == undefined) {
 			console.error('selectiveLogic not found: ', entrie)
 			continue
@@ -40,8 +39,7 @@ function keyScoreAdder(data) {
  * @param {WorldInfoEntry[]} data - The charbook data
  */
 function keyScoreRemover(data) {
-	for (const id in data) {
-		let entrie = data[id]
+	for (const entrie of data) {
 		let index = entrie.secondary_keys.findIndex(x => x == keyscorespliter)
 		if (index > -1) // 移除keyscorespliter及其后的所有元素
 			entrie.secondary_keys = entrie.secondary_keys.slice(0, index)
