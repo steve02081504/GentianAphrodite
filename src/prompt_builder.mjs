@@ -7,7 +7,7 @@ import { parseRegexFromString } from './tools.mjs'
 
 export let chat_metadata = {
 	chat_log: [],
-	enabled_WI_entries: {}
+	enabled_WI_entries: new Map()
 }
 const DEFAULT_DEPTH = 0
 export function saveMetadataDebounced() { }
