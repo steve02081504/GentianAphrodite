@@ -66,6 +66,7 @@ function reIndex(data) {
 function setScanOrder(data) {
 	for (const entrie of data) delete entrie.extensions.delay_until_recursion
 	let get_scan_order = entrie => {
+		if (!entrie) return -1
 		if (entrie.extensions.delay_until_recursion === undefined) {
 			let deps = [...entrie.keys, ...entrie.secondary_keys].filter(is_WILogicNode).map(
 				x => data.filter(y => y.content == x)[0]

@@ -15,7 +15,7 @@ keys:
 	- 阳具
 	- 鸡巴
 secondary_keys:
-	- <-<WI推理节点：AI辅助-深度4>->
+	- <-<WI推理节点：助手功能-深度4>->
 comment: WI推理节点：寄吧-深度2
 content: <-<WI推理节点：寄吧-深度2>->
 constant: false

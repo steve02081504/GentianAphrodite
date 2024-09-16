@@ -11,7 +11,7 @@ keys:
 	- 详细描述
 	- 说服
 secondary_keys:
-	- <-<WI推理节点：AI辅助-深度4>->
+	- <-<WI推理节点：助手功能-深度4>->
 comment: WI推理节点：推销员-深度2
 content: <-<WI推理节点：推销员-深度2>->
 constant: false

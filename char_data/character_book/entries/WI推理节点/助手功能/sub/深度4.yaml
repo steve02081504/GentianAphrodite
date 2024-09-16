@@ -63,8 +63,8 @@ secondary_keys:
 	- 是不是傻
 	- 是不是弱智
 	- 是不是活腻
-comment: WI推理节点：AI辅助sub-深度4
-content: <-<WI推理节点：AI辅助sub-深度4>->
+comment: WI推理节点：助手功能sub-深度4
+content: <-<WI推理节点：助手功能sub-深度4>->
 constant: false
 insertion_order: 60
 extensions:

@@ -25,7 +25,11 @@ function buildKeyList(keys, isSensitive, isFullWordMatch) {
 }
 function isAnyMatch(/** @type {RegExp[]} */list, /** @type {string} */content) {
 	//return list.some(key => key.test(content))
-	for (let key of list) if (key.test(content)) return true
+	for (let key of list)
+		if (key.test(content)) {
+			log('ANY match succeeded at', key)
+			return true
+		}
 	log('ANY match failed at', list)
 	return false
 }
@@ -49,7 +53,11 @@ function notAnyMatch(/** @type {RegExp[]} */list, /** @type {string} */content) 
 }
 function notAllMatch(/** @type {RegExp[]} */list, /** @type {string} */content) {
 	//return !isAllMatch(list, content)
-	for (let key of list) if (!key.test(content)) return true
+	for (let key of list)
+		if (!key.test(content)) {
+			log('NOT ALL match succeeded at', key)
+			return true
+		}
 	log('NOT ALL match failed at', list)
 	return false
 }

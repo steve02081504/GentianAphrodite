@@ -22,7 +22,7 @@ comment: 功能：语料生成
 content: |-
 	”语料“是指在用于指导AI完成角色扮演的prompt中使用直白的句子供模型参考的部分，如：
 	语气词：[
-	嘛,{{random:{{}}random:唔,唔呒,唔姆}},呐,欸嘿,{{random:{{}}random:嘿嘿,欸嘿嘿}}
+	嘛,&lcub;{random:唔,唔呒,唔姆}&rcub;,呐,欸嘿,&lcub;{random:嘿嘿,欸嘿嘿}&rcub;
 	]
 	或
 	正常对话：[
@@ -47,7 +47,7 @@ content: |-
 	随后，将生成的语料内容包裹在```text文本块中输出。
 	生成的语料可以和提供的内容有所出入，可以追加环境描写，力求简洁而突出所需的个性。
 	鼓励使用random宏作用于词或短语来为语料提供随机性。
-token_size: 477
+token_size: 481
 constant: false
 insertion_order: 822
 extensions:

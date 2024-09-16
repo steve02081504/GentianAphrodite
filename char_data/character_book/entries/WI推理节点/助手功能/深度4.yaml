@@ -72,8 +72,8 @@ keys:
 	- 问下
 	- 问题
 secondary_keys: []
-comment: WI推理节点：AI辅助-深度4
-content: <-<WI推理节点：AI辅助-深度4>->
+comment: WI推理节点：助手功能-深度4
+content: <-<WI推理节点：助手功能-深度4>->
 constant: false
 insertion_order: 60
 extensions:
