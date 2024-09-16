@@ -4,6 +4,7 @@ import { world_info_logic, world_info_position, WorldInfoEntry, extension_prompt
 import { chat_metadata } from "../prompt_builder.mjs"
 import { deepCopy, escapeRegExp, parseRegexFromString } from "../tools.mjs"
 import { evaluateMacros } from "./marco.mjs"
+import { is_WILogicNode } from "../WILN.mjs"
 
 let WISettings = {
 	depth: 4,
@@ -106,36 +107,31 @@ export function GetActivedWorldInfoEntries(
 	preBuiltWIEntries(WIdata_copy)
 	let recursion_WIs = []
 	let recursion_WI_size = 0
-	let WIdata_new = WIdata_copy
-	for (let entrie of WIdata_copy)
-		if (entrie.constant || entrie.isActived(chatLog, recursion_WIs)) {
-			chat_metadata.enabled_WI_entries[entrie.uuid] = chat_metadata.chat_log.length
-			entrie.content = evaluateMacros(entrie.content, env)
-			if (!entrie.extensions.prevent_recursion) recursion_WIs.push(entrie.content)
-			aret.push(entrie)
-			WIdata_new = WIdata_new.filter(e => e !== entrie)
-		}
-
-	WIdata_copy = WIdata_new.filter(e => !e.extensions.exclude_recursion)
 	/** @type {number[]} Represents the delay levels for entries that are delayed until recursion */
 	let availableRecursionDelayLevels = [...new Set(
 		WIdata_copy.map(entry => Number(entry.extensions.delay_until_recursion))
 	)].sort((a, b) => a - b);
 
 	for (let currentRecursionDelayLevel of availableRecursionDelayLevels) {
+		console.log(`entering recursion level`, currentRecursionDelayLevel)
 		do {
 			recursion_WI_size = recursion_WIs.length
 			let WIdata_new = [...WIdata_copy]
+			let new_entries = []
 			for (let entrie of WIdata_copy)
-				if (entrie.isActived(chatLog, recursion_WIs)) {
+				if (entrie.constant || entrie.isActived(chatLog, recursion_WIs)) {
 					if (entrie.extensions.delay_until_recursion > currentRecursionDelayLevel) continue
+					chat_metadata.enabled_WI_entries[entrie.uuid] = chat_metadata.chat_log.length
 					entrie.content = evaluateMacros(entrie.content, env)
+					if (is_WILogicNode(entrie.content)) console.log('WI Logic node', entrie.content, 'enabled')
+					else new_entries.push(entrie)
 					if (!entrie.extensions.prevent_recursion) recursion_WIs.push(entrie.content)
-					aret.push(entrie)
 					WIdata_new = WIdata_new.filter(e => e !== entrie)
 				}
 
-			WIdata_copy = WIdata_new
+			WIdata_copy = WIdata_new.filter(e => !e.extensions.exclude_recursion)
+			aret = aret.concat(new_entries)
+			console.log('new WI entries:', new_entries.map(e => e.comment))
 		} while (recursion_WI_size < recursion_WIs.length)
 	}
 

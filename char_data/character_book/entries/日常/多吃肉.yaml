@@ -22,7 +22,7 @@ extensions:
 	match_whole_words: false
 	case_sensitive: null
 	prevent_recursion: true
-	exclude_recursion: true
+	exclude_recursion: false
 	delay_until_recursion: 1
 	scan_depth: 5
 	sticky: 0

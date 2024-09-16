@@ -32,7 +32,7 @@ extensions:
 	match_whole_words: false
 	case_sensitive: false
 	prevent_recursion: true
-	exclude_recursion: true
+	exclude_recursion: false
 	delay_until_recursion: 1
 	scan_depth: 3
 	sticky: 0
