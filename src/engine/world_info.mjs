@@ -68,7 +68,7 @@ function preBuiltWIEntries(
 			}
 			let content = chatLog.slice(-scan_depth).map(e => (e.charname || e.role) + ': ' + e.content)
 			if (!entrie.extensions.exclude_recursion) content = content.concat(recursion_WIs)
-			content = content.join('\n\x01')
+			content = '\x01' + content.join('\n\x01')
 			if (isAnyMatch(entrie.keys, content)) {
 				if (entrie.secondary_keys.length === 0) return true
 				switch (entrie.extensions.selectiveLogic) {
