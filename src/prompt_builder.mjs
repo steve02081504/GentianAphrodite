@@ -43,11 +43,18 @@ export function promptBuilder(
 	}
 	chatLog ??= ''
 	if (Object(chatLog) instanceof String)
-		chatLog = [{
-			role: "user",
-			charname: userData.name,
-			content: evaluateMacros(chatLog, env)
-		}]
+		chatLog = [
+			{
+				role: "assistant",
+				charname: charData.name,
+				content: evaluateMacros(charData.first_mes, env)
+			},
+			{
+				role: "user",
+				charname: userData.name,
+				content: evaluateMacros(chatLog, env)
+			}
+		]
 
 	let aret = {
 		system_prompt: charData.system_prompt,
@@ -149,7 +156,7 @@ export function promptBuilder(
 				content: aothr_notes
 			})
 
-		const message = chatLog[index]
+		const message = chatLog[chatLog.length - index - 1]
 		new_chat_log.unshift(message)
 	}
 	aret.chat_log = new_chat_log
