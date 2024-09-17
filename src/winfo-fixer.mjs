@@ -63,7 +63,7 @@ function reIndex(data) {
  * Iterates WI data array and sets the scan order property.
  * @param {WorldInfoEntry[]} data - The data containing entries to process.
  */
-function setScanOrder(data) {
+export function setScanOrder(data) {
 	for (const entrie of data) delete entrie.extensions.delay_until_recursion
 	let get_scan_order = entrie => {
 		if (!entrie) return -1

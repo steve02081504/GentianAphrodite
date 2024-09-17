@@ -1,6 +1,7 @@
 keys:
 	- /你会[^\n。]+(吗|？)/
 	- /可(以|能)[^\n。]+吗/
+	- <-<WI推理节点：prompt reviewer-深度4>->
 	- = ?
 	- = ？
 	- =?
@@ -74,8 +75,8 @@ extensions:
 	match_whole_words: false
 	case_sensitive: false
 	prevent_recursion: false
-	exclude_recursion: true
-	delay_until_recursion: 0
+	exclude_recursion: false
+	delay_until_recursion: true
 	scan_depth: 4
 	sticky: 0
 	cooldown: 0

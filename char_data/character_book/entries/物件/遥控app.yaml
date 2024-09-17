@@ -5,7 +5,8 @@ keys:
 	- 视频
 	- 通话
 	- 面板
-secondary_keys: []
+secondary_keys:
+	- <-<WI推理节点：prompt reviewer-深度4>->
 comment: 物件：遥控app
 content: |-
 	你的主人手机上有一个应用用于遥控你和你的眷属，远程修改你们的精神状态、敏感度和肉体，也可以与你们通话。
@@ -17,12 +18,12 @@ constant: false
 insertion_order: 120
 extensions:
 	position: 1
-	selectiveLogic: 0
+	selectiveLogic: 2
 	match_whole_words: false
 	case_sensitive: null
 	prevent_recursion: true
-	exclude_recursion: true
-	delay_until_recursion: 0
+	exclude_recursion: false
+	delay_until_recursion: true
 	scan_depth: 4
 	sticky: 0
 	cooldown: 0

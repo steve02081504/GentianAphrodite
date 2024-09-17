@@ -25,6 +25,7 @@ import { get_token_size } from './get_token_size.mjs'
 import { is_WILogicNode } from './WILN.mjs'
 import { WIbookCompiler } from './WIbookCompiler.mjs'
 import { is_bothscope, is_userscope, make_bothscope, make_userscope, pack_key_scope, remove_bothscope, remove_userscope, unmake_scope, unpack_key_scope } from './key_scope.mjs'
+import { setScanOrder } from './winfo-fixer.mjs'
 
 const cardFilePath = `${__dirname}/data/cardpath.txt`
 const WIjsonFilePath = `${__dirname}/data/WIpath.txt`
@@ -335,6 +336,7 @@ class CardFileInfo_t {
 				delete entrie.extensions.depth
 			if (!is_WILogicNode(entrie.content))
 				entrie.token_size = get_token_size(remove_simple_marcos(entrie.content))
+			entrie.extensions.delay_until_recursion = Boolean(entrie.extensions.delay_until_recursion)
 			let ext = entrie.extensions
 			delete entrie.extensions
 			entrie = {
@@ -486,6 +488,7 @@ class CardFileInfo_t {
 			entrie.extensions.depth ??= 0
 			delete entrie.token_size
 		}
+		setScanOrder(this.character_book.entries)
 		this.v1metaData = JSON.parse(JSON.stringify(this.v1metaData).replace(/\}\};\\n\{\{/g, '}};{{'))
 		this.metaData = this.v1metaData.data
 		this.character_book = this.metaData.character_book

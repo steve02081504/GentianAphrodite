@@ -1,12 +1,18 @@
 keys:
-	- /[\u0400-\u04FF\u0410-\u044F\u0451\u0452]/
-secondary_keys: []
-comment: WI推理节点：输入言语-俄文-深度2
-content: <-<WI推理节点：输入言语-俄文-深度2>->
+	- 剪刀
+	- 剪子
+	- 布
+	- 猜拳
+	- 石头
+secondary_keys:
+	- 出
+	- 猜拳
+	- 石头剪刀布
+comment: WI推理节点：猜拳-深度2
+content: <-<WI推理节点：猜拳-深度2>->
 constant: false
 insertion_order: 60
 extensions:
-	scope: user
 	position: 1
 	selectiveLogic: 0
 	match_whole_words: false

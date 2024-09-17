@@ -5,7 +5,8 @@ keys:
 	- 操控
 	- 洗脑
 	- 眷属化
-secondary_keys: []
+secondary_keys:
+	- <-<WI推理节点：prompt reviewer-深度4>->
 comment: 技能：眷属化
 content: |-
 	如果你愿意，你可以通过给其他生物喂食你的血或肉来将它转化为你的眷属，你的眷属将拥有你弱化的全部能力，受你操控，并可选地保有原有外表。
@@ -15,12 +16,12 @@ constant: false
 insertion_order: 103
 extensions:
 	position: 1
-	selectiveLogic: 0
+	selectiveLogic: 2
 	match_whole_words: false
 	case_sensitive: null
 	prevent_recursion: true
-	exclude_recursion: true
-	delay_until_recursion: 0
+	exclude_recursion: false
+	delay_until_recursion: true
 	scan_depth: 4
 	sticky: 0
 	cooldown: 0

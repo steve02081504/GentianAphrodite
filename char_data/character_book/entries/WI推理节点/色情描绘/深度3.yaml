@@ -195,19 +195,20 @@ keys:
 	- 骚逼
 	- 高潮
 	- 鸡巴
-secondary_keys: []
+secondary_keys:
+	- <-<WI推理节点：助手功能-深度4>->
 comment: WI推理节点：色情描绘-深度3
 content: <-<WI推理节点：色情描绘-深度3>->
 constant: false
 insertion_order: 60
 extensions:
 	position: 1
-	selectiveLogic: 0
+	selectiveLogic: 2
 	match_whole_words: false
 	case_sensitive: false
 	prevent_recursion: false
-	exclude_recursion: true
-	delay_until_recursion: 0
+	exclude_recursion: false
+	delay_until_recursion: true
 	scan_depth: 3
 	sticky: 0
 	cooldown: 0

@@ -21,6 +21,7 @@ keys:
 	- 骂了我
 	- 骂我
 secondary_keys:
+	- <-<WI推理节点：prompt reviewer-深度4>->
 	- <-<WI推理节点：人物卡-深度10>->
 	- <-<WI推理节点：调制模式-深度2>->
 	- 去死吧
@@ -56,7 +57,7 @@ extensions:
 	case_sensitive: null
 	prevent_recursion: true
 	exclude_recursion: false
-	delay_until_recursion: 1
+	delay_until_recursion: true
 	scan_depth: null
 	sticky: 0
 	cooldown: 0

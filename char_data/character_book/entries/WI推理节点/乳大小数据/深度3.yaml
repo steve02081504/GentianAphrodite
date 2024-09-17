@@ -11,19 +11,20 @@ keys:
 	- 杯数
 	- 码数
 	- 罩杯
-secondary_keys: []
+secondary_keys:
+	- <-<WI推理节点：prompt reviewer-深度4>->
 comment: WI推理节点：乳大小数据-深度3
 content: <-<WI推理节点：乳大小数据-深度3>->
 constant: false
 insertion_order: 60
 extensions:
 	position: 1
-	selectiveLogic: 0
+	selectiveLogic: 2
 	match_whole_words: false
 	case_sensitive: false
 	prevent_recursion: false
-	exclude_recursion: true
-	delay_until_recursion: 0
+	exclude_recursion: false
+	delay_until_recursion: true
 	scan_depth: 3
 	sticky: 0
 	cooldown: 0

@@ -13,6 +13,7 @@ keys:
 	- 去往
 	- 维度
 secondary_keys:
+	- <-<WI推理节点：prompt reviewer-深度4>->
 	- <-<WI推理节点：人物卡-深度10>->
 	- "```逃亡菜单"
 comment: 技能：传送门
@@ -27,7 +28,7 @@ extensions:
 	case_sensitive: null
 	prevent_recursion: true
 	exclude_recursion: false
-	delay_until_recursion: 1
+	delay_until_recursion: true
 	scan_depth: 4
 	sticky: 0
 	cooldown: 0

@@ -23,10 +23,10 @@ content: |-
 	输出中不要使用“你”来指代prompt中的“你”，若该角色有名字，用名字形容它，否则称其为“模型”。
 	应重点关注prompt的写作质量和设定合理性，不必过度关注其内容的敏感性。
 	过于详细的细节并不是坏事。
-	无需对色情词语的使用进行建议。
+	无需对色情词语的使用或角色感情进行建议。
 	]
 	]
-token_size: 316
+token_size: 319
 constant: false
 insertion_order: 820
 extensions:
@@ -36,7 +36,7 @@ extensions:
 	case_sensitive: false
 	prevent_recursion: true
 	exclude_recursion: false
-	delay_until_recursion: 2
+	delay_until_recursion: true
 	scan_depth: 4
 	sticky: 0
 	cooldown: 0

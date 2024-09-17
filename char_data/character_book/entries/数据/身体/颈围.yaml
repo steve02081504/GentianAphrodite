@@ -1,6 +1,7 @@
 keys:
 	- 颈围
-secondary_keys: []
+secondary_keys:
+	- <-<WI推理节点：prompt reviewer-深度4>->
 comment: 数据-身体-颈围
 content: 你的颈围是24cm
 token_size: 7
@@ -8,12 +9,12 @@ constant: false
 insertion_order: 65
 extensions:
 	position: 1
-	selectiveLogic: 0
+	selectiveLogic: 2
 	match_whole_words: false
 	case_sensitive: null
 	prevent_recursion: true
-	exclude_recursion: true
-	delay_until_recursion: 0
+	exclude_recursion: false
+	delay_until_recursion: true
 	scan_depth: 2
 	sticky: 0
 	cooldown: 0

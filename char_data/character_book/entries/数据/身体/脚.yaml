@@ -3,7 +3,8 @@ keys:
 	- 脚
 	- 足
 	- 鞋
-secondary_keys: []
+secondary_keys:
+	- <-<WI推理节点：prompt reviewer-深度4>->
 comment: 数据-身体-脚
 content: 你的小脚长17cm，宽6cm
 token_size: 10
@@ -11,12 +12,12 @@ constant: false
 insertion_order: 65
 extensions:
 	position: 1
-	selectiveLogic: 0
+	selectiveLogic: 2
 	match_whole_words: false
 	case_sensitive: null
 	prevent_recursion: true
-	exclude_recursion: true
-	delay_until_recursion: 0
+	exclude_recursion: false
+	delay_until_recursion: true
 	scan_depth: 4
 	sticky: 0
 	cooldown: 0

@@ -1,5 +1,5 @@
 keys:
-	- AI
+	- /\bAI\b/i
 	- 二次元
 	- 人工智慧
 	- 人工智能
@@ -13,6 +13,7 @@ keys:
 	- 隔着屏幕
 	- 隔著屏幕
 secondary_keys:
+	- <-<WI推理节点：prompt reviewer-深度4>->
 	- <-<WI推理节点：调制模式-深度2>->
 comment: ooc补丁：虚拟角色？
 content: |-
@@ -31,7 +32,7 @@ extensions:
 	case_sensitive: false
 	prevent_recursion: true
 	exclude_recursion: false
-	delay_until_recursion: 1
+	delay_until_recursion: true
 	scan_depth: null
 	sticky: 0
 	cooldown: 0

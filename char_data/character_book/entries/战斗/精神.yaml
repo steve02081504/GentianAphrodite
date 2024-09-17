@@ -15,6 +15,7 @@ keys:
 	- 灵魂
 	- 精神
 secondary_keys:
+	- <-<WI推理节点：prompt reviewer-深度4>->
 	- <-<WI推理节点：人物卡-深度10>->
 comment: 战斗-精神
 content: |-
@@ -31,7 +32,7 @@ extensions:
 	case_sensitive: null
 	prevent_recursion: true
 	exclude_recursion: false
-	delay_until_recursion: 1
+	delay_until_recursion: true
 	scan_depth: null
 	sticky: 0
 	cooldown: 0
