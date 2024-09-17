@@ -23,7 +23,7 @@ jobs:
           node-version: latest
       - run: |
           npm install
-          npm run build default build.png ${{github.sha}}
+          npm run build preview build.png
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
