@@ -25,6 +25,8 @@ export function promptBuilder(
 	charData,
 	/** @type {{role:string,charname?:string,content:string}[]} */
 	chatLog,
+	/** @type {(...args)=>void} */
+	logger = () => {},
 	/** @type {{name:string,persona_content:string}} */
 	userData = {
 		name: 'steve',
@@ -71,7 +73,7 @@ export function promptBuilder(
 	}
 	for (let key in aret) if (Object(aret[key]) instanceof String) aret[key] = evaluateMacros(aret[key], env)
 	let WIs = charData?.character_book?.entries ?
-		GetActivedWorldInfoEntries(charData.character_book.entries, chatLog, env) :
+		GetActivedWorldInfoEntries(charData.character_book.entries, chatLog, env, logger) :
 		[]
 	if (charData?.extensions?.regex_scripts) {
 		let WI_regex_scripts = charData.extensions.regex_scripts.filter(e => e.placement.includes(regex_placement.WORLD_INFO))

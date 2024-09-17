@@ -5,13 +5,13 @@ import { deepCopy, escapeRegExp, parseRegexFromString } from "../tools.mjs"
 import { evaluateMacros } from "./marco.mjs"
 import { is_WILogicNode } from "../WILN.mjs"
 
-let WISettings = {
+export let WISettings = {
 	depth: 4,
 	isSensitive: false,
 	isFullWordMatch: true
 }
 
-let debug_WI = []
+export let debug_WI = []
 let log = () => {}
 
 function buildKeyList(keys, isSensitive, isFullWordMatch) {
@@ -63,7 +63,9 @@ function notAllMatch(/** @type {RegExp[]} */list, /** @type {string} */content) 
 }
 function preBuiltWIEntries(
 	/** @type {WorldInfoEntry[]} */
-	WIentries
+	WIentries,
+	/** @type {(...args)=>void} */
+	logger
 ) {
 	for (let entrie of WIentries) {
 		let isSensitive = entrie.extensions.case_sensitive === undefined ? WISettings.isSensitive : entrie.extensions.case_sensitive
@@ -79,8 +81,7 @@ function preBuiltWIEntries(
 		) => {
 			let in_debug = debug_WI.includes(entrie.comment)
 			log = () => {}
-			if (in_debug)
-				log = (...args) => console.log('WI', entrie.comment, ...args)
+			if (in_debug) log = (...args) => logger('WI', entrie.comment, ...args)
 			let last_enabled_chat_length = chat_metadata.enabled_WI_entries.get(entrie) ?? 0
 			if (entrie.extensions.delay && entrie.extensions.delay > chat_metadata.chat_log.length) {
 				log(`in delay`)
@@ -131,7 +132,9 @@ export function GetActivedWorldInfoEntries(
 	/** @type {{role:string,charname?:string,content:string}[]} */
 	chatLog,
 	/** @type {Record<string, any>} */
-	env
+	env,
+	/** @type {(...args)=>void} */
+	logger = () => {},
 ) {
 	/** @type {WorldInfoEntry[]} */
 	let WIdata_copy = deepCopy(WIentries.filter(e => e.enabled))
@@ -144,7 +147,7 @@ export function GetActivedWorldInfoEntries(
 		entrie.extensions.role ??= extension_prompt_roles.SYSTEM
 		// the entrie.content's macros evaluate ill only do whrn it be active
 	}
-	preBuiltWIEntries(WIdata_copy)
+	preBuiltWIEntries(WIdata_copy, logger)
 	let recursion_WIs = []
 	/** @type {number[]} Represents the delay levels for entries that are delayed until recursion */
 	let availableRecursionDelayLevels = [...new Set(
@@ -152,7 +155,7 @@ export function GetActivedWorldInfoEntries(
 	)].sort((a, b) => a - b);
 
 	for (let currentRecursionDelayLevel of availableRecursionDelayLevels) {
-		console.log(`entering recursion level`, currentRecursionDelayLevel)
+		logger(`entering recursion level`, currentRecursionDelayLevel)
 		let new_entries
 		do {
 			let WIdata_new = [...WIdata_copy]
@@ -161,7 +164,7 @@ export function GetActivedWorldInfoEntries(
 				if (entrie.constant || entrie.isActived(chatLog, recursion_WIs)) {
 					if (entrie.extensions.delay_until_recursion > currentRecursionDelayLevel) continue
 					chat_metadata.enabled_WI_entries.set(entrie, chat_metadata.chat_log.length)
-					if (is_WILogicNode(entrie.content)) console.log('WI Logic node', entrie.content, 'enabled')
+					if (is_WILogicNode(entrie.content)) logger('WI Logic node', entrie.content, 'enabled')
 					entrie.content = evaluateMacros(entrie.content, env)
 					new_entries.push(entrie)
 					WIdata_new = WIdata_new.filter(e => e !== entrie)
@@ -170,7 +173,7 @@ export function GetActivedWorldInfoEntries(
 			WIdata_copy = WIdata_new.filter(e => !e.extensions.exclude_recursion)
 			recursion_WIs = recursion_WIs.concat(new_entries.filter(e => !e.extensions.prevent_recursion).map(e => e.content))
 			aret = aret.concat(new_entries)
-			console.log('new WI entries:', new_entries.filter(e => !is_WILogicNode(e.content)).map(e => e.comment))
+			logger('new WI entries:', new_entries.filter(e => !is_WILogicNode(e.content)).map(e => e.comment))
 		} while (new_entries.length)
 	}
 

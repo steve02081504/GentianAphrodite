@@ -4,7 +4,7 @@ import { promptBuilder } from "../../src/prompt_builder.mjs"
 import { print } from "../../src/print.mjs"
 
 CardFileInfo.readDataFiles()
-let result = promptBuilder(CardFileInfo.metaData, process.argv[2] || 'Have a nice pee.')
+let result = promptBuilder(CardFileInfo.metaData, process.argv[2] || 'Have a nice pee.', console.log)
 for (let key in result) if (!result[key]?.length) delete result[key]
 result = colorize_by_tokenize(result)
 encoder.free()
