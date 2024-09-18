@@ -28,7 +28,7 @@ let stat = {
 			charData.description, charData.personality, charData.scenario, charData.mes_example,
 			charData.system_prompt, charData?.extensions?.depth_prompt?.prompt,
 			...greetings,
-			...enabledWIs.map(_ => _.content),
+			...enabledWIs.map(_ => _.content).filter(_ => !is_WILogicNode(_)),
 		].filter(_ => _).join('\n')).replace(/\n+/g, '\n')),
 		base: get_token_size(promptBuilder(charData, 'hello')),
 		corpus: get_token_size(enabledWIs.filter(_ => _.comment.startsWith('语料')).map(_ => _.content)),
