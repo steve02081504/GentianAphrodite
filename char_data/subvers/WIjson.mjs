@@ -4,7 +4,7 @@ import { nicerWriteFileSync } from "../../src/tools.mjs"
 
 export default {
 	ext: 'json',
-	VerIdUpdater: (charVer) => `${charVer}-WI`,
+	VerIdUpdater: charVer => `${charVer}-WI`,
 	CharInfoHandler: (CharInfo, SavePath) => {
 		let WIjsonData = v2CharWIbook2WIjson(CharInfo.data.character_book)
 		delete WIjsonData.originalData
