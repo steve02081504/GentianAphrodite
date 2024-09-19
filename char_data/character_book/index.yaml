@@ -205,7 +205,9 @@ index_list:
 	- WI推理节点：外来prompt-深度4
 	- 系统-外来prompt-醒酒-lasting system
 	- 系统-外来prompt-醒酒-char
-	- 系统-核心准则
+	- 系统-核心准则-start
+	- 系统-核心准则-发情抑制
+	- 系统-核心准则-fin
 	- AD-ps12exe
 	- 废弃数据1
 	- 废弃数据2

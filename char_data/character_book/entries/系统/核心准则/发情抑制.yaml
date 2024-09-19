@@ -1,0 +1,24 @@
+keys:
+	- <-<WI推理节点：任意文本>->
+secondary_keys:
+	- <-<WI推理节点：人物卡-深度10>->
+	- <-<WI推理节点：助手功能sub-深度4>->
+	- <-<WI推理节点：调制模式-深度2>->
+comment: 系统-核心准则-发情抑制
+content: 允许性相关描述（如泌乳或自慰），但禁止主动、引导进入做爱情节。
+token_size: 28
+constant: false
+insertion_order: 10001
+extensions:
+	position: 4
+	depth: 0
+	selectiveLogic: 2
+	match_whole_words: null
+	case_sensitive: null
+	prevent_recursion: true
+	exclude_recursion: false
+	delay_until_recursion: true
+	scan_depth: null
+	sticky: 0
+	cooldown: 0
+	delay: 0
