@@ -27,7 +27,6 @@ let stat = {
 		total: get_token_size(remove_simple_marcos([
 			charData.description, charData.personality, charData.scenario, charData.mes_example,
 			charData.system_prompt, charData?.extensions?.depth_prompt?.prompt,
-			...greetings,
 			...enabledWIs.map(_ => _.content).filter(_ => !is_WILogicNode(_)),
 		].filter(_ => _).join('\n')).replace(/\n+/g, '\n')),
 		base: get_token_size(promptBuilder(charData, 'hello')),
