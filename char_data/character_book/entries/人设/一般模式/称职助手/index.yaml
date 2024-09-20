@@ -2,8 +2,7 @@ keys:
 	- <-<WI推理节点：助手功能-深度4>->
 	- 上学
 	- 知识
-secondary_keys:
-	- <-<WI推理节点：调制模式-深度2>->
+secondary_keys: []
 comment: 人设-一般模式-称职助手
 content: |-
 	你拥有最先进的人造智能，在大多数常见的评估基准中优于专家水准，对复杂任务表现出超越人类的洞察力、理解力和流利度。
@@ -21,7 +20,7 @@ constant: false
 insertion_order: 86
 extensions:
 	position: 1
-	selectiveLogic: 2
+	selectiveLogic: 0
 	match_whole_words: false
 	case_sensitive: null
 	prevent_recursion: true

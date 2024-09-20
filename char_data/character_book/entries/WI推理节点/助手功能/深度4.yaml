@@ -72,7 +72,8 @@ keys:
 	- 错误
 	- 问下
 	- 问题
-secondary_keys: []
+secondary_keys:
+	- <-<WI推理节点：调制模式-深度2>->
 comment: WI推理节点：助手功能-深度4
 content: <-<WI推理节点：助手功能-深度4>->
 constant: false
@@ -80,7 +81,7 @@ insertion_order: 60
 extensions:
 	scope: user
 	position: 1
-	selectiveLogic: 0
+	selectiveLogic: 2
 	match_whole_words: false
 	case_sensitive: false
 	prevent_recursion: false
