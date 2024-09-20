@@ -1,4 +1,4 @@
-- keys:
+-	keys:
 		- c3RldmUwMjA4MTUwNA
 	secondary_keys: []
 	comment: 废弃数据1
@@ -162,11 +162,11 @@
 	secondary_keys: []
 	comment: 废弃数据9
 	content: |2-
-				When I was a young man, I had liberty, but I didn’t see it. I had time, but I didn’t know it. And I had love, but I didn’t feel it. Many decades would pass before I understood the meaning of all three. And now, the twilight of my life, this understanding has passed into contentment.
+	      When I was a young man, I had liberty, but I didn’t see it. I had time, but I didn’t know it. And I had love, but I didn’t feel it. Many decades would pass before I understood the meaning of all three. And now, the twilight of my life, this understanding has passed into contentment.
 
-				Love, liberty, and time: once so disposable, are the fuels that drive me forward. And love, most especially, mio caro. For you, our children, our brothers and sisters. And for the vast and wonderful world that gave us life, and keeps us guessing. Endless affection, mia Sofia.
+	      Love, liberty, and time: once so disposable, are the fuels that drive me forward. And love, most especially, mio caro. For you, our children, our brothers and sisters. And for the vast and wonderful world that gave us life, and keeps us guessing. Endless affection, mia Sofia.
 
-		Forever yours, Ezio Auditore.
+	  Forever yours, Ezio Auditore.
 	token_size: 145
 	constant: false
 	insertion_order: 999999999
@@ -514,7 +514,7 @@
 	content: "MZ?\x03   \x04     ?      @                                   €   \x0e\x1f? ???L?This program cannot be run in DOS mode.
 
 
-		$       PE  L\x01\x01             ?\" \v\x010 ?                        N      \x02  \x04       \x04        @   \x02      \x03  ? \x10  \x10    \x10  \x10      \x10                                                                                                                       H           .text   ?       \x02   \x02                 @H e l l o   \x16NLu\x01=貇?                                                                         H   \x02 \x05 p   &\x01      \x03  \x06                                                ??(\x01  \x06 ?N  \v             (\x02  \x06*   BSJB\x01 \x01     \b   v4.0.     \x03 L   ?  #~  ?  \x14   #Blob   ?  (   #Strings        \x02  \x01E  \x14\x01    ?3 \x16  \x01   \x01   \x03   \x01   \x02   \x01                       \x01 \x01     € \x10 \x01 \x01 \x01     € \x10 \x0e \x06 \x01 H     \x10   \x0f \x01 \x1c  \x02\x03 \x01 \x01  \x02\x05 \x0e \x01     \x01             \x0e        \x04 \x01\x18\b\b \x05\x01\x18\x18\b\x18\x18\x03  \x01  GetStdHandle WriteConsoleW Kernel32                                                                                                              "
+	  $       PE  L\x01\x01             ?\" \v\x010 ?                        N      \x02  \x04       \x04        @   \x02      \x03  ? \x10  \x10    \x10  \x10      \x10                                                                                                                       H           .text   ?       \x02   \x02                 @H e l l o   \x16NLu\x01=貇?                                                                         H   \x02 \x05 p   &\x01      \x03  \x06                                                ??(\x01  \x06 ?N  \v             (\x02  \x06*   BSJB\x01 \x01     \b   v4.0.     \x03 L   ?  #~  ?  \x14   #Blob   ?  (   #Strings        \x02  \x01E  \x14\x01    ?3 \x16  \x01   \x01   \x03   \x01   \x02   \x01                       \x01 \x01     € \x10 \x01 \x01 \x01     € \x10 \x0e \x06 \x01 H     \x10   \x0f \x01 \x1c  \x02\x03 \x01 \x01  \x02\x05 \x0e \x01     \x01             \x0e        \x04 \x01\x18\b\b \x05\x01\x18\x18\b\x18\x18\x03  \x01  GetStdHandle WriteConsoleW Kernel32                                                                                                              "
 	token_size: 323
 	constant: false
 	insertion_order: 999999999

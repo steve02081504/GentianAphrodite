@@ -15,6 +15,7 @@ function yamlParse(yamlStr) {
 	yamlStr = yamlStr.replace(/\n\t+/g, m => m.replace(/\t/g, '  '))
 	yamlStr = yamlStr.replace(/\n\t+-\t\|/g, m => m.replace('-\t|', '- |'))
 	yamlStr = yamlStr.replace(/\n-\t\w/g, m => m.replace('-\t', '- '))
+	yamlStr = yamlStr.replace(/^-\t\w/g, m => m.replace('-\t', '- '))
 	return yaml.parse(yamlStr, yamlConfig)
 }
 /**
@@ -24,9 +25,20 @@ function yamlParse(yamlStr) {
  */
 function yamlStringify(yamlObj) {
 	let yamlStr = yaml.stringify(yamlObj, yamlConfig)
-	yamlStr = yamlStr.replace(/\n(  )+/g, m => m.replace(/  /g, '\t'))
-	yamlStr = yamlStr.replace(/\n\t+- \|/g, m => m.replace('- |', '-\t|'))
-	yamlStr = yamlStr.replace(/\n- \w/g, m => m.replace('- ', '-\t'))
+	let lines = yamlStr.split('\n')
+	let tabnum = 0
+	let result = []
+	for (let line of lines) {
+		if (!line) { result.push(line); continue }
+		line = line.replace(/^\s+- \|/, m => m.replace('- |', '-\t|'))
+		line = line.replace(/^- \w/, m => m.replace('- ', '-\t'))
+		if (line.startsWith('-')) tabnum++
+		if (line.endsWith(':') || line.endsWith('|') || line.endsWith('|-') || line.endsWith('|+')) tabnum++
+		else if (!line.startsWith('  '.repeat(tabnum))) tabnum--
+		line = line.replace(new RegExp(`^(  ){0,${tabnum}}`), m => m.replace(/  /g, '\t'))
+		result.push(line)
+	}
+	yamlStr = result.join('\n')
 	return yamlStr
 }
 
