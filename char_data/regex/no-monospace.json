@@ -1,0 +1,18 @@
+{
+	"id": "d485930f-5f7c-4b80-8fd7-68f8a9e8611d",
+	"scriptName": "no-monospace",
+	"findRegex": "```no-monospace",
+	"replaceString": "<style>\ncode.custom-language-no-monospace {\n\tfont-family: var(--mainFontFamily);\n}\n</style>\n```no-monospace",
+	"trimStrings": [],
+	"placement": [
+		1,
+		2
+	],
+	"disabled": false,
+	"markdownOnly": true,
+	"promptOnly": false,
+	"runOnEdit": true,
+	"substituteRegex": false,
+	"minDepth": null,
+	"maxDepth": null
+}

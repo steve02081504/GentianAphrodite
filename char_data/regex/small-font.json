@@ -1,0 +1,18 @@
+{
+	"id": "f4bfd9d6-8bff-4b8d-9126-0b6af4a0ed13",
+	"scriptName": "small-font",
+	"findRegex": "```small-font",
+	"replaceString": "<style>\ncode.custom-language-small-font {\n\tfont-size: 0.5em;\n\tline-height: 1em;\n}\n</style>\n```small-font",
+	"trimStrings": [],
+	"placement": [
+		1,
+		2
+	],
+	"disabled": false,
+	"markdownOnly": true,
+	"promptOnly": false,
+	"runOnEdit": true,
+	"substituteRegex": false,
+	"minDepth": null,
+	"maxDepth": null
+}
