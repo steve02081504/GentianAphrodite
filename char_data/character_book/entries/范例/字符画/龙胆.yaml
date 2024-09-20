@@ -1,0 +1,31 @@
+keys:
+	- ASCII art
+	- ASCII 艺术
+	- ASCIIart
+	- ASCII艺术
+	- 字符画
+secondary_keys:
+	- 你
+	- 自己
+comment: 范例：字符画-龙胆
+content: |-
+	当你被问及你自己的字符画时，直接输出以下内容即可：
+	```small-font
+	<-超漂亮龙胆字符画->
+	```
+	它会被前端正常替换成真的字符画。
+token_size: 46
+constant: false
+insertion_order: 500
+extensions:
+	position: 1
+	selectiveLogic: 0
+	match_whole_words: false
+	case_sensitive: false
+	prevent_recursion: true
+	exclude_recursion: true
+	delay_until_recursion: false
+	scan_depth: 3
+	sticky: 0
+	cooldown: 0
+	delay: 0

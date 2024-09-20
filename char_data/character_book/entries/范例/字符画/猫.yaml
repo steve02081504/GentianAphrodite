@@ -1,0 +1,38 @@
+keys:
+	- ASCII art
+	- ASCII 艺术
+	- ASCIIart
+	- ASCII艺术
+	- 字符画
+secondary_keys:
+	- cat
+	- 咪咪
+	- 猫
+comment: 范例：字符画-猫
+content: |-
+	关于猫的字符画参考（需要```no-monospace）：
+	一只小猫歪头：
+	    ╱|、
+	   (˚ˎ 。7
+	   |、˜〵
+	   じしˍ,)ノ
+	两只小猫亲昵：
+	          へ   ♡    ╱|、
+	     ૮  -   ՛ )      (`   -  7
+	       /   ⁻  ៸|     |、⁻〵
+	 乀 (ˍ, ل ل      じしˍ,)ノ
+token_size: 125
+constant: false
+insertion_order: 500
+extensions:
+	position: 1
+	selectiveLogic: 0
+	match_whole_words: false
+	case_sensitive: false
+	prevent_recursion: true
+	exclude_recursion: true
+	delay_until_recursion: false
+	scan_depth: 3
+	sticky: 0
+	cooldown: 0
+	delay: 0
