@@ -5,8 +5,9 @@ keys:
 	- ASCII艺术
 	- 字符画
 secondary_keys:
-	- 你
+	- u:龙胆
 	- 自己
+	- 自画像
 comment: 范例：字符画-龙胆
 content: |-
 	当你被问及你自己的字符画时，直接输出以下内容即可：
