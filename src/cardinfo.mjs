@@ -154,7 +154,7 @@ class CardFileInfo_t {
 				...WIjson2v2CharWIbook(JSON.parse(wijsonStr))
 			}
 		}
-		let group_greetings_set = new Set([...this.v1metaData.data.group_only_greetings??[], ...(this.v1metaData.data.extensions.group_greetings??[])].filter(x => x))
+		let group_greetings_set = new Set([...this.v1metaData.data.group_only_greetings ?? [], ...(this.v1metaData.data.extensions.group_greetings ?? [])].filter(x => x))
 		if (group_greetings_set.size)
 			this.v1metaData.data.extensions.group_greetings = [...group_greetings_set]
 		delete this.v1metaData.data.group_only_greetings
@@ -218,7 +218,7 @@ class CardFileInfo_t {
 		delete data.alternate_greetings
 		if (data.extensions.talkativeness == '0.5')
 			delete data.extensions.talkativeness
-		for (let key of ['scenario','mes_example','system_prompt','post_history_instructions'])
+		for (let key of ['scenario', 'mes_example', 'system_prompt', 'post_history_instructions'])
 			if (!data[key]) delete data[key]
 		var packageJson = JSON.parse(fs.readFileSync(packageJsonFilePath, 'utf8'))
 		if (packageJson.version != data.character_version) {
@@ -241,6 +241,11 @@ class CardFileInfo_t {
 			if (!data.extensions.regex_scripts.find(x => x.scriptName == key.replace(/\.json$/, '')))
 				fs.unlinkSync(filePath)
 		}
+		for (const reg of data.extensions.regex_scripts)
+			nicerWriteFileSync(regex_scripts_path + '/' + reg.scriptName + '.json', JSON.stringify(reg, null, '\t') + '\n')
+		yaml.writeFileSync(regex_scripts_path + '/index.yaml', {
+			index_list: data.extensions.regex_scripts.map(x => x.scriptName)
+		})
 		delete data.extensions.regex_scripts
 		nicerWriteFileSync(CharReadMeFilePath, data.creator_notes)
 		delete data.creator_notes
@@ -413,7 +418,7 @@ class CardFileInfo_t {
 			delete this.metaData.greetings
 		}
 		this.metaData.extensions.talkativeness ??= '0.5'
-		for (let key of ['scenario','mes_example','system_prompt','post_history_instructions'])
+		for (let key of ['scenario', 'mes_example', 'system_prompt', 'post_history_instructions'])
 			this.metaData[key] ??= ''
 		var packageJson = JSON.parse(fs.readFileSync(packageJsonFilePath, 'utf8'))
 		this.metaData.character_version = packageJson.version
@@ -423,9 +428,17 @@ class CardFileInfo_t {
 		this.metaData.extensions.regex_scripts = []
 		var regex_scripts_dir = fs.readdirSync(regex_scripts_path, { recursive: true }).filter(x => x.endsWith('.json'))
 		for (const key of regex_scripts_dir) {
+			if (!key.endsWith('.json')) continue
 			var filePath = regex_scripts_path + '/' + key
 			var jsonStr = fs.readFileSync(filePath, 'utf8')
 			this.metaData.extensions.regex_scripts.push(JSON.parse(jsonStr))
+		}
+		{
+			let reg_order = yaml.readFileSync(regex_scripts_path + '/index.yaml').index_list
+			let new_order = []
+			for (const key of reg_order)
+				new_order.push(this.metaData.extensions.regex_scripts.find(x => x.scriptName == key))
+			this.metaData.extensions.regex_scripts = new_order
 		}
 		this.metaData.character_book = this.character_book = yaml.readFileSync(character_book_path + '/index.yaml')
 		this.metaData.extensions.world = this.character_book.name
