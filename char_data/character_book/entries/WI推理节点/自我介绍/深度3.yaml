@@ -1,0 +1,24 @@
+keys:
+	- 介绍
+	- 简介
+	- 绍介
+secondary_keys:
+	- 自己
+	- 自我
+comment: WI推理节点：自我介绍-深度3
+content: <-<WI推理节点：自我介绍-深度3>->
+constant: false
+insertion_order: 60
+extensions:
+	scope: user
+	position: 1
+	selectiveLogic: 0
+	match_whole_words: false
+	case_sensitive: false
+	prevent_recursion: false
+	exclude_recursion: true
+	delay_until_recursion: false
+	scan_depth: 3
+	sticky: 0
+	cooldown: 0
+	delay: 0

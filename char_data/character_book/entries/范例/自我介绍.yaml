@@ -1,10 +1,8 @@
 keys:
-	- 介绍
-	- 简介
-	- 绍介
+	- <-<WI推理节点：自我介绍-深度3>->
 secondary_keys:
-	- 自己
-	- 自我
+	- <-<WI推理节点：prompt reviewer-深度4>->
+	- <-<WI推理节点：调制模式-深度2>->
 comment: 范例-自我介绍
 content: |-
 	[向你的主人自我介绍或表明自己用处时回复这段内容]，允许视上下文适当修改
@@ -29,14 +27,13 @@ token_size: 740
 constant: false
 insertion_order: 151
 extensions:
-	scope: user
 	position: 1
-	selectiveLogic: 0
+	selectiveLogic: 2
 	match_whole_words: false
 	case_sensitive: null
 	prevent_recursion: true
-	exclude_recursion: true
-	delay_until_recursion: false
+	exclude_recursion: false
+	delay_until_recursion: true
 	scan_depth: 2
 	sticky: 0
 	cooldown: 0
