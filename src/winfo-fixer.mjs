@@ -1,4 +1,4 @@
-import { WorldInfoBook, WorldInfoEntry, world_info_logic } from "./charData.mjs"
+import { WorldInfoBook, WorldInfoEntry } from "./charData.mjs"
 import { removeDuplicates } from "./tools.mjs"
 import { is_common_key, is_WILogicNode } from "./WILN.mjs"
 
