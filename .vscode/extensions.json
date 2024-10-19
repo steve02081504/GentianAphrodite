@@ -1,8 +1,0 @@
-{
-	"recommendations": [
-		"dbaeumer.vscode-eslint",
-		"jbockle.jbockle-format-files",
-		"github.vscode-github-actions",
-		"codeium.codeium"
-	]
-}

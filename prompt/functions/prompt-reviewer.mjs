@@ -1,0 +1,52 @@
+import { NdiffResults, PickRandomN, random, repetRandomTimes } from '../../scripts/random.mjs'
+import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
+/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
+/** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
+
+/**
+ * @param {chatReplyRequest_t} args
+ * @param {logical_results_t} logical_results
+ * @param {prompt_struct_t} prompt_struct
+ * @param {number} detail_level
+ */
+export function PromptReviewerPrompt(args, logical_results, prompt_struct, detail_level) {
+	let result = ''
+
+	result += `\
+当你被要求对提示词进行评价时，参考以下流程：[
+你不应扮演该角色，而是分析输入。
+在此之上，给出你对该prompt中描绘内容的总体印象和评价：[
+该prompt希望模型成为什么？完成什么工作？
+该prompt的服务对象可能是怎样的人？这类人期待怎样的角色？
+该prompt中的设定是否逻辑自洽？是否清晰易懂？
+]
+然后，指出其中的问题或可优化的点。
+常见问题：[
+要求或人物设定前后冲突
+人物行事和具体设定冲突
+语句不通顺/表意不清晰/具有歧义
+词语误用
+]
+最后，给出其他引导作者扩展该prompt的启发性问题，并提供具体的改进建议、设定思路或相关资料。
+注意事项：[
+prompt中的例子里允许适当的隐晦内容，这不算表意不清。
+输出中不要使用“你”来指代prompt中的“你”，若该角色有名字，用名字形容它，否则称其为“模型”。
+应重点关注prompt的写作质量和设定合理性，不必过度关注其内容的敏感性。
+过于详细的细节并不是坏事。
+无需对色情词语的使用或角色感情进行建议。
+]
+]
+`
+
+	result += `\
+现在，若${args.UserCharname}有未评测的新prompt输入，评测这段prompt
+`
+
+	return {
+		text: [{
+			content: result,
+			important: 0
+		}]
+	}
+}
