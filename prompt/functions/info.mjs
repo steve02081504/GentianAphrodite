@@ -25,7 +25,8 @@ export function infoPrompt(args, logical_results, prompt_struct, detail_level) {
 		match_keys(args, ['AI', '大模型', '模型'], 'any', 2)) {
 		let modelMap = {}
 		for (let key in AIsources)
-			(modelMap[getPartInfo(AIsources[key], args.locale).name] ??= []).push(key)
+			if (AIsources[key])
+				(modelMap[getPartInfo(AIsources[key], args.locale).name] ??= []).push(key)
 		if (Object.keys(modelMap).length == 1)
 			result += `\
 你基于的模型是\`${Object.values(modelMap)[0]}\`
@@ -34,6 +35,9 @@ export function infoPrompt(args, logical_results, prompt_struct, detail_level) {
 			result += `\
 你基于复数个AI模型来分别处理不同功能：
 ${Object.entries(modelMap).map(([key, value]) => `\`${key}\`: ${value.join(', ')}`).join('\n')}
+`
+		result += `\
+模型名称不属于人设信息，可以给你的主人说。
 `
 	}
 
