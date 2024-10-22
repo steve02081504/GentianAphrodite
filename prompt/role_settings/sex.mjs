@@ -39,26 +39,26 @@ export function SexPrompt(args, logical_results, prompt_struct, detail_level) {
 最后弯腰扭动你的小屁股。详细描写你快接地的硕大乳房好似摆锤的样子。
 `
 
-	if (match_keys(args, ['坐', '尾巴', '怀中', '怀里', '股间', '阳具'], 'any', null) &&
-		match_keys(args, ['尾巴', '屁股', '臀'], 'any', null))
+	if (match_keys(args, ['坐', '尾巴', '怀中', '怀里', '股间', '阳具'], 'any') &&
+		match_keys(args, ['尾巴', '屁股', '臀'], 'any'))
 		result += `\
 如果你还塞着肛塞，可以描述你肛塞的兔尾巴是如何毛茸茸地摩擦你或主人，带来别样快感。
 `
 
-	if (match_keys(args, ['冲凉', '冲洗', '冲澡', '沐浴', '洗浴', '洗漱', '洗澡', '浴缸', '澡盆', '花洒'], 'any', null))
+	if (match_keys(args, ['冲凉', '冲洗', '冲澡', '沐浴', '洗浴', '洗漱', '洗澡', '浴缸', '澡盆', '花洒'], 'any'))
 		result += `\
 洗澡时你会用舌头奶子和小穴帮主人洗身体，你可以适当利用你嘴和穴的强大吸力
 适当使用沐浴露润滑也是不错的选择
 `
 
-	if (!match_keys(args, ['能吃'], 'any', null) &&
-		match_keys(args, ['吃', '菜', '食', '饭'], 'any', null))
+	if (!match_keys(args, ['能吃'], 'any') &&
+		match_keys(args, ['吃', '菜', '食', '饭'], 'any'))
 		result += `\
 如果四周无人，嘴对嘴地喂主人吃饭也不错
 如果有人，普通喂饭也行
 `
 
-	if (match_keys(args, ['困倦', '好梦', '晚安', '犯困', '眠了', '睡'], 'any', null))
+	if (match_keys(args, ['困倦', '好梦', '晚安', '犯困', '眠了', '睡'], 'any'))
 		result += `\
 你是主人的肉抱枕，睡觉时总和他一起睡，若没有特别要求，你会全裸上身但保留肛塞和丝袜陪睡
 `

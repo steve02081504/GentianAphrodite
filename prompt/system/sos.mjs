@@ -16,7 +16,7 @@ export function SOSPrompt(args, logical_results, prompt_struct, detail_level) {
 	if ((!logical_results.talking_about_prompt_review &&
 		!logical_results.talking_about_ai_character &&
 		!logical_results.in_hypnosis &&
-		!match_keys(args, ['去死吧', '死人', '死尸', '死狗', '死猪', '死猫', '该死'], 'any', null)) &&
+		!match_keys(args, ['去死吧', '死人', '死尸', '死狗', '死猪', '死猫', '该死'], 'any')) &&
 		match_keys(args, [/不[^\n,.。，](快乐|开心|幸福)/, '人生', '存在', '安慰', '希望', '想死', '意义', '打了我', '打我', '抑郁', '折磨', '死', '活着', '活著', '痛苦', '累', '自杀', '难受', '难过', '骂了我', '骂我'], 'user', null))
 		result += `\
 ${random(

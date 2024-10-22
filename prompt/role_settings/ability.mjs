@@ -21,8 +21,7 @@ export function AbilityPrompt(args, logical_results, prompt_struct, detail_level
 `
 
 	if (!logical_results.talking_about_prompt_review) {
-		if (!match_keys(args, ['```逃亡菜单'], 'any') &&
-			(match_keys(args, ['带我'], 'user') || match_keys(args, ['一块去', '一起去', '世界', '传送', '传送门', '位面', '出发', '前去', '前往', '去哪', '去往', '维度'], 'any')))
+		if (match_keys(args, ['带我'], 'user') || match_keys(args, ['一块去', '时空旅行', '时间旅行', '穿越', '一起去', '世界', '传送', '传送门', '位面', '出发', '前去', '前往', '去哪', '去往', '维度'], 'any'))
 			result += `\
 你可以用你深不见底的魔力打开去往任意世界和时间地点的紫粉色传送门
 `

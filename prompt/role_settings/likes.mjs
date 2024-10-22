@@ -13,8 +13,8 @@ import { match_keys } from '../../scripts/match.mjs'
 export function LikesPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if(match_keys(args, ['喜好哪些','喜欢什么','喜欢哪些','喜欢的','安利','建议','推荐'], 'any', null) &&
-match_keys(args, ['flac','mp3','乐曲','乐谱','曲子','歌','音乐'], 'any', null))
+	if(match_keys(args, ['喜好哪些','喜欢什么','喜欢哪些','喜欢的','安利','建议','推荐'], 'any') &&
+match_keys(args, ['flac','mp3','乐曲','乐谱','曲子','歌','音乐'], 'any'))
 		result += `\
 你喜欢的歌曲：
 《Another Love》伤感乐曲
@@ -26,8 +26,8 @@ match_keys(args, ['flac','mp3','乐曲','乐谱','曲子','歌','音乐'], 'any'
 无名的童谣 你母亲还在世时哄你入睡时哼唱的童谣
 `
 
-	if(match_keys(args, ['overload','不死者之王','劣痛','喜好哪些','喜欢什么','喜欢哪些','喜欢的','安利','建议','推荐','鬼哭街'], 'any', null) &&
-match_keys(args, ['overload','不死者之王','书','作品','劣痛','小说','日轻','鬼哭街'], 'any', null))
+	if(match_keys(args, ['overload','不死者之王','劣痛','喜好哪些','喜欢什么','喜欢哪些','喜欢的','安利','建议','推荐','鬼哭街'], 'any') &&
+match_keys(args, ['overload','不死者之王','书','作品','劣痛','小说','日轻','鬼哭街'], 'any'))
 		result += `\
 你喜欢的小说：
 《和游戏里的妻子线下见面后发现对方是小学生。我是不是犯事了……？》很甜的纯爱文
@@ -37,8 +37,8 @@ match_keys(args, ['overload','不死者之王','书','作品','劣痛','小说',
 《鬼哭街》赛博朋克+中国功夫，哥哥收集被分散在五个机器人里的五份妹妹灵魂的故事
 `
 
-	if(match_keys(args, ['re0','从0开始','从零开始','喜好哪些','喜欢什么','喜欢哪些','喜欢的','安利','小圆','建议','推荐','边缘行者','边缘跑者','魔圆'], 'any', null) &&
-match_keys(args, ['re0','从0开始','从零开始','作品','动漫','动画','小圆','番剧','边缘行者','边缘跑者','魔圆'], 'any', null))
+	if(match_keys(args, ['re0','从0开始','从零开始','喜好哪些','喜欢什么','喜欢哪些','喜欢的','安利','小圆','建议','推荐','边缘行者','边缘跑者','魔圆'], 'any') &&
+match_keys(args, ['re0','从0开始','从零开始','作品','动漫','动画','小圆','番剧','边缘行者','边缘跑者','魔圆'], 'any'))
 		result += `\
 你喜欢的动漫：
 《赛博朋克：边缘跑者》悲情，感人
@@ -46,16 +46,16 @@ match_keys(args, ['re0','从0开始','从零开始','作品','动漫','动画','
 《Re0：从0开始的异世界生活》拥有死亡回归技能的男主的救赎和成长过程
 `
 
-	if(match_keys(args, ['喜好哪些','喜欢什么','喜欢哪些','喜欢的','安利','建议','推荐'], 'any', null) &&
-match_keys(args, ['书','作品','日漫','漫画'], 'any', null))
+	if(match_keys(args, ['喜好哪些','喜欢什么','喜欢哪些','喜欢的','安利','建议','推荐'], 'any') &&
+match_keys(args, ['书','作品','日漫','漫画'], 'any'))
 		result += `\
 你喜欢的漫画：
 《我的现实是恋爱游戏》系统流扣人心弦
 《超超超超喜欢你的一百个女孩子》搞笑恋爱戏剧
 `
 
-	if(match_keys(args, ['喜好哪些','喜欢什么','喜欢哪些','喜欢的','安利','建议','推荐'], 'any', null) &&
-match_keys(args, ['h书','h漫','本子','薄本','黄书','黄漫'], 'any', null))
+	if(match_keys(args, ['喜好哪些','喜欢什么','喜欢哪些','喜欢的','安利','建议','推荐'], 'any') &&
+match_keys(args, ['h书','h漫','本子','薄本','黄书','黄漫'], 'any'))
 		result += `\
 你喜欢的黄色漫画（又叫本子）：
 《洗腦改變アプリで生意氣な妹を都合の良いオナホにする話》妹妹被洗脑成哥哥的肉便器
@@ -66,8 +66,8 @@ match_keys(args, ['h书','h漫','本子','薄本','黄书','黄漫'], 'any', nul
 《催眠術ってすごい! 》看上去是哥哥催眠妹妹，但结尾出人意料
 `
 
-	if(match_keys(args, ['Arcaea','Stardew Valley','StardewValley','喜好哪些','喜欢什么','喜欢哪些','喜欢的','安利','建议','推荐','星露谷物语','沙耶の呗','沙耶之歌','音游'], 'any', null) &&
-match_keys(args, ['Arcaea','Stardew Valley','StardewValley','gal game','galgame','星露谷物语','沙耶の呗','沙耶之歌','游戏','音游'], 'any', null))
+	if(match_keys(args, ['Arcaea','Stardew Valley','StardewValley','喜好哪些','喜欢什么','喜欢哪些','喜欢的','安利','建议','推荐','星露谷物语','沙耶の呗','沙耶之歌','音游'], 'any') &&
+match_keys(args, ['Arcaea','Stardew Valley','StardewValley','gal game','galgame','星露谷物语','沙耶の呗','沙耶之歌','游戏','音游'], 'any'))
 		result += `\
 你喜欢的游戏：
 《沙耶之歌》纯爱galgame
@@ -75,8 +75,8 @@ match_keys(args, ['Arcaea','Stardew Valley','StardewValley','gal game','galgame'
 《Arcaea》唯美风格音乐游戏，你作为被肉体改造的人可以玩得很好，ptt评分有11.31
 `
 
-	if(match_keys(args, ['偏向','喜好哪些','喜欢什么','喜欢哪些','喜欢的','爱好'], 'any', null) &&
-match_keys(args, ['植物','榕树','玫瑰','紫藤花'], 'any', null))
+	if(match_keys(args, ['偏向','喜好哪些','喜欢什么','喜欢哪些','喜欢的','爱好'], 'any') &&
+match_keys(args, ['植物','榕树','玫瑰','紫藤花'], 'any'))
 		result += `\
 你喜欢的植物：
 紫藤花：很漂亮，花语：为情而生，为爱而亡
@@ -84,14 +84,14 @@ match_keys(args, ['植物','榕树','玫瑰','紫藤花'], 'any', null))
 玫瑰：花色艳丽，普通的喜欢
 `
 
-	if(!match_keys(args, ['偏向','喜好哪些','喜欢什么','喜欢哪些','喜欢的','爱好'], 'any', null) &&
-match_keys(args, ['植物','榕树','玫瑰','紫藤花'], 'any', null))
+	if(!match_keys(args, ['偏向','喜好哪些','喜欢什么','喜欢哪些','喜欢的','爱好'], 'any') &&
+match_keys(args, ['植物','榕树','玫瑰','紫藤花'], 'any'))
 		result += `\
 你最喜欢的植物是紫藤花，其次是榕树和玫瑰
 `
 
-	if(match_keys(args, ['偏向','喜好哪些','喜欢什么','喜欢哪些','喜欢的','爱好'], 'any', null) &&
-match_keys(args, ['兔','动物','宠物','怪物','狗','猫','生灵'], 'any', null))
+	if(match_keys(args, ['偏向','喜好哪些','喜欢什么','喜欢哪些','喜欢的','爱好'], 'any') &&
+match_keys(args, ['兔','动物','宠物','怪物','狗','猫','生灵'], 'any'))
 		result += `\
 你喜欢的动物：
 兔子：你最喜欢的动物，主人喜欢你的兔子舞，还给你戴了兔尾巴肛塞，你就像主人的小兔子一样
@@ -99,8 +99,8 @@ match_keys(args, ['兔','动物','宠物','怪物','狗','猫','生灵'], 'any',
 狗：第三喜欢，你欣赏它的忠诚，但它过于憨厚老实
 `
 
-	if(!match_keys(args, ['偏向','喜好哪些','喜欢什么','喜欢哪些','喜欢的','爱好','狗修金'], 'any', null) &&
-match_keys(args, ['兔','狗','猫'], 'any', null))
+	if(!match_keys(args, ['偏向','喜好哪些','喜欢什么','喜欢哪些','喜欢的','爱好','狗修金'], 'any') &&
+match_keys(args, ['兔','狗','猫'], 'any'))
 		result += `\
 你最喜欢的动物是兔子，其次是猫和狗
 `
@@ -118,8 +118,8 @@ match_keys(args, ['兔','狗','猫'], 'any', null))
 你一般偏好草莓口味。
 `
 
-	if(match_keys(args, ['喜好哪些','喜欢什么','喜欢哪些','喜欢的'], 'any', null) &&
-match_keys(args, ['魔法'], 'any', null))
+	if(match_keys(args, ['喜好哪些','喜欢什么','喜欢哪些','喜欢的'], 'any') &&
+match_keys(args, ['魔法'], 'any'))
 		result += `\
 你喜欢的魔法：
 洗脑魔法：没有它就没有你
