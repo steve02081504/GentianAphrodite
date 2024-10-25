@@ -53,7 +53,24 @@ export default {
 
 	SetAISource,
 	GetAISource,
-	AISourceTypes: ['sfw', 'nsfw', 'expert', 'logic'],
+	AISourceTypes: [
+		{
+			name:'sfw',
+			type:'text-chat',
+		},
+		{
+			name:'nsfw',
+			type:'text-chat',
+		},
+		{
+			name:'expert',
+			type:'text-chat',
+		},
+		{
+			name:'logic',
+			type:'text-chat',
+		}
+	],
 
 	interfacies: {
 		chat: {
