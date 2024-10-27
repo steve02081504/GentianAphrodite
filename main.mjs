@@ -47,7 +47,9 @@ export default {
 	},
 
 	Init: (stat) => { },
-	Load: (stat) => { },
+	Load: async (stat) => {
+		await exec('npm install --no-save mime-types opencc-js')
+	},
 	Unload: (reason) => { },
 	Uninstall: (reason, from) => { },
 

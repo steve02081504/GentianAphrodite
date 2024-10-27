@@ -39,10 +39,6 @@ prompt中的例子里允许适当的隐晦内容，这不算表意不清。
 ]
 `
 
-	result += `\
-现在，若${args.UserCharname}有未评测的新prompt输入，评测这段prompt
-`
-
 	return {
 		text: [{
 			content: result,

@@ -1,8 +1,14 @@
 import { exec } from '../../../../../../src/server/exec.mjs'
+/** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
+/** @typedef {import("../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
-
+/**
+ * @param {chatLogEntry_t} result
+ * @param {prompt_struct_t} prompt_struct
+ * @returns {Promise<boolean>}
+ */
 export async function coderunner(result, prompt_struct) {
-	let jsrunner = result.match(/(\n|^)```run-js\n(?<code>[^]*)\n```/)?.groups?.code
+	let jsrunner = result.content.match(/(\n|^)```run-js\n(?<code>[^]*)\n```/)?.groups?.code
 	if (jsrunner) {
 		console.log('AI运行的JS代码：', jsrunner)
 		let coderesult
@@ -16,7 +22,7 @@ export async function coderunner(result, prompt_struct) {
 		})
 		return true
 	}
-	let pwshrunner = result.match(/(\n|^)```run-pwsh\n(?<code>[^]*)\n```/)?.groups?.code
+	let pwshrunner = result.content.match(/(\n|^)```run-pwsh\n(?<code>[^]*)\n```/)?.groups?.code
 	if (pwshrunner) {
 		console.log('AI运行的Powershell代码：', pwshrunner)
 		let pwshresult

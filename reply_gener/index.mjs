@@ -2,6 +2,7 @@ import { buildPromptStruct } from '../../../../../../src/public/shells/chat/src/
 import { noAISourceAvailable, OrderedAISourceCalling } from '../AISource/index.mjs'
 import { buildLogicalResults } from '../prompt/logical_results/index.mjs'
 import { coderunner } from './coderunner.mjs'
+import { filesender } from './filesender.mjs'
 import { noAIreply } from './noAI/index.mjs'
 
 export async function GetReply(args) {
@@ -9,15 +10,19 @@ export async function GetReply(args) {
 
 	let prompt_struct = await buildPromptStruct(args)
 	let logical_results = buildLogicalResults(args, prompt_struct, 0)
-	let result = ''
+	let result = {
+		content: '',
+		files: []
+	}
 	while (true) {
 		console.log('logical_results', logical_results)
 		console.log('prompt_struct')
 		console.dir(prompt_struct, { depth: 4 })
 		let AItype = logical_results.in_assist ? 'expert' : logical_results.in_nsfw ? 'nsfw' : 'sfw'
-		result = await OrderedAISourceCalling(AItype, AI => AI.StructCall(prompt_struct))
+		result.content = await OrderedAISourceCalling(AItype, AI => AI.StructCall(prompt_struct))
 		if (await coderunner(result, prompt_struct)) continue
+		if (await filesender(result, prompt_struct)) continue
 		break
 	}
-	return { content: result }
+	return result
 }

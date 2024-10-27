@@ -1,6 +1,9 @@
 /** @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog').chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog').chatLogEntry_t} chatLogEntry_t */
 import { escapeRegExp } from './tools.mjs'
+import * as OpenCC from 'opencc-js'
 
+let chT2S = OpenCC.Converter({from: 'twp', to: 'cn'})
 /**
  * Return a subset of chat_log, scoped by depth and role
  * @param {chatReplyRequest_t} args
@@ -46,7 +49,7 @@ export function match_keys(args, keys, from = 'any', depth = 4,
 		key instanceof RegExp ? key :
 		new RegExp(/\p{Unified_Ideograph}/u.test(key) ? escapeRegExp(key) : `\\b${escapeRegExp(key)}\\b`, 'ugi'))
 
-	let content = chat_log.map(x => x.content).join('\n')
+	let content = chat_log.map(x => x.extension.SimplifiedContent ??= chT2S(x.content)).join('\n')
 
 	return matcher(content, keys)
 }
