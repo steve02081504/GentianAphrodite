@@ -1,5 +1,7 @@
 /** @typedef {import('../../../../../../src/decl/AIsource.ts').AIsource_t} AIsource_t */
 
+import { getPartInfo } from '../../../../../../src/server/parts_loader.mjs'
+
 /**
  * @type {Record<string, AIsource_t>}
  */
@@ -52,7 +54,9 @@ export async function OrderedAISourceCalling(name, caller, trytimes = 3, error_l
 		if (AIsources[type])
 			for (let i = 0; i < trytimes; i++)
 				try {
-					return await caller(AIsources[type])
+					let result = await caller(AIsources[type])
+					console.log('OrderedAISourceCalling', name, getPartInfo(AIsources[type]).name)
+					return result
 				} catch (err) {
 					await error_logger(lastErr = err)
 				}

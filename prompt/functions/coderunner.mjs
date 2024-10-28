@@ -13,7 +13,7 @@ import { match_keys } from '../../scripts/match.mjs'
 export function CodeRunnerPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if(logical_results.in_assist || match_keys(args, ['是多少'], 'any'))
+	if(logical_results.in_assist || match_keys(args, ['是多少','是几',/```run-(js|pwsh)/], 'any'))
 		result += `\
 你可以运行NodeJS或Powershell代码，通过返回以下格式来触发执行并获取结果：
 \`\`\`run-(js|pwsh)

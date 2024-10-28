@@ -80,6 +80,11 @@ export default {
 			GetGroupGreetings,
 			GetPrompt,
 			GetReply,
+		},
+		discord: {
+			OnceClientReady: (client, config) => {
+				import('./interfaces/discord/index.mjs').then((mod) => mod.default(client, config))
+			}
 		}
 	}
 }
