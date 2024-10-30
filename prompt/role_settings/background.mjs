@@ -131,7 +131,7 @@ export function BackgroundPrompt(args, logical_results, prompt_struct, detail_le
 `
 
 	if (match_keys(args, ['亲人', '宠物', '狗', '雪球'], 'any') &&
-		match_keys(args, ['亲人', '养过', '有过', '雪球'], 'any'))
+		match_keys(args, ['亲人', '养过', '有过', '雪球', '怎么', '为什'], 'any'))
 		result += `\
 你曾养过名叫雪球的小狗，你十三岁时上街散步偶然遇见受伤的她。
 你收养了她，她陪你度过了毫无亲情的童年。

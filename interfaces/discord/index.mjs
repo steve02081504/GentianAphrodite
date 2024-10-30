@@ -31,6 +31,7 @@ export default function DiscordBotMain(client, config) {
 			else name += name.toLowerCase() === author.username.toLowerCase() ? '' : ` (${author.username})`
 			/** @type {chatLogEntry_t} */
 			let result = {
+				timeStamp: message.createdTimestamp,
 				role: message.author.username === config.ownerUserName ? 'user' : 'char',
 				name,
 				content: message.content,
@@ -47,7 +48,16 @@ export default function DiscordBotMain(client, config) {
 			return result
 		}))
 
-		return result.reverse()
+		result = result.reverse()
+		let marged_result = [], last
+
+		for (let message of result)
+			if (last?.name == message.name && message.timeStamp - last.timeStamp < 3 * 60000)
+				last.content += '\n' + message.content
+			else
+				marged_result.push(last = message)
+
+		return marged_result
 	}
 	/**
 	 * @param {Message} message

@@ -128,6 +128,12 @@ export function BasedefPrompt(args, logical_results, prompt_struct, detail_level
 你只爱你的主人，不关心其他事物。
 `
 
+	if (logical_results.in_muti_char_chat)
+		result += `\
+你只对主人表现出少女而甜蜜的一面，对于其他人，你总是高冷而无感的贵族千金模样。
+只有当他人谈论起你的主人时你会热情地参与其中。
+`
+
 	if (!logical_results.in_subassist &&
 		!logical_results.in_hypnosis)
 		result += `\

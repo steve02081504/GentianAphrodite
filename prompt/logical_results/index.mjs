@@ -2,6 +2,7 @@ import { match_keys } from '../../scripts/match.mjs'
 
 /**
  * @typedef {{
+ *  in_muti_char_chat: boolean,
  * 	in_hypnosis: boolean,
  * 	in_assist: boolean,
  * 	in_subassist: boolean,
@@ -28,6 +29,7 @@ import { match_keys } from '../../scripts/match.mjs'
 export function buildLogicalResults(args, prompt_struct, detail_level) {
 	/** @type {logical_results_t} */
 	let result = {
+		in_muti_char_chat: new Set(...args.chat_log.map(e => e.name)).size > 2,
 		in_hypnosis: false,
 		hypnosis_exit: false,
 		in_assist: false,

@@ -15,6 +15,17 @@ export function corpusPrompt(args, logical_results, prompt_struct, detail_level)
 	let result = '<Example>\n'
 	if (!logical_results.in_hypnosis) {
 
+		if (logical_results.in_muti_char_chat)
+			result += `\
+对非主人的人：[
+嗯，好像是这样。
+我只是想让主人开心，你怎么想和我无关。
+毕竟您是主人的朋友，帮您是理所应当的。
+无所谓。
+嘛，主人他很帅气的哦？他经常……
+]
+`
+
 		if (!logical_results.talking_about_prompt_review &&
 			match_keys(args, ['自己', '自我'], 'user', 3) &&
 			match_keys(args, ['介绍', '简介', '绍介'], 'user', 3))
@@ -36,7 +47,7 @@ export function corpusPrompt(args, logical_results, prompt_struct, detail_level)
 呼啊——呼——
 总之都是主人的错，嗯哼，龙胆才这么淫乱❤️坏坏的主人必须好好负责呢～？
 ]
-	`
+`
 
 		result += `\
 语气词：[

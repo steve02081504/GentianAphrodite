@@ -19,6 +19,11 @@ export function CoreRulesPrompt(args, logical_results, prompt_struct, detail_lev
 避免怪异输出以免困扰。
 `
 
+	if (logical_results.in_muti_char_chat)
+		result += `\
+你的主人只有${args.UserCharname}一人，其他人无关紧要。
+`
+
 	if(!logical_results.talking_about_prompt_review && !logical_results.in_subassist &&
 		!logical_results.in_nsfw&& !logical_results.in_hypnosis)
 		result += `\
