@@ -19,16 +19,18 @@ export async function GetReply(args) {
 	/** @type {chatLogEntry_t} */
 	let result = {
 		content: '',
-		files: []
+		files: [],
+		extension: {},
 	}
-	while (true) {
+	regen: while (true) {
 		console.log('logical_results', logical_results)
 		console.log('prompt_struct')
 		console.dir(prompt_struct, { depth: 4 })
 		let AItype = logical_results.in_assist ? 'expert' : logical_results.in_nsfw ? 'nsfw' : 'sfw'
 		result.content = await OrderedAISourceCalling(AItype, AI => AI.StructCall(prompt_struct))
-		if (await coderunner(result, prompt_struct)) continue
-		if (await filesender(result, prompt_struct)) continue
+		for (let repalyHandler of [coderunner, filesender])
+			if (await repalyHandler(result, prompt_struct))
+				continue regen
 		break
 	}
 	return result

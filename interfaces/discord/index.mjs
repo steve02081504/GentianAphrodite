@@ -29,6 +29,13 @@ export default function DiscordBotMain(client, config) {
 			if (!name) name = author.username
 			else if (author.username == config.ownerUserName) name = author.username
 			else name += name.toLowerCase() === author.username.toLowerCase() ? '' : ` (${author.username})`
+
+			let content = message.content
+			for (let [key, value] of message.mentions.users)
+				if (content.includes(`<@${value.id}>`))
+					content = content.replaceAll(`<@${value.id}>`, `<@${value.username}>`)
+				else
+					content = `@${value.username} ${content}`
 			/** @type {chatLogEntry_t} */
 			let result = {
 				timeStamp: message.createdTimestamp,
@@ -76,6 +83,7 @@ export default function DiscordBotMain(client, config) {
 			if (message.content.substring(0, 5).includes('龙胆')) return true
 			if (base_match_keys(message.content, ['老婆', '女票', '女朋友', '炮友'])) matchs += 50
 			if (base_match_keys(message.content, ['救救', '帮帮', '帮我', '来人'])) return true
+			if (message.mentions.users.has(client.user.id)) return true
 			possible += 7 // 多出 7% 的可能性回复主人
 		}
 		if (message.mentions.users.has(config.ownerUserName)) {
@@ -109,23 +117,71 @@ export default function DiscordBotMain(client, config) {
 			clearTimeout(timer)
 			timer = setTimeout(async () => {
 				timer = null
-				let messages = await message.channel.messages.fetch({ limit: MAX_MESSAGE_DEPTH })
-				let reply = await GetReply({
-					Charname: '龙胆',
-					UserCharname: config.ownerUserName,
-					locale: '',
-					time: new Date(),
-					world: null,
-					user: null,
-					char: GentianAphrodite,
-					other_chars: [],
-					plugins: [],
-					chat_summary: '',
-					chat_scoped_char_memory: {},
-					chat_log: await DiscordMessagesToFountChatLog(messages),
-				})
 
-				if (reply) message.reply(reply)
+				try {
+					let messages = await message.channel.messages.fetch({ limit: MAX_MESSAGE_DEPTH })
+					let reply = // { content: '嗯嗯！' } ||
+					await GetReply({
+						Charname: '龙胆',
+						UserCharname: config.ownerUserName,
+						ReplyToCharname: message.author.username,
+						locale: '',
+						time: new Date(),
+						world: null,
+						user: null,
+						char: GentianAphrodite,
+						other_chars: [],
+						plugins: [],
+						chat_summary: '',
+						chat_scoped_char_memory: {},
+						chat_log: await DiscordMessagesToFountChatLog(messages),
+					})
+
+					if (reply.content) {
+						let reply_message = {
+							content: reply.content,
+							files: (reply.files || []).map((file) => {
+								return {
+									attachment: file.buffer,
+									name: file.name,
+									description: file.description
+								}
+							})
+						}
+						if(message.mentions.users.has(client.user.id))
+							await message.reply(reply_message)
+						else
+							await message.channel.send(reply_message)
+					}
+				} catch (error) {
+					let error_message = `${error.name}: ${error.message}\n\`\`\`${error.stack}\n\`\`\``
+					let AIsuggestion
+					try {
+						AIsuggestion = await GetReply({
+							Charname: '龙胆',
+							UserCharname: config.ownerUserName,
+							locale: '',
+							time: new Date(),
+							world: null,
+							user: null,
+							char: GentianAphrodite,
+							other_chars: [],
+							plugins: [],
+							chat_summary: '',
+							chat_scoped_char_memory: {},
+							chat_log: [{
+								name: config.ownerUserName,
+								content: error_message + '\n我该如何解决这个错误？',
+								timeStamp: new Date(),
+								role: 'user',
+								extension: {}
+							}],
+						})
+					} catch (error) {
+						AIsuggestion = { content: '没什么解决思路呢？' }
+					}
+					message.reply({ content: error_message + '\n' + AIsuggestion.content })
+				}
 
 				clearInterval(typeingInterval)
 			}, 3000)
