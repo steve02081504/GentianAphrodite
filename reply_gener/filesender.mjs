@@ -31,6 +31,7 @@ export async function filesender(result, prompt_struct) {
 		let filesendlog = '你发送了文件：\n'
 		for (let file of filesender) {
 			file = resolvePath(file)
+			/*
 			if (result.extension.sended_files[file])
 				prompt_struct.char_prompt.additional_chat_log.push({
 					name: 'system',
@@ -38,10 +39,11 @@ export async function filesender(result, prompt_struct) {
 					content: '你已经发送过文件：\n' + file + '\n**请根据生成不带文件发送语法的回复而不是重复发送已发送的内容**',
 					files: []
 				})
+			*/
 			filesendlog += file + '\t'
 			try {
 				let filebuffer = fs.readFileSync(file)
-				result.files.push({ name: path.basename(file), content: filebuffer, mimeType: mime.lookup(file) || 'application/octet-stream' })
+				result.files.push({ name: path.basename(file), buffer: filebuffer, mimeType: mime.lookup(file) || 'application/octet-stream' })
 				filesendlog += '成功！\n'
 				result.extension.sended_files[file] = true
 			}

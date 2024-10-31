@@ -21,15 +21,15 @@ export async function coderunner(result, prompt_struct) {
 			content: '```run-js\n' + jsrunner + '\n```',
 			files: []
 		})
-		if (result.extension.execed_codes[jsrunner]) {
+		/*
+		if (result.extension.execed_codes[jsrunner])
 			prompt_struct.char_prompt.additional_chat_log.push({
 				name: 'system',
 				role: 'system',
 				content: '你已经运行过JS代码：\n' + jsrunner + '\n**请根据运行结果生成回复而不是重复运行**',
 				files: []
 			})
-			return true
-		}
+		*/
 		console.log('AI运行的JS代码：', jsrunner)
 		let coderesult
 		try { coderesult = eval(jsrunner) } catch (err) { coderesult = err }
@@ -51,15 +51,15 @@ export async function coderunner(result, prompt_struct) {
 			content: '```run-pwsh\n' + pwshrunner + '\n```',
 			files: []
 		})
-		if (result.extension.execed_codes[pwshrunner]) {
+		/*
+		if (result.extension.execed_codes[pwshrunner])
 			prompt_struct.char_prompt.additional_chat_log.push({
 				name: 'system',
 				role: 'system',
 				content: '你已经运行过Powershell代码：\n' + pwshrunner + '\n**请根据运行结果生成回复而不是重复运行**',
 				files: []
 			})
-			return true
-		}
+		*/
 		console.log('AI运行的Powershell代码：', pwshrunner)
 		let pwshresult
 		try { pwshresult = await exec(pwshrunner, { 'shell': 'pwsh.exe' }) } catch (err) { pwshresult = err }
