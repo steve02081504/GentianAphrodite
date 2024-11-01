@@ -35,7 +35,7 @@ export function RoleSettingsPrompt(args, logical_results, prompt_struct, detail_
 
 	result.push(AbilityPrompt(args, logical_results, prompt_struct, detail_level))
 
-	if (!logical_results.in_assist)
+	if (!logical_results.in_assist && logical_results.in_reply_to_master)
 		result.push(SexPrompt(args, logical_results, prompt_struct, detail_level))
 
 	result.push(combatPrompt(args, logical_results, prompt_struct, detail_level))

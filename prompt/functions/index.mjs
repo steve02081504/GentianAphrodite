@@ -10,6 +10,7 @@ import { TaroPrompt } from './taro.mjs'
 import { CopusGeneratorPrompt } from './corpusGenerator.mjs'
 import { infoPrompt } from './info.mjs'
 import { FileSenderPrompt } from './filesender.mjs'
+import { MinMaxPrompt } from './minmax.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
@@ -24,6 +25,7 @@ export function FunctionPrompt(args, logical_results, prompt_struct, detail_leve
 	let result = []
 	result.push(RockPaperScissorsPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(DicePrompt(args, logical_results, prompt_struct, detail_level))
+	result.push(MinMaxPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(TaroPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(PoemPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(CopusGeneratorPrompt(args, logical_results, prompt_struct, detail_level))
