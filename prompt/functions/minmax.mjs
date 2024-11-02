@@ -14,7 +14,7 @@ export function MinMaxPrompt(args, logical_results, prompt_struct, detail_level)
 	let result = ''
 
 	if(match_keys(args, [/(哪个|谁)(最|)(大|小)/, /(大|小)还是/], 'any')) {
-		let matches = getScopedChatLog(args, 'any').map(x => x.content).join().match(/(?<!(:|@\w*))\b\d+(\.\d+)?\b/g)?.map(x => parseFloat(x))
+		let matches = getScopedChatLog(args, 'any').map(x => x.content).join().match(/(?<!(:|@\w*|\/))\b\d+(\.\d+)?\b/g)?.map(x => parseFloat(x))
 		matches = [...new Set(matches || [])]
 		if (matches.length >= 2)
 			result += `\

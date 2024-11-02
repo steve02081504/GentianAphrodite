@@ -265,6 +265,8 @@ export default function DiscordBotMain(client, config) {
 					})
 
 				if (reply.content) {
+					if (reply.content.startsWith(`@${message.author.username}`))
+						reply.content = reply.content.slice(`@${message.author.username}`.length).trim()
 
 					let splited_reply = splitDiscordReply(reply.content)
 					let last_reply = splited_reply.pop()
