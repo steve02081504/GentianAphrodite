@@ -14,11 +14,12 @@ export function MinMaxPrompt(args, logical_results, prompt_struct, detail_level)
 	let result = ''
 
 	if(match_keys(args, [/(哪个|谁)(最|)(大|小)/, /(大|小)还是/], 'any')) {
-		let matches = getScopedChatLog(args, 'any').map(x => x.content).join().match(/\d+(\.\d+)?/g).map(x => parseFloat(x))
-		if (matches.length)
+		let matches = getScopedChatLog(args, 'any').map(x => x.content).join().match(/(?<!(:|@\w*))\b\d+(\.\d+)?\b/g)?.map(x => parseFloat(x))
+		matches = [...new Set(matches || [])]
+		if (matches.length >= 2)
 			result += `\
-以下是一些数，从小到大排列，可能对你的回答有帮助：
-${matches.sort((a, b) => a - b).join(', ')}
+以下是一些数的大小顺序，可能对你的回答有帮助：
+${matches.sort((a, b) => a - b).join(' < ')}
 `
 	}
 	return {

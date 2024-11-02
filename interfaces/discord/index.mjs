@@ -120,7 +120,7 @@ function splitDiscordReply(reply, split_lenth = 2000) {
 			last = content_slice
 		}
 	mapend()
-	return content_slices
+	return content_slices.map(e => e.trim()).filter(e => e)
 }
 
 /**
@@ -145,9 +145,9 @@ export default function DiscordBotMain(client, config) {
 			let content = message.content
 			for (let [key, value] of message.mentions.users)
 				if (content.includes(`<@${value.id}>`))
-					content = content.replaceAll(`<@${value.id}>`, `<@${value.username}>`)
+					content = content.replaceAll(`<@${value.id}>`, `@${value.username}`)
 				else
-					content = `<@${value.username}> ${content}`
+					content = `@${value.username} ${content}`
 			/** @type {chatLogEntry_t} */
 			let result = {
 				timeStamp: message.createdTimestamp,
@@ -191,6 +191,8 @@ export default function DiscordBotMain(client, config) {
 
 		possible += base_match_keys(message.content, [/(花|华)(萝|箩|罗)(蘑|磨|摩)/g]) * 3 // 每个匹配对该消息追加 3% 可能性回复消息
 
+		let is_bot_command = message.content.match(/^[!#$%&/\\~！？]/) // 跳过疑似bot命令
+
 		let lastSendTime = lastSendMessageTime[message.channel.id] || 0
 		if (message.author.username === config.ownerUserName) {
 			if (message.content.substring(0, 5).includes('龙胆')) return true
@@ -202,7 +204,7 @@ export default function DiscordBotMain(client, config) {
 				if (base_match_keys(message.content, [/再(来|表演).*(次|个)/, '来个', '不够', '不如'])) return true
 			}
 			if (message.mentions.users.has(client.user.id)) return true
-			possible += 7 // 多出 7% 的可能性回复主人
+			if (!is_bot_command) possible += 7 // 多出 7% 的可能性回复主人
 		}
 		else
 			if (message.content.substring(0, 5).includes('龙胆')) possible += 40
@@ -237,34 +239,34 @@ export default function DiscordBotMain(client, config) {
 				if (typeingInterval) clearInterval(typeingInterval)
 				typeingInterval = null
 			}
-
+			let messagesender = async reply => await message.channel.send(reply)
+			if (message.mentions.users.has(client.user.id))
+				messagesender = async reply => {
+					try { await message.reply(reply) } catch (error) { await message.channel.send(reply) }
+					messagesender = async reply => await message.channel.send(reply)
+				}
 			try {
 				let messages = await message.channel.messages.fetch({ limit: MAX_MESSAGE_DEPTH })
 				let reply = // { content: '嗯嗯！' } ||
-				await GetReply({
-					Charname: '龙胆',
-					UserCharname: config.ownerUserName,
-					ReplyToCharname: message.author.username,
-					locale: '',
-					time: new Date(),
-					world: null,
-					user: null,
-					char: GentianAphrodite,
-					other_chars: [],
-					plugins: [],
-					chat_summary: '',
-					chat_scoped_char_memory: {},
-					chat_log: await DiscordMessagesToFountChatLog(messages),
-				})
+					await GetReply({
+						Charname: '龙胆',
+						UserCharname: config.ownerUserName,
+						ReplyToCharname: message.author.username,
+						locale: '',
+						time: new Date(),
+						world: null,
+						user: null,
+						char: GentianAphrodite,
+						other_chars: [],
+						plugins: [],
+						chat_summary: '',
+						chat_scoped_char_memory: {},
+						chat_log: await DiscordMessagesToFountChatLog(messages),
+					})
 
 				if (reply.content) {
-					let messagesender = async reply => await message.channel.send(reply)
-					if (message.mentions.users.has(client.user.id))
-						messagesender = async reply => {
-							await message.reply(reply)
-							messagesender = async reply => await message.channel.send(reply)
-						}
-					let splited_reply = splitDiscordReply(reply.content).map(message => message.trim()).filter(message => message)
+
+					let splited_reply = splitDiscordReply(reply.content)
 					let last_reply = splited_reply.pop()
 					let last_reply_message = {
 						content: last_reply,
@@ -305,7 +307,7 @@ export default function DiscordBotMain(client, config) {
 							extension: {}
 						}, {
 							name: config.ownerUserName,
-							content: error_message + '\n我该如何解决这个错误？',
+							content: error_message + '\n龙胆，我该如何解决这个错误？',
 							timeStamp: new Date(),
 							role: 'user',
 							extension: {}
@@ -314,7 +316,13 @@ export default function DiscordBotMain(client, config) {
 				} catch (error) {
 					AIsuggestion = { content: '```\n' + error.stack + '\n```\n没什么解决思路呢？' }
 				}
-				message.reply({ content: error_message + '\n' + AIsuggestion.content })
+				AIsuggestion = error_message + '\n' + AIsuggestion.content
+				try {
+					let splited_reply = splitDiscordReply(AIsuggestion)
+					for (let message of splited_reply) await messagesender(message)
+				} catch (error) {
+					await messagesender(AIsuggestion)
+				}
 			}
 
 			clearTypeingInterval()
