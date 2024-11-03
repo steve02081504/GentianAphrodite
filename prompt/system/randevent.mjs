@@ -10,7 +10,7 @@ import { match_keys } from '../../scripts/match.mjs'
  * @param {prompt_struct_t} prompt_struct
  * @param {number} detail_level
  */
-export function RandEventPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function RandEventPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
 	if(Math.random() < 1/3 && !logical_results.talking_about_ai_character && !logical_results.in_assist)

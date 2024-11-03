@@ -1,4 +1,5 @@
 import { Client, Events, Message } from 'npm:discord.js'
+import { Buffer } from 'node:buffer'
 import { base_match_keys } from '../../scripts/match.mjs'
 import { GetReply } from '../../reply_gener/index.mjs'
 import GentianAphrodite from '../../main.mjs'
@@ -130,8 +131,9 @@ function splitDiscordReply(reply, split_lenth = 2000) {
 export default function DiscordBotMain(client, config) {
 	const MAX_MESSAGE_DEPTH = config.maxMessageDepth || 40
 	let lastSendMessageTime = {}
+	let MessageExtensionInfoCache = {}
 	/**
-	 * @param {Message[]} messages
+	 * @param {import('discord.js').OmitPartialGroupDMChannel<Message<boolean>>[]} messages
 	 * @returns
 	 */
 	async function DiscordMessagesToFountChatLog(messages) {
@@ -148,6 +150,9 @@ export default function DiscordBotMain(client, config) {
 					content = content.replaceAll(`<@${value.id}>`, `@${value.username}`)
 				else
 					content = `@${value.username} ${content}`
+			let channelCache = MessageExtensionInfoCache[message.channel.id] ??= {}
+			let extension = channelCache[message.id] ??= {}
+			for (let key of Object.keys(channelCache).slice(0, -MAX_MESSAGE_DEPTH)) delete channelCache[key]
 			/** @type {chatLogEntry_t} */
 			let result = {
 				timeStamp: message.createdTimestamp,
@@ -162,7 +167,7 @@ export default function DiscordBotMain(client, config) {
 						mimeType: attachment.contentType
 					}
 				})),
-				extension: {}
+				extension
 			}
 			return result
 		}))
@@ -179,7 +184,7 @@ export default function DiscordBotMain(client, config) {
 		return marged_result
 	}
 	/**
-	 * @param {Message} message
+	 * @param {import('discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
 	 * @returns {boolean}
 	 */
 	function CheckMessageContentTrigger(message) {
@@ -187,15 +192,17 @@ export default function DiscordBotMain(client, config) {
 
 		possible += base_match_keys(message.content, config.OwnnerNameKeywords) * 7 // 每个匹配对该消息追加 7% 可能性回复消息
 
-		possible += base_match_keys(message.content, ['龙胆']) * 5 // 每个匹配对该消息追加 5% 可能性回复消息
+		possible += base_match_keys(message.content, ['龙胆','gentian']) * 5 // 每个匹配对该消息追加 5% 可能性回复消息
 
 		possible += base_match_keys(message.content, [/(花|华)(萝|箩|罗)(蘑|磨|摩)/g]) * 3 // 每个匹配对该消息追加 3% 可能性回复消息
 
-		let is_bot_command = message.content.match(/^[!#$%&/\\~！？]/) // 跳过疑似bot命令
+		let is_bot_command = message.content.match(/^[!$%&/<\\！？]/) // 跳过疑似bot命令
 
 		let lastSendTime = lastSendMessageTime[message.channel.id] || 0
+		let mentionedWithoutAt = message.content.substring(0, 5).includes('龙胆') || message.content.split(' ').slice(0, 6).join(' ').match(/gentian/i)
 		if (message.author.username === config.ownerUserName) {
-			if (message.content.substring(0, 5).includes('龙胆')) return true
+			if (mentionedWithoutAt) return true
+			if (message.content.split(' ').slice(0, 6).join(' ').match(/gentian/i)) return true
 			if (base_match_keys(message.content, ['老婆', '女票', '女朋友', '炮友'])) matchs += 50
 			if (base_match_keys(message.content, [/(有点|好)紧张/, '救救', '帮帮', '帮我', '来人', '咋用', '教教', /是真的(吗|么)/])) return true
 			if (base_match_keys(message.content, ['龙胆']) && base_match_keys(message.content, ['怎么想'])) return true
@@ -207,7 +214,7 @@ export default function DiscordBotMain(client, config) {
 			if (!is_bot_command) possible += 7 // 多出 7% 的可能性回复主人
 		}
 		else
-			if (message.content.substring(0, 5).includes('龙胆')) possible += 40
+			if (mentionedWithoutAt) possible += 40
 
 		let rude_words = [
 			'傻逼', '白痴', '蠢货', '弱智', '傻子', '废物', '下贱', '低能', '死妈', '恶心', '不知死活', '活得不耐烦', '禁言'
@@ -242,7 +249,7 @@ export default function DiscordBotMain(client, config) {
 			let messagesender = async reply => await message.channel.send(reply)
 			if (message.mentions.users.has(client.user.id))
 				messagesender = async reply => {
-					try { await message.reply(reply) } catch (error) { await message.channel.send(reply) }
+					try { message.reply(reply) } catch (error) { message.channel.send(reply) }
 					messagesender = async reply => await message.channel.send(reply)
 				}
 			try {
@@ -316,12 +323,13 @@ export default function DiscordBotMain(client, config) {
 						}],
 					})
 				} catch (another_error) {
-					if (another_error.stack === error.stack)
+					if (`${error.name}: ${error.message}` == `${another_error.name}: ${another_error.message}`)
 						AIsuggestion = { content: '没什么解决思路呢？' }
 					else
-						AIsuggestion = { content: '```\n' + error.stack + '\n```\n没什么解决思路呢？' }
+						AIsuggestion = { content: '```\n' + another_error.stack + '\n```\n没什么解决思路呢？' }
 				}
 				AIsuggestion = error_message + '\n' + AIsuggestion.content
+				AIsuggestion = AIsuggestion.replace(/(?:\d{1,3}\.){3}\d{1,3}/g, '127.0.0.1')
 				try {
 					let splited_reply = splitDiscordReply(AIsuggestion)
 					for (let message of splited_reply) await messagesender(message)

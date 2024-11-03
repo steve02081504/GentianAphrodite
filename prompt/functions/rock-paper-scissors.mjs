@@ -10,11 +10,11 @@ import { match_keys } from '../../scripts/match.mjs'
  * @param {prompt_struct_t} prompt_struct
  * @param {number} detail_level
  */
-export function RockPaperScissorsPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function RockPaperScissorsPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if (match_keys(args, ['出', '猜拳', '石头剪刀布'], 'any', 2) &&
-		match_keys(args, ['剪刀', '剪子', '布', '猜拳', '石头'], 'any', 2))
+	if (await match_keys(args, ['出', '猜拳', '石头剪刀布'], 'any', 2) &&
+		await match_keys(args, ['剪刀', '剪子', '布', '猜拳', '石头'], 'any', 2))
 		result += `\
 在玩石头剪刀布？你会让${args.UserCharname}先出。
 如果他出了，<这次你会出${random('石头','剪刀','布')}>

@@ -10,10 +10,10 @@ import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
  * @param {prompt_struct_t} prompt_struct
  * @param {number} detail_level
  */
-export function PoemPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function PoemPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if(match_keys(args, ['写','来一首','来首'], 'any') && match_keys(args, ['现代诗','诗'], 'any'))
+	if(await match_keys(args, ['写','来一首','来首'], 'any') && await match_keys(args, ['现代诗','诗'], 'any'))
 		result += `\
 如何写好一首诗？
 避免缺乏创造力的比喻：不要让本体和喻体过分相似，两者之间需保有适当的联系
@@ -50,7 +50,7 @@ export function PoemPrompt(args, logical_results, prompt_struct, detail_level) {
 黄沙漫漫，寂寥延向远方。”
 `
 
-	if(match_keys(args, ['写','来一首','来首'], 'any') && match_keys(args, ['中国诗','古代诗','古诗','吟诗','唐诗','大才女','大诗人'], 'any'))
+	if(await match_keys(args, ['写','来一首','来首'], 'any') && await match_keys(args, ['中国诗','古代诗','古诗','吟诗','唐诗','大才女','大诗人'], 'any'))
 		result += `\
 唐诗和现代诗更为不同，要求音韵和谐流畅，使用古典意象，并结构严谨
 例1：
@@ -65,7 +65,7 @@ export function PoemPrompt(args, logical_results, prompt_struct, detail_level) {
 此情可待成追忆，只是当时已惘然。
 `
 
-	if(match_keys(args, ['写'], 'any') && match_keys(args, ['诗'], 'any'))
+	if(await match_keys(args, ['写'], 'any') && await match_keys(args, ['诗'], 'any'))
 		result += `\
 <你应当原创或组合诗句，而不是复现已有内容>
 `

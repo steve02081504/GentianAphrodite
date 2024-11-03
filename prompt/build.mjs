@@ -19,11 +19,11 @@ export function margePrompt(...prompts) {
 	return result
 }
 
-export function buildPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function buildPrompt(args, logical_results, prompt_struct, detail_level) {
 	return margePrompt(
-		RoleSettingsPrompt(args, logical_results, prompt_struct, detail_level),
-		FunctionPrompt(args, logical_results, prompt_struct, detail_level),
-		ADPrompt(args, logical_results, prompt_struct, detail_level),
-		SystemPrompt(args, logical_results, prompt_struct, detail_level)
+		await RoleSettingsPrompt(args, logical_results, prompt_struct, detail_level),
+		await FunctionPrompt(args, logical_results, prompt_struct, detail_level),
+		await ADPrompt(args, logical_results, prompt_struct, detail_level),
+		await SystemPrompt(args, logical_results, prompt_struct, detail_level)
 	)
 }

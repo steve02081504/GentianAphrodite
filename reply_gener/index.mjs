@@ -15,7 +15,7 @@ export async function GetReply(args) {
 	if (noAISourceAvailable()) return noAIreply(args)
 
 	let prompt_struct = await buildPromptStruct(args)
-	let logical_results = buildLogicalResults(args, prompt_struct, 0)
+	let logical_results = await buildLogicalResults(args, prompt_struct, 0)
 	/** @type {chatLogEntry_t} */
 	let result = {
 		content: '',

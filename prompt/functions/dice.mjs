@@ -17,16 +17,16 @@ function roll(type, num=1) {
  * @param {prompt_struct_t} prompt_struct
  * @param {number} detail_level
  */
-export function DicePrompt(args, logical_results, prompt_struct, detail_level) {
+export async function DicePrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if(match_keys(args, ['比大小','骰子','🎲'], 'any'))
+	if(await match_keys(args, ['比大小','骰子','🎲'], 'any'))
 		result += `\
 以下是一些随机数，在你需要时[从前往后]取数：
 6面骰（默认类型）：${roll(6)}; ${roll(6)}; ${roll(6)}; ${roll(6)}; ${roll(6)};
 `
 
-	if(match_keys(args, [/\b(\d*)d(\d+)\b/], 'any')) {
+	if(await match_keys(args, [/\b(\d*)d(\d+)\b/], 'any')) {
 		result += `\
 当他人谈论起形似“1d6”的语句时，这很可能是指代掷骰子。
 XdY，即扔出X个Y面骰子

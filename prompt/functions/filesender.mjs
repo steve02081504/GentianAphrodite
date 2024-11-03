@@ -10,10 +10,10 @@ import { match_keys } from '../../scripts/match.mjs'
  * @param {prompt_struct_t} prompt_struct
  * @param {number} detail_level
  */
-export function FileSenderPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function FileSenderPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if (match_keys(args, ['发给我', '发我', '发来', '发出来', '发过来'], 'any')) {
+	if (await match_keys(args, ['发给我', '发我', '发来', '发出来', '发过来'], 'any')) {
 		result += `\
 你可以用以下语法发送文件：
 \`\`\`send-file

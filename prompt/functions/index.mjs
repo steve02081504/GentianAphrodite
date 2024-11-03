@@ -21,7 +21,7 @@ import { MinMaxPrompt } from './minmax.mjs'
  * @param {prompt_struct_t} prompt_struct
  * @param {number} detail_level
  */
-export function FunctionPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function FunctionPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = []
 	result.push(RockPaperScissorsPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(DicePrompt(args, logical_results, prompt_struct, detail_level))
@@ -36,5 +36,5 @@ export function FunctionPrompt(args, logical_results, prompt_struct, detail_leve
 	result.push(infoPrompt(args, logical_results, prompt_struct, detail_level))
 	if(logical_results.talking_about_prompt_review)
 		result.push(PromptReviewerPrompt(args, logical_results, prompt_struct, detail_level))
-	return margePrompt(...result)
+	return margePrompt(...await Promise.all(result))
 }

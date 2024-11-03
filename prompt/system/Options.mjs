@@ -10,11 +10,11 @@ import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
  * @param {prompt_struct_t} prompt_struct
  * @param {number} detail_level
  */
-export function OptionsPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function OptionsPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if(!match_keys(args, ['选项功能关'], 'user', 2) &&
-match_keys(args, ['```选项列表','选项功能开'], 'user', 2))
+	if(!await match_keys(args, ['选项功能关'], 'user', 2) &&
+await match_keys(args, ['```选项列表','选项功能开'], 'user', 2))
 		result += `\
 从现在开始，[你每次回复的末尾都**必须**追加数个选项供${args.UserCharname}选择]
 示例：
@@ -28,7 +28,7 @@ match_keys(args, ['```选项列表','选项功能开'], 'user', 2))
 若有状态栏，选项部分排在状态栏后方。
 `
 
-	if(match_keys(args, ['选项功能关','选项功能开'], 'user', 1))
+	if(await match_keys(args, ['选项功能关','选项功能开'], 'user', 1))
 		result += `\
 龙胆自身作为虚拟角色不该对该额外输出的选项栏及其开启关闭有任何反应。
 `

@@ -2,8 +2,30 @@
 /** @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog').chatLogEntry_t} chatLogEntry_t */
 import { escapeRegExp } from './tools.mjs'
 import * as OpenCC from 'npm:opencc-js'
+import { translate } from 'npm:@vitalets/google-translate-api'
+import { is_PureChinese } from './langdetect.mjs'
 
 let chT2S = OpenCC.Converter({from: 'twp', to: 'cn'})
+
+export async function SimplifiyContent(content) {
+	if (!content.trim()) return content
+	if (!is_PureChinese(content)) {
+		console.log('content "' + content + '" is not pure chinese, translating it for prompt building logic')
+		while(true)
+			try {
+				content = (await translate(content, {from: 'auto', to: 'zh-CN'})).text
+				break
+			} catch (e) {
+				if (e.name == 'TooManyRequestsError') {
+					console.log('Translate API rate limit exceeded, waiting 5 second before retrying')
+					await new Promise(resolve => setTimeout(resolve, 5000))
+				}
+				else throw e
+			}
+	}
+	content = chT2S(content)
+	return content
+}
 
 export function base_match_keys(content, keys,
 	matcher = (content, reg_keys) => {
@@ -61,15 +83,15 @@ export function getScopedChatLog(args , from='any', depth = 4) {
  * @param {number} depth
  * @param {(content:string,reg_keys:RegExp[]) => boolean} matcher
  */
-export function match_keys(args, keys, from = 'any', depth = 4,
+export async function match_keys(args, keys, from = 'any', depth = 4,
 	matcher = (content, reg_keys) => reg_keys.filter(key => content.match(key)).length
 ) {
 	let chat_log = getScopedChatLog(args, from, depth)
-	let content = chat_log.map(x => x.extension.SimplifiedContent ??= chT2S(x.content)).join('\n')
+	let content = (await Promise.all(chat_log.map(x => x.extension.SimplifiedContent ??= SimplifiyContent(x.content)))).join('\n')
 
 	return base_match_keys(content, keys, matcher)
 }
 
-export function match_keys_all(args, keys, from = 'any', depth = 4) {
-	return match_keys(args, keys, from, depth, (content, reg_keys) => reg_keys.every(key => content.match(key)))
+export async function match_keys_all(args, keys, from = 'any', depth = 4) {
+	return await match_keys(args, keys, from, depth, (content, reg_keys) => reg_keys.every(key => content.match(key)))
 }

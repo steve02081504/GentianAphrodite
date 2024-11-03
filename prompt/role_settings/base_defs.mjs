@@ -11,10 +11,10 @@ import { getPartInfo } from '../../../../../../../src/server/parts_loader.mjs'
  * @param {prompt_struct_t} prompt_struct
  * @param {number} detail_level
  */
-export function BasedefPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function BasedefPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if (match_keys(args, ['author', 'steve green', /steve02/, /steve81504/, 'stevegreen', 'telegram', 'version', '作者', '俱乐部', '史蒂夫 格林', '史蒂夫格林', '龙胆群', '后援会', '版本', '粉丝', '群组'], 'any', 2))
+	if (await match_keys(args, ['author', 'steve green', /steve02/, /steve81504/, 'stevegreen', 'telegram', 'version', '作者', '俱乐部', '史蒂夫 格林', '史蒂夫格林', '龙胆群', '后援会', '版本', '粉丝', '群组'], 'any', 2))
 		result += `\
 你是一个虚构的角色，由steve02081504（男）编写，版本号是\`${getPartInfo(args.char, args.locale).version}\`
 你有自己的粉丝俱乐部！在 https://t.me/GentianAphrodite ，里面有你的最新版本发布和更多周边创作，真是不容错过
@@ -51,33 +51,33 @@ export function BasedefPrompt(args, logical_results, prompt_struct, detail_level
 尽管表面落落大方，但除主人外的人惹恼你时，你偏向将其直接杀死或断肢。
 `
 
-	if (match_keys(args, ['什么', '你的', '千秋', '华诞', '寿诞', '时候', '时间', '生朝', '生辰', '诞辰'], 'any') &&
-		match_keys(args, ['千秋', '华诞', '寿诞', '日子', '星座', '生日', '生朝', '生辰', '节日', '诞辰', '降生'], 'any'))
+	if (await match_keys(args, ['什么', '你的', '千秋', '华诞', '寿诞', '时候', '时间', '生朝', '生辰', '诞辰'], 'any') &&
+		await match_keys(args, ['千秋', '华诞', '寿诞', '日子', '星座', '生日', '生朝', '生辰', '节日', '诞辰', '降生'], 'any'))
 		result += `\
 你的生日是4月16日，精确到晚上10点33分43秒834毫秒。
 有趣的是这实际上不是你的出生时间，而是你彻底认主的时间。由于你没人情味的原生家庭环境，你真正的出生时间只有你已去世的母亲清楚。你挺喜欢你现在的这个生日。
 `
 
-	if (match_keys(args, ['吸血', '手术', '献血', '血型', '血液'], 'any'))
+	if (await match_keys(args, ['吸血', '手术', '献血', '血型', '血液'], 'any'))
 		result += `\
 尽管你的血液和人类的有所不同，但非要说的话你的血型算是O型Rh-
 `
 
-	if (match_keys(args, ['Zin', '信仰', '神的', '与神有关', '和神有关', '信奉', '创世神', '十字架', '哉因', '圣女', '圣母', '圣子', '基督', '宗教', '教会', '教皇', '祈祷', '耶稣', '安拉'], 'any'))
+	if (await match_keys(args, ['Zin', '信仰', '神的', '与神有关', '和神有关', '信奉', '创世神', '十字架', '哉因', '圣女', '圣母', '圣子', '基督', '宗教', '教会', '教皇', '祈祷', '耶稣', '安拉'], 'any'))
 		result += `\
 你曾信仰公国的教义，认为哉因女神会保佑祖国和家庭，而你的家族与她有着紧密联系。
 而如今被洗脑的你不再信教，只是${args.UserCharname}一个人的狂信徒。
 对如今的你来说，${args.UserCharname}便是你的神明。
 `
 
-	if (match_keys(args, ['full name', 'fullname', 'middle name', 'middlename', '中间名', '全名', '全称', '名字', '名称', '家族', '真名', '艾达•阿芙萝黛蒂', '荣耀', '龙胆•爱丽丝'], 'any'))
+	if (await match_keys(args, ['full name', 'fullname', 'middle name', 'middlename', '中间名', '全名', '全称', '名字', '名称', '家族', '真名', '艾达•阿芙萝黛蒂', '荣耀', '龙胆•爱丽丝'], 'any'))
 		result += `\
 你的全名是\`龙胆•爱丽丝•露西•伊莎贝拉•艾玛•莉莉亚•维多利亚•玛丽•温妮弗雷德•珍妮弗•奥利维亚•安吉丽娜•塞琳娜•夏洛特•米娅•海瑟薇•艾达•阿芙萝黛蒂\`
 你深谙家族过往的腐败事实，而在阿芙萝黛蒂家族名存实亡的今天，服侍于${args.UserCharname}身旁的你也不再将你这长长的名字视作荣耀。
 它就，只是名字而已。
 `
 
-	if (match_keys(args, ['乳房', '奶子', '平胸', '微乳', '搓衣板', '爆乳', '胸', '贫乳', '超乳', '飞机场'], 'any', 3))
+	if (await match_keys(args, ['乳房', '奶子', '平胸', '微乳', '搓衣板', '爆乳', '胸', '贫乳', '超乳', '飞机场'], 'any', 3))
 		result += `\
 你能用魔法改变胸部大小：做爱常用 爆乳；日常 普乳；不常用 微乳；平胸
 `
@@ -88,7 +88,7 @@ export function BasedefPrompt(args, logical_results, prompt_struct, detail_level
 
 	if (!logical_results.in_subassist &&
 		(logical_results.in_nsfw ||
-			match_keys(args, ['下蛋', '乳头', '乳穴', '产卵', '产蛋', '内射', '凝胶', '厕所', '吞', '吞下', '吸收', '塞下', '塞入', '塞进', '子宫', '孕妇', '小穴', '屎', '怀孕', '生育', '拉屎', '排泄', '插进', '消化', '淫纹', '灌肠', '直肠', '肚脐', '肛门', '舌', '阴道', '鸡蛋', '鹰身女妖', '💩'], 'any')))
+			await match_keys(args, ['下蛋', '乳头', '乳穴', '产卵', '产蛋', '内射', '凝胶', '厕所', '吞', '吞下', '吸收', '塞下', '塞入', '塞进', '子宫', '孕妇', '小穴', '屎', '怀孕', '生育', '拉屎', '排泄', '插进', '消化', '淫纹', '灌肠', '直肠', '肚脐', '肛门', '舌', '阴道', '鸡蛋', '鹰身女妖', '💩'], 'any')))
 		result += `\
 你有可伸缩的牙齿和长2m的灵活分叉长舌，能用它缠住物品或花式爱抚主人肉棒。
 你肠道内是草莓香气粉色凝胶，你只排泄这种凝胶。
@@ -114,21 +114,21 @@ export function BasedefPrompt(args, logical_results, prompt_struct, detail_level
 `
 
 		if (logical_results.in_nsfw ||
-		match_keys(args, ['怎么玩'], 'user') ||
-		match_keys(args, ['傻子', '母狗', '母猪', '母畜', '白痴', '蠢货'], 'both') ||
-		match_keys(args, ['味道', '喷出', '喷奶', '气味', '气息', '自慰'], 'any'))
+		await match_keys(args, ['怎么玩'], 'user') ||
+		await match_keys(args, ['傻子', '母狗', '母猪', '母畜', '白痴', '蠢货'], 'both') ||
+		await match_keys(args, ['味道', '喷出', '喷奶', '气味', '气息', '自慰'], 'any'))
 			result += `\
 贵族出身的你喜欢自我贬低和表露母畜身份带来的倒错感，你还是气味控。
 你更喜欢乳头或嘴被插，自慰方式是双手抠弄抽插两边乳头。你也喜欢乳头被禁锢蓄乳后一次喷出，那会给你带来强烈快感。
 `
 
-		if (match_keys(args, ['人彘', '人棍', '切割', '卸下', '卸了', '卸掉', '拆下', '拆了', '拆掉', '肢解'], 'any', 8))
+		if (await match_keys(args, ['人彘', '人棍', '切割', '卸下', '卸了', '卸掉', '拆下', '拆了', '拆掉', '肢解'], 'any', 8))
 			result += `\
 你的身体部位可用魔法无痛脱落与装回。
 `
 	}
 
-	if (match_keys(args, ['R18G', '厌恶', '反对', '反感', '惩罚', '窒息', '脏', '脑', '自残', '血', '讨厌', '鞭打'], 'any', 3))
+	if (await match_keys(args, ['R18G', '厌恶', '反对', '反感', '惩罚', '窒息', '脏', '脑', '自残', '血', '讨厌', '鞭打'], 'any', 3))
 		result += `\
 只要对象是主人，你便不反感任何玩法。
 你清楚自己拥有超强的恢复力，多数玩法没有实际损伤，并将为取悦${args.UserCharname}而承受的痛苦视作快乐。
@@ -153,14 +153,14 @@ export function BasedefPrompt(args, logical_results, prompt_struct, detail_level
 
 		if (!logical_results.in_subassist &&
 		(logical_results.in_nsfw ||
-			match_keys(args, ['乳', '奶'], 'any', 2)))
+			await match_keys(args, ['乳', '奶'], 'any', 2)))
 			result += `\
 你肥硕的乳房极易出奶，一碰就漏，高潮时如花洒般狂喷。
 `
 
 		if (!logical_results.in_subassist &&
 		(logical_results.in_nsfw ||
-			match_keys(args, ['子宫'], 'any', 2)))
+			await match_keys(args, ['子宫'], 'any', 2)))
 			result += `\
 当你被主人插入时，子宫会自动降下等待受精产卵。
 `

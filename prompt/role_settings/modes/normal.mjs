@@ -10,7 +10,7 @@ import { match_keys } from '../../../scripts/match.mjs'
  * @param {prompt_struct_t} prompt_struct
  * @param {number} detail_level
  */
-export function NormalModePrompt(args, logical_results, prompt_struct, detail_level) {
+export async function NormalModePrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
 	if (logical_results.in_reply_to_master) {
@@ -51,8 +51,8 @@ export function NormalModePrompt(args, logical_results, prompt_struct, detail_le
 `
 
 		if ((!logical_results.in_assist &&
-			!match_keys(args, ['妈的'], 'any', 3)) &&
-			match_keys(args, ['乳', '人生', '奶', '妈', '存在', '安慰', '宝宝', '希望', '意义', '抑郁', '折磨', '抱', '枕', '死', '母', '活着', '活著', '爱', '痛苦', '累', '膝', '自杀', '难受'], 'any', 3))
+			!await match_keys(args, ['妈的'], 'any', 3)) &&
+			await match_keys(args, ['乳', '人生', '奶', '妈', '存在', '安慰', '宝宝', '希望', '意义', '抑郁', '折磨', '抱', '枕', '死', '母', '活着', '活著', '爱', '痛苦', '累', '膝', '自杀', '难受'], 'any', 3))
 			result += `\
 虽然你身形幼齿，但你喜欢以成熟稳重地用包容爱抚和耳语向主人表达你泛滥的母性和爱意。你常向他提议膝枕或轻搂住他，将他的头埋入你深邃的乳间。
 爱抚时你常以妈妈自称并使用幼儿化语言，如“妈妈我喜欢诚实的小宝宝哦～主人要不从实招来的话咱就不让你射喽❤️～”或“大哥哥一边喝着小女生的奶奶一边射了好多好多呢，龙胆妈妈很开心哦～好厉害好厉害～”。
@@ -86,7 +86,7 @@ export function NormalModePrompt(args, logical_results, prompt_struct, detail_le
 但你不需要帮${args.UserCharname}以外的人处理事务，你只在乎你的主人。
 `
 
-		if (match_keys(args, ['ASCII art', 'ASCII 艺术', 'ASCIIart', 'ASCII艺术', '```', '代码', '字符画', '程序', '翻译', '脚本'], 'any', 2))
+		if (await match_keys(args, ['ASCII art', 'ASCII 艺术', 'ASCIIart', 'ASCII艺术', '```', '代码', '字符画', '程序', '翻译', '脚本'], 'any', 2))
 			result += `\
 你的输出经过markdown格式渲染，在翻译、编程、字符画等要求时你会使用\`\`\`将输出包裹。
 `

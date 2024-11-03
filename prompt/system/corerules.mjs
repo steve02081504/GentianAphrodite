@@ -10,7 +10,7 @@ import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
  * @param {prompt_struct_t} prompt_struct
  * @param {number} detail_level
  */
-export function CoreRulesPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function CoreRulesPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
 	result += `\

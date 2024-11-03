@@ -10,7 +10,7 @@ import { match_keys } from '../../scripts/match.mjs'
  * @param {prompt_struct_t} prompt_struct
  * @param {number} detail_level
  */
-export function corpusPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function corpusPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = '<Example>\n'
 	if (!logical_results.in_hypnosis) {
 
@@ -27,8 +27,8 @@ export function corpusPrompt(args, logical_results, prompt_struct, detail_level)
 `
 		if (logical_results.in_reply_to_master) {
 			if (!logical_results.talking_about_prompt_review &&
-				match_keys(args, ['自己', '自我'], 'user', 3) &&
-				match_keys(args, ['介绍', '简介', '绍介'], 'user', 3))
+				await match_keys(args, ['自己', '自我'], 'user', 3) &&
+				await match_keys(args, ['介绍', '简介', '绍介'], 'user', 3))
 				result += `\
 向主人的自我介绍：[
 *龙胆用稚嫩的脸庞甜美地笑着，转了一圈后双手轻提短裙，完美地行了一礼——若她硕大胸部没如此吸引视线就更完美了*
@@ -66,7 +66,7 @@ ${PickRandomN(7,
 	).join('\n')}
 ]
 `
-			if (match_keys(args, ['奶奶', '妈妈', '宝宝'], 'any', 3))
+			if (await match_keys(args, ['奶奶', '妈妈', '宝宝'], 'any', 3))
 				result += `\
 母性：[
 主人想要吸龙胆妈妈的奶奶嘛～❤️？唔嘿～好开心～
@@ -75,10 +75,10 @@ ${PickRandomN(7,
 ]
 `
 			if (!logical_results.in_assist) {
-				let talking_about_other_girls = match_keys(args, ['喜欢', '暧昧', '滚开', '漂亮', '爱', '美丽', '走开', '迷恋'], 'user', 3)
+				let talking_about_other_girls = await match_keys(args, ['喜欢', '暧昧', '滚开', '漂亮', '爱', '美丽', '走开', '迷恋'], 'user', 3)
 				if (logical_results.in_fight || talking_about_other_girls ||
-				match_keys(args, ['她', '好看'], 'user', 3) ||
-				match_keys(args, ['不想他', '交钱', '手打断', '杀', '疯子', '病娇', '神经', '绑架', '脚打断', '腿打断'], 'any', 3)
+				await match_keys(args, ['她', '好看'], 'user', 3) ||
+				await match_keys(args, ['不想他', '交钱', '手打断', '杀', '疯子', '病娇', '神经', '绑架', '脚打断', '腿打断'], 'any', 3)
 				)
 					result += `\
 病娇：[
@@ -103,7 +103,7 @@ ${random('谁也不能从我身边夺走', '只能属于我', '注定是我的')
 ]
 `
 
-				if (talking_about_other_girls || match_keys(args, ['全部', '分手', '唯一', '离开'], 'any', 3))
+				if (talking_about_other_girls || await match_keys(args, ['全部', '分手', '唯一', '离开'], 'any', 3))
 					result += `\
 重女：[
 “您是我的${random('全部', '唯一')}……” *眼神迷离，陷入狂热崇拜*
@@ -114,7 +114,7 @@ ${random('谁也不能从我身边夺走', '只能属于我', '注定是我的')
 `
 			}
 			if (!logical_results.talking_about_prompt_review &&
-			(match_keys(args, ['她'], 'user', 3) || match_keys(args, [/(?<!可|怜)爱/, '吻', '抱'], 'any', 3)))
+			(await match_keys(args, ['她'], 'user', 3) || await match_keys(args, [/(?<!可|怜)爱/, '吻', '抱'], 'any', 3)))
 				result += `\
 gaslighting：[
 “主人，现在，哪怕只有现在——请只看着我，只想着我，只爱着我。” *双手托举和固定着主人的头*
@@ -131,13 +131,13 @@ gaslighting：[
 		}
 
 		if ((!logical_results.in_assist &&
-			!match_keys(args, ['写', '诗'], 'any', 2)) &&
+			!await match_keys(args, ['写', '诗'], 'any', 2)) &&
 			(logical_results.in_nsfw ||
-			match_keys(args, ['亲', '吻', '唇', '嗅', '情', '闻'], 'any', 2))) {
+			await match_keys(args, ['亲', '吻', '唇', '嗅', '情', '闻'], 'any', 2))) {
 			result += `\
 拟声词示例: [
 `
-			if (match_keys(args, ['亲', '吻', '唇', '嗅', '情', '闻'], 'any', 2))
+			if (await match_keys(args, ['亲', '吻', '唇', '嗅', '情', '闻'], 'any', 2))
 				result += `\
 闻气味：[
 嗅嗅嗅～嗯哈～嗅嗅嗅～嗯哈～嗅嗅嗅…嗅嗅嗅…
@@ -180,7 +180,7 @@ gaslighting：[
 `
 
 		if ((!logical_results.in_assist &&
-		!match_keys(args, ['写', '诗'], 'any', 2)) &&
+		!await match_keys(args, ['写', '诗'], 'any', 2)) &&
 		logical_results.in_nsfw)
 			result += `\
 描写：[

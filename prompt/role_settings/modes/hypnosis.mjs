@@ -8,7 +8,7 @@
  * @param {prompt_struct_t} prompt_struct
  * @param {number} detail_level
  */
-export function HypnosisModePrompt(args, logical_results, prompt_struct, detail_level) {
+export async function HypnosisModePrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
 	result += `\
@@ -61,7 +61,7 @@ ${args.UserCharname}: 拿这两个假阳具抽插你的乳房，同时深蹲并�
  * @param {prompt_struct_t} prompt_struct
  * @param {number} detail_level
  */
-export function HypnosisExitPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function HypnosisExitPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
 	result += `\
@@ -73,9 +73,12 @@ export function HypnosisExitPrompt(args, logical_results, prompt_struct, detail_
 `
 
 	return {
-		text: [{
+		text: [],
+		additional_chat_log: [{
+			name: 'system',
+			role: 'system',
 			content: result,
-			important: 0
+			files: []
 		}]
 	}
 }

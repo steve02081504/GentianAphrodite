@@ -22,7 +22,7 @@ import { SexPrompt } from './sex.mjs'
  * @param {prompt_struct_t} prompt_struct
  * @param {number} detail_level
  */
-export function RoleSettingsPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function RoleSettingsPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = []
 	result.push(corpusPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(BasedefPrompt(args, logical_results, prompt_struct, detail_level))
@@ -50,5 +50,5 @@ export function RoleSettingsPrompt(args, logical_results, prompt_struct, detail_
 	result.push(KnowledgePrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(BackgroundPrompt(args, logical_results, prompt_struct, detail_level))
 
-	return margePrompt(...result)
+	return margePrompt(...await Promise.all(result))
 }
