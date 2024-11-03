@@ -1,5 +1,6 @@
 import { NdiffResults, PickRandomN, random, repetRandomTimes } from '../../scripts/random.mjs'
 import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
+import bigInt from 'npm:big-integer'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
@@ -7,7 +8,7 @@ import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
 function roll(type, num=1) {
 	let result = 0
 	for (let i = 0; i < num; i++)
-		result += Math.floor(Math.random() * type) + 1
+		result += bigInt.randBetween(1, type)
 	return result
 }
 /**
@@ -33,12 +34,12 @@ XdY，即扔出X个Y面骰子
 `
 		let matches = getScopedChatLog(args, 'any').map(x => x.content).join().match(/\b(\d*)d(\d+)\b/g)
 		result += `\
-以下是一些可能有用的roll结果:
+以下是一些可能有用的roll结果，在你需要时可直接取用：
 `
 		for (let parten of matches) {
 			parten = parten.split('d')
-			let x = parseInt(parten[0]) || 1
-			let y = parseInt(parten[1]) || 6
+			let x = bigInt(parten[0]) || 1
+			let y = bigInt(parten[1]) || 6
 			result += `\
 ${x}d${y}：${roll(y, x)}
 `

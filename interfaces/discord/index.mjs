@@ -1,4 +1,4 @@
-import { Client, Events, Message } from 'discord.js'
+import { Client, Events, Message } from 'npm:discord.js'
 import { base_match_keys } from '../../scripts/match.mjs'
 import { GetReply } from '../../reply_gener/index.mjs'
 import GentianAphrodite from '../../main.mjs'
@@ -315,8 +315,11 @@ export default function DiscordBotMain(client, config) {
 							extension: {}
 						}],
 					})
-				} catch (error) {
-					AIsuggestion = { content: '```\n' + error.stack + '\n```\n没什么解决思路呢？' }
+				} catch (another_error) {
+					if (another_error.stack === error.stack)
+						AIsuggestion = { content: '没什么解决思路呢？' }
+					else
+						AIsuggestion = { content: '```\n' + error.stack + '\n```\n没什么解决思路呢？' }
 				}
 				AIsuggestion = error_message + '\n' + AIsuggestion.content
 				try {

@@ -1,7 +1,7 @@
 /** @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog').chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog').chatLogEntry_t} chatLogEntry_t */
 import { escapeRegExp } from './tools.mjs'
-import * as OpenCC from 'opencc-js'
+import * as OpenCC from 'npm:opencc-js'
 
 let chT2S = OpenCC.Converter({from: 'twp', to: 'cn'})
 

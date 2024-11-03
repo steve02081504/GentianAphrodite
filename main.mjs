@@ -1,5 +1,7 @@
-import fs from 'fs'
+import fs from 'node:fs'
 import { GetGreetings, GetGroupGreetings } from './greetings/index.mjs'
+import { GetPrompt, GetPromptForOther } from './prompt/index.mjs'
+import { GetReply } from './reply_gener/index.mjs'
 import { GetAISource, SetAISource } from './AISource/index.mjs'
 import { FormatStr } from './scripts/tools.mjs'
 import { exec } from '../../../../../src/server/exec.mjs'
@@ -8,9 +10,6 @@ import { exec } from '../../../../../src/server/exec.mjs'
 export let chardir = import.meta.dirname
 export let charurl = '/chars/GentianAphrodite'
 export let charvar = await exec('git describe --tags', { cwd: chardir }).then((result) => result.stdout)
-
-let PromptMod
-let ReplyMod
 
 /** @type {charAPI_t} */
 export default {
@@ -47,13 +46,8 @@ export default {
 		}
 	},
 
-	Init: async (stat) => {
-		await exec('npm install --save-optional mime-types opencc-js')
-	},
-	Load: async (stat) => {
-		PromptMod = await import('./prompt/index.mjs')
-		ReplyMod = await import('./reply_gener/index.mjs')
-	},
+	Init: async (stat) => { },
+	Load: async (stat) => { },
 	Unload: (reason) => { },
 	Uninstall: (reason, from) => { },
 
@@ -82,12 +76,9 @@ export default {
 		chat: {
 			GetGreetings,
 			GetGroupGreetings,
-			GetPrompt: async (args, prompt_struct, detail_level) => {
-				return await PromptMod.GetPrompt(args, prompt_struct, detail_level)
-			},
-			GetReply: async (args) => {
-				return await ReplyMod.GetReply(args)
-			},
+			GetPrompt,
+			GetPromptForOther,
+			GetReply,
 		},
 		discord: {
 			OnceClientReady: (client, config) => {

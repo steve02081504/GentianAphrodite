@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'node:fs'
 /**
  * Checks if two arrays are equal.
  * @param {Array} a - The first array.
