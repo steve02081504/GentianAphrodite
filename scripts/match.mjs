@@ -10,7 +10,7 @@ let chT2S = OpenCC.Converter({from: 'twp', to: 'cn'})
 export async function SimplifiyContent(content) {
 	if (!content.trim()) return content
 	if (!is_PureChinese(content)) {
-		console.log('content "' + content + '" is not pure chinese, translating it for prompt building logic')
+		console.log('%ccontent "' + content + '" is not pure chinese, translating it for prompt building logic', 'color: red')
 		while(true)
 			try {
 				content = (await translate(content, {from: 'auto', to: 'zh-CN'})).text
@@ -20,11 +20,26 @@ export async function SimplifiyContent(content) {
 					console.log('Translate API rate limit exceeded, waiting 5 second before retrying')
 					await new Promise(resolve => setTimeout(resolve, 5000))
 				}
-				else throw e
+				else {
+					console.error('Failed to translate content "' + content + '": ', e)
+					break
+				}
 			}
 	}
 	content = chT2S(content)
 	return content
+}
+
+export async function PreprocessContent(content, extension = {}) {
+	extension ||= {}
+	extension.SimplifiedContent ??= await SimplifiyContent(content)
+
+	return extension
+}
+
+export async function PreprocessChatLogEntry(entry) {
+	entry.extension = await PreprocessContent(entry.content, entry.extension)
+	return entry.extension.SimplifiedContent
 }
 
 export function base_match_keys(content, keys,
@@ -87,7 +102,7 @@ export async function match_keys(args, keys, from = 'any', depth = 4,
 	matcher = (content, reg_keys) => reg_keys.filter(key => content.match(key)).length
 ) {
 	let chat_log = getScopedChatLog(args, from, depth)
-	let content = (await Promise.all(chat_log.map(x => x.extension.SimplifiedContent ??= SimplifiyContent(x.content)))).join('\n')
+	let content = (await Promise.all(chat_log.map(PreprocessChatLogEntry))).join('\n')
 
 	return base_match_keys(content, keys, matcher)
 }

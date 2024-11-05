@@ -55,7 +55,7 @@ export function clearEmptyDirs(dirPath) {
  * @param {string} str - The string to reverse.
  * @return {string} The reversed string.
  */
-export function reverseStr (/** @type {string} */str) {
+export function reverseStr(/** @type {string} */str) {
 	return Array.from(str).reverse().join('')
 }
 
@@ -117,7 +117,7 @@ export function unescapeRegExp(string) {
  * @return {string} The string with Unicode escape sequences replaced by actual characters.
  */
 export function unicodeEscapeToChar(str) {
-	return str.replace(/\\u[\dA-Fa-f]{4}/g, match=> String.fromCharCode(parseInt(match.replace('\\u', ''), 16)))
+	return str.replace(/\\u[\dA-Fa-f]{4}/g, match => String.fromCharCode(parseInt(match.replace('\\u', ''), 16)))
 }
 
 /**
@@ -174,7 +174,7 @@ export function removeDuplicates(data) {
  * @param {number} y - The minimum value.
  * @returns {number} A random integer between `y` (inclusive) and `x` (exclusive).
  */
-export function RandIntLeesThan (x, y = 0, Rng = Math.random) { return Math.floor(Rng() * (x - y)) + y }
+export function RandIntLeesThan(x, y = 0, Rng = Math.random) { return Math.floor(Rng() * (x - y)) + y }
 /**
  * Shuffles the elements of an array using the Fisher-Yates algorithm.
  *
@@ -200,5 +200,24 @@ export function suffleArray(a, Rng = Math.random) {
  */
 export function FormatStr(str, formats) {
 	let unpickscript = `let {${Object.keys(formats).join(', ')}} = formats;`
-	return str.replace(/\${([^}]+)}/g, (match, p1) => eval(unpickscript+p1))
+	return str.replace(/\${([^}]+)}/g, (match, p1) => eval(unpickscript + p1))
+}
+
+export function findMostFrequentElement(arr) {
+	const countMap = {}
+	let maxCount = 0
+	let mostFrequentElement
+
+	arr.forEach(element => {
+		countMap[element] = (countMap[element] || 0) + 1
+		if (countMap[element] > maxCount) {
+			maxCount = countMap[element]
+			mostFrequentElement = element
+		}
+	})
+
+	return {
+		element: mostFrequentElement,
+		count: maxCount
+	}
 }

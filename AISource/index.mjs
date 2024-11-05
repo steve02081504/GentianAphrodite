@@ -14,7 +14,7 @@ export let AIsources = {
 
 export function SetAISource(source, type) {
 	AIsources[type] = source
-	console.log('Set AI source:', type, source)
+	console.log('Set AI source:', type, getPartInfo(source).name)
 }
 
 export function GetAISource(type) {
