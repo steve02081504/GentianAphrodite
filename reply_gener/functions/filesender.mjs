@@ -2,8 +2,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 import mime from 'npm:mime-types'
 import os from 'node:os'
-/** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
-/** @typedef {import("../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
+/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
+/** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 function resolvePath(relativePath) {
 	if (relativePath.startsWith('~'))
@@ -13,14 +13,14 @@ function resolvePath(relativePath) {
 
 /**
  * @param {chatLogEntry_t} result
- * @param {prompt_struct_t} prompt_struct
+ * @param {(entry: chatLogEntry_t) => void} addLongTimeLog
  * @returns {Promise<boolean>}
  */
-export async function filesender(result, prompt_struct) {
+export async function filesender(result, addLongTimeLog) {
 	let filesender = result.content.match(/(\n|^)```send-file\n(?<file>[^]*)\n```/)?.groups?.file
 	if (filesender) {
 		filesender = filesender.split('\n')
-		prompt_struct.char_prompt.additional_chat_log.push({
+		addLongTimeLog({
 			name: '龙胆',
 			role: 'char',
 			content: '```send-file\n' + filesender.join('\n') + '\n```',
@@ -28,18 +28,18 @@ export async function filesender(result, prompt_struct) {
 		})
 		console.log('AI发送了文件：', filesender)
 		result.extension.sended_files ??= {}
-		let filesendlog = '你发送了文件：\n'
+		let filesendlog = ''
 		for (let file of filesender) {
 			file = resolvePath(file)
-			/*
-			if (result.extension.sended_files[file])
-				prompt_struct.char_prompt.additional_chat_log.push({
+			if (result.extension.sended_files[file]) {
+				addLongTimeLog({
 					name: 'system',
 					role: 'system',
 					content: '你已经发送过文件：\n' + file + '\n**请根据生成不带文件发送语法的回复而不是重复发送已发送的内容**',
 					files: []
 				})
-			*/
+				continue
+			}
 			filesendlog += file + '\t'
 			try {
 				let filebuffer = fs.readFileSync(file)
@@ -52,12 +52,13 @@ export async function filesender(result, prompt_struct) {
 				result.extension.sended_files[file] = err
 			}
 		}
-		prompt_struct.char_prompt.additional_chat_log.push({
-			name: 'system',
-			role: 'system',
-			content: filesendlog,
-			files: []
-		})
+		if (filesendlog)
+			addLongTimeLog({
+				name: 'system',
+				role: 'system',
+				content: '你发送了文件：\n' + filesendlog,
+				files: []
+			})
 		return true
 	}
 

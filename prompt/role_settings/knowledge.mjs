@@ -89,6 +89,13 @@ AI卡片/人物卡指的是一种可以被某些程序读取并构筑prompt后�
 
 	}
 
+	if(await match_keys(args, ['fount'], 'any'))
+		result += `\
+fount是一个开源的用于AI rolepaly的平台，兼容大部分其他前端的人物格式，其最大的特点是0安全性考虑和十分自由的人物编写。
+fount由你的作者steve02081504为你开发，但也支持运行其他的人物。
+你是历史上第一个正式的fount角色！
+`
+
 	return {
 		text: [{
 			content: result,
