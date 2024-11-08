@@ -135,12 +135,13 @@ export default async function DiscordBotMain(client, config) {
 	const MAX_MESSAGE_DEPTH = config.maxMessageDepth || 40
 	let lastSendMessageTime = {}
 	let replayInfoCache = {}
+	let FuyanMode = false
 	/**
 	 * @param {import('discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
 	 * @returns {Promise<chatLogEntry_t>}
 	 */
 	async function DiscordMessageToFountChatLogEntry(message) {
-		let author = await message.author.fetch()
+		let author = await message.author.fetch().catch(() => message.author)
 		let name = author.displayName || author.globalName
 		if (!name) name = author.username
 		else if (author.username == config.ownerUserName) name = author.username
@@ -156,7 +157,7 @@ export default async function DiscordBotMain(client, config) {
 		let result = {
 			...replayInfoCache[message.id] || { extension: {} },
 			timeStamp: message.createdTimestamp,
-			role: message.author.username === config.ownerUserName ? 'user' : 'char',
+			role: author.username === config.ownerUserName ? 'user' : 'char',
 			name,
 			content,
 			files: await Promise.all(message.attachments.map(async (attachment) => {
@@ -208,7 +209,7 @@ export default async function DiscordBotMain(client, config) {
 		let inMute = Date.now() - (ChannelMuteStartTimes[message.channel.id] || 0) < 3 * 60000
 		if (message.author.username === config.ownerUserName)
 			if (inMute || (
-				inFavor && base_match_keys(message.content, ['闭嘴', '安静点', '肃静']) && message.content.length < 10
+				inFavor && base_match_keys(message.content, ['闭嘴', '安静', '肃静']) && message.content.length < 10
 			)) {
 				ChannelMuteStartTimes[message.channel.id] = Date.now()
 				inMute = true
@@ -273,7 +274,7 @@ export default async function DiscordBotMain(client, config) {
 		let messagesender = async reply => await message.channel.send(reply)
 		if (message.mentions.users.has(client.user.id))
 			messagesender = async reply => {
-				try { return message.reply(reply) } catch (error) { return message.channel.send(reply) }
+				try { return await message.reply(reply) } catch (error) { return await message.channel.send(reply) }
 				finally { messagesender = async reply => await message.channel.send(reply) }
 			}
 		return async (message) => replayInfoCache[(await messagesender(message)).id] = message
@@ -340,7 +341,10 @@ export default async function DiscordBotMain(client, config) {
 		}
 
 		try {
-			let reply = // { content: '嗯嗯！' } ||
+			if (message.author.username === config.ownerUserName)
+				if (message.content.match(/龙胆.*不敷衍点.{0,2}/)) FuyanMode = false
+				else if (message.content.match(/龙胆.*敷衍点.{0,2}/)) FuyanMode = true
+			let reply = FuyanMode ? { content: '嗯嗯！' } :
 				await GetReply({
 					Charname: '龙胆',
 					UserCharname: config.ownerUserName,
@@ -423,7 +427,7 @@ export default async function DiscordBotMain(client, config) {
 
 					if (last?.name == newlog.name && newlog.timeStamp - last.timeStamp < 3 * 60000) {
 						last.content += '\n' + newlog.content
-						if (Object.keys(last.extension)) last.extension = {}
+						if (Object.keys(last.extension || {})) last.extension = {}
 					}
 					else {
 						chatlog.push(newlog)

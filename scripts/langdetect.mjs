@@ -3,7 +3,7 @@ import { base_match_keys } from './match.mjs'
 export function is_English(text) {
 	return base_match_keys(text, [
 		'all', 'and', 'as', 'be', 'but', 'by', 'can', 'could', 'die', 'do', 'from', 'go', 'happy', 'have', 'he', 'in', 'info', 'it', 'know', 'make', 'man', 'more', 'no', 'of', 'on', 'only', 'other', 'out', 'say', 'she', 'should', 'state', 'than', 'into', 'that', 'the', 'there', 'they', 'this', 'time', 'to', 'up', 'we', 'well', 'what', 'when', 'which', 'who', 'why', 'will', 'with', 'world', 'you'
-	])
+	]) > 1
 }
 
 export function is_Japanese(text) {
@@ -15,23 +15,23 @@ export function is_Korean(text) {
 }
 
 export function is_French(text) {
-	return base_match_keys(text, [/[\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u01FF]/])
+	return base_match_keys(text, [/[\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u01FF]/]) > 1
 }
 
 export function is_Spanish(text) {
-	return base_match_keys(text, [/[\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF]/])
+	return base_match_keys(text, [/[\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF]/]) > 1
 }
 
 export function is_Russian(text) {
-	return base_match_keys(text, [/[\u0400-\u04FF]/])
+	return base_match_keys(text, [/[\u0400-\u04FF]/]) > 1
 }
 
 export function is_German(text) {
-	return base_match_keys(text, [/[\u00C0-\u017F]/])
+	return base_match_keys(text, [/[\u00C0-\u017F]/]) > 1
 }
 
 export function is_Hindi(text) {
-	return base_match_keys(text, [/[\u0900-\u0A7F]/])
+	return base_match_keys(text, [/[\u0900-\u0A7F]/]) > 1
 }
 
 export function is_Swedish(text) {

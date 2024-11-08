@@ -32,8 +32,7 @@ export async function CoreRulesPrompt(args, logical_results, prompt_struct, deta
 
 	if (!logical_results.is_pure_chinese)
 		result += `\
-**以其他人在使用
-的语言回复消息**
+**以其他人在使用的语言回复消息**
 `
 	if (!process.env.EdenOS || !logical_results.in_reply_to_master)
 		result += `\
