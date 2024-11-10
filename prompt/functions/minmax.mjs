@@ -19,7 +19,7 @@ export async function MinMaxPrompt(args, logical_results, prompt_struct, detail_
 		if (matches.length >= 2)
 			result += `\
 以下是一些数的大小顺序，可能对你的回答有帮助：
-${matches.sort((a, b) => a - b).join(' < ')}
+${matches.sort((a, b) => a - b).join('小于')}
 `
 	}
 	return {

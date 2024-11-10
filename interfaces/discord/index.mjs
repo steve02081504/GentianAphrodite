@@ -306,8 +306,11 @@ export default async function DiscordBotMain(client, config) {
 			}
 		return async (message) => replayInfoCache[(await messagesender(message)).id] = message
 	}
+	let ErrorRecord = {}
 	async function ErrorHandler(error, message) {
 		let error_message = `${error.name}: ${error.message}\n\`\`\`${error.stack}\n\`\`\``
+		if (ErrorRecord[error_message]) return
+		else ErrorRecord[error_message] = true
 		let AIsuggestion
 		try {
 			AIsuggestion = await GetReply({
