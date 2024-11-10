@@ -82,7 +82,7 @@ export function getScopedChatLog(args , from='any', depth = 4) {
 			chat_log = chat_log.filter(x => x.name == args.Charname)
 			break
 		case 'both':
-			chat_log = chat_log.filter(x => x.name == args.UserCharname && x.name == args.Charname)
+			chat_log = chat_log.filter(x => x.name == args.UserCharname || x.name == args.Charname)
 			break
 		case 'other':
 			chat_log = chat_log.filter(x => x.name != args.UserCharname && x.name != args.Charname)

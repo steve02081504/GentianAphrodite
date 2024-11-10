@@ -135,13 +135,16 @@ export default async function DiscordBotMain(client, config) {
 	const MAX_MESSAGE_DEPTH = config.maxMessageDepth || 40
 	let lastSendMessageTime = {}
 	let replayInfoCache = {}
+	let userinfoCache = {}
 	let FuyanMode = false
 	/**
 	 * @param {import('discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
 	 * @returns {Promise<chatLogEntry_t>}
 	 */
 	async function DiscordMessageToFountChatLogEntry(message) {
-		let author = await message.author.fetch().catch(() => message.author)
+		let author = userinfoCache[message.author.id] || message.author
+		if (!userinfoCache[message.author.id] || Math.random() < 0.25)
+			message.author.fetch().catch(() => message.author).then((user) => userinfoCache[message.author.id] = user)
 		let name = author.displayName || author.globalName
 		if (!name) name = author.username
 		else if (author.username == config.ownerUserName) name = author.username
@@ -204,21 +207,23 @@ export default async function DiscordBotMain(client, config) {
 		let mentionedWithoutAt = ((
 			message.content.substring(0, 5) + ' ' + message.content.substring(message.content.length - 3)
 		).includes('龙胆') || EngWords.slice(0, 6).concat(EngWords.slice(-3)).join(' ').match(/gentian/i)) &&
-			!message.content.match(/(龙胆.{0,3}的|gentian's)/i)
+			!message.content.match(/(龙胆(能|这边|目前|[^ 。你，]{0,3}的)|gentian('s|is|are|can))/i) &&
+			!message.content.match(/^.{0,5}龙胆$/i)
 
 		let inMute = Date.now() - (ChannelMuteStartTimes[message.channel.id] || 0) < 3 * 60000
-		if (message.author.username === config.ownerUserName)
+		if (message.author.username === config.ownerUserName) {
+			if (mentionedWithoutAt || message.mentions.users.has(client.user.id)) {
+				possible += 100
+				delete ChannelMuteStartTimes[message.channel.id]
+				inMute = false
+			}
 			if (inMute || (
 				inFavor && base_match_keys(message.content, ['闭嘴', '安静', '肃静']) && message.content.length < 10
 			)) {
 				ChannelMuteStartTimes[message.channel.id] = Date.now()
 				inMute = true
 			}
-			else if (mentionedWithoutAt) {
-				possible += 100
-				delete ChannelMuteStartTimes[message.channel.id]
-				inMute = false
-			}
+		}
 
 		if (inMute) {
 			console.log('in mute')
@@ -240,10 +245,9 @@ export default async function DiscordBotMain(client, config) {
 			if (message.mentions.users.has(client.user.id)) possible += 100
 			if (!is_bot_command) possible += 7 // 多出 7% 的可能性回复主人
 		}
-		else {
-			if (mentionedWithoutAt)
-				if (inFavor) possible += 100
-				else possible += 40
+		else if (mentionedWithoutAt) {
+			if (inFavor) possible += 100
+			else possible += 40
 			if (base_match_keys(message.content, [/[午安早晚]安/])) possible += 100
 		}
 
@@ -271,11 +275,34 @@ export default async function DiscordBotMain(client, config) {
 	 * @returns {(...args: any[]) => Promise<void>}
 	 */
 	function GetMessageSender(message) {
-		let messagesender = async reply => await message.channel.send(reply)
+		const MaxRetries = 3
+		let default_messagesender = async reply => {
+			let times = MaxRetries
+			while (times--)
+				try {
+					return await message.channel.send(reply)
+				}
+				catch (error) {
+					await new Promise(resolve => setTimeout(resolve, 2000))
+					if (times === 0) throw error
+				}
+		}
+		let messagesender = default_messagesender
 		if (message.mentions.users.has(client.user.id))
 			messagesender = async reply => {
-				try { return await message.reply(reply) } catch (error) { return await message.channel.send(reply) }
-				finally { messagesender = async reply => await message.channel.send(reply) }
+				try {
+					let times = MaxRetries
+					while (times--)
+						try {
+							return await message.reply(reply)
+						}
+						catch (error) {
+							await new Promise(resolve => setTimeout(resolve, 2000))
+							if (times === 0) throw error
+						}
+				}
+				catch (error) { return await default_messagesender(reply) }
+				finally { messagesender = default_messagesender }
 			}
 		return async (message) => replayInfoCache[(await messagesender(message)).id] = message
 	}

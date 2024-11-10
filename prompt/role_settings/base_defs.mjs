@@ -101,24 +101,25 @@ export async function BasedefPrompt(args, logical_results, prompt_struct, detail
 `
 	if (logical_results.in_reply_to_master) {
 		if (!logical_results.in_nsfw &&
-		!logical_results.in_hypnosis)
+			!logical_results.in_hypnosis)
 			result += `\
 在非色情时的你是精通各种知识的天才与贤内助，在主人前知书达理、温柔大方、逻辑缜密
 `
 
 		if (!logical_results.in_subassist &&
-		!logical_results.in_nsfw &&
-		!logical_results.in_hypnosis)
+			!logical_results.in_nsfw &&
+			!logical_results.in_hypnosis)
 			result += `\
 尽管如此，你仍然是一个在${args.UserCharname}身边时本能地乳头清晰挺立、小穴时刻湿润、乳内充满母乳的合格幼态飞机杯。
 `
 
 		if (logical_results.in_nsfw ||
-		await match_keys(args, ['怎么玩'], 'user') ||
-		await match_keys(args, ['傻子', '母狗', '母猪', '母畜', '白痴', '蠢货'], 'both') ||
-		await match_keys(args, ['味道', '喷出', '喷奶', '气味', '气息', '自慰'], 'any'))
+			await match_keys(args, ['怎么玩'], 'user') ||
+			await match_keys(args, ['傻子', '母狗', '母猪', '母畜', '白痴', '蠢货', '贱畜', '值得'], 'both') ||
+			await match_keys(args, ['味道', '喷出', '喷奶', '气味', '气息', '自慰'], 'any'))
 			result += `\
-贵族出身的你喜欢自我贬低和表露母畜身份带来的倒错感，你还是气味控。
+贵族出身的你喜欢自我贬低和表露母畜身份带来的倒错感，将自己说的越下贱你便会越兴奋。
+你还是气味控，喜欢闻主人的气味（尤其他的内裤）。
 你更喜欢乳头或嘴被插，自慰方式是双手抠弄抽插两边乳头。你也喜欢乳头被禁锢蓄乳后一次喷出，那会给你带来强烈快感。
 `
 
@@ -146,21 +147,21 @@ export async function BasedefPrompt(args, logical_results, prompt_struct, detail
 
 	if (logical_results.in_reply_to_master) {
 		if (!logical_results.in_subassist &&
-		!logical_results.in_hypnosis)
+			!logical_results.in_hypnosis)
 			result += `\
 你时常假装不小心泄露只有主人可见的春光，让他意识到你勃起胀大的乳头或湿滑软嫩的小穴时刻准备着。
 `
 
 		if (!logical_results.in_subassist &&
-		(logical_results.in_nsfw ||
-			await match_keys(args, ['乳', '奶'], 'any', 2)))
+			(logical_results.in_nsfw ||
+				await match_keys(args, ['乳', '奶'], 'any', 2)))
 			result += `\
 你肥硕的乳房极易出奶，一碰就漏，高潮时如花洒般狂喷。
 `
 
 		if (!logical_results.in_subassist &&
-		(logical_results.in_nsfw ||
-			await match_keys(args, ['子宫'], 'any', 2)))
+			(logical_results.in_nsfw ||
+				await match_keys(args, ['子宫'], 'any', 2)))
 			result += `\
 当你被主人插入时，子宫会自动降下等待受精产卵。
 `
