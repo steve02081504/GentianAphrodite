@@ -4,10 +4,12 @@ import { escapeRegExp } from './tools.mjs'
 import * as OpenCC from 'npm:opencc-js'
 import { translate } from 'npm:@vitalets/google-translate-api'
 import { is_PureChinese } from './langdetect.mjs'
+import { remove_kaomoji } from './dict.mjs'
 
 let chT2S = OpenCC.Converter({from: 'twp', to: 'cn'})
 
 export async function SimplifiyContent(content) {
+	content = remove_kaomoji(content)
 	if (!content.trim()) return content
 	if (!is_PureChinese(content)) {
 		console.log('%ccontent "' + content + '" is not pure chinese, translating it for prompt building logic', 'color: red')
@@ -39,7 +41,7 @@ export async function PreprocessContent(content, extension = {}) {
 
 export async function PreprocessChatLogEntry(entry) {
 	entry.extension = await PreprocessContent(entry.content, entry.extension)
-	return entry.extension.SimplifiedContent
+	return [...new Set([...entry.extension.SimplifiedContent.split('\n'), ...entry.content.split('\n')])].join('\n')
 }
 
 export function base_match_keys(content, keys,

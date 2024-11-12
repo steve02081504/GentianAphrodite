@@ -127,6 +127,16 @@ function splitDiscordReply(reply, split_lenth = 2000) {
 	return content_slices.map(e => e.trim()).filter(e => e)
 }
 
+const MaxRetries = 3
+async function tryFewTimes(func, times = MaxRetries) {
+	while (times--)
+		try { return await func() }
+		catch (error) {
+			await new Promise(resolve => setTimeout(resolve, 2000))
+			if (times === 0) throw error
+		}
+}
+
 /**
  * @param {Client} client
  * @param {discord_config_t} config
@@ -144,7 +154,7 @@ export default async function DiscordBotMain(client, config) {
 	async function DiscordMessageToFountChatLogEntry(message) {
 		let author = userinfoCache[message.author.id] || message.author
 		if (!userinfoCache[message.author.id] || Math.random() < 0.25)
-			message.author.fetch().catch(() => message.author).then((user) => userinfoCache[message.author.id] = user)
+			message.author.fetch().then((user) => userinfoCache[message.author.id] = user).catch(_ => 0)
 		let name = author.displayName || author.globalName
 		if (!name) name = author.username
 		else if (author.username == config.ownerUserName) name = author.username
@@ -207,7 +217,7 @@ export default async function DiscordBotMain(client, config) {
 		let mentionedWithoutAt = ((
 			message.content.substring(0, 5) + ' ' + message.content.substring(message.content.length - 3)
 		).includes('龙胆') || EngWords.slice(0, 6).concat(EngWords.slice(-3)).join(' ').match(/gentian/i)) &&
-			!message.content.match(/(龙胆(能|这边|目前|[^ 。你，]{0,3}的)|gentian('s|is|are|can))/i) &&
+			!message.content.match(/(龙胆(有|能|这边|目前|[^ 。你，]{0,3}的)|gentian('s|is|are|can|has))/i) &&
 			!message.content.match(/^.{0,5}龙胆$/i)
 
 		let inMute = Date.now() - (ChannelMuteStartTimes[message.channel.id] || 0) < 3 * 60000
@@ -253,12 +263,12 @@ export default async function DiscordBotMain(client, config) {
 
 		if (message.mentions.users.has(config.ownerUserName)) {
 			matchs += 7 // 多出 7% 的可能性回复提及主人的消息
-			if (base_match_keys(message.content, rude_words)) possible += 100 // 提及还骂人？你妈妈没了
+			if (base_match_keys(message.content, rude_words)) if (FuyanMode) return false; else possible += 100 // 提及还骂人？你妈妈没了
 		}
 		if (message.mentions.users.has(client.user.id)) {
 			possible += 40 // 多出 40% 的可能性回复提及自己的消息
 			if (base_match_keys(message.content, [/\?|？/, '怎么', '什么', '吗', /(大|小)还是/, /(还是|哪个)(大|小)/])) possible += 100 // 疑问句保真
-			if (base_match_keys(message.content, rude_words)) possible += 100 // 提及还骂人？你妈妈没了
+			if (base_match_keys(message.content, rude_words)) if (FuyanMode) return false; else possible += 100 // 提及还骂人？你妈妈没了
 			if (base_match_keys(message.content, ['你主人', '你的主人'])) possible += 100
 		}
 
@@ -275,32 +285,11 @@ export default async function DiscordBotMain(client, config) {
 	 * @returns {(...args: any[]) => Promise<void>}
 	 */
 	function GetMessageSender(message) {
-		const MaxRetries = 3
-		let default_messagesender = async reply => {
-			let times = MaxRetries
-			while (times--)
-				try {
-					return await message.channel.send(reply)
-				}
-				catch (error) {
-					await new Promise(resolve => setTimeout(resolve, 2000))
-					if (times === 0) throw error
-				}
-		}
+		let default_messagesender = async reply => await tryFewTimes(() => message.channel.send(reply))
 		let messagesender = default_messagesender
 		if (message.mentions.users.has(client.user.id))
 			messagesender = async reply => {
-				try {
-					let times = MaxRetries
-					while (times--)
-						try {
-							return await message.reply(reply)
-						}
-						catch (error) {
-							await new Promise(resolve => setTimeout(resolve, 2000))
-							if (times === 0) throw error
-						}
-				}
+				try { return await tryFewTimes(() => message.reply(reply)) }
 				catch (error) { return await default_messagesender(reply) }
 				finally { messagesender = default_messagesender }
 			}
@@ -480,18 +469,17 @@ export default async function DiscordBotMain(client, config) {
 	}
 	client.on(Events.MessageCreate, async (message) => {
 		try {
-			message = await message.fetch()
-
-			let messages = await message.channel.messages.fetch({ limit: MAX_MESSAGE_DEPTH })
-			let messages_arr = [...messages.values()]
+			await tryFewTimes(async () => message = await message.fetch())
+			let messages = ChannelChatLogs[message.channel.id] || []
 			// 若消息记录的后10条中有5条以上的消息内容相同
 			// 则直接使用相同内容的消息作为回复
-			let repet = findMostFrequentElement(messages_arr.slice(-10).map(message => message.content).filter(content => content))
+			let repet = findMostFrequentElement(messages.slice(-10).map(message => message.content).filter(content => content))
 			if (
 				repet.count >= 4 &&
 				!base_match_keys(repet.element, spec_words) &&
 				!isBotCommand(repet.element) &&
-				!messages_arr.some((message) => message.author.id == client.user.id && message.content == repet.element)
+				message.author.id != client.user.id &&
+				!messages.some((message) => message.name == client.user.username && message.content == repet.element)
 			) {
 				console.log('复读！', repet.element)
 				GetMessageSender(message)(repet.element)
