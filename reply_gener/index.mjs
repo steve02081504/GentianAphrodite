@@ -34,11 +34,11 @@ export async function GetReply(args) {
 		console.dir(prompt_struct, { depth: 4 })
 		let AItype = logical_results.in_assist ? 'expert' : logical_results.in_nsfw ? 'nsfw' : 'sfw'
 		result.content = await OrderedAISourceCalling(AItype, AI => AI.StructCall(prompt_struct))
-		for (let repalyHandler of [coderunner, filesender])
-			if (await repalyHandler(result, addLongTimeLog))
-				continue regen
-		for (let reply_handleing_plugin of Object.values(args.plugins).filter(plugin => plugin.interfacies.chat?.RepalyHandler))
-			if (await reply_handleing_plugin.interfacies.chat.RepalyHandler(result, { addLongTimeLog }))
+		for (let repalyHandler of [
+			coderunner, filesender,
+			...Object.values(args.plugins).map(plugin => plugin.interfacies.chat?.RepalyHandler)
+		].filter(Boolean))
+			if (await repalyHandler(result, { addLongTimeLog }))
 				continue regen
 		break
 	}

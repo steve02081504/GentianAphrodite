@@ -35,8 +35,10 @@ function parseDuration(durationString) {
 	let duration = 0
 	for (let unit in dict) {
 		let match = durationString.match(new RegExp(`(?<value>\\d+)${unit}`))
-		if (match?.groups?.value)
+		if (match?.groups?.value) {
 			duration += parseInt(match.groups.value) * dict[unit]
+			durationString = durationString.replace(match[0], '')
+		}
 	}
 	return duration
 }

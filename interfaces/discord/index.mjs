@@ -6,7 +6,7 @@ import GentianAphrodite from '../../main.mjs'
 import { findMostFrequentElement } from '../../scripts/tools.mjs'
 import { get_discord_silence_plugin } from './silence.mjs'
 import { rude_words } from '../../scripts/dict.mjs'
-/** @typedef {import('../../../../../../../src/public/shells/chat/decl/chatLog').chatLogEntry_t} chatLogEntry_t */
+/** @typedef {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
 
 /**
  * @typedef {{
@@ -142,13 +142,13 @@ async function tryFewTimes(func, times = MaxRetries) {
  * @param {discord_config_t} config
  */
 export default async function DiscordBotMain(client, config) {
-	const MAX_MESSAGE_DEPTH = config.maxMessageDepth || 40
+	const MAX_MESSAGE_DEPTH = config.maxMessageDepth || 20
 	let lastSendMessageTime = {}
 	let replayInfoCache = {}
 	let userinfoCache = {}
 	let FuyanMode = false
 	/**
-	 * @param {import('discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
+	 * @param {import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
 	 * @returns {Promise<chatLogEntry_t>}
 	 */
 	async function DiscordMessageToFountChatLogEntry(message) {
@@ -191,7 +191,7 @@ export default async function DiscordBotMain(client, config) {
 	}
 	let ChannelMuteStartTimes = {}
 	/**
-	 * @param {import('discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
+	 * @param {import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
 	 * @returns {boolean}
 	 */
 	function CheckMessageContentTrigger(message) {
@@ -250,7 +250,7 @@ export default async function DiscordBotMain(client, config) {
 			if (base_match_keys(message.content, ['失眠了', '睡不着'])) possible += 100
 			if (inFavor) {
 				possible += 4
-				if (base_match_keys(message.content, [/再(来|表演).*(次|个)/, '来个', '不够', '不如', '继续'])) possible += 100
+				if (base_match_keys(message.content, [/再(来|表演)(点|.*(次|个))/, '来个', '不够', '不如', '继续'])) possible += 100
 			}
 			if (message.mentions.users.has(client.user.id)) possible += 100
 			if (!is_bot_command) possible += 7 // 多出 7% 的可能性回复主人
@@ -281,7 +281,7 @@ export default async function DiscordBotMain(client, config) {
 	let ChannelMessageQueues = {}
 	let ChannelChatLogs = {}
 	/**
-	 * @param {import('discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
+	 * @param {import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
 	 * @returns {(...args: any[]) => Promise<void>}
 	 */
 	function GetMessageSender(message) {
@@ -413,8 +413,14 @@ export default async function DiscordBotMain(client, config) {
 	function MargeChatLog(log) {
 		let last, newlog = []
 		for (let entry of log)
-			if (last?.name == entry.name && entry.timeStamp - last.timeStamp < 3 * 60000)
+			if (
+				last?.name == entry.name &&
+				entry.timeStamp - last.timeStamp < 3 * 60000 &&
+				last.files.length == 0
+			) {
 				last.content += '\n' + entry.content
+				last.files = entry.files
+			}
 			else
 				newlog.push(last = entry)
 		return newlog
@@ -437,15 +443,20 @@ export default async function DiscordBotMain(client, config) {
 			let chatlog = ChannelChatLogs[channelid]
 
 			while (myQueue?.length) {
-				/** @type {import('discord.js').OmitPartialGroupDMChannel<Message<boolean>>} */
+				/** @type {import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>} */
 				let message = myQueue.shift()
 
 				{
 					let newlog = await DiscordMessageToFountChatLogEntry(message)
 					let last = chatlog[chatlog.length - 1]
 
-					if (last?.name == newlog.name && newlog.timeStamp - last.timeStamp < 3 * 60000) {
+					if (
+						last?.name == newlog.name &&
+						newlog.timeStamp - last.timeStamp < 3 * 60000 &&
+						last.files.length == 0
+					) {
 						last.content += '\n' + newlog.content
+						last.files = newlog.files
 						if (Object.keys(last.extension || {})) last.extension = {}
 					}
 					else {

@@ -27,6 +27,10 @@ export function noAISourceAvailable() {
 	return result
 }
 
+/**
+ * @param {string} name
+ * @returns {string[]}
+ */
 export function GetAISourceCallingOrder(name) {
 	// 对于不同任务需求，按照指定顺序尝试调用AI
 	switch (name) {
@@ -47,6 +51,13 @@ export function GetAISourceCallingOrder(name) {
 	}
 }
 
+/**
+ * @param {string} name
+ * @param {(source:AIsource_t) => Promise<string>} caller
+ * @param {number} trytimes
+ * @param {(err: Error) => Promise<void>} error_logger
+ * @returns {Promise<string>}
+ */
 export async function OrderedAISourceCalling(name, caller, trytimes = 3, error_logger = console.log) {
 	let order = GetAISourceCallingOrder(name)
 	let lastErr

@@ -37,7 +37,7 @@ export async function infoPrompt(args, logical_results, prompt_struct, detail_le
 ${Object.entries(modelMap).map(([key, value]) => `\`${key}\`: ${value.join(', ')}`).join('\n')}
 `
 		result += `\
-模型名称不属于人设信息，可以给你的主人说。
+模型名称不属于人设信息，可以给人说。
 `
 	}
 

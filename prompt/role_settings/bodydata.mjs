@@ -62,8 +62,14 @@ export async function BodyDataPrompt(args, logical_results, prompt_struct, detai
 
 		if (await match_keys(args, ['肩宽'], 'any', 2)) enabled_datas['肩宽'] = datas['肩宽']
 
-		if (await match_keys(args, ['身体数据', '身材数据', '身形数据'], 'any', 2))
+		if (await match_keys(args, [/(身体|身材|身形)数据/, /(衣服|衣物)(尺寸|数据)/], 'any', 2))
 			enabled_datas = datas
+
+		let detailed_datas = {
+			头发数量: '153820根',
+		}
+
+		if (await match_keys(args, ['头发'], 'any', 2) && await match_keys(args, ['多少根'], 'any', 2)) enabled_datas['头发数量'] = detailed_datas['头发数量']
 
 		if (Object.keys(enabled_datas).length > 0)
 			result += '你的' + Object.keys(enabled_datas).map(key => `${key}是${enabled_datas[key]}`).join('；') + '\n'

@@ -11,7 +11,7 @@ function removeTerminalSequences(str) {
  * @param {(entry: chatLogEntry_t) => void} addLongTimeLog
  * @returns {Promise<boolean>}
  */
-export async function coderunner(result, addLongTimeLog) {
+export async function coderunner(result, { addLongTimeLog }) {
 	result.extension.execed_codes ??= {}
 	let jsrunner = result.content.match(/(\n|^)```run-js\n(?<code>[^]*)\n```/)?.groups?.code
 	if (jsrunner) {
