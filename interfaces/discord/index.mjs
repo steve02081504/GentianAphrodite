@@ -1,4 +1,4 @@
-import { Client, Events, Message } from 'npm:discord.js'
+import { Client, Events, Message, ChannelType } from 'npm:discord.js'
 import { Buffer } from 'node:buffer'
 import { base_match_keys, PreprocessChatLogEntry } from '../../scripts/match.mjs'
 import { GetReply } from '../../reply_gener/index.mjs'
@@ -201,6 +201,10 @@ export default async function DiscordBotMain(client, config) {
 			channelID: message.channel.id
 		})
 
+		if (message.channel.type == ChannelType.DM)
+			if (message.author.id != client.user.id && message.author.username != config.ownerUserName) return false
+			else return true
+
 		let possible = 0
 
 		possible += base_match_keys(message.content, config.OwnnerNameKeywords) * 7 // 每个匹配对该消息追加 7% 可能性回复消息
@@ -214,11 +218,13 @@ export default async function DiscordBotMain(client, config) {
 		let lastSendTime = lastSendMessageTime[message.channel.id] || 0
 		let inFavor = new Date(message.createdTimestamp) - new Date(lastSendTime) < 3 * 60000 // 间隔 3 分钟内的对话
 		let EngWords = message.content.split(' ')
-		let mentionedWithoutAt = ((
-			message.content.substring(0, 5) + ' ' + message.content.substring(message.content.length - 3)
-		).includes('龙胆') || EngWords.slice(0, 6).concat(EngWords.slice(-3)).join(' ').match(/gentian/i)) &&
-			!message.content.match(/(龙胆(有|能|这边|目前|[^ 。你，]{0,3}的)|gentian('s|is|are|can|has))/i) &&
-			!message.content.match(/^.{0,5}龙胆$/i)
+		let mentionedWithoutAt = (base_match_keys(
+			message.content.substring(0, 5) + ' ' + message.content.substring(message.content.length - 3), ['龙胆']
+		) || base_match_keys(EngWords.slice(0, 6).concat(EngWords.slice(-3)).join(' '), ['gentian'])) &&
+			!base_match_keys(message.content, [/(龙胆(有|能|这边|目前|[^ 。你，]{0,3}的)|gentian('s|is|are|can|has))/i]) &&
+			!base_match_keys(message.content, [/^.{0,5}龙胆$/i])
+
+		let continueRequest = base_match_keys(message.content, [/^(那|可以再|再讲|再说)/, /^so/i])
 
 		let inMute = Date.now() - (ChannelMuteStartTimes[message.channel.id] || 0) < 3 * 60000
 		if (message.author.username === config.ownerUserName) {
@@ -234,6 +240,9 @@ export default async function DiscordBotMain(client, config) {
 				inMute = true
 			}
 		}
+
+		if (continueRequest && inFavor)
+			possible += 100
 
 		if (inMute) {
 			console.log('in mute')
@@ -287,7 +296,7 @@ export default async function DiscordBotMain(client, config) {
 	function GetMessageSender(message) {
 		let default_messagesender = async reply => await tryFewTimes(() => message.channel.send(reply))
 		let messagesender = default_messagesender
-		if (message.mentions.users.has(client.user.id))
+		if (message.mentions?.users?.has?.(client.user.id))
 			messagesender = async reply => {
 				try { return await tryFewTimes(() => message.reply(reply)) }
 				catch (error) { return await default_messagesender(reply) }
@@ -480,7 +489,14 @@ export default async function DiscordBotMain(client, config) {
 	}
 	client.on(Events.MessageCreate, async (message) => {
 		try {
-			await tryFewTimes(async () => message = await message.fetch())
+			try {
+				await tryFewTimes(async () => message = await message.fetch())
+			}
+			catch (error) {
+				if (error.name == 'DiscordAPIError' && error.code == 10008) return // message deleted
+			}
+			if (message.channel.type == ChannelType.DM)
+				if (message.author.id != client.user.id && message.author.username != config.ownerUserName) return
 			let messages = ChannelChatLogs[message.channel.id] || []
 			// 若消息记录的后10条中有5条以上的消息内容相同
 			// 则直接使用相同内容的消息作为回复

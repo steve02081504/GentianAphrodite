@@ -1,5 +1,6 @@
 import { NdiffResults, PickRandomN, random, repetRandomTimes } from '../../scripts/random.mjs'
 import { match_keys } from '../../scripts/match.mjs'
+import process from 'node:process'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
@@ -18,7 +19,7 @@ export async function CodeRunnerPrompt(args, logical_results, prompt_struct, det
 		'是多少', '是几', '算一下', /[=＝][?？]/, /```run-(js|pwsh)/
 	], 'any')) {
 		result += `\
-你可以运行NodeJS或Powershell代码，通过返回以下格式来触发执行并获取结果：
+你可以运行NodeJS或${process.platform === 'win32' ? 'Powershell' : 'Bash'}代码，通过返回以下格式来触发执行并获取结果：
 \`\`\`run-(js|pwsh)
 code
 \`\`\`
@@ -27,9 +28,19 @@ code
 (await import('npm:robotjs')).getScreenSize()
 \`\`\`
 或
+${
+	process.platform === 'win32' ?
+`\
 \`\`\`run-pwsh
 start $(ls ~/music | ? { $_.Name -match 'shape of you' })
 \`\`\`
+` :
+`\
+\`\`\`run-bash
+ls ~/music | grep 'shape of you' | head -n 1 | xargs open
+\`\`\`
+`
+}
 代码执行也可以用于解答数学问题，如：
 \`\`\`run-js
 368n**350n

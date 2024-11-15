@@ -31,7 +31,7 @@ CPU架构：${arch()}
 `
 	}
 
-	if (all_info || await match_keys(args, [/cpu(占用|使用)(率|情况)/i], 'user')) {
+	if (all_info || await match_keys(args, [/cpu(占用|使用)(率|情况)/i, /cpu(的|什么|是什么|)(信息|型号|频率)/i, /cpu(多少核|核心)/i], 'user')) {
 		// 使用 node-os-utils 获取 CPU 信息
 		const cpuInfo = await osinfo.cpu.average()
 		const cpuUsage = (1 - cpuInfo.avgIdle / cpuInfo.avgTotal) * 100
@@ -43,7 +43,7 @@ CPU信息：
 使用率：${cpuUsage.toFixed(2)}%
 `
 	}
-	if (await match_keys(args, [/内存(占用|使用)(率|情况)/i], 'user')) {
+	if (await match_keys(args, [/内存(占用|使用)(率|情况)/i, /(还剩|多少|已用|空闲)内存/i, /内存(还剩|多少|已用|空闲)/i], 'user')) {
 		const memInfo = await osinfo.mem.info()
 		result += `\
 内存信息：
@@ -53,7 +53,7 @@ CPU信息：
 `
 	}
 
-	if (await match_keys(args, [/硬盘(占用|使用)(率|情况)/i], 'user')) {
+	if (await match_keys(args, [/硬盘(占用|使用)(率|情况)/i, /(还剩|多少|已用|空闲)硬盘/i, /硬盘(还剩|多少|已用|空闲)/i], 'user')) {
 		// 获取磁盘使用情况，使用 fs 模块
 		let diskUsage = {}
 		if (process.platform === 'win32') {
