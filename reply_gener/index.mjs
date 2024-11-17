@@ -2,6 +2,7 @@ import { buildPromptStruct } from '../../../../../../src/public/shells/chat/src/
 import { noAISourceAvailable, OrderedAISourceCalling } from '../AISource/index.mjs'
 import { buildLogicalResults } from '../prompt/logical_results/index.mjs'
 import { coderunner } from './functions/coderunner.mjs'
+import { detailThinking } from "./functions/detail-thinking.mjs";
 import { filesender } from './functions/filesender.mjs'
 import { noAIreply } from './noAI/index.mjs'
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
@@ -35,10 +36,10 @@ export async function GetReply(args) {
 		let AItype = logical_results.in_assist ? 'expert' : logical_results.in_nsfw ? 'nsfw' : 'sfw'
 		result.content = await OrderedAISourceCalling(AItype, AI => AI.StructCall(prompt_struct))
 		for (let repalyHandler of [
-			coderunner, filesender,
+			coderunner, filesender, detailThinking,
 			...Object.values(args.plugins).map(plugin => plugin.interfacies.chat?.RepalyHandler)
 		].filter(Boolean))
-			if (await repalyHandler(result, { addLongTimeLog }))
+			if (await repalyHandler(result, { addLongTimeLog, prompt_struct }))
 				continue regen
 		break
 	}

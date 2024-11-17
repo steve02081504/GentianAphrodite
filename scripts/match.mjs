@@ -6,7 +6,7 @@ import { translate } from 'npm:@vitalets/google-translate-api'
 import { is_PureChinese } from './langdetect.mjs'
 import { remove_kaomoji } from './dict.mjs'
 
-let chT2S = OpenCC.Converter({from: 'twp', to: 'cn'})
+export let chT2S = OpenCC.Converter({from: 'twp', to: 'cn'})
 
 export async function SimplifiyContent(content) {
 	content = remove_kaomoji(content)

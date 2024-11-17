@@ -1,6 +1,6 @@
 import { Client, Events, Message, ChannelType } from 'npm:discord.js'
 import { Buffer } from 'node:buffer'
-import { base_match_keys, PreprocessChatLogEntry } from '../../scripts/match.mjs'
+import { base_match_keys, chT2S, PreprocessChatLogEntry } from '../../scripts/match.mjs'
 import { GetReply } from '../../reply_gener/index.mjs'
 import GentianAphrodite from '../../main.mjs'
 import { findMostFrequentElement } from '../../scripts/tools.mjs'
@@ -224,8 +224,6 @@ export default async function DiscordBotMain(client, config) {
 			!base_match_keys(message.content, [/(龙胆(有|能|这边|目前|[^ 。你，]{0,3}的)|gentian('s|is|are|can|has))/i]) &&
 			!base_match_keys(message.content, [/^.{0,5}龙胆$/i])
 
-		let continueRequest = base_match_keys(message.content, [/^(那|可以再|再讲|再说)/, /^so/i])
-
 		let inMute = Date.now() - (ChannelMuteStartTimes[message.channel.id] || 0) < 3 * 60000
 		if (message.author.username === config.ownerUserName) {
 			if (mentionedWithoutAt || message.mentions.users.has(client.user.id)) {
@@ -240,9 +238,6 @@ export default async function DiscordBotMain(client, config) {
 				inMute = true
 			}
 		}
-
-		if (continueRequest && inFavor)
-			possible += 100
 
 		if (inMute) {
 			console.log('in mute')
@@ -259,7 +254,10 @@ export default async function DiscordBotMain(client, config) {
 			if (base_match_keys(message.content, ['失眠了', '睡不着'])) possible += 100
 			if (inFavor) {
 				possible += 4
-				if (base_match_keys(message.content, [/再(来|表演)(点|.*(次|个))/, '来个', '不够', '不如', '继续'])) possible += 100
+				if (base_match_keys(message.content, [
+					/(再|多)(来|表演)(点|.*(次|个))/, '来个', '不够', '不如', '继续',
+					/^(那|所以你|可以再|再讲|再说|你(觉得|想|知道))/, /^so/i,
+				])) possible += 100
 			}
 			if (message.mentions.users.has(client.user.id)) possible += 100
 			if (!is_bot_command) possible += 7 // 多出 7% 的可能性回复主人
@@ -370,8 +368,15 @@ export default async function DiscordBotMain(client, config) {
 
 		try {
 			if (message.author.username === config.ownerUserName)
-				if (message.content.match(/龙胆.*不敷衍点.{0,2}/)) FuyanMode = false
-				else if (message.content.match(/龙胆.*敷衍点.{0,2}/)) FuyanMode = true
+				if (base_match_keys(message.content, [/^龙胆.*不敷衍点.{0,2}$/])) FuyanMode = false
+				else if (base_match_keys(message.content, [/^龙胆.*敷衍点.{0,2}$/])) FuyanMode = true
+				else if (base_match_keys(message.content, [/^龙胆.*自裁.{0,2}$/])) {
+					await GetMessageSender(message)('啊，咱死了～')
+					client.destroy()
+					return
+				}
+				else if (base_match_keys(message.content, [/^(龙胆|[\n!,.?~、。呵哦啊嗯噫欸！，？～])*$/]))
+					return GetMessageSender(message)(chT2S(message.content).replaceAll('龙胆', '主人'))
 			let reply = FuyanMode ? { content: '嗯嗯！' } :
 				await GetReply({
 					Charname: '龙胆',
@@ -415,9 +420,9 @@ export default async function DiscordBotMain(client, config) {
 			}
 		} catch (error) {
 			ErrorHandler(error, message)
+		} finally {
+			clearTypeingInterval()
 		}
-
-		clearTypeingInterval()
 	}
 	function MargeChatLog(log) {
 		let last, newlog = []
