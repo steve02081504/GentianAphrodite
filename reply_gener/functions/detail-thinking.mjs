@@ -1,7 +1,7 @@
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
-import { OrderedAISourceCalling } from "../../AISource/index.mjs";
+import { OrderedAISourceCalling } from '../../AISource/index.mjs'
 import { DetailThinkingMainPrompt } from '../../prompt/functions/detail-thinking.mjs'
 
 /**
