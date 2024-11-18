@@ -4,7 +4,6 @@ import process from 'node:process'
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 function removeTerminalSequences(str) {
-	// deno-lint-ignore no-control-regex
 	return str.replace(/\x1B\[[\d;]*[Km]/g, '')
 }
 

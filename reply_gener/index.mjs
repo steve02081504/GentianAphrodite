@@ -6,7 +6,7 @@ import { detailThinking } from './functions/detail-thinking.mjs'
 import { filesender } from './functions/filesender.mjs'
 import { googlesearch } from './functions/googlesearch.mjs'
 import { noAIreply } from './noAI/index.mjs'
-import { compareTwoStrings as string_similarity } from 'npm:string-similarity'
+import { compareTwoStrings as string_similarity } from 'string-similarity'
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 

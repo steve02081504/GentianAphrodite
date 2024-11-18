@@ -1,8 +1,8 @@
 import { NdiffResults, PickRandomN, random, repetRandomTimes } from '../../scripts/random.mjs'
 import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
-import os from 'node:os'
-import osinfo from 'npm:node-os-utils'
-import process from 'node:process'
+import os from 'os'
+import osinfo from 'node-os-utils'
+import process from 'process'
 import { exec } from '../../../../../../../src/server/exec.mjs'
 
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */

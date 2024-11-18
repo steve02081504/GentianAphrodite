@@ -25,7 +25,7 @@ code
 \`\`\`
 如：
 \`\`\`run-js
-(await import('npm:robotjs')).getScreenSize()
+(await import('robotjs')).getScreenSize()
 \`\`\`
 或
 ${

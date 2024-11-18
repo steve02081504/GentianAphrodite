@@ -1,5 +1,5 @@
-import { Client, Events, Message, ChannelType } from 'npm:discord.js'
-import { Buffer } from 'node:buffer'
+import { Client, Events, Message, ChannelType } from 'discord.js'
+import { Buffer } from 'buffer'
 import { base_match_keys, chT2S, PreprocessChatLogEntry } from '../../scripts/match.mjs'
 import { GetReply } from '../../reply_gener/index.mjs'
 import GentianAphrodite from '../../main.mjs'
@@ -148,7 +148,7 @@ export default async function DiscordBotMain(client, config) {
 	let userinfoCache = {}
 	let FuyanMode = false
 	/**
-	 * @param {import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
+	 * @param {import('discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
 	 * @returns {Promise<chatLogEntry_t>}
 	 */
 	async function DiscordMessageToFountChatLogEntry(message) {
@@ -191,7 +191,7 @@ export default async function DiscordBotMain(client, config) {
 	}
 	let ChannelMuteStartTimes = {}
 	/**
-	 * @param {import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
+	 * @param {import('discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
 	 * @returns {boolean}
 	 */
 	function CheckMessageContentTrigger(message) {
@@ -288,7 +288,7 @@ export default async function DiscordBotMain(client, config) {
 	let ChannelMessageQueues = {}
 	let ChannelChatLogs = {}
 	/**
-	 * @param {import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
+	 * @param {import('discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
 	 * @returns {(...args: any[]) => Promise<void>}
 	 */
 	function GetMessageSender(message) {
@@ -457,7 +457,7 @@ export default async function DiscordBotMain(client, config) {
 			let chatlog = ChannelChatLogs[channelid]
 
 			while (myQueue?.length) {
-				/** @type {import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>} */
+				/** @type {import('discord.js').OmitPartialGroupDMChannel<Message<boolean>>} */
 				let message = myQueue.shift()
 
 				{

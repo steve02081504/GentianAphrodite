@@ -1,8 +1,8 @@
 /** @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
 import { escapeRegExp } from './tools.mjs'
-import * as OpenCC from 'npm:opencc-js'
-import { translate } from 'npm:@vitalets/google-translate-api'
+import * as OpenCC from 'opencc-js'
+import { translate } from '@vitalets/google-translate-api'
 import { is_PureChinese } from './langdetect.mjs'
 import { remove_kaomoji } from './dict.mjs'
 
