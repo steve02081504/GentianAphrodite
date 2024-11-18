@@ -4,6 +4,7 @@ import { buildLogicalResults } from '../prompt/logical_results/index.mjs'
 import { coderunner } from './functions/coderunner.mjs'
 import { detailThinking } from "./functions/detail-thinking.mjs";
 import { filesender } from './functions/filesender.mjs'
+import { googlesearch } from "./functions/googlesearch.mjs";
 import { noAIreply } from './noAI/index.mjs'
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
@@ -36,7 +37,7 @@ export async function GetReply(args) {
 		let AItype = logical_results.in_assist ? 'expert' : logical_results.in_nsfw ? 'nsfw' : 'sfw'
 		result.content = await OrderedAISourceCalling(AItype, AI => AI.StructCall(prompt_struct))
 		for (let repalyHandler of [
-			coderunner, filesender, detailThinking,
+			coderunner, filesender, detailThinking, googlesearch,
 			...Object.values(args.plugins).map(plugin => plugin.interfacies.chat?.RepalyHandler)
 		].filter(Boolean))
 			if (await repalyHandler(result, { addLongTimeLog, prompt_struct }))
