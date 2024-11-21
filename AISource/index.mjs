@@ -7,6 +7,7 @@ import { getPartInfo } from '../../../../../../src/server/parts_loader.mjs'
  */
 export let AIsources = {
 	'detail-thinking': null,
+	'web-browse': null,
 	nsfw: null,
 	sfw: null,
 	expert: null,
@@ -37,21 +38,24 @@ export function GetAISourceCallingOrder(name) {
 	switch (name) {
 		case 'detail-thinking':
 			// 我们假设用户给龙胆设置的AI来源中，来源的智商顺序以以下顺序排列：
-			// 详细思考模型，专家模型，正经使用模型，色情模型，简易逻辑模型
+			// 详细思考模型，专家模型，正经使用模型，网页浏览模型，色情模型，简易逻辑模型
 			// 在详细思考任务中，我们以此顺序回落AI来源
-			return ['detail-thinking', 'expert', 'sfw', 'nsfw', 'logic']
+			return ['detail-thinking', 'expert', 'sfw', 'web-browse', 'nsfw', 'logic']
+		case 'web-browse':
+			// 在网页浏览任务中，我们优先调用网页浏览模型，再以智商顺序回落AI来源
+			return ['web-browse', 'detail-thinking', 'expert', 'sfw', 'nsfw', 'logic']
 		case 'expert':
 			// 在专家任务中，我们优先调用专家模型，再以智商顺序回落AI来源
-			return ['expert', 'detail-thinking', 'sfw', 'nsfw', 'logic']
+			return ['expert', 'detail-thinking', 'sfw', 'web-browse', 'nsfw', 'logic']
 		case 'sfw':
 			// 在普通但非色情任务中，我们在正经使用模型回落时优先使用专家模型或详细思考模型以获得最好的结果，之后按智商顺序回落
-			return ['sfw', 'expert', 'detail-thinking', 'nsfw', 'logic']
+			return ['sfw', 'expert', 'detail-thinking', 'web-browse', 'nsfw', 'logic']
 		case 'nsfw':
 			// 在色情任务中，我们假设正经使用模型或专家模型难以产出优质文本，而逻辑模型则是次优解
-			return ['nsfw', 'logic', 'sfw', 'expert', 'detail-thinking']
+			return ['nsfw', 'logic', 'web-browse', 'sfw', 'expert', 'detail-thinking']
 		case 'logic':
 			// 在逻辑判断中，我们使用智商顺序的倒序来回落调用，以最大程度减少不必要的算力损耗
-			return ['logic', 'nsfw', 'sfw', 'expert', 'detail-thinking']
+			return ['logic', 'nsfw', 'web-browse', 'sfw', 'expert', 'detail-thinking']
 	}
 }
 
@@ -63,18 +67,17 @@ export function GetAISourceCallingOrder(name) {
  * @returns {Promise<string>}
  */
 export async function OrderedAISourceCalling(name, caller, trytimes = 3, error_logger = console.log) {
-	let order = GetAISourceCallingOrder(name)
+	let sources = [...new Set(GetAISourceCallingOrder(name).map(x => AIsources[x]).filter(x => x))]
 	let lastErr
-	for (let type of order)
-		if (AIsources[type])
-			for (let i = 0; i < trytimes; i++)
-				try {
-					let result = await caller(AIsources[type])
-					console.log('OrderedAISourceCalling', name, getPartInfo(AIsources[type]).name)
-					return result
-				} catch (err) {
-					await error_logger(lastErr = err)
-				}
+	for (let source of sources)
+		for (let i = 0; i < trytimes; i++)
+			try {
+				let result = await caller(source)
+				console.log('OrderedAISourceCalling', name, getPartInfo(source).name)
+				return result
+			} catch (err) {
+				await error_logger(lastErr = err)
+			}
 
 	throw lastErr
 }

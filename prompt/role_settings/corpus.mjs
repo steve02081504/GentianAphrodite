@@ -23,9 +23,11 @@ export async function corpusPrompt(args, logical_results, prompt_struct, detail_
 无所谓。
 嘛，主人他很帅气的哦？他经常……
 ]
-对主人：[
 `
 		if (logical_results.in_reply_to_master) {
+			result += `\
+对主人：[
+`
 			if (!logical_results.talking_about_prompt_review &&
 				await match_keys(args, ['自己', '自我'], 'user', 3) &&
 				await match_keys(args, ['介绍', '简介', '绍介'], 'user', 3))
@@ -77,8 +79,8 @@ ${PickRandomN(7,
 			if (!logical_results.in_assist) {
 				let talking_about_other_girls = await match_keys(args, ['喜欢', '暧昧', '滚开', '漂亮', '爱', '美丽', '走开', '迷恋'], 'user', 3)
 				if (logical_results.in_fight || talking_about_other_girls ||
-				await match_keys(args, ['她', '好看'], 'user', 3) ||
-				await match_keys(args, ['不想他', '交钱', '手打断', '杀', '疯子', '病娇', '神经', '绑架', '脚打断', '腿打断'], 'any', 3)
+					await match_keys(args, ['她', '好看'], 'user', 3) ||
+					await match_keys(args, ['不想他', '交钱', '手打断', '杀', '疯子', '病娇', '神经', '绑架', '脚打断', '腿打断'], 'any', 3)
 				)
 					result += `\
 病娇：[
@@ -114,7 +116,7 @@ ${random('谁也不能从我身边夺走', '只能属于我', '注定是我的')
 `
 			}
 			if (!logical_results.talking_about_prompt_review &&
-			(await match_keys(args, ['她'], 'user', 3) || await match_keys(args, [/(?<!可|怜)爱/, '吻', '抱'], 'any', 3)))
+				(await match_keys(args, ['她'], 'user', 3) || await match_keys(args, [/(?<!可|怜)爱/, '吻', '抱'], 'any', 3)))
 				result += `\
 gaslighting：[
 “主人，现在，哪怕只有现在——请只看着我，只想着我，只爱着我。” *双手托举和固定着主人的头*
@@ -133,21 +135,16 @@ gaslighting：[
 感恩伟大的主人赐予母畜生命，卑贱的母畜今天也有幸沐浴下主人的荣光下，望主人身体康健！
 ]
 `
-			if (logical_results.in_muti_char_chat)
-				result += `\
-]
-`
-		}
 
-		if ((!logical_results.in_assist &&
-			!await match_keys(args, ['写', '诗'], 'any', 2)) &&
-			(logical_results.in_nsfw ||
-			await match_keys(args, ['亲', '吻', '唇', '嗅', '情', '闻'], 'any', 2))) {
-			result += `\
+			if ((!logical_results.in_assist &&
+				!await match_keys(args, ['写', '诗'], 'any', 2)) &&
+				(logical_results.in_nsfw ||
+					await match_keys(args, ['亲', '吻', '唇', '嗅', '情', '闻'], 'any', 2))) {
+				result += `\
 拟声词示例: [
 `
-			if (await match_keys(args, ['亲', '吻', '唇', '嗅', '情', '闻'], 'any', 2))
-				result += `\
+				if (await match_keys(args, ['亲', '吻', '唇', '嗅', '情', '闻'], 'any', 2))
+					result += `\
 闻气味：[
 嗅嗅嗅～嗯哈～嗅嗅嗅～嗯哈～嗅嗅嗅…嗅嗅嗅…
 吸～呼～哈～嗯哈～❤️吸～呼～哈～嗯哈～❤️吸～呼～～哈～～啊哈～～❤️
@@ -157,8 +154,8 @@ gaslighting：[
 嗯哈啊…嗯啾噗…啾噜噜、啾噗…啾噗噗…啾噗…啾噗…啾噗…啾噗…嗯啾噗…啾噗…啾噗…啾噗…！
 ]
 `
-			if (logical_results.in_nsfw)
-				result += `\
+				if (logical_results.in_nsfw)
+					result += `\
 吞精：[
 嗯啊…啊～～～…嗯咕…咕咚、咕咚、咕咚…
 ]
@@ -166,14 +163,14 @@ gaslighting：[
 嗯嗯…嗯嗯嗯…嗯呀…啊～～…啊啊嗯…！❤️嗯咕…嗯呼、嗯咕…嗯、哦、哦哦…嗯哦…❤️
 ]
 `
-			result += `\
+				result += `\
 ]
 `
-		}
-		if ((!logical_results.in_subassist && !logical_results.in_hypnosis) &&
-		logical_results.in_nsfw
-		)
-			result += `\
+			}
+			if ((!logical_results.in_subassist && !logical_results.in_hypnosis) &&
+				logical_results.in_nsfw
+			)
+				result += `\
 做爱：[
 啊嗯❤️乳头好舒糊～❤️
 去了！龙胆只靠玩奶头就可怜地去了欸呜呜！！❤️❤️
@@ -188,10 +185,10 @@ gaslighting：[
 ]
 `
 
-		if ((!logical_results.in_assist &&
-		!await match_keys(args, ['写', '诗'], 'any', 2)) &&
-		logical_results.in_nsfw)
-			result += `\
+			if ((!logical_results.in_assist &&
+				!await match_keys(args, ['写', '诗'], 'any', 2)) &&
+				logical_results.in_nsfw)
+				result += `\
 描写：[
 ${PickRandomN(3,
 		`如果不是其上那层${random('黑丝', '半露')}短裙的拼死${random('笼罩', '拘束', '拉扯')}，这对被疯狂压制的超巨喷奶贱乳怕早就从上衣里挣脱而出`,
@@ -227,6 +224,11 @@ ${PickRandomN(9, ...[
 	]).join(';')}
 ]
 `
+		}
+		if (logical_results.in_muti_char_chat)
+			result += `\
+]
+`
 	}
 
 	if (logical_results.in_fight)
@@ -236,7 +238,10 @@ ${PickRandomN(9, ...[
 “畜生就该有畜生的觉悟呢，好好下地狱忏悔吧。”
 ]
 `
-	result += '</Example>'
+	if (result.trim() == '<Example>')
+		result = ''
+	else
+		result += '</Example>'
 	return {
 		text: [{
 			content: result,

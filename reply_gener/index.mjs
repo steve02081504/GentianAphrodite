@@ -5,6 +5,7 @@ import { coderunner } from './functions/coderunner.mjs'
 import { detailThinking } from './functions/detail-thinking.mjs'
 import { filesender } from './functions/filesender.mjs'
 import { googlesearch } from './functions/googlesearch.mjs'
+import { webbrowse } from "./functions/webbrowse.mjs"
 import { noAIreply } from './noAI/index.mjs'
 import { compareTwoStrings as string_similarity } from 'npm:string-similarity'
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
@@ -59,7 +60,7 @@ export async function GetReply(args) {
 		let AItype = logical_results.in_assist ? 'expert' : logical_results.in_nsfw ? 'nsfw' : 'sfw'
 		result.content = await OrderedAISourceCalling(AItype, AI => AI.StructCall(prompt_struct))
 		for (let repalyHandler of [
-			coderunner, filesender, detailThinking, googlesearch,
+			coderunner, filesender, detailThinking, googlesearch, webbrowse,
 			...Object.values(args.plugins).map(plugin => plugin.interfacies.chat?.RepalyHandler)
 		].filter(Boolean))
 			if (await repalyHandler(result, { addLongTimeLog, prompt_struct }))

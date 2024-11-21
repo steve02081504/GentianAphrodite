@@ -17,7 +17,7 @@ function resolvePath(relativePath) {
  * @returns {Promise<boolean>}
  */
 export async function filesender(result, { addLongTimeLog }) {
-	let filesender = result.content.match(/(\n|^)```send-file\n(?<file>[^]*)\n```/)?.groups?.file
+	let filesender = result.content.match(/```send-file\n(?<file>[^]*)\n```/)?.groups?.file
 	if (filesender) {
 		filesender = filesender.split('\n')
 		addLongTimeLog({

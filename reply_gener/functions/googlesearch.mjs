@@ -8,7 +8,7 @@ import { search, OrganicResult, ResultTypes } from 'npm:google-sr'
  * @returns {Promise<boolean>}
  */
 export async function googlesearch(result, { addLongTimeLog }) {
-	let searchQuery = result.content.match(/(\n|^)```google-search\n(?<query>[^]*)\n```/)?.groups?.query
+	let searchQuery = result.content.match(/```google-search\n(?<query>[^]*)\n```/)?.groups?.query
 	if (searchQuery) {
 		addLongTimeLog({
 			name: '龙胆',

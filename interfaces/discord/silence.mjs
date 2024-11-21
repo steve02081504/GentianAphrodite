@@ -92,7 +92,7 @@ hitler | 1week | 种族灭绝
 				return {}
 			},
 			RepalyHandler: async (result, { addLongTimeLog }) => {
-				let banlist = result.content.match(/(^|\n)```ban\n(?<banlist>(.*\|.*\|.*\n?)*)\n```/)?.groups?.banlist
+				let banlist = result.content.match(/```ban\n(?<banlist>(.*\|.*\|.*\n?)*)\n```/)?.groups?.banlist
 
 				if (banlist) {
 					addLongTimeLog({

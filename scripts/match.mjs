@@ -5,6 +5,7 @@ import * as OpenCC from 'npm:opencc-js'
 import { translate } from 'npm:@vitalets/google-translate-api'
 import { is_PureChinese } from './langdetect.mjs'
 import { remove_kaomoji } from './dict.mjs'
+import { franc, francAll } from 'npm:franc'
 
 export let chT2S = OpenCC.Converter({from: 'twp', to: 'cn'})
 
@@ -13,6 +14,7 @@ export async function SimplifiyContent(content) {
 	if (!content.trim()) return content
 	if (!is_PureChinese(content)) {
 		console.log('%ccontent "' + content + '" is not pure chinese, translating it for prompt building logic', 'color: red')
+		console.log('franc result:', francAll(content, {minLength: 0}))
 		while(true)
 			try {
 				content = (await translate(content, {from: 'auto', to: 'zh-CN'})).text

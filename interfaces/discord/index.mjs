@@ -239,13 +239,6 @@ export default async function DiscordBotMain(client, config) {
 			}
 		}
 
-		if (inMute) {
-			console.log('in mute')
-			return false
-		}
-		else
-			delete ChannelMuteStartTimes[message.channel.id]
-
 		if (message.author.username === config.ownerUserName) {
 			if (base_match_keys(message.content, ['老婆', '女票', '女朋友', '炮友'])) possible += 50
 			if (base_match_keys(message.content, [/(有点|好)紧张/, '救救', '帮帮', '帮我', '来人', '咋用', '教教', /是真的(吗|么)/])) possible += 100
@@ -256,7 +249,7 @@ export default async function DiscordBotMain(client, config) {
 				possible += 4
 				if (base_match_keys(message.content, [
 					/(再|多)(来|表演)(点|.*(次|个))/, '来个', '不够', '不如', '继续',
-					/^(那|所以你|可以再|再讲|再说|你(觉得|想|知道))/, /^so/i,
+					/^(那|所以你|可以再|再(讲|说|试试)|你(觉得|想|知道))/, /^so/i,
 				])) possible += 100
 			}
 			if (message.mentions.users.has(client.user.id)) possible += 100
@@ -269,8 +262,8 @@ export default async function DiscordBotMain(client, config) {
 		}
 
 		if (message.mentions.users.has(config.ownerUserName)) {
-			matchs += 7 // 多出 7% 的可能性回复提及主人的消息
-			if (base_match_keys(message.content, rude_words)) if (FuyanMode) return false; else possible += 100 // 提及还骂人？你妈妈没了
+			possible += 7 // 多出 7% 的可能性回复提及主人的消息
+			if (base_match_keys(message.content, rude_words)) if (FuyanMode) return false; else return true // 提及还骂人？你妈妈没了
 		}
 		if (message.mentions.users.has(client.user.id)) {
 			possible += 40 // 多出 40% 的可能性回复提及自己的消息
@@ -278,6 +271,13 @@ export default async function DiscordBotMain(client, config) {
 			if (base_match_keys(message.content, rude_words)) if (FuyanMode) return false; else possible += 100 // 提及还骂人？你妈妈没了
 			if (base_match_keys(message.content, ['你主人', '你的主人'])) possible += 100
 		}
+
+		if (inMute) {
+			console.log('in mute')
+			return false
+		}
+		else
+			delete ChannelMuteStartTimes[message.channel.id]
 
 		let result = Math.random() < possible / 100
 		console.log('CheckMessageContentTrigger', possible + '%', result)
@@ -375,7 +375,7 @@ export default async function DiscordBotMain(client, config) {
 					client.destroy()
 					return
 				}
-				else if (base_match_keys(message.content, [/^(龙胆|[\n!,.?~、。呵哦啊嗯噫欸！，？～])*$/]))
+				else if (base_match_keys(message.content, [/^(龙胆|[\n!,.~、。呵哦啊嗯噫欸！，～])*$/]))
 					return GetMessageSender(message)(chT2S(message.content).replaceAll('龙胆', '主人'))
 			let reply = FuyanMode ? { content: '嗯嗯！' } :
 				await GetReply({

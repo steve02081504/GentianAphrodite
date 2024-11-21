@@ -21,15 +21,19 @@ export async function infoPrompt(args, logical_results, prompt_struct, detail_le
 距离上次消息已过去：${new Date(new Date() - args.chat_log.slice(-1)[0].timeStamp).toLocaleTimeString(args.locale || undefined)}
 `
 
-	if (await match_keys(args, ['什么', '名字', '名称', '哪个', '啥'], 'any', 2) &&
-		await match_keys(args, ['AI', '大模型', '模型'], 'any', 2)) {
+	if ((await match_keys(args, ['什么', '名字', '名称', '哪个', '啥', '哪些'], 'any', 2) &&
+		await match_keys(args, ['AI', '大模型', '模型', /ai来?源/i], 'any', 2)) ||
+		await match_keys(args, [/what model/i, /ai (model|source)/i], 'any', 2)) {
 		let modelMap = {}
 		for (let key in AIsources)
-			if (AIsources[key])
-				(modelMap[getPartInfo(AIsources[key], args.locale).name] ??= []).push(key)
+			if (AIsources[key]) {
+				let info = getPartInfo(AIsources[key], args.locale)
+				let sign = `${info.name}（由${info.provider}提供）`;
+				(modelMap[sign] ??= []).push(key)
+			}
 		if (Object.keys(modelMap).length == 1)
 			result += `\
-你基于的模型是\`${Object.values(modelMap)[0]}\`
+你基于的模型是\`${Object.keys(modelMap)[0]}\`
 `
 		else
 			result += `\
