@@ -1,5 +1,5 @@
-import { exec as base_exec } from 'node:child_process'
-import { promisify } from 'node:util'
+import { exec as base_exec } from 'child_process'
+import { promisify } from 'util'
 const exec = promisify(base_exec)
 
 // if pwsh.exe available, use it, else use powershell.exe

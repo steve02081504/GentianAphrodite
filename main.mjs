@@ -1,4 +1,4 @@
-import fs from 'node:fs'
+import fs from 'fs'
 import { GetGreetings, GetGroupGreetings } from './greetings/index.mjs'
 import { GetPrompt, GetPromptForOther } from './prompt/index.mjs'
 import { GetReply } from './reply_gener/index.mjs'

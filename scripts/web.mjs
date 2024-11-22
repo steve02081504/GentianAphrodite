@@ -1,5 +1,5 @@
-import puppeteer from 'npm:puppeteer'
-import TurndownService from 'npm:turndown'
+import puppeteer from 'puppeteer'
+import TurndownService from 'turndown'
 import { where_command } from './exec.mjs'
 
 /**
@@ -16,7 +16,7 @@ export async function NewBrowserGenerByName(name) {
 }
 
 /**
- * @param {import('npm:puppeteer').LaunchOptions} configs
+ * @param {import('puppeteer').LaunchOptions} configs
  */
 export async function NewBrowser(configs) {
 	for (let name of ['firefox', 'chrome']) {
@@ -50,7 +50,6 @@ export async function MarkdownWebFetch(url) {
 		document.querySelectorAll('[hidden]').forEach(el => el.remove())
 		document.querySelectorAll('[aria-hidden="true"]').forEach(el => el.remove())
 		document.querySelectorAll('*').forEach(el => {
-			// deno-lint-ignore no-window
 			const style = window.getComputedStyle(el)
 			if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0')
 				el.remove()

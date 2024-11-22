@@ -5,7 +5,7 @@ import * as OpenCC from 'opencc-js'
 import { translate } from '@vitalets/google-translate-api'
 import { is_PureChinese } from './langdetect.mjs'
 import { remove_kaomoji } from './dict.mjs'
-import { franc, francAll } from 'npm:franc'
+import { franc, francAll } from 'franc'
 
 export let chT2S = OpenCC.Converter({from: 'twp', to: 'cn'})
 
