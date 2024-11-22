@@ -1,14 +1,11 @@
-import { exec } from '../../../../../../../src/server/exec.mjs'
 import process from 'node:process'
+import { bash_exec, pwsh_exec } from '../../scripts/exec.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 function removeTerminalSequences(str) {
 	return str.replace(/\x1B\[[\d;]*[Km]/g, '')
 }
-
-// if pwsh.exe available, use it, else use powershell.exe
-let pwshavailable = Boolean(await exec('1', { 'shell': 'pwsh.exe' }).catch(() => false))
 
 /**
  * @param {chatLogEntry_t} result
@@ -17,7 +14,7 @@ let pwshavailable = Boolean(await exec('1', { 'shell': 'pwsh.exe' }).catch(() =>
  */
 export async function coderunner(result, { addLongTimeLog }) {
 	result.extension.execed_codes ??= {}
-	let jsrunner = result.content.match(/(\n|^)```run-js\n(?<code>[^]*)\n```/)?.groups?.code
+	let jsrunner = result.content.match(/```run-js\n(?<code>[^]*)\n```/)?.groups?.code
 	if (jsrunner) {
 		addLongTimeLog({
 			name: '龙胆',
@@ -39,7 +36,7 @@ export async function coderunner(result, { addLongTimeLog }) {
 		return true
 	}
 	if (process.platform === 'win32') {
-		let pwshrunner = result.content.match(/(\n|^)```run-pwsh\n(?<code>[^]*)\n```/)?.groups?.code
+		let pwshrunner = result.content.match(/```run-pwsh\n(?<code>[^]*)\n```/)?.groups?.code
 		if (pwshrunner) {
 			addLongTimeLog({
 				name: '龙胆',
@@ -48,8 +45,9 @@ export async function coderunner(result, { addLongTimeLog }) {
 				files: []
 			})
 			console.log('AI运行的Powershell代码：', pwshrunner)
+			pwshrunner = `&{\n${pwshrunner}\n} | Out-String -Width 65536`
 			let pwshresult
-			try { pwshresult = await exec(pwshrunner, { 'shell': pwshavailable ? 'pwsh.exe' : 'powershell.exe' }) } catch (err) { pwshresult = err }
+			try { pwshresult = await pwsh_exec(pwshrunner) } catch (err) { pwshresult = err }
 			console.log('pwshresult', pwshresult)
 			addLongTimeLog({
 				name: 'system',
@@ -62,7 +60,7 @@ export async function coderunner(result, { addLongTimeLog }) {
 		}
 	}
 	else {
-		let bashrunner = result.content.match(/(\n|^)```run-bash\n(?<code>[^]*)\n```/)?.groups?.code
+		let bashrunner = result.content.match(/```run-bash\n(?<code>[^]*)\n```/)?.groups?.code
 		if (bashrunner) {
 			addLongTimeLog({
 				name: '龙胆',
@@ -72,7 +70,7 @@ export async function coderunner(result, { addLongTimeLog }) {
 			})
 			console.log('AI运行的Bash代码：', bashrunner)
 			let bashresult
-			try { bashresult = await exec(bashrunner, { 'shell': '/bin/bash' }) } catch (err) { bashresult = err }
+			try { bashresult = await bash_exec(bashrunner) } catch (err) { bashresult = err }
 			console.log('bashresult', bashresult)
 			addLongTimeLog({
 				name: 'system',
