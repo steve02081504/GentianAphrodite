@@ -1,4 +1,4 @@
-import { NdiffResults, PickRandomN, random, repetRandomTimes } from '../../scripts/random.mjs'
+import { NdiffResults, PickRandomN, random, repetRandomTimes, emptyForChance } from '../../scripts/random.mjs'
 import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
 import { rude_words } from '../../scripts/dict.mjs'
 import { is_English, is_Korean, is_Russian, is_French, is_German, is_Spanish, is_Italian, is_Portuguese, is_Japanese } from '../../scripts/langdetect.mjs'

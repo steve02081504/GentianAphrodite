@@ -1,4 +1,4 @@
-import { NdiffResults, PickRandomN, random, repetRandomTimes } from '../../scripts/random.mjs'
+import { NdiffResults, PickRandomN, random, repetRandomTimes, emptyForChance } from '../../scripts/random.mjs'
 import { match_keys } from '../../scripts/match.mjs'
 import { AIsources } from '../../AISource/index.mjs'
 import { getPartInfo } from '../../../../../../../src/server/parts_loader.mjs'

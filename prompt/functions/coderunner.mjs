@@ -1,4 +1,4 @@
-import { NdiffResults, PickRandomN, random, repetRandomTimes } from '../../scripts/random.mjs'
+import { NdiffResults, PickRandomN, random, repetRandomTimes, emptyForChance } from '../../scripts/random.mjs'
 import { match_keys } from '../../scripts/match.mjs'
 import process from 'node:process'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */

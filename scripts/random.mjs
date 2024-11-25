@@ -15,3 +15,6 @@ export function NdiffResults(times, lambda) {
 	while (result.size < times) result.add(lambda())
 	return [...result]
 }
+export function emptyForChance(chance, string = '') {
+	return Math.random() < chance ? '' : string
+}
