@@ -57,18 +57,56 @@ export default {
 		{
 			name:'sfw',
 			type:'text-chat',
+			info:{
+				'zh-CN':{
+					description:'用于日常聊天，不包含色情内容。',
+				}
+			}
 		},
 		{
 			name:'nsfw',
 			type:'text-chat',
+			info:{
+				'zh-CN':{
+					description:'用于包含色情内容的聊天。',
+				}
+			}
 		},
 		{
 			name:'expert',
 			type:'text-chat',
+			info:{
+				'zh-CN':{
+					description:'用于包含专业知识的聊天。',
+				}
+			}
 		},
 		{
 			name:'logic',
 			type:'text-chat',
+			info:{
+				'zh-CN':{
+					description:'用于基础的逻辑推理辅助。',
+				}
+			}
+		},
+		{
+			name:'detail-thinking',
+			type:'text-chat',
+			info:{
+				'zh-CN':{
+					description:'用于深入思考功能。',
+				}
+			}
+		},
+		{
+			name:'web-browse',
+			type:'text-chat',
+			info:{
+				'zh-CN':{
+					description:'用于网络浏览功能。',
+				}
+			}
 		}
 	],
 
