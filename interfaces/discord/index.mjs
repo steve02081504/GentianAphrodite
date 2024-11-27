@@ -206,7 +206,11 @@ export default async function DiscordBotMain(client, config) {
 				catch (error) { return await default_messagesender(reply) }
 				finally { messagesender = default_messagesender }
 			}
-		return async (message) => replayInfoCache[(await messagesender(message)).id] = message
+		return async (message) => {
+			let result = await messagesender(message)
+			if (!(Object(message) instanceof String)) replayInfoCache[result.id] = message
+			return result
+		}
 	}
 	let ErrorRecord = {}
 	async function ErrorHandler(error, message) {
@@ -423,7 +427,7 @@ export default async function DiscordBotMain(client, config) {
 			}
 			if (message.channel.type == ChannelType.DM)
 				if (message.author.id != client.user.id && message.author.username != config.ownerUserName) return
-			let messages = ChannelChatLogs[message.channel.id] || []
+			const messages = ChannelMessageQueues[message.channel.id] ??= []
 			// 若消息记录的后10条中有5条以上的消息内容相同
 			// 则直接使用相同内容的消息作为回复
 			let repet = findMostFrequentElement(messages.slice(-10).map(message => message.content).filter(content => content))
@@ -437,8 +441,7 @@ export default async function DiscordBotMain(client, config) {
 				console.log('复读！', repet.element)
 				GetMessageSender(message)(repet.element)
 			}
-			ChannelMessageQueues[message.channel.id] ??= []
-			ChannelMessageQueues[message.channel.id].push(message)
+			messages.push(message)
 			ChannelHandlers[message.channel.id] ??= HandleMessageQueue(message.channel.id)
 		} catch (error) {
 			ErrorHandler(error, message)

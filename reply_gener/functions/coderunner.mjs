@@ -1,4 +1,5 @@
 import process from 'node:process'
+import util from 'node:util'
 import { bash_exec, pwsh_exec } from '../../scripts/exec.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
@@ -30,7 +31,7 @@ export async function coderunner(result, { addLongTimeLog }) {
 		addLongTimeLog({
 			name: 'system',
 			role: 'system',
-			content: '执行结果：\n' + coderesult,
+			content: '执行结果：\n' + util.inspect(coderesult),
 			files: []
 		})
 		result.extension.execed_codes[jsrunner] = coderesult

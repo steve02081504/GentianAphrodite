@@ -120,7 +120,7 @@ export function getMessageFullContent(message) {
 
 	//add embeds to content
 	for (let embed of message.embeds) {
-		content += '```\n'
+		content += '\n```\n'
 		if (embed.title) content += embed.title + '\n'
 		if (embed.description) content += embed.description + '\n'
 		for (let field of embed.fields) {
