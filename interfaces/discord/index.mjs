@@ -6,126 +6,14 @@ import GentianAphrodite from '../../main.mjs'
 import { findMostFrequentElement } from '../../scripts/tools.mjs'
 import { get_discord_silence_plugin } from './silence.mjs'
 import { rude_words } from '../../scripts/dict.mjs'
+import { getMessageFullContent, splitDiscordReply } from "./tools.mjs";
 /** @typedef {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
-
 /**
  * @typedef {{
- * 	ownerUserName: string
- * 	OwnnerNameKeywords: string[]
- * }} discord_config_t
- */
-
-/**
- * @param {string} reply
- * @returns {string[]}
- */
-function splitDiscordReply(reply, split_lenth = 2000) {
-	let content_slices = reply.split('\n')
-	let new_content_slices = []
-	let last = ''
-	function mapend() {
-		if (last) new_content_slices.push(last)
-		content_slices = new_content_slices
-		new_content_slices = []
-		last = ''
-	}
-	/**
-	 * @param {string} code_block
-	 * @param {string} split_line
-	 */
-	function splitCodeBlock(code_block, split_line) {
-		let new_content_slices = []
-		let content_slices = code_block.trim().split('\n')
-		let block_begin = content_slices.shift() + '\n'
-		let block_end = '\n' + content_slices.pop()
-		// 找到分割行
-		while (content_slices.length > 0) {
-			let split_line_index = content_slices.indexOf(split_line)
-			if (split_line_index === -1) {
-				new_content_slices.push(content_slices.join('\n'))
-				break
-			}
-			let before = content_slices.slice(0, split_line_index + 1).join('\n')
-			new_content_slices.push(before)
-			content_slices = content_slices.slice(split_line_index + 1)
-		}
-		content_slices = new_content_slices
-		new_content_slices = []
-		// 合并代码块
-		let last = ''
-		for (let content_slice of content_slices) {
-			if (last.length + content_slice.length + block_begin.length + block_end.length > split_lenth) {
-				new_content_slices.push(block_begin + last.trim() + block_end)
-				last = ''
-			}
-			last += '\n' + content_slice
-		}
-		new_content_slices.push(block_begin + last.trim() + block_end)
-		new_content_slices = new_content_slices.filter(e => e != block_begin + block_end)
-		return new_content_slices
-	}
-	// 处理```代码块，合并块内容确保其在一个消息中
-	for (let content_slice of content_slices)
-		if (content_slice.startsWith('```'))
-			if (last) {
-				new_content_slices.push(last + '\n' + content_slice)
-				last = ''
-			}
-			else last = content_slice
-
-		else if (last)
-			last += '\n' + content_slice
-		else
-			new_content_slices.push(content_slice)
-
-	mapend()
-	// 处理超大代码块或超长单行，分割为多个块内容或多行
-	code_handle:
-	for (let content_slice of content_slices)
-		if (content_slice.length > split_lenth)
-			if (content_slice.startsWith('```')) {
-				for (let spliter of ['}', '};', ')', '']) {
-					let splited_blocks = splitCodeBlock(content_slice, spliter)
-					if (splited_blocks.every(e => e.length <= split_lenth)) {
-						console.log('splited_blocks:', splited_blocks)
-						new_content_slices = new_content_slices.concat(splited_blocks)
-						continue code_handle
-					}
-				}
-				new_content_slices.push(content_slice)
-			}
-			else {
-				let splited_lines = content_slice.split(/(?<=[ !"');?\]}’”。》！）：；？])/)
-				let last = ''
-				for (let splited_line of splited_lines) {
-					if (last.length + splited_line.length > split_lenth) {
-						new_content_slices.push(last)
-						last = ''
-					}
-					last += splited_line
-				}
-				if (last) new_content_slices.push(last)
-			}
-		else new_content_slices.push(content_slice)
-
-	mapend()
-	// 对于仍然超出长度的块，生硬拆分其内容
-	for (let content_slice of content_slices)
-		if (content_slice.length > split_lenth)
-			new_content_slices = new_content_slices.concat(content_slice.match(new RegExp(`[^]{1,${split_lenth}}`, 'g')))
-		else new_content_slices.push(content_slice)
-	mapend()
-	// 合并消息使其不超过split_lenth
-	for (let content_slice of content_slices)
-		if (last.length + content_slice.length < split_lenth)
-			last += '\n' + content_slice
-		else {
-			new_content_slices.push(last)
-			last = content_slice
-		}
-	mapend()
-	return content_slices.map(e => e.trim()).filter(e => e)
-}
+* 	ownerUserName: string
+* 	OwnnerNameKeywords: string[]
+* }} discord_config_t
+*/
 
 const MaxRetries = 3
 async function tryFewTimes(func, times = MaxRetries) {
@@ -160,12 +48,8 @@ export default async function DiscordBotMain(client, config) {
 		else if (author.username == config.ownerUserName) name = author.username
 		else name += name.toLowerCase() === author.username.toLowerCase() ? '' : ` (${author.username})`
 
-		let content = message.content
-		for (let [key, value] of message.mentions.users)
-			if (content.includes(`<@${value.id}>`))
-				content = content.replaceAll(`<@${value.id}>`, `@${value.username}`)
-			else
-				content = `@${value.username} ${content}`
+		let content = getMessageFullContent(message)
+
 		/** @type {chatLogEntry_t} */
 		let result = {
 			...replayInfoCache[message.id] || { extension: {} },
@@ -173,14 +57,24 @@ export default async function DiscordBotMain(client, config) {
 			role: author.username === config.ownerUserName ? 'user' : 'char',
 			name,
 			content,
-			files: await Promise.all(message.attachments.map(async (attachment) => {
+			files: await Promise.all([...message.attachments.map(async (attachment) => {
 				return {
 					name: attachment.name,
 					buffer: Buffer.from(await fetch(attachment.url).then((response) => response.arrayBuffer())),
 					description: attachment.description,
 					mimeType: attachment.contentType
 				}
-			})),
+			}), ...message.embeds.map(embed => embed.image?.url).filter(url => url).map(async url => {
+				return {
+					name: url.split('/').pop(),
+					buffer: Buffer.from(await fetch(url).then((response) => response.arrayBuffer())),
+					description: '',
+					mimeType: 'image/png'
+				}
+			})]),
+			extension: {
+				discord_messages: [message]
+			}
 		}
 		return result
 	}
@@ -190,13 +84,23 @@ export default async function DiscordBotMain(client, config) {
 		return content.match(/^[!$%&/\\！？]/)
 	}
 	let ChannelMuteStartTimes = {}
+
+	function isInFavor(channelID) {
+		let lastSendTime = lastSendMessageTime[channelID] || 0
+		let lastMessage = client.channels.cache.get(channelID).messages.cache.last() || { createdTimestamp: 0 }
+		return new Date(lastMessage.createdTimestamp) - new Date(lastSendTime) < 3 * 60000 // 间隔 3 分钟内的对话
+	}
+	function isMuted(channelID) {
+		return Date.now() - (ChannelMuteStartTimes[channelID] || 0) < 3 * 60000
+	}
 	/**
 	 * @param {import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
 	 * @returns {boolean}
 	 */
 	function CheckMessageContentTrigger(message) {
+		let content = getMessageFullContent(message)
 		console.log({
-			content: message.content,
+			content: content,
 			authorUserName: message.author.username,
 			channelID: message.channel.id
 		})
@@ -207,24 +111,23 @@ export default async function DiscordBotMain(client, config) {
 
 		let possible = 0
 
-		possible += base_match_keys(message.content, config.OwnnerNameKeywords) * 7 // 每个匹配对该消息追加 7% 可能性回复消息
+		possible += base_match_keys(content, config.OwnnerNameKeywords) * 7 // 每个匹配对该消息追加 7% 可能性回复消息
 
-		possible += base_match_keys(message.content, Gentian_words) * 5 // 每个匹配对该消息追加 5% 可能性回复消息
+		possible += base_match_keys(content, Gentian_words) * 5 // 每个匹配对该消息追加 5% 可能性回复消息
 
-		possible += base_match_keys(message.content, [/(花|华)(萝|箩|罗)(蘑|磨|摩)/g]) * 3 // 每个匹配对该消息追加 3% 可能性回复消息
+		possible += base_match_keys(content, [/(花|华)(萝|箩|罗)(蘑|磨|摩)/g]) * 3 // 每个匹配对该消息追加 3% 可能性回复消息
 
-		let is_bot_command = isBotCommand(message.content) // 跳过疑似bot命令
+		let is_bot_command = isBotCommand(content) // 跳过疑似bot命令
 
-		let lastSendTime = lastSendMessageTime[message.channel.id] || 0
-		let inFavor = new Date(message.createdTimestamp) - new Date(lastSendTime) < 3 * 60000 // 间隔 3 分钟内的对话
-		let EngWords = message.content.split(' ')
+		let inFavor = isInFavor(message.channel.id)
+		let EngWords = content.split(' ')
 		let mentionedWithoutAt = (base_match_keys(
-			message.content.substring(0, 5) + ' ' + message.content.substring(message.content.length - 3), ['龙胆']
+			content.substring(0, 5) + ' ' + content.substring(content.length - 3), ['龙胆']
 		) || base_match_keys(EngWords.slice(0, 6).concat(EngWords.slice(-3)).join(' '), ['gentian'])) &&
-			!base_match_keys(message.content, [/(龙胆(有|能|这边|目前|[^ 。你，]{0,3}的)|gentian('s|is|are|can|has))/i]) &&
-			!base_match_keys(message.content, [/^.{0,5}龙胆$/i])
+			!base_match_keys(content, [/(龙胆(有|能|这边|目前|[^ 。你，]{0,3}的)|gentian('s|is|are|can|has))/i]) &&
+			!base_match_keys(content, [/^.{0,5}龙胆$/i])
 
-		let inMute = Date.now() - (ChannelMuteStartTimes[message.channel.id] || 0) < 3 * 60000
+		let inMute = isMuted(message.channel.id)
 		if (message.author.username === config.ownerUserName) {
 			if (mentionedWithoutAt || message.mentions.users.has(client.user.id)) {
 				possible += 100
@@ -232,7 +135,7 @@ export default async function DiscordBotMain(client, config) {
 				inMute = false
 			}
 			if (inMute || (
-				inFavor && base_match_keys(message.content, ['闭嘴', '安静', '肃静']) && message.content.length < 10
+				inFavor && base_match_keys(content, ['闭嘴', '安静', '肃静']) && content.length < 10
 			)) {
 				ChannelMuteStartTimes[message.channel.id] = Date.now()
 				inMute = true
@@ -240,16 +143,16 @@ export default async function DiscordBotMain(client, config) {
 		}
 
 		if (message.author.username === config.ownerUserName) {
-			if (base_match_keys(message.content, ['老婆', '女票', '女朋友', '炮友'])) possible += 50
-			if (base_match_keys(message.content, [/(有点|好)紧张/, '救救', '帮帮', '帮我', '来人', '咋用', '教教', /是真的(吗|么)/])) possible += 100
-			if (base_match_keys(message.content, ['龙胆']) && base_match_keys(message.content, ['怎么想'])) possible += 100
-			if (base_match_keys(message.content, ['睡了', '眠了', '晚安', '睡觉去了'])) possible += 50
-			if (base_match_keys(message.content, ['失眠了', '睡不着'])) possible += 100
+			if (base_match_keys(content, ['老婆', '女票', '女朋友', '炮友'])) possible += 50
+			if (base_match_keys(content, [/(有点|好)紧张/, '救救', '帮帮', '帮我', '来人', '咋用', '教教', /是真的(吗|么)/])) possible += 100
+			if (base_match_keys(content, ['龙胆']) && base_match_keys(content, ['怎么想'])) possible += 100
+			if (base_match_keys(content, ['睡了', '眠了', '晚安', '睡觉去了'])) possible += 50
+			if (base_match_keys(content, ['失眠了', '睡不着'])) possible += 100
 			if (inFavor) {
 				possible += 4
-				if (base_match_keys(message.content, [
+				if (base_match_keys(content, [
 					/(再|多)(来|表演)(点|.*(次|个))/, '来个', '不够', '不如', '继续',
-					/^(那|所以你|可以再|再(讲|说|试试)|你(觉得|想|知道))/, /^so/i,
+					/^(那|所以你|可以再|你?再(讲|说|试试)|你(觉得|想|知道))/, /^so/i,
 				])) possible += 100
 			}
 			if (message.mentions.users.has(client.user.id)) possible += 100
@@ -258,18 +161,18 @@ export default async function DiscordBotMain(client, config) {
 		else if (mentionedWithoutAt) {
 			if (inFavor) possible += 100
 			else possible += 40
-			if (base_match_keys(message.content, [/[午安早晚]安/])) possible += 100
+			if (base_match_keys(content, [/[午安早晚]安/])) possible += 100
 		}
 
 		if (message.mentions.users.has(config.ownerUserName)) {
 			possible += 7 // 多出 7% 的可能性回复提及主人的消息
-			if (base_match_keys(message.content, rude_words)) if (FuyanMode) return false; else return true // 提及还骂人？你妈妈没了
+			if (base_match_keys(content, rude_words)) if (FuyanMode) return false; else return true // 提及还骂人？你妈妈没了
 		}
 		if (message.mentions.users.has(client.user.id)) {
 			possible += 40 // 多出 40% 的可能性回复提及自己的消息
-			if (base_match_keys(message.content, [/\?|？/, '怎么', '什么', '吗', /(大|小)还是/, /(还是|哪个)(大|小)/])) possible += 100 // 疑问句保真
-			if (base_match_keys(message.content, rude_words)) if (FuyanMode) return false; else possible += 100 // 提及还骂人？你妈妈没了
-			if (base_match_keys(message.content, ['你主人', '你的主人'])) possible += 100
+			if (base_match_keys(content, [/\?|？/, '怎么', '什么', '吗', /(大|小)还是/, /(还是|哪个)(大|小)/])) possible += 100 // 疑问句保真
+			if (base_match_keys(content, rude_words)) if (FuyanMode) return false; else possible += 100 // 提及还骂人？你妈妈没了
+			if (base_match_keys(content, ['你主人', '你的主人'])) possible += 100
 		}
 
 		if (inMute) {
@@ -286,6 +189,9 @@ export default async function DiscordBotMain(client, config) {
 
 	let ChannelHandlers = {}
 	let ChannelMessageQueues = {}
+	/**
+	 * @type {Record<string, chatLogEntry_t[]>}
+	 */
 	let ChannelChatLogs = {}
 	/**
 	 * @param {import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
@@ -375,7 +281,11 @@ export default async function DiscordBotMain(client, config) {
 					client.destroy()
 					return
 				}
-				else if (base_match_keys(message.content, [/^(龙胆|[\n!,.~、。呵哦啊嗯噫欸！，～])*$/]))
+				else if (base_match_keys(message.content, [/^龙胆.{0,2}复诵.{0,2}`.*`$/])) {
+					let content = message.content.match(/^龙胆.{0,2}复诵.{0,2}`(?<content>.*)`$/).groups.content
+					return GetMessageSender(message)(content)
+				}
+				else if (base_match_keys(message.content, [/^(龙胆|[\n,.~、。呵哦啊嗯噫欸，～])*$/,/^龙胆龙胆(龙胆|[\n!,.?~、。呵哦啊嗯噫欸！，？～])+$/]))
 					return GetMessageSender(message)(chT2S(message.content).replaceAll('龙胆', '主人'))
 			let reply = FuyanMode ? { content: '嗯嗯！' } :
 				await GetReply({
@@ -396,7 +306,7 @@ export default async function DiscordBotMain(client, config) {
 					chat_log: ChannelChatLogs[message.channel.id],
 				})
 
-			if (reply.content) {
+			if (reply.content || reply.files?.length) {
 				if (reply.content.startsWith(`@${message.author.username}`))
 					reply.content = reply.content.slice(`@${message.author.username}`.length).trim()
 
@@ -418,6 +328,8 @@ export default async function DiscordBotMain(client, config) {
 				await messagesender(last_reply_message)
 				lastSendMessageTime[message.channel.id] = new Date()
 			}
+			else
+				console.log('no reply form AI, skipping reply')
 		} catch (error) {
 			ErrorHandler(error, message)
 		} finally {
@@ -434,6 +346,9 @@ export default async function DiscordBotMain(client, config) {
 			) {
 				last.content += '\n' + entry.content
 				last.files = entry.files
+				last.extension ??= {}
+				last.extension.discord_messages ??= []
+				last.extension.discord_messages = last.extension.discord_messages.concat(entry.extension.discord_messages)
 			}
 			else
 				newlog.push(last = entry)
@@ -471,7 +386,12 @@ export default async function DiscordBotMain(client, config) {
 					) {
 						last.content += '\n' + newlog.content
 						last.files = newlog.files
-						if (Object.keys(last.extension || {})) last.extension = {}
+						last.extension ??= {}
+						last.extension.discord_messages ??= []
+						last.extension.discord_messages = last.extension.discord_messages.concat(newlog.extension.discord_messages)
+						if (Object.keys(last.extension || {}).length) last.extension = {
+							discord_messages: last.extension.discord_messages
+						}
 					}
 					else {
 						chatlog.push(newlog)
@@ -482,8 +402,9 @@ export default async function DiscordBotMain(client, config) {
 				if (message.author.id === client.user.id) continue
 				if (CheckMessageContentTrigger(message)) await DoMessageReply(message)
 			}
-			// map all chat log entries except last
-			await Promise.all(chatlog.slice(0, -1).map(PreprocessChatLogEntry))
+			// if in favor or has user message, map all chat log entries except last
+			if ((isInFavor(channelid) || chatlog.some(entry => entry.role == 'user')) && !isMuted(channelid))
+				await Promise.all(chatlog.slice(0, -1).map(PreprocessChatLogEntry))
 		}
 		catch (error) {
 			ErrorHandler(error, myQueue[0])
@@ -518,11 +439,23 @@ export default async function DiscordBotMain(client, config) {
 			}
 			ChannelMessageQueues[message.channel.id] ??= []
 			ChannelMessageQueues[message.channel.id].push(message)
-			ChannelHandlers[message.channel.id] ??= setTimeout(() => {
-				HandleMessageQueue(message.channel.id)
-			})
+			ChannelHandlers[message.channel.id] ??= HandleMessageQueue(message.channel.id)
 		} catch (error) {
 			ErrorHandler(error, message)
+		}
+	})
+	client.on(Events.MessageUpdate, async (message) => {
+		if (message.author.id === client.user.id) return
+		let chatlog = ChannelChatLogs[message.channel.id] || []
+		// 我们先检查下这个消息是否在消息记录中，若不在直接跳过
+		if (!chatlog.find(logentry => logentry.extension?.discord_messages?.find(id => id == message.id))) return
+		let Update = chatlog.find(logentry => logentry.extension?.discord_messages?.find(id => id == message.id))
+		if (Update) {
+			let newlog = MargeChatLog(await Promise.all(Update.extension.discord_messages.map(DiscordMessageToFountChatLogEntry)))[0]
+			for (let key in newlog) Update[key] = newlog[key]
+			for (let key in Update) if (!(key in newlog)) delete Update[key]
+			Update.content += '\n（已编辑）'
+			return
 		}
 	})
 	console.log('bot ' + client.user.username + ' ready!')

@@ -42,7 +42,6 @@ export async function FunctionPrompt(args, logical_results, prompt_struct, detai
 	result.push(CodeRunnerPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(FileSenderPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(HostInfoPrompt(args, logical_results, prompt_struct, detail_level))
-	if(logical_results.talking_about_prompt_review)
-		result.push(PromptReviewerPrompt(args, logical_results, prompt_struct, detail_level))
+	result.push(PromptReviewerPrompt(args, logical_results, prompt_struct, detail_level))
 	return margePrompt(...await Promise.all(result))
 }

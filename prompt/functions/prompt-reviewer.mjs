@@ -13,7 +13,8 @@ import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
 export async function PromptReviewerPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	result += `\
+	if(logical_results.talking_about_prompt_review)
+		result += `\
 当你被要求对提示词进行评价时，参考以下流程：[
 你不应扮演该角色，而是分析输入。
 在此之上，给出你对该prompt中描绘内容的总体印象和评价：[

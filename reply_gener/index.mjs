@@ -58,7 +58,11 @@ export async function GetReply(args) {
 		console.log('prompt_struct')
 		console.dir(prompt_struct, { depth: 4 })
 		let AItype = logical_results.in_assist ? 'expert' : logical_results.in_nsfw ? 'nsfw' : 'sfw'
-		result.content = await OrderedAISourceCalling(AItype, AI => AI.StructCall(prompt_struct))
+		result.content = await OrderedAISourceCalling(AItype, async AI => {
+			let result = await AI.StructCall(prompt_struct)
+			if (!String(result).trim()) throw new Error('empty reply')
+			return result
+		})
 		for (let repalyHandler of [
 			coderunner, filesender, detailThinking, googlesearch, webbrowse,
 			...Object.values(args.plugins).map(plugin => plugin.interfacies.chat?.RepalyHandler)

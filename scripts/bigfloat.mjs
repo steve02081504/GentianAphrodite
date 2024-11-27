@@ -133,7 +133,7 @@ class ubigfloat {
 		}
 	}
 }
-let bigfloat = class {
+class bigfloat {
 	basenum = new ubigfloat()
 	sign = false
 
@@ -212,6 +212,10 @@ let bigfloat = class {
 	greaterThan(other) {
 		other = new bigfloat(other)
 		return this.sign === other.sign ? this.basenum.greaterThan(other.basenum) : !this.sign
+	}
+	compare(other) {
+		other = new bigfloat(other)
+		return this.sign === other.sign ? this.basenum.compare(other.basenum) : [1, -1][this.sign]
 	}
 	floor() {
 		return bigfloat.fromNumAndSign(this.sign, this.basenum.floor())
@@ -352,7 +356,7 @@ let bigfloat = class {
 	}
 }
 /**
- * @type {typeof bigfloat & (value: bigfloat | string | number) => bigfloat}
+ * @type {bigfloat & ((value: string | number) => bigfloat)}
  */
 let bigfloatProxy = new Proxy(bigfloat, {
 	apply(target, thisArg, args) {

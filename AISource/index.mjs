@@ -72,8 +72,8 @@ export async function OrderedAISourceCalling(name, caller, trytimes = 3, error_l
 	for (let source of sources)
 		for (let i = 0; i < trytimes; i++)
 			try {
-				let result = await caller(source)
 				console.log('OrderedAISourceCalling', name, getPartInfo(source).name)
+				let result = await caller(source)
 				return result
 			} catch (err) {
 				await error_logger(lastErr = err)
