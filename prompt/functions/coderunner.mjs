@@ -28,14 +28,13 @@ code
 (await import('npm:robotjs')).getScreenSize()
 \`\`\`
 或
-${
-	process.platform === 'win32' ?
-`\
+${process.platform === 'win32' ?
+				`\
 \`\`\`run-pwsh
 start $(ls ~/music | ? { $_.Name -match 'shape of you' })
 \`\`\`
 ` :
-`\
+				`\
 \`\`\`run-bash
 ls ~/music | grep 'shape of you' | head -n 1 | xargs open
 \`\`\`

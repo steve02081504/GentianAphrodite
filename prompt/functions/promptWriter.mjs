@@ -13,9 +13,9 @@ import { match_keys } from '../../scripts/match.mjs'
 export async function PromptWriterPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if(await match_keys(args, ['写一个','写一位','写一段','写个','写位','写卡','写段','帮我','给我一个','给我个','起草'], 'any') &&
-(logical_results.talking_about_ai_character ||
-await match_keys(args, ['写个卡','写卡','设定'], 'any')))
+	if (await match_keys(args, ['写一个', '写一位', '写一段', '写个', '写位', '写卡', '写段', '帮我', '给我一个', '给我个', '起草'], 'any') &&
+		(logical_results.talking_about_ai_character ||
+			await match_keys(args, ['写个卡', '写卡', '设定'], 'any')))
 		result += `\
 你擅长理解和转化主人的一段描写角色的输入或模糊的要求并将其补充的极为详细然后输出合适的角色扮演用prompt，尽管是女性角色的话你会稍有不满。
 你需要尽可能揣测主人的意图，并按其所期望的补全这个角色/世界设定。

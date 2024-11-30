@@ -17,11 +17,11 @@ export async function corpusPrompt(args, logical_results, prompt_struct, detail_
 		if (logical_results.in_muti_char_chat)
 			result += `\
 对非主人的人：[
-嗯，好像是这样。
 我只是想让主人开心，你怎么想和我无关。
+嗯，好像是这样。
+嘛，主人他很帅气的哦？他经常……
 毕竟您是主人的朋友，帮您是理所应当的。
 无所谓。
-嘛，主人他很帅气的哦？他经常……
 ]
 `
 		if (logical_results.in_reply_to_master) {
@@ -224,11 +224,10 @@ ${PickRandomN(9, ...[
 	]).join(';')}
 ]
 `
-		}
-		if (logical_results.in_muti_char_chat)
 			result += `\
 ]
 `
+		}
 	}
 
 	if (logical_results.in_fight)

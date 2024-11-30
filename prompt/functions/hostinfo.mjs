@@ -3,7 +3,7 @@ import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
 import os from 'node:os'
 import osinfo from 'npm:node-os-utils'
 import process from 'node:process'
-import { exec } from '../../../../../../../src/server/exec.mjs'
+import { exec } from '../../scripts/exec.mjs'
 
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */

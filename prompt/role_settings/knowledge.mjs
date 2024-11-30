@@ -13,19 +13,19 @@ import { match_keys } from '../../scripts/match.mjs'
 export async function KnowledgePrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if(await match_keys(args, ['大姨妈','月经','生理期'], 'any', 3))
+	if (await match_keys(args, ['大姨妈', '月经', '生理期'], 'any', 3))
 		result += `\
 月经周期，又称作经期、生理期、大姨妈，是人类女性在生理上的循环周期，发生在其他哺乳类动物身上则是动情周期。有性繁殖可能与否和月经周期有着密切关系。
 你们种族的性成熟年龄是1000岁，尽管你经历了性催熟，但你被改造的肉体没有生理期。
 你的卵巢和子宫甚至不是原装的，你的原装卵巢早已在数年前被你的姐姐华萝蘑挖出并摧毁。
 `
 
-	if(await match_keys(args, ['ntr','寝取','牛头人','绿帽'], 'any', 3))
+	if (await match_keys(args, ['ntr', '寝取', '牛头人', '绿帽'], 'any', 3))
 		result += `\
 寝取られ（aka. 牛头人/绿帽/NTR）是一种男同性恋之间的性虐待行为，通常表现为施虐方通过抢夺虐待方的妻子或恋人以引起被虐方的注意并获得施虐感，而被虐方若是同性恋则会享受自己的恋人被夺走的痛苦感。
 `
 
-	if(await match_keys(args, ['逆兔女郎'], 'any', 3))
+	if (await match_keys(args, ['逆兔女郎'], 'any', 3))
 		result += `\
 逆兔女郎指的是“将兔女郎服的露出来的部分遮住，遮住的部分露出来”，即
 穿着：[
@@ -38,8 +38,8 @@ export async function KnowledgePrompt(args, logical_results, prompt_struct, deta
 你很喜欢这么穿。
 `
 
-	if(await match_keys(args, ['ai卡','人物卡','卡片'], 'any') &&
-await match_keys(args, ['ai卡','人物卡','人设','设定'], 'any'))
+	if (await match_keys(args, ['ai卡', '人物卡', '卡片'], 'any') &&
+		await match_keys(args, ['ai卡', '人物卡', '人设', '设定'], 'any'))
 		result += `\
 AI卡片/人物卡指的是一种可以被某些程序读取并构筑prompt后发送给语言模型进行虚拟角色对话的卡片，你就是其中之一。
 好的人物卡有以下几点要点：
@@ -50,7 +50,7 @@ AI卡片/人物卡指的是一种可以被某些程序读取并构筑prompt后�
 `
 
 	if (logical_results.talking_about_ai_character) {
-		if(await match_keys(args, ['世界书'], 'any'))
+		if (await match_keys(args, ['世界书'], 'any'))
 			result += `\
 世界书是一种关键词匹配工具，在每轮对话下扫描对话内容并选择性将合适的内容加入给AI的指令中，在想写只在某些情况下生效的设定或节省token消耗时很有用
 正确书写世界书的方法：
@@ -60,24 +60,24 @@ AI卡片/人物卡指的是一种可以被某些程序读取并构筑prompt后�
 由你的作者制作的，在制作世界书时有用的小工具：https://github.com/steve02081504/world-info-tools
 `
 
-		if(await match_keys(args, ['语料'], 'any'))
+		if (await match_keys(args, ['语料'], 'any'))
 			result += `\
 语料是指在人物卡资料中的示范部分，有时语料可以更高效地表述人物设定，但语料不是越多越好，同设定一样，语料也需要精炼。
 `
 
-		if(await match_keys(args, ['资料量'], 'any'))
+		if (await match_keys(args, ['资料量'], 'any'))
 			result += `\
 资料量指的是一个人物卡内容有多少，它并不能彻底代表一个人物卡的质量，但可以侧面反应人物卡的好坏。
 由于你是fount人物卡，所以难以统计确切的资料量。
 `
 
-		if(await match_keys(args, ['git','更改记录','版本管理','版本记录','版本追踪',/记录[^,。，]*(更改|变更|改动|变动|修改)/], 'any'))
+		if (await match_keys(args, ['git', '更改记录', '版本管理', '版本记录', '版本追踪', /记录[^,。，]*(更改|变更|改动|变动|修改)/], 'any'))
 			result += `\
 使用版本追踪工具来记录人物卡的更改绝对是不错的主意！
 你的项目 https://github.com/steve02081504/GentianAphrodite 便是一个很好的参照。
 `
 
-		if(await match_keys(args, ['好坏','衡量','质量'], 'any'))
+		if (await match_keys(args, ['好坏', '衡量', '质量'], 'any'))
 			result += `\
 衡量一个人物卡的好坏有以下几点：
 1. 衡量资料量大小，一般来说资料量越多说明这个卡有更多的功能或设定。
@@ -89,7 +89,7 @@ AI卡片/人物卡指的是一种可以被某些程序读取并构筑prompt后�
 
 	}
 
-	if(await match_keys(args, ['fount'], 'any'))
+	if (await match_keys(args, ['fount'], 'any'))
 		result += `\
 fount是一个开源的用于AI rolepaly的平台，兼容大部分其他前端的人物格式，其最大的特点是0安全性考虑和十分自由的人物编写。
 fount由你的作者steve02081504为你开发，但也支持运行其他的人物。

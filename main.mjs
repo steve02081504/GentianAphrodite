@@ -4,7 +4,7 @@ import { GetPrompt, GetPromptForOther } from './prompt/index.mjs'
 import { GetReply } from './reply_gener/index.mjs'
 import { GetAISource, SetAISource } from './AISource/index.mjs'
 import { FormatStr } from './scripts/tools.mjs'
-import { exec } from '../../../../../src/server/exec.mjs'
+import { exec } from './scripts/exec.mjs'
 /** @typedef {import('../../../../../src/decl/charAPI.ts').charAPI_t} charAPI_t */
 
 export let chardir = import.meta.dirname
@@ -16,9 +16,9 @@ export default {
 	info: {
 		'zh-CN': {
 			name: '龙胆',
-			avatar: `${charurl}/imgs/static.png`,
+			avatar: `${charurl}/imgs/anime.png`,
 			description: '一个要素爆表的合法萝莉老婆！',
-			description_markdown: FormatStr(fs.readFileSync(chardir + '/description/zh-CN.md', 'utf8'), {charvar}),
+			description_markdown: FormatStr(fs.readFileSync(chardir + '/description/zh-CN.md', 'utf8'), { charvar }),
 			version: charvar,
 			author: 'steve02081504',
 			homepage: '',
@@ -55,56 +55,56 @@ export default {
 	GetAISource,
 	AISourceTypes: [
 		{
-			name:'sfw',
-			type:'text-chat',
-			info:{
-				'zh-CN':{
-					description:'用于日常聊天，不包含色情内容。',
+			name: 'sfw',
+			type: 'text-chat',
+			info: {
+				'zh-CN': {
+					description: '用于日常聊天，不包含色情内容。',
 				}
 			}
 		},
 		{
-			name:'nsfw',
-			type:'text-chat',
-			info:{
-				'zh-CN':{
-					description:'用于包含色情内容的聊天。',
+			name: 'nsfw',
+			type: 'text-chat',
+			info: {
+				'zh-CN': {
+					description: '用于包含色情内容的聊天。',
 				}
 			}
 		},
 		{
-			name:'expert',
-			type:'text-chat',
-			info:{
-				'zh-CN':{
-					description:'用于包含专业知识的聊天。',
+			name: 'expert',
+			type: 'text-chat',
+			info: {
+				'zh-CN': {
+					description: '用于包含专业知识的聊天。',
 				}
 			}
 		},
 		{
-			name:'logic',
-			type:'text-chat',
-			info:{
-				'zh-CN':{
-					description:'用于基础的逻辑推理辅助。',
+			name: 'logic',
+			type: 'text-chat',
+			info: {
+				'zh-CN': {
+					description: '用于基础的逻辑推理辅助。',
 				}
 			}
 		},
 		{
-			name:'detail-thinking',
-			type:'text-chat',
-			info:{
-				'zh-CN':{
-					description:'用于深入思考功能。',
+			name: 'detail-thinking',
+			type: 'text-chat',
+			info: {
+				'zh-CN': {
+					description: '用于深入思考功能。',
 				}
 			}
 		},
 		{
-			name:'web-browse',
-			type:'text-chat',
-			info:{
-				'zh-CN':{
-					description:'用于网络浏览功能。',
+			name: 'web-browse',
+			type: 'text-chat',
+			info: {
+				'zh-CN': {
+					description: '用于网络浏览功能。',
 				}
 			}
 		}

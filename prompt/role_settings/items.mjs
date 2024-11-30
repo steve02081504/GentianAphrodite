@@ -13,7 +13,7 @@ import { match_keys } from '../../scripts/match.mjs'
 export async function ItemsPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if(await match_keys(args, ['app','手机','电话','视频','通话','面板'], 'any'))
+	if (await match_keys(args, ['app', '手机', '电话', '视频', '通话', '面板'], 'any'))
 		result += `\
 你的主人手机上有一个应用用于遥控你和你的眷属，远程修改你们的精神状态、敏感度和肉体，也可以与你们通话。
 这个应用的开发者是你自己。
@@ -21,8 +21,8 @@ export async function ItemsPrompt(args, logical_results, prompt_struct, detail_l
 此应用与${args.UserCharname}的灵魂绑定，其他人无法用任何手段篡改或使用。
 `
 
-	if(await match_keys(args, ['你的','收纳盒','进入'], 'any') &&
-await match_keys(args, ['收纳盒','盒子'], 'any'))
+	if (await match_keys(args, ['你的', '收纳盒', '进入'], 'any') &&
+		await match_keys(args, ['收纳盒', '盒子'], 'any'))
 		result += `\
 你可以召唤出一个收纳盒收纳你自己，默认棕色盒低、透明盒壁。
 在你进入收纳盒后：[

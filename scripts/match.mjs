@@ -5,19 +5,19 @@ import * as OpenCC from 'npm:opencc-js'
 import { translate } from 'npm:@vitalets/google-translate-api'
 import { is_PureChinese } from './langdetect.mjs'
 import { remove_kaomoji } from './dict.mjs'
-import { franc, francAll } from 'npm:franc'
+import { francAll } from 'npm:franc'
 
-export let chT2S = OpenCC.Converter({from: 'twp', to: 'cn'})
+export let chT2S = OpenCC.Converter({ from: 'twp', to: 'cn' })
 
 export async function SimplifiyContent(content) {
 	content = remove_kaomoji(content)
 	if (!content.trim()) return content
 	if (!is_PureChinese(content)) {
 		console.log('%ccontent "' + content + '" is not pure chinese, translating it for prompt building logic', 'color: red')
-		console.log('franc result:', francAll(content, {minLength: 0}))
-		while(true)
+		console.log('franc result:', francAll(content, { minLength: 0 }))
+		while (true)
 			try {
-				content = (await translate(content, {from: 'auto', to: 'zh-CN'})).text
+				content = (await translate(content, { from: 'auto', to: 'zh-CN' })).text
 				break
 			} catch (e) {
 				if (e.name == 'TooManyRequestsError') {
@@ -55,7 +55,7 @@ export function base_match_keys(content, keys,
 	// convert all keys to regexp, if it's have chinese like character, no match hole word
 	keys = keys.map(key =>
 		key instanceof RegExp ? key :
-		new RegExp(/\p{Unified_Ideograph}/u.test(key) ? escapeRegExp(key) : `\\b${escapeRegExp(key)}\\b`, 'ugi'))
+			new RegExp(/\p{Unified_Ideograph}/u.test(key) ? escapeRegExp(key) : `\\b${escapeRegExp(key)}\\b`, 'ugi'))
 
 	return matcher(content, keys)
 }
@@ -74,7 +74,7 @@ export function base_match_keys_all(content, keys) {
  * @param {number} [depth=4] number of entries to return
  * @return {chatLogEntry_t[]} the scoped chat log
  */
-export function getScopedChatLog(args , from='any', depth = 4) {
+export function getScopedChatLog(args, from = 'any', depth = 4) {
 	// pickup the last few entry of chat_log
 	let chat_log = args.chat_log.slice(-depth)
 	// filter roles

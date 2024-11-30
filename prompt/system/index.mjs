@@ -21,7 +21,7 @@ export async function SystemPrompt(args, logical_results, prompt_struct, detail_
 	let result = []
 	result.push(SOSPrompt(args, logical_results, prompt_struct, detail_level))
 
-	if(logical_results.talking_about_prompt_review || logical_results.prompt_input)
+	if (logical_results.talking_about_prompt_review || logical_results.prompt_input)
 		result.push(SoberPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(PromptReviewerPrompt(args, logical_results, prompt_struct, detail_level))
 

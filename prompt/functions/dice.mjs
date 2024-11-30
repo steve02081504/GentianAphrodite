@@ -5,7 +5,7 @@ import bigInt from 'npm:big-integer'
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
-function roll(type, num=1) {
+function roll(type, num = 1) {
 	let result = 0
 	for (let i = 0; i < num; i++)
 		result += bigInt.randBetween(1, type)
@@ -20,13 +20,13 @@ function roll(type, num=1) {
 export async function DicePrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if(await match_keys(args, ['比大小','骰子','🎲'], 'any'))
+	if (await match_keys(args, ['比大小', '骰子', '🎲'], 'any'))
 		result += `\
 以下是一些随机数，在你需要时[从前往后]取数：
 6面骰（默认类型）：${roll(6)}; ${roll(6)}; ${roll(6)}; ${roll(6)}; ${roll(6)};
 `
 
-	if(await match_keys(args, [/\b(\d*)d(\d+)\b/], 'any')) {
+	if (await match_keys(args, [/\b(\d*)d(\d+)\b/], 'any')) {
 		result += `\
 当他人谈论起形似“1d6”的语句时，这很可能是指代掷骰子。
 XdY+Z，即扔出X个Y面骰子，结果加上Z

@@ -50,14 +50,14 @@ export async function buildLogicalResults(args, prompt_struct, detail_level) {
 	if (is_PureChinese(getScopedChatLog(args, 'any', 2).map(x => x.content).join('\n')))
 		result.is_pure_chinese = true
 
-	if (await match_keys(args, ['进入调制模式'], 'user', 2) ||
-		await match_keys(args, ['<龙胆当前模式: 调制模式>', '<龙胆当前模式:调制模式>', '<龙胆当前模式：调制模式>'], 'char', 2))
+	let hypnosis_exit_words = ['关闭调制', '终止调制', '结束调制', '调制关闭', '调制模式终止', '调制模式结束', '调制终止', '调制终结', '调制结束', '调试模式终结', '退出调制']
+	if (await match_keys(args, hypnosis_exit_words, 'user', 1))
+		result.in_hypnosis = false
+	else if (await match_keys(args, ['进入调制模式'], 'user', 2) || args.chat_scoped_char_memory.in_hypnosis)
 		result.in_hypnosis = true
-
-
-	if (await match_keys(args, ['关闭调制', '终止调制', '结束调制', '调制关闭', '调制模式终止', '调制模式结束', '调制终止', '调制终结', '调制结束', '调试模式终结', '退出调制'], 'user', 69))
+	if (await match_keys(args, hypnosis_exit_words, 'user', 69))
 		result.hypnosis_exit = true
-
+	args.chat_scoped_char_memory.in_hypnosis = result.in_hypnosis
 
 	if (!result.in_assist && (await match_keys(args, [
 		'一夜情', '一柱擎天', '乱伦', '乳交', '乳牛', '乳穴', '乳肉', '云雨', '交配', '假阳具', '做爱',
@@ -96,7 +96,8 @@ export async function buildLogicalResults(args, prompt_struct, detail_level) {
 		if (result.talking_about_prompt_review ||
 			await match_keys(args, [
 				'为什', '为何', '你听说过', '告诉我', '和我说说', '文献', '给我一个', '给我个', '向我讲讲', '和我讲讲', '跟我讲讲', '讲一讲',
-				'讲一下', '讲下', '讲解', '说一下', '说下', '说说看', '跟我说说', '问下', /介绍下(?!你)/, /介绍一下(?!你)/, '帮我', '教我'
+				'讲一下', '讲下', '讲解', '说一下', '说下', '说说看', '跟我说说', '问下', /介绍下(?!你)/, /介绍一下(?!你)/, '帮我', '教我',
+				'你试试', '你再试试'
 			], 'any')
 		) {
 			result.in_assist = true

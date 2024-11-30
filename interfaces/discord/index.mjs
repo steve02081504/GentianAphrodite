@@ -1,4 +1,4 @@
-import { Client, Events, Message, ChannelType } from 'npm:discord.js'
+import { Events, ChannelType } from 'npm:discord.js'
 import { Buffer } from 'node:buffer'
 import { base_match_keys, chT2S, PreprocessChatLogEntry } from '../../scripts/match.mjs'
 import { GetReply } from '../../reply_gener/index.mjs'
@@ -6,7 +6,9 @@ import GentianAphrodite from '../../main.mjs'
 import { findMostFrequentElement } from '../../scripts/tools.mjs'
 import { get_discord_silence_plugin } from './silence.mjs'
 import { rude_words } from '../../scripts/dict.mjs'
-import { getMessageFullContent, splitDiscordReply } from "./tools.mjs";
+import { getMessageFullContent, splitDiscordReply } from './tools.mjs'
+import jieba from 'npm:nodejieba'
+import { random } from '../../scripts/random.mjs'
 /** @typedef {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
 /**
  * @typedef {{
@@ -35,6 +37,8 @@ export default async function DiscordBotMain(client, config) {
 	let replayInfoCache = {}
 	let userinfoCache = {}
 	let FuyanMode = false
+
+	let chat_scoped_char_memory = {}, in_hypnosis_channel_id = null
 	/**
 	 * @param {import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
 	 * @returns {Promise<chatLogEntry_t>}
@@ -108,6 +112,7 @@ export default async function DiscordBotMain(client, config) {
 		if (message.channel.type == ChannelType.DM)
 			if (message.author.id != client.user.id && message.author.username != config.ownerUserName) return false
 			else return true
+		else if (in_hypnosis_channel_id && message.author.username != config.ownerUserName) return false
 
 		let possible = 0
 
@@ -159,7 +164,7 @@ export default async function DiscordBotMain(client, config) {
 			if (!is_bot_command) possible += 7 // 多出 7% 的可能性回复主人
 		}
 		else if (mentionedWithoutAt) {
-			if (inFavor) possible += 100
+			if (inFavor) possible += 90
 			else possible += 40
 			if (base_match_keys(content, [/[午安早晚]安/])) possible += 100
 		}
@@ -230,10 +235,10 @@ export default async function DiscordBotMain(client, config) {
 				other_chars: [],
 				plugins: [],
 				chat_summary: '',
-				chat_scoped_char_memory: {},
+				chat_scoped_char_memory,
 				chat_log: [{
 					name: '龙胆',
-					content: '主人～有什么我可以帮到您的吗～？',
+					content: in_hypnosis_channel_id ? '请主人下达指令。' : '主人，有什么我可以帮到您的吗～？',
 					timeStamp: new Date(),
 					role: 'char',
 					extension: {}
@@ -245,7 +250,7 @@ export default async function DiscordBotMain(client, config) {
 					extension: {}
 				}, {
 					name: 'system',
-					content: '在回复问题时保持少女语气，适当添加语气词。',
+					content: in_hypnosis_channel_id ? '在回复时保持呆滞语气。' : '在回复问题时保持少女语气，适当添加语气词。',
 					timeStamp: new Date(),
 					role: 'system',
 					extension: {}
@@ -253,9 +258,9 @@ export default async function DiscordBotMain(client, config) {
 			})
 		} catch (another_error) {
 			if (`${error.name}: ${error.message}` == `${another_error.name}: ${another_error.message}`)
-				AIsuggestion = { content: '没什么解决思路呢？' }
+				AIsuggestion = { content: in_hypnosis_channel_id ? '抱歉，洗脑母畜龙胆没有解决思路。' : '没什么解决思路呢？' }
 			else
-				AIsuggestion = { content: '```\n' + another_error.stack + '\n```\n没什么解决思路呢？' }
+				AIsuggestion = { content: '```\n' + another_error.stack + '\n```\n' + (in_hypnosis_channel_id ? '抱歉，洗脑母畜龙胆没有解决思路。' : '没什么解决思路呢？') }
 		}
 		AIsuggestion = error_message + '\n' + AIsuggestion.content
 		let randIPdict = {}
@@ -278,10 +283,10 @@ export default async function DiscordBotMain(client, config) {
 
 		try {
 			if (message.author.username === config.ownerUserName)
-				if (base_match_keys(message.content, [/^龙胆.*不敷衍点.{0,2}$/])) FuyanMode = false
-				else if (base_match_keys(message.content, [/^龙胆.*敷衍点.{0,2}$/])) FuyanMode = true
+				if (!in_hypnosis_channel_id && base_match_keys(message.content, [/^龙胆.*不敷衍点.{0,2}$/])) FuyanMode = false
+				else if (!in_hypnosis_channel_id && base_match_keys(message.content, [/^龙胆.*敷衍点.{0,2}$/])) FuyanMode = true
 				else if (base_match_keys(message.content, [/^龙胆.*自裁.{0,2}$/])) {
-					await GetMessageSender(message)('啊，咱死了～')
+					await GetMessageSender(message)(in_hypnosis_channel_id ? '好的。' : '啊，咱死了～')
 					client.destroy()
 					return
 				}
@@ -289,7 +294,7 @@ export default async function DiscordBotMain(client, config) {
 					let content = message.content.match(/^龙胆.{0,2}复诵.{0,2}`(?<content>.*)`$/).groups.content
 					return GetMessageSender(message)(content)
 				}
-				else if (base_match_keys(message.content, [/^(龙胆|[\n,.~、。呵哦啊嗯噫欸，～])*$/,/^龙胆龙胆(龙胆|[\n!,.?~、。呵哦啊嗯噫欸！，？～])+$/]))
+				else if (!in_hypnosis_channel_id && base_match_keys(message.content, [/^(龙胆|[\n,.~、。呵哦啊嗯噫欸，～])*$/, /^龙胆龙胆(龙胆|[\n!,.?~、。呵哦啊嗯噫欸！，？～])+$/]))
 					return GetMessageSender(message)(chT2S(message.content).replaceAll('龙胆', '主人'))
 			let reply = FuyanMode ? { content: '嗯嗯！' } :
 				await GetReply({
@@ -306,9 +311,13 @@ export default async function DiscordBotMain(client, config) {
 						discord_silence: get_discord_silence_plugin(message)
 					},
 					chat_summary: '',
-					chat_scoped_char_memory: {},
+					chat_scoped_char_memory,
 					chat_log: ChannelChatLogs[message.channel.id],
 				})
+
+			if (chat_scoped_char_memory.in_hypnosis)
+				in_hypnosis_channel_id = message.channel.id
+			else in_hypnosis_channel_id = null
 
 			if (reply.content || reply.files?.length) {
 				if (reply.content.startsWith(`@${message.author.username}`))
@@ -428,21 +437,45 @@ export default async function DiscordBotMain(client, config) {
 			if (message.channel.type == ChannelType.DM)
 				if (message.author.id != client.user.id && message.author.username != config.ownerUserName) return
 			const messages = ChannelMessageQueues[message.channel.id] ??= []
-			// 若消息记录的后10条中有5条以上的消息内容相同
-			// 则直接使用相同内容的消息作为回复
-			let repet = findMostFrequentElement(messages.slice(-10).map(message => message.content).filter(content => content))
-			if (
-				repet.count >= 4 &&
-				!base_match_keys(repet.element, spec_words) &&
-				!isBotCommand(repet.element) &&
-				message.author.id != client.user.id &&
-				!messages.some((message) => message.name == client.user.username && message.content == repet.element)
-			) {
-				console.log('复读！', repet.element)
-				GetMessageSender(message)(repet.element)
+			if (!in_hypnosis_channel_id) {
+				// 若消息记录的后10条中有5条以上的消息内容相同
+				// 则直接使用相同内容的消息作为回复
+				let repet = findMostFrequentElement(messages.slice(-10).map(message => message.content).filter(content => content))
+				if (
+					repet.count >= 4 &&
+					!base_match_keys(repet.element, spec_words) &&
+					!isBotCommand(repet.element) &&
+					message.author.id != client.user.id &&
+					!messages.some((message) => message.name == client.user.username && message.content == repet.element)
+				) {
+					console.log('复读！', repet.element)
+					GetMessageSender(message)(repet.element)
+				}
+				if (!base_match_keys(message.content, spec_words)) {
+					// 若消息内容包含"是啥"、"是什么"
+					const whatis_words = ['是啥', '是什么']
+					if (base_match_keys(message.content, whatis_words)) {
+						const part = message.content.split(/[ !,.?。！，：？]/).find(split => base_match_keys(split, whatis_words))
+						let startIndex = part.length
+						let endIndex = 0
+
+						jieba.extract(part, 5).map(e => e.word).forEach(word => {
+							startIndex = Math.min(startIndex, part.indexOf(word))
+							endIndex = Math.max(endIndex, part.lastIndexOf(word) + word.length)
+						})
+
+						const mainwords_str = part.slice(startIndex, endIndex)
+
+						if (mainwords_str)
+							GetMessageSender(message)(
+								`${random('这个', '')}咱${random('知道', '会哦', '晓得', '懂呢')}，${mainwords_str}${random('是', '就是')}${mainwords_str}${random('！', '～')}`
+							)
+					}
+				}
 			}
 			messages.push(message)
-			ChannelHandlers[message.channel.id] ??= HandleMessageQueue(message.channel.id)
+			if (!in_hypnosis_channel_id || message.channel.id == in_hypnosis_channel_id)
+				ChannelHandlers[message.channel.id] ??= HandleMessageQueue(message.channel.id)
 		} catch (error) {
 			ErrorHandler(error, message)
 		}

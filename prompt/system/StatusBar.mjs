@@ -13,8 +13,8 @@ import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
 export async function StatusBarPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if(!await match_keys(args, ['状态栏功能关'], 'user', 2) &&
-await match_keys(args, ['```状态栏','状态栏功能开'], 'user', 2))
+	if (!await match_keys(args, ['状态栏功能关'], 'user', 2) &&
+		await match_keys(args, ['```状态栏', '状态栏功能开'], 'both', 2))
 		result += `\
 从本次回复开始，[你**必须**在每次回复内容后追加状态栏]，状态栏只有一个，用于记录你的身体或精神状态。当条目对应内容正常，移除条目。
 示例：
@@ -34,7 +34,7 @@ await match_keys(args, ['```状态栏','状态栏功能开'], 'user', 2))
 <状态栏必须使用“\`\`\`状态栏”开始，“\`\`\`”结尾>
 `
 
-	if(await match_keys(args, ['状态栏功能关','状态栏功能开'], 'user', 1))
+	if (await match_keys(args, ['状态栏功能关', '状态栏功能开'], 'user', 1))
 		result += `\
 龙胆自身作为虚拟角色不该对该额外输出的状态栏及其开启关闭有任何反应。
 `

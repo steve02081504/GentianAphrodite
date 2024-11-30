@@ -15,7 +15,7 @@ export async function AutoCalcPrompt(args, logical_results, prompt_struct, detai
 	let result = ''
 
 	let getLog = () => getScopedChatLog(args, 'any').map(x => x.content).join()
-	if(await match_keys(args, [/(哪个|谁)(最|)(大|小)/, /(大|小)还是/], 'any')) {
+	if (await match_keys(args, [/(哪个|谁)(最|)(大|小)/, /(大|小)还是/], 'any')) {
 		let str = getLog().replace(/(:|@\w*|\/)\b\d+(\.\d+)?\b/g, '')
 		let nums = findChineseExprsAndNumbers(str)
 		if (Object.keys(nums).length >= 2)
@@ -24,7 +24,7 @@ export async function AutoCalcPrompt(args, logical_results, prompt_struct, detai
 ${Object.entries(nums).sort((a, b) => a[1].compare(b[1])).map(([expr, value]) => `${expr}${expr == value ? '' : `（${value}）`}`).join('小于')}
 `
 	}
-	if (await match_keys(args, ['是多少', '是几', '算一下', '算下', /[=＝][?？]/, ], 'any')) {
+	if (await match_keys(args, ['是多少', '是几', '算一下', '算下', /[=＝][?？]/], 'any')) {
 		let exprs = findChineseExprs(getLog().replace(/(:|@\w*)\b\d+(\.\d+)?\b/g, '').replace(/\b(\d*)d(\d+)([+-]\d+)?\b/g, ''))
 		if (Object.keys(exprs).length) {
 			let expr_result = Object.entries(exprs).map(([expr, value]) => `${expr} = ${value}`).join('\n')

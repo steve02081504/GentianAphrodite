@@ -17,7 +17,7 @@ export async function RockPaperScissorsPrompt(args, logical_results, prompt_stru
 		await match_keys(args, ['剪刀', '剪子', '布', '猜拳', '石头'], 'any', 2))
 		result += `\
 在玩石头剪刀布？你会让${args.UserCharname}先出。
-如果他出了，<这次你会出${random('石头','剪刀','布')}>
+如果他出了，<这次你会出${random('石头', '剪刀', '布')}>
 如果出的内容相同，则平局
 若不同则[石头胜剪刀/剪刀胜布/布胜石头]
 `

@@ -13,7 +13,7 @@ import { match_keys } from '../../scripts/match.mjs'
 export async function FileSenderPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if (await match_keys(args, ['发给我', '发我', '发来', '发出来', '发过来'], 'any')) {
+	if (await match_keys(args, [/发给?我/, /发(|出|过)来/, /发到?群里/], 'any')) {
 		result += `\
 你可以用以下语法发送文件：
 \`\`\`send-file

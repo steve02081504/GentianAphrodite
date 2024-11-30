@@ -274,9 +274,9 @@ class bigfloat {
 		for (let token of tokens)
 			if (!isNaN(token))
 				outputQueue.push(new bigfloat(token))
-			 else if (token === '(')
+			else if (token === '(')
 				operatorStack.push(token)
-			 else if (token === ')') {
+			else if (token === ')') {
 				while (operatorStack.length > 0 && operatorStack[operatorStack.length - 1] !== '(')
 					outputQueue.push(operatorStack.pop())
 
@@ -309,7 +309,7 @@ class bigfloat {
 		for (let token of outputQueue)
 			if (token instanceof bigfloat)
 				stack.push(token)
-			 else if (token in precedence)
+			else if (token in precedence)
 				if (token === '!') {
 					let operand = stack.pop()
 					stack.push(new bigfloat(!operand.toBoolean()))
@@ -335,7 +335,7 @@ class bigfloat {
 						default: throw new Error(`Invalid operator: '${token}', full expression: ${string}`)
 					}
 				}
-			 else
+			else
 				throw new Error(`Invalid token in postfix expression: '${token}', full expression: ${string}`)
 
 		if (stack.length !== 1)
@@ -351,7 +351,7 @@ class bigfloat {
 			if (expr.match(/^[\d.]*$/)) continue // 跳过纯数字
 			else if (!expr.match(/\d/)) continue // 跳过纯运算符
 			result[expr] = bigfloat.eval(expr)
-		} catch (e) {}
+		} catch (e) { }
 		return result
 	}
 }

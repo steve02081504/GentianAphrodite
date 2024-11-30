@@ -155,7 +155,7 @@ export function findChineseExprs(str) {
 			if (new RegExp(`^(${UnitRegex.source})+$`, 'u').test(expr[0])) continue // 跳过无单位的纯数字
 		}
 		exprs[expr[0]] = bigfloat.eval(num_expr)
-	} catch (error) {}
+	} catch (error) { }
 	return exprs
 }
 /**
@@ -171,6 +171,6 @@ export function findChineseExprsAndNumbers(str) {
 		if (num_expr.match(/^[\d.]*$/))
 			if (new RegExp(`^(${DotOrBaseNumberRegex.source})+$`, 'u').test(expr[0])) continue // 跳过无数字的纯单位
 		exprs[expr[0]] = bigfloat.eval(num_expr)
-	} catch (error) {}
+	} catch (error) { }
 	return exprs
 }

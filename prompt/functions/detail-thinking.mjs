@@ -13,7 +13,7 @@ import { match_keys } from '../../scripts/match.mjs'
 export async function DetailThinkingPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if (logical_results.in_assist || await match_keys(args, [ /(仔细|认真|详细)思考/ ], 'any'))
+	if (logical_results.in_assist || await match_keys(args, [/(仔细|认真|详细)思考/], 'any'))
 		result += `\
 在你遇见你难以当场得出结论的过于复杂的问题时，你可以通过输出detail-thinking块来进入详细思考模式。
 该模式下你可以反复思考问题直到得到满意回答。

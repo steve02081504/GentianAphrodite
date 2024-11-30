@@ -5,6 +5,7 @@ import { coderunner } from './functions/coderunner.mjs'
 import { detailThinking } from './functions/detail-thinking.mjs'
 import { filesender } from './functions/filesender.mjs'
 import { googlesearch } from './functions/googlesearch.mjs'
+import { rolesettingfilter } from './functions/rolesettingfilter.mjs'
 import { webbrowse } from './functions/webbrowse.mjs'
 import { noAIreply } from './noAI/index.mjs'
 import { compareTwoStrings as string_similarity } from 'npm:string-similarity'
@@ -64,7 +65,7 @@ export async function GetReply(args) {
 			return result
 		})
 		for (let repalyHandler of [
-			coderunner, filesender, detailThinking, googlesearch, webbrowse,
+			coderunner, filesender, detailThinking, googlesearch, webbrowse, rolesettingfilter,
 			...Object.values(args.plugins).map(plugin => plugin.interfacies.chat?.RepalyHandler)
 		].filter(Boolean))
 			if (await repalyHandler(result, { addLongTimeLog, prompt_struct }))

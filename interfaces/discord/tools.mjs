@@ -131,6 +131,6 @@ export function getMessageFullContent(message) {
 		content += '```\n'
 	}
 	// if edited
-	if (message.edited_timestamp) content += `（已编辑）`
+	if (message.edited_timestamp) content += '（已编辑）'
 	return content
 }
