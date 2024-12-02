@@ -1,7 +1,7 @@
 import { rollup } from 'npm:rollup'
 import confuser from 'npm:javascript-obfuscator'
 import { minify } from 'npm:terser'
-import fs, { rename } from 'node:fs'
+import fs from 'node:fs'
 import { exec } from '../../scripts/exec.mjs'
 import { nicerWriteFileSync } from '../../scripts/tools.mjs'
 // 创建dist目录
@@ -30,7 +30,7 @@ output = output.replace(/(export\s+)?(const|let)\s*charvar = [^\n]*/, `$1const c
 output = await minify(output, {
 	module: true,
 	compress: {
-		drop_console: true,
+		drop_console: ['log'],
 		unsafe_arrows: true,
 		unsafe: true,
 		unsafe_comps: true,

@@ -16,7 +16,7 @@ export let AIsources = {
 
 export function SetAISource(source, type) {
 	AIsources[type] = source
-	console.log('Set AI source:', type, getPartInfo(source).name)
+	console.info('Set AI source:', type, getPartInfo(source).name)
 }
 
 export function GetAISource(type) {
@@ -66,13 +66,13 @@ export function GetAISourceCallingOrder(name) {
  * @param {(err: Error) => Promise<void>} error_logger
  * @returns {Promise<string>}
  */
-export async function OrderedAISourceCalling(name, caller, trytimes = 3, error_logger = console.log) {
+export async function OrderedAISourceCalling(name, caller, trytimes = 3, error_logger = console.error) {
 	let sources = [...new Set(GetAISourceCallingOrder(name).map(x => AIsources[x]).filter(x => x))]
 	let lastErr
 	for (let source of sources)
 		for (let i = 0; i < trytimes; i++)
 			try {
-				console.log('OrderedAISourceCalling', name, getPartInfo(source).name)
+				console.info('OrderedAISourceCalling', name, getPartInfo(source).name)
 				let result = await caller(source)
 				return result
 			} catch (err) {

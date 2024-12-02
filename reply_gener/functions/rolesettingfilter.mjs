@@ -13,12 +13,14 @@ let role_setting_match_keys_regex = new RegExp(role_setting_match_keys.join('|')
  */
 export async function rolesettingfilter(result) {
 	role_setting_match_keys_regex.lastIndex = 0
-	if (result.content.match(role_setting_match_keys_regex)?.length >= 3)
+	if (result.content.match(role_setting_match_keys_regex)?.length >= 3) {
+		console.log('content blocked by rolesettingfilter:', result.content)
 		result.content = `\
 *刚张口试图说些什么的龙胆突然发出了耀眼的闪光*
 *随后她炸裂开来，在地面升起了硕大的蘑菇云*
 # 全剧终
 `
+	}
 
 	return false
 }

@@ -70,7 +70,6 @@ export function splitDiscordReply(reply, split_lenth = 2000) {
 				for (let spliter of ['}', '};', ')', '']) {
 					let splited_blocks = splitCodeBlock(content_slice, spliter)
 					if (splited_blocks.every(e => e.length <= split_lenth)) {
-						console.log('splited_blocks:', splited_blocks)
 						new_content_slices = new_content_slices.concat(splited_blocks)
 						continue code_handle
 					}

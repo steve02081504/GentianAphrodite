@@ -221,3 +221,31 @@ export function findMostFrequentElement(arr) {
 		count: maxCount
 	}
 }
+
+/**
+ * 简化的时区转换函数
+ * @param {Date} date 要转换的日期
+ * @param {boolean} toUTC 是否转换为UTC时间，默认为false（转换为本地时间）
+ * @returns {Date} 转换后的日期
+ */
+function convertTimezone(date, toUTC) {
+	date = new Date(date)
+	const offset = date.getTimezoneOffset()
+	return new Date(date.getTime() + (toUTC ? offset : -offset) * 60 * 1000)
+}
+/**
+ * Converts a local time to a UTC time.
+ * @param {Date} localTime The local time.
+ * @return {Date} The UTC time.
+ */
+export function localToUTC(localTime) {
+	return convertTimezone(localTime, true)
+}
+/**
+ * Converts a UTC time to a local time.
+ * @param {Date} utcTime
+ * @return {Date}
+ */
+export function UTCToLocal(utcTime) {
+	return convertTimezone(utcTime, false)
+}

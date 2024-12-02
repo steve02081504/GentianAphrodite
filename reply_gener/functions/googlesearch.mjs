@@ -24,7 +24,6 @@ export async function googlesearch(result, { addLongTimeLog }) {
 				requestConfig: {},
 			})
 
-			console.log(queryResult.length)
 			let searchResults = '搜索结果：\n\n'
 			queryResult.slice(0, 5).forEach((item, index) => {
 				if (item.type === ResultTypes.OrganicResult)

@@ -71,7 +71,7 @@ detail-thinking-denial: 我还没有正式思考，所以没有任何角度可�
 				name: '龙胆',
 				role: 'char'
 			})
-			console.log(`\
+			console.info(`\
 detail-thinking: ${question}
 times: ${times}
 ${result}

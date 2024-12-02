@@ -1,9 +1,9 @@
 import { Events, ChannelType } from 'npm:discord.js'
 import { Buffer } from 'node:buffer'
-import { base_match_keys, chT2S, PreprocessChatLogEntry } from '../../scripts/match.mjs'
+import { base_match_keys, SimplifiyChinese, PreprocessChatLogEntry } from '../../scripts/match.mjs'
 import { GetReply } from '../../reply_gener/index.mjs'
 import GentianAphrodite from '../../main.mjs'
-import { findMostFrequentElement } from '../../scripts/tools.mjs'
+import { findMostFrequentElement, UTCToLocal } from '../../scripts/tools.mjs'
 import { get_discord_silence_plugin } from './silence.mjs'
 import { rude_words } from '../../scripts/dict.mjs'
 import { getMessageFullContent, splitDiscordReply } from './tools.mjs'
@@ -57,7 +57,7 @@ export default async function DiscordBotMain(client, config) {
 		/** @type {chatLogEntry_t} */
 		let result = {
 			...replayInfoCache[message.id] || { extension: {} },
-			timeStamp: message.createdTimestamp,
+			timeStamp: UTCToLocal(message.createdTimestamp),
 			role: author.username === config.ownerUserName ? 'user' : 'char',
 			name,
 			content,
@@ -85,7 +85,7 @@ export default async function DiscordBotMain(client, config) {
 	let Gentian_words = ['龙胆', 'gentian']
 	let spec_words = [...config.OwnnerNameKeywords, ...rude_words, ...Gentian_words]
 	function isBotCommand(content) {
-		return content.match(/^[!$%&/\\！？]/)
+		return content.match(/^[!$%&/\\！]/)
 	}
 	let ChannelMuteStartTimes = {}
 
@@ -103,15 +103,17 @@ export default async function DiscordBotMain(client, config) {
 	 */
 	function CheckMessageContentTrigger(message) {
 		let content = getMessageFullContent(message)
-		console.log({
+		console.info({
 			content: content,
 			authorUserName: message.author.username,
 			channelID: message.channel.id
 		})
 
-		if (message.channel.type == ChannelType.DM)
+		if (message.channel.type == ChannelType.DM) {
+			console.info('DM message')
 			if (message.author.id != client.user.id && message.author.username != config.ownerUserName) return false
 			else return true
+		}
 		else if (in_hypnosis_channel_id && message.author.username != config.ownerUserName) return false
 
 		let possible = 0
@@ -133,6 +135,7 @@ export default async function DiscordBotMain(client, config) {
 			!base_match_keys(content, [/^.{0,5}龙胆$/i])
 
 		let inMute = isMuted(message.channel.id)
+
 		if (message.author.username === config.ownerUserName) {
 			if (mentionedWithoutAt || message.mentions.users.has(client.user.id)) {
 				possible += 100
@@ -150,7 +153,7 @@ export default async function DiscordBotMain(client, config) {
 		if (message.author.username === config.ownerUserName) {
 			if (base_match_keys(content, ['老婆', '女票', '女朋友', '炮友'])) possible += 50
 			if (base_match_keys(content, [/(有点|好)紧张/, '救救', '帮帮', '帮我', '来人', '咋用', '教教', /是真的(吗|么)/])) possible += 100
-			if (base_match_keys(content, ['龙胆']) && base_match_keys(content, ['怎么想'])) possible += 100
+			if (base_match_keys(content, ['龙胆']) && base_match_keys(content, [/怎么(想|看)/])) possible += 100
 			if (base_match_keys(content, ['睡了', '眠了', '晚安', '睡觉去了'])) possible += 50
 			if (base_match_keys(content, ['失眠了', '睡不着'])) possible += 100
 			if (inFavor) {
@@ -181,14 +184,14 @@ export default async function DiscordBotMain(client, config) {
 		}
 
 		if (inMute) {
-			console.log('in mute')
+			console.info('in mute')
 			return false
 		}
 		else
 			delete ChannelMuteStartTimes[message.channel.id]
 
 		let result = Math.random() < possible / 100
-		console.log('CheckMessageContentTrigger', possible + '%', result)
+		console.info('CheckMessageContentTrigger', possible + '%', result)
 		return result
 	}
 
@@ -295,7 +298,8 @@ export default async function DiscordBotMain(client, config) {
 					return GetMessageSender(message)(content)
 				}
 				else if (!in_hypnosis_channel_id && base_match_keys(message.content, [/^(龙胆|[\n,.~、。呵哦啊嗯噫欸，～])*$/, /^龙胆龙胆(龙胆|[\n!,.?~、。呵哦啊嗯噫欸！，？～])+$/]))
-					return GetMessageSender(message)(chT2S(message.content).replaceAll('龙胆', '主人'))
+					return GetMessageSender(message)(SimplifiyChinese(message.content).replaceAll('龙胆', '主人'))
+
 			let reply = FuyanMode ? { content: '嗯嗯！' } :
 				await GetReply({
 					Charname: '龙胆',
@@ -342,7 +346,7 @@ export default async function DiscordBotMain(client, config) {
 				lastSendMessageTime[message.channel.id] = new Date()
 			}
 			else
-				console.log('no reply form AI, skipping reply')
+				console.info('no reply form AI, skipping reply')
 		} catch (error) {
 			ErrorHandler(error, message)
 		} finally {
@@ -437,7 +441,7 @@ export default async function DiscordBotMain(client, config) {
 			if (message.channel.type == ChannelType.DM)
 				if (message.author.id != client.user.id && message.author.username != config.ownerUserName) return
 			const messages = ChannelMessageQueues[message.channel.id] ??= []
-			if (!in_hypnosis_channel_id) {
+			if (!in_hypnosis_channel_id && message.author.id != client.user.id) {
 				// 若消息记录的后10条中有5条以上的消息内容相同
 				// 则直接使用相同内容的消息作为回复
 				let repet = findMostFrequentElement(messages.slice(-10).map(message => message.content).filter(content => content))
@@ -448,14 +452,14 @@ export default async function DiscordBotMain(client, config) {
 					message.author.id != client.user.id &&
 					!messages.some((message) => message.name == client.user.username && message.content == repet.element)
 				) {
-					console.log('复读！', repet.element)
+					console.info('复读！', repet.element)
 					GetMessageSender(message)(repet.element)
 				}
 				if (!base_match_keys(message.content, spec_words)) {
 					// 若消息内容包含"是啥"、"是什么"
 					const whatis_words = ['是啥', '是什么']
 					if (base_match_keys(message.content, whatis_words)) {
-						const part = message.content.split(/[ !,.?。！，：？]/).find(split => base_match_keys(split, whatis_words))
+						const part = message.content.replace(/["'‘“]/g, '').split(/[ !,.?。！，：？]/).find(split => base_match_keys(split, whatis_words))
 						let startIndex = part.length
 						let endIndex = 0
 
@@ -494,5 +498,5 @@ export default async function DiscordBotMain(client, config) {
 			return
 		}
 	})
-	console.log('bot ' + client.user.username + ' ready!')
+	console.info('bot ' + client.user.username + ' ready!')
 }

@@ -82,6 +82,8 @@ class ubigfloat {
 		return this.numerator / this.denominator
 	}
 	toString() {
+		if (this.denominator == 1) return this.numerator.toString()
+		else if (this.denominator == 0) return '∞'
 		let integer = this.numerator / this.denominator
 		let decimal = this.numerator - integer * this.denominator
 		let result = integer.toString()
@@ -153,6 +155,7 @@ class bigfloat {
 	}
 
 	toString() {
+		if (this.basenum.denominator == 0) return '∞'
 		return (this.sign ? '-' : '') + this.basenum.toString()
 	}
 	static fromString(string) {

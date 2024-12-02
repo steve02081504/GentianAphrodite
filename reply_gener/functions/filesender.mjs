@@ -26,7 +26,7 @@ export async function filesender(result, { addLongTimeLog }) {
 			content: '```send-file\n' + filesender.join('\n') + '\n```',
 			files: []
 		})
-		console.log('AI发送了文件：', filesender)
+		console.info('AI发送了文件：', filesender)
 		result.extension.sended_files ??= {}
 		let filesendlog = ''
 		for (let file of filesender) {

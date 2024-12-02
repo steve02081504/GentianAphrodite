@@ -24,8 +24,8 @@ export async function webbrowse(result, { addLongTimeLog, prompt_struct }) {
 		try {
 			const markdown = await MarkdownWebFetch(url)
 
-			console.log('AI浏览网页：', url)
-			console.log('网页内容：')
+			console.info('AI浏览网页：', url)
+			console.info('网页内容：')
 			console.dir(markdown)
 
 			let browseing = {

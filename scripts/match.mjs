@@ -6,14 +6,21 @@ import { translate } from 'npm:@vitalets/google-translate-api'
 import { is_PureChinese } from './langdetect.mjs'
 import { remove_kaomoji } from './dict.mjs'
 import { francAll } from 'npm:franc'
+import { normalizeFancyText } from './fancytext.mjs'
 
-export let chT2S = OpenCC.Converter({ from: 'twp', to: 'cn' })
+let chT2S = OpenCC.Converter({ from: 'twp', to: 'cn' })
+export function SimplifiyChinese(content) {
+	return chT2S(content)
+}
+function SimpleSimplify(content) {
+	return [...new Set([...SimplifiyChinese(content).split('\n'), ...normalizeFancyText(content).split('\n')])].join('\n')
+}
 
 export async function SimplifiyContent(content) {
 	content = remove_kaomoji(content)
 	if (!content.trim()) return content
 	if (!is_PureChinese(content)) {
-		console.log('%ccontent "' + content + '" is not pure chinese, translating it for prompt building logic', 'color: red')
+		console.info('%ccontent "' + content + '" is not pure chinese, translating it for prompt building logic', 'color: red')
 		console.log('franc result:', francAll(content, { minLength: 0 }))
 		while (true)
 			try {
@@ -21,7 +28,7 @@ export async function SimplifiyContent(content) {
 				break
 			} catch (e) {
 				if (e.name == 'TooManyRequestsError') {
-					console.log('Translate API rate limit exceeded, waiting 5 second before retrying')
+					console.info('Translate API rate limit exceeded, waiting 5 second before retrying')
 					await new Promise(resolve => setTimeout(resolve, 5000))
 				}
 				else {
@@ -30,7 +37,7 @@ export async function SimplifiyContent(content) {
 				}
 			}
 	}
-	content = chT2S(content)
+	content = SimpleSimplify(content)
 	return content
 }
 
@@ -48,7 +55,7 @@ export async function PreprocessChatLogEntry(entry) {
 
 export function base_match_keys(content, keys,
 	matcher = (content, reg_keys) => {
-		content = chT2S(content)
+		content = SimpleSimplify(content)
 		return reg_keys.filter(key => content.match(key)).length
 	}
 ) {
@@ -62,7 +69,7 @@ export function base_match_keys(content, keys,
 
 export function base_match_keys_all(content, keys) {
 	return base_match_keys(content, keys, (content, reg_keys) => {
-		content = chT2S(content)
+		content = SimpleSimplify(content)
 		return reg_keys.every(key => content.match(key))
 	})
 }

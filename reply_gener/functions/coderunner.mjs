@@ -24,10 +24,10 @@ export async function coderunner(result, { addLongTimeLog }) {
 			content: '```run-js\n' + jsrunner + '\n```',
 			files: []
 		})
-		console.log('AI运行的JS代码：', jsrunner)
+		console.info('AI运行的JS代码：', jsrunner)
 		let coderesult
 		try { coderesult = eval(jsrunner) } catch (err) { coderesult = err }
-		console.log('coderesult', coderesult)
+		console.info('coderesult', coderesult)
 		addLongTimeLog({
 			name: 'system',
 			role: 'system',
@@ -46,11 +46,11 @@ export async function coderunner(result, { addLongTimeLog }) {
 				content: '```run-pwsh\n' + pwshrunner + '\n```',
 				files: []
 			})
-			console.log('AI运行的Powershell代码：', pwshrunner)
+			console.info('AI运行的Powershell代码：', pwshrunner)
 			pwshrunner = `&{\n${pwshrunner}\n} | Out-String -Width 65536`
 			let pwshresult
 			try { pwshresult = await pwsh_exec(pwshrunner) } catch (err) { pwshresult = err }
-			console.log('pwshresult', pwshresult)
+			console.info('pwshresult', pwshresult)
 			addLongTimeLog({
 				name: 'system',
 				role: 'system',
@@ -70,10 +70,10 @@ export async function coderunner(result, { addLongTimeLog }) {
 				content: '```run-bash\n' + bashrunner + '\n```',
 				files: []
 			})
-			console.log('AI运行的Bash代码：', bashrunner)
+			console.info('AI运行的Bash代码：', bashrunner)
 			let bashresult
 			try { bashresult = await bash_exec(bashrunner) } catch (err) { bashresult = err }
-			console.log('bashresult', bashresult)
+			console.info('bashresult', bashresult)
 			addLongTimeLog({
 				name: 'system',
 				role: 'system',
