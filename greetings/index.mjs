@@ -1,5 +1,5 @@
-import { groupGreetings } from './group.mjs'
-import { singalGreetings } from './singal.mjs'
+import { groupGreetings } from './group/index.mjs'
+import { singalGreetings } from './signal/index.mjs'
 
 export function GetGreetings(args) {
 	return singalGreetings(args)

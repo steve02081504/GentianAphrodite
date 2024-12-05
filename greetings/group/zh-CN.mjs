@@ -1,4 +1,4 @@
-function commonGreetings(args) {
+export function commonGreetings(args) {
 	return [
 		{
 			content: `\
@@ -11,8 +11,4 @@ function commonGreetings(args) {
 `
 		},
 	]
-}
-
-export function groupGreetings(args) {
-	return commonGreetings(args)
 }

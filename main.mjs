@@ -18,7 +18,7 @@ export default {
 			name: '龙胆',
 			avatar: `${charurl}/imgs/anime.png`,
 			description: '一个要素爆表的合法萝莉老婆！',
-			description_markdown: FormatStr(fs.readFileSync(chardir + '/description/zh-CN.md', 'utf8'), { charvar }),
+			description_markdown: FormatStr(fs.readFileSync(chardir + '/info/description/zh-CN.md', 'utf8'), { charvar }),
 			version: charvar,
 			author: 'steve02081504',
 			homepage: '',
@@ -43,6 +43,36 @@ export default {
 				'男性向',
 				'女性角色',
 			],
+		},
+		'en-US': {
+			name: 'Gentian',
+			avatar: `${charurl}/imgs/anime.png`,
+			description: 'A complex legal loli wife with a massive details & features!',
+			description_markdown: FormatStr(fs.readFileSync(chardir + '/info/description/en-US.md', 'utf8'), { charvar }),
+			version: charvar,
+			author: 'steve02081504',
+			homepage: '',
+			tags: [
+				'pure love', // 纯爱
+				'romance', // 恋爱
+				'lovers', // 爱人
+				'mind control', // 洗脑
+				'breast milk', // 母乳
+				'nipple fuck', // 乳头插入
+				'vore', // 丸吞
+				'loli', // 萝莉
+				'legal loli', // 合法萝莉
+				'motherly', // 母性
+				'obsessive', // 重女，通常直接翻译为obsessive 省去love
+				'isolating yandere', // 孤立型病娇
+				'gaslighting',
+				'master-love',
+				'noble', // 贵族
+				'humanoid', // 类人
+				'character focus', // 纯人物
+				'male oriented', // 男性向
+				'female character', // 女性角色
+			]
 		}
 	},
 
@@ -60,6 +90,9 @@ export default {
 			info: {
 				'zh-CN': {
 					description: '用于日常聊天，不包含色情内容。',
+				},
+				'en-US': {
+					description: 'Used for daily chat, not including NSFW content.',
 				}
 			}
 		},
@@ -69,6 +102,9 @@ export default {
 			info: {
 				'zh-CN': {
 					description: '用于包含色情内容的聊天。',
+				},
+				'en-US': {
+					description: 'Used for chat containing NSFW content.',
 				}
 			}
 		},
@@ -78,6 +114,9 @@ export default {
 			info: {
 				'zh-CN': {
 					description: '用于包含专业知识的聊天。',
+				},
+				'en-US': {
+					description: 'Used for chat containing professional knowledge.',
 				}
 			}
 		},
@@ -87,6 +126,9 @@ export default {
 			info: {
 				'zh-CN': {
 					description: '用于基础的逻辑推理辅助。',
+				},
+				'en-US': {
+					description: 'Used for basic logical inference assistance.',
 				}
 			}
 		},
@@ -96,6 +138,9 @@ export default {
 			info: {
 				'zh-CN': {
 					description: '用于深入思考功能。',
+				},
+				'en-US': {
+					description: 'Used for detailed thinking functions.',
 				}
 			}
 		},
@@ -105,6 +150,9 @@ export default {
 			info: {
 				'zh-CN': {
 					description: '用于网络浏览功能。',
+				},
+				'en-US': {
+					description: 'Used for network browsing functions.',
 				}
 			}
 		}

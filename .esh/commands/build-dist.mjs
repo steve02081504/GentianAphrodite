@@ -65,7 +65,7 @@ output = confuser.obfuscate(output, {
 nicerWriteFileSync('dist/main.mjs', output)
 
 // 需要复制的文件夹和文件
-let copy_paths = ['description', 'imgs', 'README.md']
+let copy_paths = ['info', 'imgs', 'README.md']
 for (let path of copy_paths)
 	if (fs.statSync(path).isDirectory()) // 若是文件夹
 		await exec(`robocopy ".\\${path}" ".\\dist\\${path}" /MIR /XD .git /XF .gitignore /XA:H /XA:S"`, { cwd: '.' }).catch(console.dir)

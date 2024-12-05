@@ -1,6 +1,6 @@
-import { random } from '../scripts/random.mjs'
+import { random } from '../../scripts/random.mjs'
 
-function commonGreetings(args) {
+export function commonGreetings(args) {
 	return [
 		{
 			content: `\
@@ -225,8 +225,4 @@ function commonGreetings(args) {
 “请讲吧？无论是大体而粗略的设定还是人物的细枝末节，都可以由您来决定。”`
 		}
 	]
-}
-
-export function singalGreetings(args) {
-	return commonGreetings(args)
 }
