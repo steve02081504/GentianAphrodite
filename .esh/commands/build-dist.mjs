@@ -33,7 +33,7 @@ output = await minify(output, {
 		drop_console: ['log'],
 		unsafe_arrows: true,
 		unsafe: true,
-		unsafe_comps: true,
+		// unsafe_comps: true,
 		unsafe_Function: true,
 		unsafe_math: true,
 		unsafe_symbols: true,

@@ -9,6 +9,7 @@ import { rolesettingfilter } from './functions/rolesettingfilter.mjs'
 import { webbrowse } from './functions/webbrowse.mjs'
 import { noAIreply } from './noAI/index.mjs'
 import { compareTwoStrings as string_similarity } from 'npm:string-similarity'
+import { inspect } from 'node:util'
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 
@@ -57,7 +58,7 @@ export async function GetReply(args) {
 	regen: while (true) {
 		console.log('logical_results', logical_results)
 		console.log('prompt_struct')
-		console.dir(prompt_struct, { depth: 4 })
+		console.log(inspect(prompt_struct, { depth: 4 }))
 		let AItype = logical_results.in_assist ? 'expert' : logical_results.in_nsfw ? 'nsfw' : 'sfw'
 		result.content = await OrderedAISourceCalling(AItype, async AI => {
 			let result = await AI.StructCall(prompt_struct)
