@@ -58,7 +58,7 @@ export async function GetReply(args) {
 	regen: while (true) {
 		console.log('logical_results', logical_results)
 		console.log('prompt_struct')
-		console.log(inspect(prompt_struct, { depth: 4 }))
+		console.log(inspect(prompt_struct, { depth: 4, colors: true }))
 		let AItype = logical_results.in_assist ? 'expert' : logical_results.in_nsfw ? 'nsfw' : 'sfw'
 		result.content = await OrderedAISourceCalling(AItype, async AI => {
 			let result = await AI.StructCall(prompt_struct)

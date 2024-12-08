@@ -440,7 +440,7 @@ export default async function DiscordBotMain(client, config) {
 			}
 			if (message.channel.type == ChannelType.DM)
 				if (message.author.id != client.user.id && message.author.username != config.ownerUserName) return
-			const messages = ChannelChatLogs[message.channel.id] ??= []
+			const messages = ChannelChatLogs[message.channel.id] ?? []
 			if (!in_hypnosis_channel_id && message.author.id != client.user.id) {
 				// 若消息记录的后10条中有5条以上的消息内容相同
 				// 则直接使用相同内容的消息作为回复

@@ -15,7 +15,7 @@ export async function AutoCalcPrompt(args, logical_results, prompt_struct, detai
 	let result = ''
 
 	let getLog = () => getScopedChatLog(args, 'any').map(x => x.content).join()
-	if (await match_keys(args, [/(哪个|谁)(最|)(大|小)/, /(大|小)还是/], 'any')) {
+	if (await match_keys(args, [/((哪|那)个|谁)(最|)(大|小)/, /(大|小)还是/], 'any')) {
 		let str = getLog().replace(/(:|@\w*|\/)\b\d+(\.\d+)?\b/g, '')
 		let nums = findChineseExprsAndNumbers(str)
 		if (Object.keys(nums).length >= 2)

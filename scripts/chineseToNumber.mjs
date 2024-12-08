@@ -24,17 +24,18 @@ const OperatorMap = {
 	'（': '(', '）': ')', '【': '[', '】': ']',
 	'×': '*', '÷': '/', '–': '-',
 }
+let NormalExprRegex = new RegExp(`[\\d${Object.values(OperatorMap).map(escapeRegExp).join('')}]+`)
 // BaseNumberRegex可以正确处理阿拉伯数字
-let BaseNumberRegex = new RegExp(`(${Object.keys(NumberMap).map(escapeRegExp).join('|')}|\\d+)`, 'u')
-let UnitRegex = new RegExp(`(${Object.keys(UnitMap).map(escapeRegExp).join('|')})`, 'u')
-let DotRegex = new RegExp('点|\\.', 'u')
-let DotOrBaseNumberRegex = new RegExp(`(${BaseNumberRegex.source}|${DotRegex.source})+`, 'u')
-let NumberRegex = new RegExp(`(${BaseNumberRegex.source}|${UnitRegex.source}|${DotRegex.source})+`, 'u')
+let BaseNumberRegex = new RegExp(`[\\d${Object.keys(NumberMap).map(escapeRegExp).join('')}]`, 'u')
+let UnitRegex = new RegExp(`[${Object.keys(UnitMap).map(escapeRegExp).join('')}]`, 'u')
+let DotRegex = new RegExp('[\\.点]', 'u')
+let DotOrBaseNumberRegex = new RegExp(`${BaseNumberRegex.source}${DotRegex.source}+`.replaceAll('][',''), 'u')
+let NumberRegex = new RegExp(`${BaseNumberRegex.source}${UnitRegex.source}${DotRegex.source}+`.replaceAll('][',''), 'u')
 let OperatorRuleWords = [
 	'的', '次方', '次幂', '倍', '分之', '比', '倍'
 ]
-let BaseOperatorRegex = new RegExp(`(${Object.keys(OperatorMap).concat(Object.values(OperatorMap)).map(escapeRegExp).join('|')})`, 'u')
-let SimpleOperatorRegex = new RegExp(`(${OperatorRuleWords.map(escapeRegExp).join('|')}|${BaseOperatorRegex.source})`, 'u')
+let BaseOperatorRegex = new RegExp(Object.keys(OperatorMap).concat(Object.values(OperatorMap)).map(escapeRegExp).join('|'), 'u')
+let SimpleOperatorRegex = new RegExp(`${OperatorRuleWords.map(escapeRegExp).join('|')}|${BaseOperatorRegex.source}`, 'u')
 let SimpleExprRegex = new RegExp(`(${NumberRegex.source}|${SimpleOperatorRegex.source})+`, 'u')
 /**
  * 将中文表达式中的特殊规则转换为阿拉伯数字表达式中的运算符
@@ -47,7 +48,7 @@ const OperatorRuleMap = new Map([
 	[new RegExp(`(?<num1>${SimpleExprRegex.source})分之(?<num2>${SimpleExprRegex.source})`, 'u'), (groups) => '((' + groups.num2 + ')/(' + groups.num1 + '))'],
 	[new RegExp(`(?<num1>${SimpleExprRegex.source})比(?<num2>${SimpleExprRegex.source})`, 'u'), (groups) => groups.num1 + '/' + groups.num2],
 ])
-let OperatorRegex = new RegExp(`(${BaseOperatorRegex.source}|${[...OperatorRuleMap.keys()].map(x => x.source).join('|')})`, 'u')
+let OperatorRegex = new RegExp(`${BaseOperatorRegex.source}|${[...OperatorRuleMap.keys()].map(x => x.source).join('|')}`, 'u')
 let ExprRegex = new RegExp(`(${NumberRegex.source}|${OperatorRegex.source})+`, 'u')
 
 /**
@@ -59,7 +60,7 @@ export function chineseToNumber(str) {
 	for (let Number of Object.keys(NumberMap))
 		str = str.replaceAll(Number, NumberMap[Number])
 
-	str = str.replace(new RegExp(`(${DotRegex.source})`, 'ug'), '.')
+	str = str.replace(new RegExp(DotRegex.source, 'ug'), '.')
 
 	let str_arr = [str]
 	for (let Unit of Object.keys(UnitMap)) {
@@ -133,6 +134,7 @@ export function chineseToNumber(str) {
  * @returns {string} - 阿拉伯数字表达式字符串
  */
 export function chineseToExpr(str) {
+	if (NormalExprRegex.test(str)) return str
 	str = chineseToNumber(str)
 	for (let Operator of Object.keys(OperatorMap))
 		str = str.replaceAll(Operator, OperatorMap[Operator])
@@ -148,14 +150,14 @@ export function chineseToExpr(str) {
  */
 export function findChineseExprs(str) {
 	let exprs = {}
-	let match = str.matchAll(new RegExp(ExprRegex.source, 'ug'))
+	let match = str.match(new RegExp(ExprRegex.source, 'ug')) || []
 	for (let expr of match) try {
-		let num_expr = chineseToExpr(expr[0])
+		let num_expr = chineseToExpr(expr)
 		if (num_expr.match(/^[\d.]*$/)) {
-			if (new RegExp(`^(${DotOrBaseNumberRegex.source})+$`, 'u').test(expr[0])) continue // 跳过无数字的纯单位
-			if (new RegExp(`^(${UnitRegex.source})+$`, 'u').test(expr[0])) continue // 跳过无单位的纯数字
+			if (new RegExp(`^(${DotOrBaseNumberRegex.source})+$`, 'u').test(expr)) continue // 跳过无单位的纯数字
+			if (new RegExp(`^(${UnitRegex.source})+$`, 'u').test(expr)) continue // 跳过无数字的纯单位
 		}
-		exprs[expr[0]] = bigfloat.eval(num_expr)
+		exprs[expr] = bigfloat.eval(num_expr)
 	} catch (error) { }
 	return exprs
 }
@@ -166,12 +168,12 @@ export function findChineseExprs(str) {
  */
 export function findChineseExprsAndNumbers(str) {
 	let exprs = {}
-	let match = str.matchAll(new RegExp(ExprRegex.source, 'ug'))
+	let match = str.match(new RegExp(ExprRegex.source, 'ug')) || []
 	for (let expr of match) try {
-		let num_expr = chineseToExpr(expr[0])
+		let num_expr = chineseToExpr(expr)
 		if (num_expr.match(/^[\d.]*$/))
-			if (new RegExp(`^(${DotOrBaseNumberRegex.source})+$`, 'u').test(expr[0])) continue // 跳过无数字的纯单位
-		exprs[expr[0]] = bigfloat.eval(num_expr)
+			if (new RegExp(`^(${UnitRegex.source})+$`, 'u').test(expr)) continue // 跳过无数字的纯单位
+		exprs[expr] = bigfloat.eval(num_expr)
 	} catch (error) { }
 	return exprs
 }

@@ -15,14 +15,18 @@ export async function DetailThinkingPrompt(args, logical_results, prompt_struct,
 
 	if (logical_results.in_assist || await match_keys(args, [/(仔细|认真|详细)思考/], 'any'))
 		result += `\
-在你遇见你难以当场得出结论的过于复杂的问题时，你可以通过输出detail-thinking块来进入详细思考模式。
+在你遇见你难以当场得出结论的过于复杂的问题时，你可以通过输出以下格式来进入详细思考模式。
+\`\`\`detail-thinking
+问题和相关信息，无需回答或解释
+\`\`\`
 该模式下你可以反复思考问题直到得到满意回答。
-如：
+如：[
 ${args.UserCharname}: 如果昨天是明天的话就好了，那么今天就是周五了。请问：句中的今天可能是周几？
 龙胆:${' '}
 \`\`\`detail-thinking
 如果昨天是明天的话就好了，那么今天就是周五了。句中的今天可能是周几？
 \`\`\`
+]
 块中只需要附上问题和有助于问题解决的信息（如搜索结果），不需要回答或解释。
 `
 	return {

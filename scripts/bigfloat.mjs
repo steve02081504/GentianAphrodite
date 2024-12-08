@@ -76,7 +76,7 @@ class ubigfloat {
 		return this.numerator * other.denominator > other.numerator * this.denominator
 	}
 	compare(other) {
-		return this.numerator * other.denominator - other.numerator * this.denominator
+		return this.greaterThan(other) ? 1 : this.lessThan(other) ? -1 : 0
 	}
 	floor() {
 		return this.numerator / this.denominator
