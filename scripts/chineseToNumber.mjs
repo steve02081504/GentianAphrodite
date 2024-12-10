@@ -29,8 +29,8 @@ let NormalExprRegex = new RegExp(`[\\d${Object.values(OperatorMap).map(escapeReg
 let BaseNumberRegex = new RegExp(`[\\d${Object.keys(NumberMap).map(escapeRegExp).join('')}]`, 'u')
 let UnitRegex = new RegExp(`[${Object.keys(UnitMap).map(escapeRegExp).join('')}]`, 'u')
 let DotRegex = new RegExp('[\\.点]', 'u')
-let DotOrBaseNumberRegex = new RegExp(`${BaseNumberRegex.source}${DotRegex.source}+`.replaceAll('][',''), 'u')
-let NumberRegex = new RegExp(`${BaseNumberRegex.source}${UnitRegex.source}${DotRegex.source}+`.replaceAll('][',''), 'u')
+let DotOrBaseNumberRegex = new RegExp(`${BaseNumberRegex.source}${DotRegex.source}+`.replaceAll('][', ''), 'u')
+let NumberRegex = new RegExp(`${BaseNumberRegex.source}${UnitRegex.source}${DotRegex.source}+`.replaceAll('][', ''), 'u')
 let OperatorRuleWords = [
 	'的', '次方', '次幂', '倍', '分之', '比', '倍'
 ]

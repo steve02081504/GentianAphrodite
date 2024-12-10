@@ -9,7 +9,7 @@ import { exec } from './scripts/exec.mjs'
 
 export let chardir = import.meta.dirname
 export let charurl = '/chars/GentianAphrodite'
-export let charvar = await exec('git describe --tags', { cwd: chardir }).then((result) => result.stdout)
+export let charvar = await exec('git describe --tags', { cwd: chardir }).then((result) => result.stdout.trim())
 
 /** @type {charAPI_t} */
 export default {

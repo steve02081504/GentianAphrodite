@@ -33,6 +33,7 @@ async function tryFewTimes(func, times = MaxRetries) {
  */
 export default async function DiscordBotMain(client, config) {
 	const MAX_MESSAGE_DEPTH = config.maxMessageDepth || 20
+	const MAX_FEACH_COUNT = config.maxFetchCount || Math.floor(MAX_MESSAGE_DEPTH * 3 / 2) || MAX_MESSAGE_DEPTH
 	let lastSendMessageTime = {}
 	let replayInfoCache = {}
 	let userinfoCache = {}
@@ -377,10 +378,11 @@ export default async function DiscordBotMain(client, config) {
 			if (!ChannelChatLogs[channelid]) {
 				ChannelChatLogs[channelid] ??= MargeChatLog(
 					await Promise.all(
-						(await myQueue[0].channel.messages.fetch({ limit: MAX_MESSAGE_DEPTH }))
+						(await myQueue[0].channel.messages.fetch({ limit: MAX_FEACH_COUNT }))
 							.map(DiscordMessageToFountChatLogEntry).reverse()
 					)
 				)
+				while (ChannelChatLogs[channelid].length > MAX_MESSAGE_DEPTH) ChannelChatLogs[channelid].shift()
 				let lastTrigger = myQueue.reverse().find(CheckMessageContentTrigger)
 				if (lastTrigger) await DoMessageReply(lastTrigger)
 				ChannelMessageQueues[channelid] = []

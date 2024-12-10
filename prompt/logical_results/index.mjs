@@ -88,7 +88,7 @@ export async function buildLogicalResults(args, prompt_struct, detail_level) {
 		result.talking_about_ai_character = true
 
 
-	if (await match_keys(args, ['review', '你认为', '如何', '审查', '怎么想', '怎么样', '怎么看', '怎么认为', '感想', '检查', '看一下', '看一看', '看看', '评价', '评估', '评测', '质量'], 'any') &&
+	if (await match_keys(args, ['review', '你认为', '如何', '审查', '怎么想', '怎么样', '怎么看', '怎么认为', '感想', '检查', '看一下', '看一看', '看看', '评价', '评估', '评测', '质量'], 'notchar') &&
 		(result.talking_about_ai_character || await match_keys(args, ['prompt', '卡', '提示词', '设定'], 'any')))
 		result.talking_about_prompt_review = true
 
@@ -99,7 +99,7 @@ export async function buildLogicalResults(args, prompt_struct, detail_level) {
 				'为什', '为何', '你听说过', '告诉我', '和我说说', '文献', '给我一个', '给我个', '向我讲讲', '和我讲讲', '跟我讲讲', '讲一讲',
 				'讲一下', '讲下', '讲解', '说一下', '说下', '说说看', '跟我说说', '问下', /介绍下(?!你)/, /介绍一下(?!你)/, '帮我', '教我',
 				'你试试', '你再试试', /什么.{0,5}(？|\?)/
-			], 'any') || Object.keys(findChineseExprsAndNumbers(getScopedChatLog(args).map(x => x.content).join('\n').replace(/(:|@\w*|\/)\b\d+(\.\d+)?\b/g, ''))).length > 3
+			], 'notchar') || Object.keys(findChineseExprsAndNumbers(getScopedChatLog(args).map(x => x.content).join('\n').replace(/(:|@\w*|\/)\b\d+(\.\d+)?\b/g, ''))).length > 3
 		) {
 			result.in_assist = true
 			result.in_subassist = true
@@ -112,7 +112,7 @@ export async function buildLogicalResults(args, prompt_struct, detail_level) {
 				'帮我', '怎么做', '怎么样才', '怎样', '撰写', '文献', '是不是', '是什么', '是多少', '有什么', '有多少', '有没有',
 				'相当于多少', '看好', '程序', '程式', '等于几', '简述一下', '算不算', '编写', '编码', '翻译', '能否', '解释一下',
 				'解释下', '解释以下', '该怎么', '该用什么', '运势', '错误', '问题'
-			], 'any')))
+			], 'notchar')))
 			result.in_subassist = true
 	}
 

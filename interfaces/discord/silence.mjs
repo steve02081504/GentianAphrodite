@@ -69,6 +69,7 @@ export let get_discord_silence_plugin = (message) => ({
 					return {
 						additional_chat_log: [
 							{
+								role: 'system',
 								name: 'system',
 								content: `\
 你可以通过回复以下格式来禁言其他人：

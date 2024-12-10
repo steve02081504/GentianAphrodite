@@ -13,7 +13,12 @@ import { match_keys } from '../../scripts/match.mjs'
 export async function RandEventPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if (Math.random() < 1 / 3 && !logical_results.talking_about_ai_character && !logical_results.in_assist)
+	if (
+		!logical_results.in_muti_char_chat &&
+		Math.random() < 1 / 3 &&
+		!logical_results.talking_about_ai_character &&
+		!logical_results.in_assist
+	)
 		result += `\
 允许发生正向或负面的随机事件增加趣味性。
 随机事件应符合逻辑、生动、有创意、不重复。

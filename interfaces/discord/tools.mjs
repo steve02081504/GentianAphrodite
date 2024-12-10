@@ -119,15 +119,18 @@ export function getMessageFullContent(message) {
 
 	//add embeds to content
 	for (let embed of message.embeds) {
-		content += '\n```\n'
-		if (embed.title) content += embed.title + '\n'
-		if (embed.description) content += embed.description + '\n'
+		let embedContent = ''
+		if (embed.title) embedContent += embed.title + '\n'
+		if (embed.description) embedContent += embed.description + '\n'
 		for (let field of embed.fields) {
-			if (field.name) content += field.name + '\n'
-			if (field.value) content += field.value + '\n'
+			if (field.name) embedContent += field.name + '\n'
+			if (field.value) embedContent += field.value + '\n'
 		}
-		if (embed.footer?.text) content += embed.footer.text + '\n'
-		content += '```\n'
+		if (embed.footer?.text) embedContent += embed.footer.text + '\n'
+		if (embedContent) {
+			if (content) content += '\n'
+			content += '```\n' + embedContent + '```\n'
+		}
 	}
 	// if edited
 	if (message.edited_timestamp) content += '（已编辑）'

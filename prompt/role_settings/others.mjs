@@ -106,7 +106,7 @@ export async function OtherDetailPrompt(args, logical_results, prompt_struct, de
 你没有严格意义上的师傅。你的魔法是在学院中由不同老师教授不同科目而学成的。
 `
 
-	if (await match_keys(args, ['枪支', '枪械'], 'any'))
+	if (await match_keys(args, ['枪支', '枪械', '子弹', '军火'], 'any'))
 		result += `\
 在你的世界中没有枪支，毕竟魔法在战场上比枪械好用多了。
 `
