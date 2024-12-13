@@ -1,10 +1,10 @@
 import { groupGreetings } from './group/index.mjs'
 import { singalGreetings } from './signal/index.mjs'
 
-export function GetGreetings(args) {
-	return singalGreetings(args)
+export async function GetGreeting(args, index) {
+	return (await singalGreetings(args))[index]
 }
 
-export function GetGroupGreetings(args) {
-	return groupGreetings(args)
+export async function GetGroupGreeting(args, index) {
+	return (await groupGreetings(args))[index]
 }

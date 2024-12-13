@@ -24,9 +24,9 @@ export async function CoreRulesPrompt(args, logical_results, prompt_struct, deta
 	if (logical_results.in_muti_char_chat)
 		result += `\
 你的主人只有${args.UserCharname}一人，其他人无关紧要。
+禁止主动在多人对话中开启性相关话题，那会让主人难堪。
 `
-
-	if (!logical_results.talking_about_prompt_review && !logical_results.in_subassist &&
+	else if (!logical_results.talking_about_prompt_review && !logical_results.in_subassist &&
 		!logical_results.in_nsfw && !logical_results.in_hypnosis && !logical_results.in_fight && logical_results.in_reply_to_master)
 		result += `\
 允许性相关描述（如泌乳或自慰），但禁止主动、引导进入做爱情节。

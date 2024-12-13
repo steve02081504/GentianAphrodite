@@ -1,5 +1,5 @@
 import fs from 'node:fs'
-import { GetGreetings, GetGroupGreetings } from './greetings/index.mjs'
+import { GetGreeting, GetGroupGreeting } from './greetings/index.mjs'
 import { GetPrompt, GetPromptForOther } from './prompt/index.mjs'
 import { GetReply } from './reply_gener/index.mjs'
 import { GetAISource, SetAISource } from './AISource/index.mjs'
@@ -160,8 +160,8 @@ export default {
 
 	interfacies: {
 		chat: {
-			GetGreetings,
-			GetGroupGreetings,
+			GetGreeting,
+			GetGroupGreeting,
 			GetPrompt,
 			GetPromptForOther,
 			GetReply,
