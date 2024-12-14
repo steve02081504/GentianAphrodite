@@ -24,7 +24,7 @@ const OperatorMap = {
 	'（': '(', '）': ')', '【': '[', '】': ']',
 	'×': '*', '÷': '/', '–': '-',
 }
-let NormalExprRegex = new RegExp(`[\\d${Object.values(OperatorMap).map(escapeRegExp).join('')}]+`)
+let NormalExprRegex = new RegExp(`^[\\d${Object.values(OperatorMap).map(escapeRegExp).join('')}]+$`, 'u')
 // BaseNumberRegex可以正确处理阿拉伯数字
 let BaseNumberRegex = new RegExp(`[\\d${Object.keys(NumberMap).map(escapeRegExp).join('')}]`, 'u')
 let UnitRegex = new RegExp(`[${Object.keys(UnitMap).map(escapeRegExp).join('')}]`, 'u')
@@ -64,7 +64,7 @@ export function chineseToNumber(str) {
 
 	let str_arr = [str]
 	for (let Unit of Object.keys(UnitMap)) {
-		let reg = new RegExp(`(\\d+(\\.\\d+)?)*${Unit}`)
+		let reg = new RegExp(`((\\d+(\\.\\d+)?(${Unit}|))|${Unit})`, 'u')
 		// split str by Unit
 		str_arr = str_arr.flatMap(s => {
 			if (!s.includes(Unit)) return s

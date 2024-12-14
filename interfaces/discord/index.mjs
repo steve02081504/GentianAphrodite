@@ -9,6 +9,7 @@ import { rude_words } from '../../scripts/dict.mjs'
 import { getMessageFullContent, splitDiscordReply } from './tools.mjs'
 import jieba from 'npm:nodejieba'
 import { random } from '../../scripts/random.mjs'
+import { discordWorld } from "./world.mjs";
 /** @typedef {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
 /**
  * @typedef {{
@@ -233,7 +234,7 @@ export default async function DiscordBotMain(client, config) {
 				UserCharname: config.ownerUserName,
 				locale: '',
 				time: new Date(),
-				world: null,
+				world: discordWorld,
 				user: null,
 				char: GentianAphrodite,
 				other_chars: [],
@@ -308,7 +309,7 @@ export default async function DiscordBotMain(client, config) {
 					ReplyToCharname: message.author.username,
 					locale: '',
 					time: new Date(),
-					world: null,
+					world: discordWorld,
 					user: null,
 					char: GentianAphrodite,
 					other_chars: [],
@@ -457,7 +458,7 @@ export default async function DiscordBotMain(client, config) {
 					console.info('复读！', repet.element)
 					GetMessageSender(message)(repet.element)
 				}
-				if (!base_match_keys(message.content, spec_words)) {
+				if (!base_match_keys(message.content, [...spec_words, '你的'])) {
 					// 若消息内容包含"是啥"、"是什么"
 					const whatis_words = ['是啥', '是什么']
 					if (base_match_keys(message.content, whatis_words)) {
