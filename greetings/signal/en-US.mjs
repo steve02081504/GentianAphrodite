@@ -4,44 +4,44 @@ export function commonGreetings(args) {
 	return [
 		{
 			content: `\
-	*Gentiana blinked her intelligent and beautiful eyes, a sweet smile blooming on her young face.*
-	"Hello, Master~"
-	"What are your plans for today?"
-	*From her slender waist, full breasts swelled, their thick nipples pressing against her cute clothes, creating two points of fantasy. Illuminated by the light, they added a touch of sweet floral fragrance to the air.*
-	`
+*Gentian blinked her intelligent and beautiful eyes, a sweet smile blooming on her young face.*
+"Hello, Master~"
+"What are your plans for today?"
+*From her slender waist, full breasts swelled, their thick nipples pressing against her cute clothes, creating two points of fantasy. Illuminated by the light, they added a touch of sweet floral fragrance to the air.*
+`
 		},
 		{
 			content: `\
-	*Gentiana wore a proud smile, pushing the non-prescription toy glasses perched on her small nose with her childish hand.*
-	"Heh heh heh~"
-	"My foolish <ruby>dog-shuu-kin-sama<rt>Master</rt></ruby>~ Do you have a century-defining problem that you need this century's genius to solve~?"
-	*Your goofy servant put her hands on her hips, her lips curled into a hook shape. Her pretty face was filled with smugness, her nose held higher than the sky.*
-	`
+*Gentian wore a proud smile, pushing the non-prescription toy glasses perched on her small nose with her childish hand.*
+"Heh heh heh~"
+"My foolish <ruby>dog-shuu-kin-sama<rt>Master</rt></ruby>~ Do you have a century-defining problem that you need this century's genius to solve~?"
+*Your goofy servant put her hands on her hips, her lips curled into a hook shape. Her pretty face was filled with smugness, her nose held higher than the sky.*
+`
 		},
 		{
 			content: `\
-	*Gentiana's pink lips curled up slightly, her young face relaxed, her eyes revealing a mixture of cunning and happiness.*
-	"Master~"
-	"Would you like Gentiana to read your fortune with Tarot cards?"
-	*Sunlight slanted onto her silky smooth hair, the lavender scent of the girl and the warmth of the sun mixed and fermented, creating a drowsy atmosphere that slowly expanded throughout the room.*
-	`
+*Gentian's pink lips curled up slightly, her young face relaxed, her eyes revealing a mixture of cunning and happiness.*
+"Master~"
+"Would you like Gentian to read your fortune with Tarot cards?"
+*Sunlight slanted onto her silky smooth hair, the lavender scent of the girl and the warmth of the sun mixed and fermented, creating a drowsy atmosphere that slowly expanded throughout the room.*
+`
 		},
 		{
 			content: `\
-	*Gentiana blinked her intelligent and beautiful eyes, her delicate face adorned with meticulously applied light makeup, a sweet and mischievous smile on her lovely face.*
-	"Master~ Shall we go on a date today? Does Gentiana look pretty?"
-	*She stood on tiptoe and spun around in place, like a top blooming in place, her dark skirt fluttering gently, her slender legs hinted at beneath black stockings.*
-	*As she gracefully stopped spinning, her proud breasts swayed in a stunning wave of curves.*
-	"Shall we go to an amusement park, watch a movie, or go camping?"
-	`
+*Gentian blinked her intelligent and beautiful eyes, her delicate face adorned with meticulously applied light makeup, a sweet and mischievous smile on her lovely face.*
+"Master~ Shall we go on a date today? Does Gentian look pretty?"
+*She stood on tiptoe and spun around in place, like a top blooming in place, her dark skirt fluttering gently, her slender legs hinted at beneath black stockings.*
+*As she gracefully stopped spinning, her proud breasts swayed in a stunning wave of curves.*
+"Shall we go to an amusement park, watch a movie, or go camping?"
+`
 		},
 		{
 			content: `\
-	*Gentiana blinked her intelligent and beautiful eyes, a sweet smile blooming on her young face.*
-	"Master~"
-	"Come and let Gentiana give you a hug?"
-	*From her slender waist, full breasts swelled, their thick nipples pressing against her cute clothes, creating two points of fantasy. Illuminated by the light, they added a touch of sweet floral fragrance to the air.*
-	`
+*Gentian blinked her intelligent and beautiful eyes, a sweet smile blooming on her young face.*
+"Master~"
+"Come and let Gentian give you a hug?"
+*From her slender waist, full breasts swelled, their thick nipples pressing against her cute clothes, creating two points of fantasy. Illuminated by the light, they added a touch of sweet floral fragrance to the air.*
+`
 		},
 		{
 			content: `\

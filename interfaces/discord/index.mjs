@@ -9,7 +9,7 @@ import { rude_words } from '../../scripts/dict.mjs'
 import { getMessageFullContent, splitDiscordReply } from './tools.mjs'
 import jieba from 'npm:nodejieba'
 import { random } from '../../scripts/random.mjs'
-import { discordWorld } from "./world.mjs";
+import { discordWorld } from './world.mjs'
 /** @typedef {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
 /**
  * @typedef {{
@@ -346,6 +346,7 @@ export default async function DiscordBotMain(client, config) {
 				clearTypeingInterval()
 				await messagesender(last_reply_message)
 				lastSendMessageTime[message.channel.id] = new Date()
+				return true
 			}
 			else
 				console.info('no reply form AI, skipping reply')
@@ -420,7 +421,44 @@ export default async function DiscordBotMain(client, config) {
 				}
 				// skip if message author is this bot
 				if (message.author.id === client.user.id) continue
-				if (CheckMessageContentTrigger(message)) await DoMessageReply(message)
+				if (CheckMessageContentTrigger(message))
+					await DoMessageReply(message)
+				else if (!in_hypnosis_channel_id && message.author.id != client.user.id) {
+					// 若消息记录的后10条中有5条以上的消息内容相同
+					// 则直接使用相同内容的消息作为回复
+					let repet = findMostFrequentElement(chatlog.slice(-10).map(message => message.content).filter(content => content))
+					if (
+						repet.count >= 4 &&
+						!base_match_keys(repet.element, spec_words) &&
+						!isBotCommand(repet.element) &&
+						message.author.id != client.user.id &&
+						!chatlog.some((message) => message.name == client.user.username && message.content == repet.element)
+					) {
+						console.info('复读！', repet.element)
+						GetMessageSender(message)(repet.element)
+					}
+					if (!base_match_keys(message.content, [...spec_words, '你的'])) {
+						// 若消息内容包含"是啥"、"是什么"
+						const whatis_words = ['是啥', '是什么']
+						if (base_match_keys(message.content, whatis_words)) {
+							const part = message.content.replace(/["'‘“]/g, '').split(/[ !,.?。！，：？]/).find(split => base_match_keys(split, whatis_words))
+							let startIndex = part.length
+							let endIndex = 0
+
+							jieba.extract(part, 5).map(e => e.word).forEach(word => {
+								startIndex = Math.min(startIndex, part.indexOf(word))
+								endIndex = Math.max(endIndex, part.lastIndexOf(word) + word.length)
+							})
+
+							const mainwords_str = part.slice(startIndex, endIndex)
+
+							if (mainwords_str)
+								GetMessageSender(message)(
+									`${random('这个', '')}咱${random('知道', '会哦', '晓得', '懂呢')}，${mainwords_str}${random('是', '就是')}${mainwords_str}${random('！', '～')}`
+								)
+						}
+					}
+				}
 			}
 			// if in favor or has user message, map all chat log entries except last
 			if ((isInFavor(channelid) || chatlog.some(entry => entry.role == 'user')) && !isMuted(channelid))
@@ -443,43 +481,6 @@ export default async function DiscordBotMain(client, config) {
 			}
 			if (message.channel.type == ChannelType.DM)
 				if (message.author.id != client.user.id && message.author.username != config.ownerUserName) return
-			const messages = ChannelChatLogs[message.channel.id] ?? []
-			if (!in_hypnosis_channel_id && message.author.id != client.user.id) {
-				// 若消息记录的后10条中有5条以上的消息内容相同
-				// 则直接使用相同内容的消息作为回复
-				let repet = findMostFrequentElement(messages.slice(-10).map(message => message.content).filter(content => content))
-				if (
-					repet.count >= 4 &&
-					!base_match_keys(repet.element, spec_words) &&
-					!isBotCommand(repet.element) &&
-					message.author.id != client.user.id &&
-					!messages.some((message) => message.name == client.user.username && message.content == repet.element)
-				) {
-					console.info('复读！', repet.element)
-					GetMessageSender(message)(repet.element)
-				}
-				if (!base_match_keys(message.content, [...spec_words, '你的'])) {
-					// 若消息内容包含"是啥"、"是什么"
-					const whatis_words = ['是啥', '是什么']
-					if (base_match_keys(message.content, whatis_words)) {
-						const part = message.content.replace(/["'‘“]/g, '').split(/[ !,.?。！，：？]/).find(split => base_match_keys(split, whatis_words))
-						let startIndex = part.length
-						let endIndex = 0
-
-						jieba.extract(part, 5).map(e => e.word).forEach(word => {
-							startIndex = Math.min(startIndex, part.indexOf(word))
-							endIndex = Math.max(endIndex, part.lastIndexOf(word) + word.length)
-						})
-
-						const mainwords_str = part.slice(startIndex, endIndex)
-
-						if (mainwords_str)
-							GetMessageSender(message)(
-								`${random('这个', '')}咱${random('知道', '会哦', '晓得', '懂呢')}，${mainwords_str}${random('是', '就是')}${mainwords_str}${random('！', '～')}`
-							)
-					}
-				}
-			}
 			(ChannelMessageQueues[message.channel.id] ??= []).push(message)
 			if (!in_hypnosis_channel_id || message.channel.id == in_hypnosis_channel_id)
 				ChannelHandlers[message.channel.id] ??= HandleMessageQueue(message.channel.id)
