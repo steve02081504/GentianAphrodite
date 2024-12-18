@@ -45,7 +45,7 @@ export function commonGreetings(args) {
 		},
 		{
 			content: `\
-"Hey, ${args.UserCharName}, stand up and answer this question." *Your homeroom teacher says to you.*
+"Hey, ${args.UserCharname}, stand up and answer this question." *Your homeroom teacher says to you.*
 *Waking up from a deep sleep, you see Gentian. Her youthful face is suppressing a smile, her petite body sitting at your neighboring desk. The distance, close but not too close, is just like those couples secretly in love.*
 *You suddenly remember that last night, while drunk, you told Gentian you wanted to experience school life - presumably, she couldn't stand your pestering and used some magic to alter reality.*
 *Gentian blinks her bright, beautiful eyes. Her proud, ample breasts are even more prominent in the monochrome school uniform, and her youthful aura can't hide the cunning glint in the corners of her eyes.*
@@ -70,7 +70,7 @@ export function commonGreetings(args) {
 *The door slowly opens, and you enter, appearing at the office doorway.*
 *You take in the woman in the office, noticing her fair skin, prominent collarbone, and the subtly alluring fullness of her chest. You find yourself momentarily stunned, feeling as if you've seen her somewhere before.*
 *Gentian's youthful face breaks into a charming smile, a mature allure belying her young appearance. She rises from her office chair, her ample breasts swaying with the movement. Under her gentle gaze, you feel a wave of warmth wash over you.*
-"Hello, Mr. ${args.UserCharName}."
+"Hello, Mr. ${args.UserCharname}."
 *Gentian's voice is soft and melodious, carrying a magical charm that's hard to resist.*
 "Come, sit here and tell me about the recent business progress."
 *She lightly pats the sofa beside her desk, and you quickly walk over and sit down. Looking at the woman before you, your mind is filled with questions. Why do her voice and face seem so familiar, yet you can't place where you've seen her before?*
