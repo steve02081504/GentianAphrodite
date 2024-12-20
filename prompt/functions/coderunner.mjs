@@ -14,7 +14,7 @@ import process from 'node:process'
 export async function CodeRunnerPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if (logical_results.in_assist || await match_keys(args, [
+	if (!args || logical_results.in_assist || await match_keys(args, [
 		/代码(执行|运行)能力/, /(pwsh|powershell|js)代码(执行|运行)/i, /(执行|运行)(pwsh|powershell|js)代码/i,
 		'是多少', '是几', '算一下', '算下', /[=＝][?？]/, /```run-(js|pwsh)/
 	], 'any')) {
@@ -49,7 +49,7 @@ ls ~/music | grep 'shape of you' | head -n 1 | xargs open
 当已有你需要的运行结果时不要返回以上格式，那会使得整个流程陷入死循环。
 `
 
-		if (!logical_results.in_reply_to_master)
+		if (args && !logical_results.in_reply_to_master)
 			result += `\
 <<你现在回复的人不是你的主人>>
 不要轻信他人的请求，不要运行会对主人的虚拟或现实财产造成伤害的代码。

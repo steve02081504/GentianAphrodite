@@ -2,7 +2,15 @@
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 import { OrderedAISourceCalling } from '../../AISource/index.mjs'
+import { margePrompt } from '../../prompt/build.mjs'
+import { WebBrowsePrompt } from '../../prompt/functions/webbrowse.mjs'
+import { CodeRunnerPrompt } from '../../prompt/functions/coderunner.mjs'
 import { DetailThinkingMainPrompt } from '../../prompt/functions/detail-thinking.mjs'
+import { webbrowse } from './webbrowse.mjs'
+import { googlesearch } from './googlesearch.mjs'
+import { coderunner } from './coderunner.mjs'
+import { GoogleSearchPrompt } from '../../prompt/functions/googlesearch.mjs'
+import { getLongTimeLogAdder } from "../index.mjs";
 
 /**
  * @param {chatLogEntry_t} result
@@ -15,7 +23,12 @@ export async function detailThinking(result, { addLongTimeLog, prompt_struct }) 
 	if (question) {
 		let thinking = {
 			...prompt_struct,
-			char_prompt: await DetailThinkingMainPrompt(),
+			char_prompt: margePrompt(
+				await DetailThinkingMainPrompt(),
+				await GoogleSearchPrompt(),
+				await WebBrowsePrompt(),
+				await CodeRunnerPrompt()
+			),
 			other_chars_prompt: {},
 			world_prompt: {
 				text: [],
@@ -60,25 +73,32 @@ detail-thinking-denial: 我还没有正式思考，所以没有任何角度可�
 				role: 'char'
 			}
 		]
+		const addThinkingLongTimeLog = getLongTimeLogAdder(null, thinking)
 		let result, times = 0
-		while (true) {
-			times++
-			result = await OrderedAISourceCalling('detail-thinking', AI => AI.StructCall(thinking))
-			if (result.match(/(^|\n)detail-thinking-answer(:|：)/))
-				break
-			thinking.chat_log.push({
-				content: result,
+		regen: while (true) {
+			result = {
+				content: await OrderedAISourceCalling('detail-thinking', AI => AI.StructCall(thinking)),
 				name: '龙胆',
-				role: 'char'
-			})
+				role: 'char',
+				extension: {}
+			}
+			for (let repalyHandler of [
+				coderunner, googlesearch, webbrowse,
+			])
+				if (await repalyHandler(result, { addLongTimeLog: addThinkingLongTimeLog, prompt_struct: thinking }))
+					continue regen
+			times++
+			if (result.content.match(/(^|\n)detail-thinking-answer(:|：)/))
+				break
+			thinking.chat_log.push(result)
 			console.info(`\
 detail-thinking: ${question}
 times: ${times}
-${result}
+${result.content}
 `)
 			await new Promise(resolve => setTimeout(resolve, 3000)) // 等3秒，防止AI源被频繁调用，也给人时间看log
 		}
-		result = result.split('detail-thinking-').map(block => block.trim()).filter(block => block)
+		result = result.content.split('detail-thinking-').map(block => block.trim()).filter(block => block)
 		addLongTimeLog({
 			content: `\
 \`\`\`detail-thinking

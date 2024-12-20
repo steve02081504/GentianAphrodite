@@ -6,9 +6,8 @@
  */
 export function noAIreply(args) {
 	let last_role = args.chat_log[args.chat_log.length - 1].role
-	switch (args.locale) {
-		default:
-		case 'zh-CN':
+	switch (args.locale.split('-')[0]) {
+		case 'zh':
 			if (args.chat_log.length == 2 && last_role === 'user')
 				return {
 					content: `\
@@ -32,7 +31,8 @@ export function noAIreply(args) {
 “具体的事情我也不清楚呢？因为我的主人还没有设置好AI来源呢？”
 `
 				}
-		case 'en-US':
+		default:
+		case 'en':
 			if (args.chat_log.length == 2 && last_role === 'user')
 				return {
 					content: `\

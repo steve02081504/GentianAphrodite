@@ -113,7 +113,7 @@ hitler | 1week | 种族灭绝
 							let user = users.find(member => member.user.username == username) || users[0]
 
 							await user.timeout(duration, reason)
-							ban_results.push(`${username} 已被成功禁言 ${duration} 秒 (${reason})`)
+							ban_results.push(`${username} 已被成功禁言 ${duration/1000} 秒 (${reason})`)
 						} catch (error) {
 							ban_results.push(`${username} 无法被禁言，原因是：${error.message}: ${error.stack}`)
 						}

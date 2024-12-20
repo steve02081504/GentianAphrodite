@@ -18,24 +18,29 @@ export async function googlesearch(result, { addLongTimeLog }) {
 		})
 
 		try {
-			const queryResult = await search({
-				query: searchQuery,
-				resultTypes: [OrganicResult],
-				requestConfig: {},
-			})
+			searchQuery = searchQuery.split('\n').filter((query) => !['```', '```google-search'].includes(query))
+			for (let searchQueryItem of searchQuery) {
+				const queryResult = await search({
+					query: searchQueryItem,
+					resultTypes: [OrganicResult],
+					requestConfig: {},
+				})
 
-			let searchResults = '搜索结果：\n\n'
-			queryResult.slice(0, 5).forEach((item, index) => {
-				if (item.type === ResultTypes.OrganicResult)
-					searchResults += `${index + 1}. ${item.title}\n${item.link}\n${item.description}\n\n`
-			})
+				let searchResults = '搜索结果：\n\n'
+				queryResult.slice(0, 5).forEach((item, index) => {
+					if (item.type === ResultTypes.OrganicResult)
+						searchResults += `${index + 1}. ${item.title}\n${item.link}\n${item.description}\n\n`
+				})
+				if (searchQuery.length > 1)
+					searchResults = `${searchQueryItem} 的${searchResults}`
 
-			addLongTimeLog({
-				name: 'system',
-				role: 'system',
-				content: searchResults,
-				files: []
-			})
+				addLongTimeLog({
+					name: 'system',
+					role: 'system',
+					content: searchResults,
+					files: []
+				})
+			}
 
 			return true
 		} catch (err) {

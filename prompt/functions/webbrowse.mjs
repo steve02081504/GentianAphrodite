@@ -13,7 +13,7 @@ import { match_keys } from '../../scripts/match.mjs'
 export async function WebBrowsePrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if (logical_results.in_assist || await match_keys(args, ['浏览', '访问', /https?:\/\//, '查看网页'], 'any'))
+	if (!args || logical_results.in_assist || await match_keys(args, ['浏览', '访问', /https?:\/\//, '查看网页'], 'any'))
 		result += `\
 你可以浏览网页，但由于网页token过多，你需要用以下语法来调用网页浏览：
 \`\`\`web-browse

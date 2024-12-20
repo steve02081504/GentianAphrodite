@@ -13,28 +13,11 @@ import { inspect } from 'node:util'
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 
-/**
- * @param {chatReplyRequest_t} args
- * @returns {Promise<chatLogEntry_t>}
- */
-export async function GetReply(args) {
-	if (noAISourceAvailable()) return noAIreply(args)
-
-	let prompt_struct = await buildPromptStruct(args)
-	let logical_results = await buildLogicalResults(args, prompt_struct, 0)
-	/** @type {chatLogEntry_t} */
-	let result = {
-		content: '',
-		logContextBefore: [],
-		logContextAfter: [],
-		files: [],
-		extension: {},
-	}
-	const max_forever_looping_num = 6, warning_forever_looping_num = 4, similarity_threshold = 0.9
+export function getLongTimeLogAdder(result, prompt_struct, max_forever_looping_num = 6, warning_forever_looping_num = 4, similarity_threshold = 0.9) {
 	let sim_check_before = []
 	let forever_looping_num = 0
 	function addLongTimeLog(entry) {
-		result.logContextBefore.push(entry)
+		result?.logContextBefore?.push?.(entry)
 		prompt_struct.char_prompt.additional_chat_log.push(entry)
 		if (entry.role === 'char') {
 			sim_check_before.forEach(item_before => {
@@ -55,6 +38,27 @@ export async function GetReply(args) {
 				})
 		}
 	}
+	return addLongTimeLog
+}
+
+/**
+ * @param {chatReplyRequest_t} args
+ * @returns {Promise<chatLogEntry_t>}
+ */
+export async function GetReply(args) {
+	if (noAISourceAvailable()) return noAIreply(args)
+
+	let prompt_struct = await buildPromptStruct(args)
+	let logical_results = await buildLogicalResults(args, prompt_struct, 0)
+	/** @type {chatLogEntry_t} */
+	let result = {
+		content: '',
+		logContextBefore: [],
+		logContextAfter: [],
+		files: [],
+		extension: {},
+	}
+	let addLongTimeLog = getLongTimeLogAdder(result, prompt_struct)
 	regen: while (true) {
 		console.log('logical_results', logical_results)
 		console.log('prompt_struct')
