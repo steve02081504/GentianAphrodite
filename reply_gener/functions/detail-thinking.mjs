@@ -10,7 +10,7 @@ import { webbrowse } from './webbrowse.mjs'
 import { googlesearch } from './googlesearch.mjs'
 import { coderunner } from './coderunner.mjs'
 import { GoogleSearchPrompt } from '../../prompt/functions/googlesearch.mjs'
-import { getLongTimeLogAdder } from "../index.mjs";
+import { getLongTimeLogAdder } from '../index.mjs'
 
 /**
  * @param {chatLogEntry_t} result
