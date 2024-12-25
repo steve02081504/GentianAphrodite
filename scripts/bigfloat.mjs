@@ -206,7 +206,10 @@ class bigfloat {
 	}
 	equals(other) {
 		other = new bigfloat(other)
-		return this.sign === other.sign && this.basenum.equals(other.basenum)
+		if (this.basenum.equals(other.basenum))
+			if (this.basenum.numerator == 0) return true
+			else return this.sign === other.sign
+		return false
 	}
 	lessThan(other) {
 		other = new bigfloat(other)
@@ -221,130 +224,184 @@ class bigfloat {
 		return this.sign === other.sign ? this.basenum.compare(other.basenum) : [1, -1][this.sign]
 	}
 	floor() {
-		return bigfloat.fromNumAndSign(this.sign, this.basenum.floor())
+		return bigfloat.fromNumAndSign(this.sign, new ubigfloat(this.basenum.floor()))
 	}
 	toBoolean() {
 		return this.basenum.greaterThan(0n)
 	}
 	static eval(string) {
-		string = String(string)
-		// Remove whitespace and validate input
-		string = string.replace(/\s/g, '')
+		// 去除所有空格
+		string = string.replace(/\s+/g, "")
+
+		// 校验表达式合法性
 		if (!/^[\d!%&()*+./<=>|\-]+$/.test(string))
-			throw new Error(`Invalid characters in expression: ${[...new Set(...string.replace(/[^\d!%&()*+./<=>|\-]/g, ''))].join(',')}`)
+			throw new Error(`Invalid characters in expression: ${string}`)
 
-		// Tokenize the expression
-		let tokens = string.match(/([\d[\]]+(\.[\d[\]]+)?)|([!%&()*+/<=>|\-]+)/g)
 
-		// Convert infix to postfix notation (Shunting-yard algorithm)
-		let outputQueue = []
-		let operatorStack = []
-		let precedence = {
-			'**': 4,
-			'*': 3,
-			'/': 3,
-			'%': 3,
-			'+': 2,
-			'-': 2,
-			'<': 1,
-			'>': 1,
-			'<=': 1,
-			'>=': 1,
-			'==': 1,
-			'!=': 1,
-			'&&': 1,
-			'||': 1,
-			'!': 5
-		}
-		let associativity = {
-			'**': 'right',
-			'*': 'left',
-			'/': 'left',
-			'%': 'left',
-			'+': 'left',
-			'-': 'left',
-			'<': 'left',
-			'>': 'left',
-			'<=': 'left',
-			'>=': 'left',
-			'==': 'left',
-			'!=': 'left',
-			'&&': 'left',
-			'||': 'left',
-			'!': 'right'
+		// 定义运算符优先级和关联性
+		const precedence = {
+			"**": { prec: 4, assoc: "right" },
+			"~": { prec: 5, assoc: "right" }, // 一元负号
+			"*": { prec: 3, assoc: "left" },
+			"/": { prec: 3, assoc: "left" },
+			"%": { prec: 3, assoc: "left" },
+			"+": { prec: 2, assoc: "left" },
+			"-": { prec: 2, assoc: "left" },
+			"<": { prec: 1, assoc: "left" },
+			">": { prec: 1, assoc: "left" },
+			"<=": { prec: 1, assoc: "left" },
+			">=": { prec: 1, assoc: "left" },
+			"==": { prec: 1, assoc: "left" },
+			"!=": { prec: 1, assoc: "left" },
+			"&&": { prec: 0, assoc: "left" },
+			"||": { prec: 0, assoc: "left" },
+			"!": { prec: 5, assoc: "right" }, // 与一元负号相同
 		}
 
-		for (let token of tokens)
-			if (!isNaN(token))
-				outputQueue.push(new bigfloat(token))
-			else if (token === '(')
-				operatorStack.push(token)
-			else if (token === ')') {
-				while (operatorStack.length > 0 && operatorStack[operatorStack.length - 1] !== '(')
-					outputQueue.push(operatorStack.pop())
+		// 将中缀表达式转换为后缀表达式 (Shunting-Yard 算法)
+		function toPostfix(tokens) {
+			const outputQueue = []
+			const operatorStack = []
 
-				if (operatorStack.length === 0)
-					throw new Error('Mismatched parentheses')
+			for (let i = 0; i < tokens.length; i++) {
+				const token = tokens[i]
 
-				operatorStack.pop() // Pop '('
-			} else if (token in precedence) {
-				while (operatorStack.length > 0 &&
-					(precedence[token] < precedence[operatorStack[operatorStack.length - 1]] ||
-						(precedence[token] === precedence[operatorStack[operatorStack.length - 1]] && associativity[token] === 'left')) &&
-					operatorStack[operatorStack.length - 1] !== '(')
-					outputQueue.push(operatorStack.pop())
+				if (token.match(/[\d.]+/))
+					// 数字直接进入输出队列
+					outputQueue.push(token)
+				else if (token in precedence)
+					// 处理一元负号
+					if (token === "-" && (i === 0 || tokens[i - 1] in precedence || tokens[i - 1] === "("))
+						operatorStack.push("~") // 用 "~" 表示一元负号
+					else {
+						// 处理运算符
+						// 检查连续的运算符
+						if (i > 0 && tokens[i - 1] in precedence && tokens[i - 1] !== "~")
+							console.warn("  WARNING: Consecutive operators detected:", tokens[i - 1], token)
 
-				operatorStack.push(token)
-			} else
-				throw new Error(`Invalid token: '${token}', full expression: ${string}`)
+						while (
+							operatorStack.length > 0 && // 确保 operatorStack 不为空
+							operatorStack[operatorStack.length - 1] !== "(" &&
+							(precedence[token].prec < precedence[operatorStack[operatorStack.length - 1]].prec ||
+								(precedence[token].prec === precedence[operatorStack[operatorStack.length - 1]].prec &&
+									precedence[token].assoc === "left"))
+						)
+							outputQueue.push(operatorStack.pop())
 
-
-
-		while (operatorStack.length > 0) {
-			if (operatorStack[operatorStack.length - 1] === '(' || operatorStack[operatorStack.length - 1] === ')')
-				throw new Error('Mismatched parentheses')
-
-			outputQueue.push(operatorStack.pop())
-		}
-
-		// Evaluate postfix expression
-		let stack = []
-		for (let token of outputQueue)
-			if (token instanceof bigfloat)
-				stack.push(token)
-			else if (token in precedence)
-				if (token === '!') {
-					let operand = stack.pop()
-					stack.push(new bigfloat(!operand.toBoolean()))
-				} else {
-					let right = stack.pop()
-					let left = stack.pop()
-					if (!left || !right) throw new Error(`Invalid expression: '${string}', left or right operand is undefined`)
-					switch (token) {
-						case '+': stack.push(left.add(right)); break
-						case '-': stack.push(left.sub(right)); break
-						case '*': stack.push(left.mul(right)); break
-						case '/': stack.push(left.div(right)); break
-						case '%': stack.push(left.mod(right)); break
-						case '**': stack.push(left.pow(right)); break
-						case '==': stack.push(new bigfloat(left.equals(right))); break
-						case '<': stack.push(new bigfloat(left.lessThan(right))); break
-						case '>': stack.push(new bigfloat(left.greaterThan(right))); break
-						case '<=': stack.push(new bigfloat(!left.greaterThan(right))); break
-						case '>=': stack.push(new bigfloat(!left.lessThan(right))); break
-						case '!=': stack.push(new bigfloat(!left.equals(right))); break
-						case '&&': stack.push(new bigfloat(left.toBoolean() && right.toBoolean())); break
-						case '||': stack.push(new bigfloat(left.toBoolean() || right.toBoolean())); break
-						default: throw new Error(`Invalid operator: '${token}', full expression: ${string}`)
+						operatorStack.push(token)
 					}
-				}
-			else
-				throw new Error(`Invalid token in postfix expression: '${token}', full expression: ${string}`)
+				else if (token === "(")
+					// 左括号入栈
+					operatorStack.push(token)
+				else if (token === ")") {
+					// 右括号，弹出运算符直到遇到左括号
+					while (operatorStack.length > 0 && operatorStack[operatorStack.length - 1] !== "(")
+						outputQueue.push(operatorStack.pop())
 
-		if (stack.length !== 1)
-			throw new Error(`Invalid expression: '${string}'`)
+					if (operatorStack.length === 0)
+						throw new Error("Mismatched parentheses")
 
-		return stack[0]
+					operatorStack.pop() // 弹出左括号
+				} else
+					throw new Error(`Invalid token: ${token}`)
+
+			}
+
+			// 将剩余的运算符弹出
+			while (operatorStack.length > 0) {
+				if (operatorStack[operatorStack.length - 1] === "(")
+					throw new Error("Mismatched parentheses")
+
+				outputQueue.push(operatorStack.pop())
+			}
+
+			return outputQueue
+		}
+
+		// 计算后缀表达式
+		function evaluatePostfix(postfix) {
+			const stack = []
+
+			for (const token of postfix)
+				if (token.match(/[\d.]+/))
+					// 数字直接入栈
+					stack.push(new bigfloat(token))
+				else if (token in precedence || token === "~")
+					// 运算符
+					if (token === "!") {
+						const operand = stack.pop()
+						stack.push(new bigfloat(!operand.toBoolean()))
+					} else if (token === "~") {
+						const operand = stack.pop()
+						stack.push(operand.neg())
+					} else {
+						const right = stack.pop()
+						const left = stack.pop()
+						switch (token) {
+							case "+":
+								stack.push(left.add(right))
+								break
+							case "-":
+								stack.push(left.sub(right))
+								break
+							case "*":
+								stack.push(left.mul(right))
+								break
+							case "/":
+								stack.push(left.div(right))
+								break
+							case "%":
+								stack.push(left.mod(right))
+								break
+							case "**":
+								stack.push(left.pow(right))
+								break
+							case "==":
+								stack.push(new bigfloat(left.equals(right)))
+								break
+							case "<":
+								stack.push(new bigfloat(left.lessThan(right)))
+								break
+							case ">":
+								stack.push(new bigfloat(left.greaterThan(right)))
+								break
+							case "<=":
+								stack.push(new bigfloat(!left.greaterThan(right)))
+								break
+							case ">=":
+								stack.push(new bigfloat(!left.lessThan(right)))
+								break
+							case "!=":
+								stack.push(new bigfloat(!left.equals(right)))
+								break
+							case "&&":
+								stack.push(new bigfloat(left.toBoolean() && right.toBoolean()))
+								break
+							case "||":
+								stack.push(new bigfloat(left.toBoolean() || right.toBoolean()))
+								break
+							default:
+								throw new Error(`Invalid operator: ${token}`)
+						}
+					}
+
+
+
+			if (stack.length !== 1)
+				throw new Error(`Invalid expression: ${string}`)
+
+
+			return stack[0]
+		}
+
+		// 分词
+		const tokens = string.match(/(\d+(\.\d+)?(\[\d+])?|\*\*|[%*+/\-]|&&|\|\||<=|>=|==|!=|!|\(|\))/g)
+
+		// 将中缀表达式转换为后缀表达式
+		const postfix = toPostfix(tokens)
+
+		// 计算后缀表达式并返回结果
+		return evaluatePostfix(postfix)
 	}
 	static evalFromStrings(string) {
 		let exprs = string.match(/[\d!%()*+/<=>[\]\-]+/g)

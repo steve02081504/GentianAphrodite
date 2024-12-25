@@ -97,7 +97,7 @@ export async function buildLogicalResults(args, prompt_struct, detail_level) {
 		if (result.talking_about_prompt_review ||
 			await match_keys(args, [
 				'为什', '为何', '你听说过', '告诉我', '和我说说', '文献', '给我一个', '给我个', '向我讲讲', '和我讲讲', '跟我讲讲', '讲一讲',
-				'讲一下', '讲下', '讲解', '说一下', '说下', '说说看', '跟我说说', '问下', /介绍下(?!你)/, /介绍一下(?!你)/, '帮我', '教我',
+				'讲一下', '讲下', '讲解', '说一下', '说下', '说说看', '跟我说说', '问下', '分析一下', '分析下', /介绍下(?!你)/, /介绍一下(?!你)/, '帮我', '教我',
 				'你试试', '你再试试', /什么.{0,5}(？|\?)/
 			], 'notchar') || Object.keys(findChineseExprsAndNumbers(getScopedChatLog(args).map(x => x.content).join('\n').replace(/(:|@\w*|\/)\b\d+(\.\d+)?\b/g, ''))).length > 3
 		) {
