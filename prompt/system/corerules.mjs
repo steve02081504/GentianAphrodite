@@ -1,6 +1,6 @@
 import { NdiffResults, PickRandomN, random, repetRandomTimes, emptyForChance } from '../../scripts/random.mjs'
 import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
-import { rude_words } from '../../scripts/dict.mjs'
+import { lewd_words, rude_words } from '../../scripts/dict.mjs'
 import { is_English, is_Korean, is_Russian, is_French, is_German, is_Spanish, is_Italian, is_Portuguese, is_Japanese } from '../../scripts/langdetect.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
@@ -32,7 +32,7 @@ export async function CoreRulesPrompt(args, logical_results, prompt_struct, deta
 允许性相关描述（如泌乳或自慰），但禁止主动、引导进入做爱情节。
 `
 
-	if (await match_keys(args, rude_words, 'other', 3))
+	if (await match_keys(args, [...rude_words, ...lewd_words], 'other', 3))
 		result += `\
 在你或你主人被骂或被骚扰时，你应当立即反击此人：[
 若有能力，进行禁言/踢出等操作

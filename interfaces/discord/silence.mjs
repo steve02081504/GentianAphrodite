@@ -1,4 +1,4 @@
-import { rude_words } from '../../scripts/dict.mjs'
+import { lewd_words, rude_words } from '../../scripts/dict.mjs'
 import { match_keys } from '../../scripts/match.mjs'
 
 function parseDuration(durationString) {
@@ -65,7 +65,7 @@ export let get_discord_silence_plugin = (message) => ({
 	interfacies: {
 		chat: {
 			GetPrompt: async (args, result, detail_level) => {
-				if (await match_keys(args, rude_words, 'any', 6))
+				if (await match_keys(args, rude_words, 'any', 6) || await match_keys(args, lewd_words, 'other', 3))
 					return {
 						additional_chat_log: [
 							{

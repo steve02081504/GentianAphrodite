@@ -10,7 +10,7 @@ import { MarkdownWebFetch } from '../../scripts/web.mjs'
  * @returns {Promise<boolean>}
  */
 export async function webbrowse(result, { addLongTimeLog, prompt_struct }) {
-	let match = result.content.match(/```web-browse\n(?<url>[^\n]+)\n(?<question>[^]*)\n```/)
+	let match = result.content.match(/```web-browse\n(?<url>[^\n]+)\n(?<question>[^]*?)\n```/)
 	if (match?.groups) {
 		const { url, question } = match.groups
 

@@ -19,7 +19,7 @@ import { getLongTimeLogAdder } from '../index.mjs'
  */
 export async function detailThinking(result, { addLongTimeLog, prompt_struct }) {
 	result.extension.execed_codes ??= {}
-	let question = result.content.match(/```detail-thinking\n(?<question>[^]*)\n```/)?.groups?.question
+	let question = result.content.match(/```detail-thinking\n(?<question>[^]*?)\n```/)?.groups?.question
 	if (question) {
 		let thinking = {
 			...prompt_struct,

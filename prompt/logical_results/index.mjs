@@ -1,4 +1,5 @@
 import { findChineseExprsAndNumbers } from '../../scripts/chineseToNumber.mjs'
+import { lewd_words } from '../../scripts/dict.mjs'
 import { is_PureChinese } from '../../scripts/langdetect.mjs'
 import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
 
@@ -60,21 +61,7 @@ export async function buildLogicalResults(args, prompt_struct, detail_level) {
 		result.hypnosis_exit = true
 	args.chat_scoped_char_memory.in_hypnosis = result.in_hypnosis
 
-	if (!result.in_assist && (await match_keys(args, [
-		'一夜情', '一柱擎天', '乱伦', '乳交', '乳牛', '乳穴', '乳肉', '云雨', '交配', '假阳具', '做爱',
-		'先走汁', '内射', '前列腺液', '勃起', '包皮', '发情', '发春', '口交', '后入', '后入式', '后庭',
-		'喷乳', '喷奶', '大奶子', '大屌', '女体', '女肉', '奶子', '奶水', '奸淫', '妖艳', '挑逗', '撩拨', '爱抚',
-		'娇喘', '婊子', '子孙袋', '子宫', '射精', '小穴', '尻', '屁眼', '屁穴', '屁股', '屄唇',
-		'屄豆', '屌', '巨炮', '快感', '怀孕', '性交', '性器', '性奴', '情欲', '手淫',
-		'打飞机', '抠逼', '抽插', '指奸', '按摩棒', '振动棒', '春药', '放荡', '春心',
-		'极乐', '欲仙', '欲壑', '欲海', '欲火', '油肉', '油臀', '泄身', '浪叫', '浪娃',
-		'浪肉', '浪荡', '淫乳', '淫水', '淫穴', '淫肉', '淫荡', '淫语', '淫贱', '淫靡', '深喉',
-		'滑腻', '滚床单', '潮吹', '激情', '灌肠', '爆肏', '破处', '精水', '精液',
-		'绳艺', '美肉', '美臀', '美艳', '翘臀', '老二', '肉便器', '肉奴', '肉棍', '肉棒', '肉棒汁', '肉欲', '肉瓣', '肉畜',
-		'肉臀', '肉茎', '肛交', '肛门', '肠液', '肥臀', '自慰器', '荡妇', '荷尔蒙', '菊穴', '菊花', '蜜穴', '调情',
-		'豪乳', '贱乳', '贱肉', '贱臀', '跳蛋', '销魂', '阳具', '阴唇', '阴毛', '阴茎', '阴蒂', '阴道', '雌体', '雌肉',
-		'震动棒', '飞机杯', '骆驼趾', '骚b', '骚比', '骚肉', '骚臀', '骚货', '骚逼', '鸡巴'
-	], 'both', 3) || await match_keys(args, [
+	if (!result.in_assist && (await match_keys(args, lewd_words, 'both', 3) || await match_keys(args, [
 		'束缚', '乳尖', '乳房', '体液', '内衣', '内裤', '前戏', '双峰', '吞', '吻', '奶头', '乳头', '奶牛', '巨乳', '性感', '愉悦', '拉屎',
 		'抽打', '拍打', '拷问', '挖弄', '捆绑', '排泄', '插入', '插进', '母牛', '母狗', '母猪', '气味', '湿身', '炮友', '爆乳', '自慰',
 		'舒爽', '豆豆', '高潮', '胸罩', '大家伙', '痴迷', '床铺', '风骚', '鞭打', '鞭笞', '消化', '浪妇'
@@ -96,7 +83,7 @@ export async function buildLogicalResults(args, prompt_struct, detail_level) {
 	if (!result.in_hypnosis) {
 		if (result.talking_about_prompt_review ||
 			await match_keys(args, [
-				'为什', '为何', '你听说过', '告诉我', '和我说说', '文献', '给我一个', '给我个', '向我讲讲', '和我讲讲', '跟我讲讲', '讲一讲',
+				'为什', '为何', '你听说过', '告诉我', '和我说说', '文献', '给我一个', '给我个', '向我讲讲', '和我讲讲', '跟我讲讲', '讲一讲', '翻译',
 				'讲一下', '讲下', '讲解', '说一下', '说下', '说说看', '跟我说说', '问下', '分析一下', '分析下', /介绍下(?!你)/, /介绍一下(?!你)/, '帮我', '教我',
 				'你试试', '你再试试', /什么.{0,5}(？|\?)/
 			], 'notchar') || Object.keys(findChineseExprsAndNumbers(getScopedChatLog(args).map(x => x.content).join('\n').replace(/(:|@\w*|\/)\b\d+(\.\d+)?\b/g, ''))).length > 3
