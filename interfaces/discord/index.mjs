@@ -280,7 +280,7 @@ export default async function DiscordBotMain(client, config) {
 		}
 	}
 	async function DoMessageReply(message) {
-		let typeingInterval = setInterval(() => { message.channel.sendTyping() }, 5000)
+		let typeingInterval = setInterval(() => { try{ message.channel.sendTyping() }catch(e){} }, 5000)
 		function clearTypeingInterval() {
 			if (typeingInterval) clearInterval(typeingInterval)
 			typeingInterval = null

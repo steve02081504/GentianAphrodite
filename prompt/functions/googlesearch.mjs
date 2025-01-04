@@ -13,7 +13,7 @@ import { match_keys } from '../../scripts/match.mjs'
 export async function GoogleSearchPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if (!args || logical_results.in_assist || await match_keys(args, ['搜索', '查找', '查询', '查一下'], 'any'))
+	if (!args || logical_results.in_assist || await match_keys(args, ['搜索', '查找', '查询', '查一下', '有哪些', '有什么', '怎样', '如何'], 'any'))
 		result += `\
 你可以用以下语法进行谷歌搜索：
 \`\`\`google-search
