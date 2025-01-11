@@ -109,30 +109,67 @@ export function splitDiscordReply(reply, split_lenth = 2000) {
 	return content_slices.map(e => e.trim()).filter(e => e)
 }
 
-export function getMessageFullContent(message) {
-	let content = message.content
-	for (let [key, value] of message.mentions.users)
-		if (content.includes(`<@${value.id}>`))
-			content = content.replaceAll(`<@${value.id}>`, `@${value.username}`)
+function formatEmbed(embed) {
+	let embedContent = ''
+	if (embed.title) embedContent += embed.title + '\n'
+	if (embed.description) embedContent += embed.description + '\n'
+	for (let field of embed.fields || []) {
+		if (field.name) embedContent += field.name + '\n'
+		if (field.value) embedContent += field.value + '\n'
+	}
+	if (embed.footer?.text) embedContent += embed.footer.text + '\n'
+	return embedContent ? '```\n' + embedContent + '```\n' : ''
+}
+
+function formatMessageContent(message) {
+	let content = message.content || ''
+
+	// 处理用户提及
+	for (const [_, value] of message.mentions?.users || new Map()) {
+		const mentionTag = `<@${value.id}>`
+		if (content.includes(mentionTag))
+			content = content.replaceAll(mentionTag, `@${value.username}`)
 		else
 			content = `@${value.username} ${content}`
 
-	//add embeds to content
-	for (let embed of message.embeds) {
-		let embedContent = ''
-		if (embed.title) embedContent += embed.title + '\n'
-		if (embed.description) embedContent += embed.description + '\n'
-		for (let field of embed.fields) {
-			if (field.name) embedContent += field.name + '\n'
-			if (field.value) embedContent += field.value + '\n'
-		}
-		if (embed.footer?.text) embedContent += embed.footer.text + '\n'
-		if (embedContent) {
+	}
+
+	// 添加 embed
+	for (const embed of message.embeds || []) {
+		const embedText = formatEmbed(embed)
+		if (embedText) {
 			if (content) content += '\n'
-			content += '```\n' + embedContent + '```\n'
+			content += embedText
 		}
 	}
-	// if edited
+
+	// 如果有附件，添加附件的信息 (这里假设附件类型有 url 属性)
+	for (const attachment of message.attachments || [])
+		if (attachment.url) {
+			if (content) content += '\n'
+			content += `[附件] ${attachment.url}\n`
+		}
+
+	// 如果已编辑
 	if (message.edited_timestamp) content += '（已编辑）'
+
 	return content
+}
+
+export async function getReferencedMessage(message, client) {
+	// discord.js会在未来支持这个
+}
+
+export async function getMessageFullContent(message, client) {
+	let fullContent = formatMessageContent(message)
+
+	// 处理转发消息
+	const referencedMessage = await getReferencedMessage(message, client)
+	if (referencedMessage) {
+		const refContent = formatMessageContent(referencedMessage, client)
+		const authorName = referencedMessage.author?.username || '未知用户'
+		fullContent += `\n\n（转发消息）\n${authorName}：${refContent}`
+	}
+
+	return fullContent
 }

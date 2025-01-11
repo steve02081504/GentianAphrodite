@@ -1,4 +1,4 @@
-import { Events, ChannelType } from 'npm:discord.js'
+import { Events, ChannelType, Message } from 'npm:discord.js'
 import { Buffer } from 'node:buffer'
 import { base_match_keys, SimplifiyChinese, PreprocessChatLogEntry } from '../../scripts/match.mjs'
 import { GetReply } from '../../reply_gener/index.mjs'
@@ -6,7 +6,7 @@ import GentianAphrodite from '../../main.mjs'
 import { findMostFrequentElement, UTCToLocal } from '../../scripts/tools.mjs'
 import { get_discord_silence_plugin } from './silence.mjs'
 import { rude_words } from '../../scripts/dict.mjs'
-import { getMessageFullContent, splitDiscordReply } from './tools.mjs'
+import { getMessageFullContent, getReferencedMessage, splitDiscordReply } from './tools.mjs'
 import jieba from 'npm:nodejieba'
 import { random } from '../../scripts/random.mjs'
 import { discordWorld } from './world.mjs'
@@ -54,7 +54,7 @@ export default async function DiscordBotMain(client, config) {
 		else if (author.username == config.ownerUserName) name = author.username
 		else name += name.toLowerCase() === author.username.toLowerCase() ? '' : ` (${author.username})`
 
-		let content = getMessageFullContent(message)
+		let content = await getMessageFullContent(message, client)
 
 		/** @type {chatLogEntry_t} */
 		let result = {
@@ -63,7 +63,12 @@ export default async function DiscordBotMain(client, config) {
 			role: author.username === config.ownerUserName ? 'user' : 'char',
 			name,
 			content,
-			files: await Promise.all([...message.attachments.map(async (attachment) => {
+			files: (await Promise.all([...[
+				...message.attachments,
+				...getReferencedMessage(message, client)?.attachments || []
+			].map(async (attachment) => {
+				if (!attachment.url && attachment[1].url) attachment = attachment[1] // wtf?
+				if (!attachment.url) return console.error('attachment has no url:', attachment)
 				return {
 					name: attachment.name,
 					buffer: Buffer.from(await fetch(attachment.url).then((response) => response.arrayBuffer())),
@@ -77,7 +82,7 @@ export default async function DiscordBotMain(client, config) {
 					description: '',
 					mimeType: 'image/png'
 				}
-			})]),
+			})])).filter(Boolean),
 			extension: {
 				discord_messages: [message]
 			}
@@ -101,10 +106,10 @@ export default async function DiscordBotMain(client, config) {
 	}
 	/**
 	 * @param {import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
-	 * @returns {boolean}
+	 * @returns {Promise<boolean>}
 	 */
-	function CheckMessageContentTrigger(message) {
-		let content = getMessageFullContent(message)
+	async function CheckMessageContentTrigger(message) {
+		let content = await getMessageFullContent(message, client)
 		console.info({
 			content: content,
 			authorUserName: message.author.username,
@@ -212,6 +217,9 @@ export default async function DiscordBotMain(client, config) {
 		let messagesender = default_messagesender
 		if (message.mentions?.users?.has?.(client.user.id))
 			messagesender = async reply => {
+				// Check for actual mentions like <@id>
+				if ((reply.content || reply)?.match?.(/<@\d+>/))
+					return await default_messagesender(reply)
 				try { return await tryFewTimes(() => message.reply(reply)) }
 				catch (error) { return await default_messagesender(reply) }
 				finally { messagesender = default_messagesender }
@@ -279,8 +287,12 @@ export default async function DiscordBotMain(client, config) {
 			await messagesender(AIsuggestion)
 		}
 	}
+	/**
+	 * @param {import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
+	 * @returns {Promise<void>}
+	 */
 	async function DoMessageReply(message) {
-		let typeingInterval = setInterval(() => { try{ message.channel.sendTyping() }catch(e){} }, 5000)
+		let typeingInterval = setInterval(() => { message.channel.sendTyping().catch(e => 0) }, 5000)
 		function clearTypeingInterval() {
 			if (typeingInterval) clearInterval(typeingInterval)
 			typeingInterval = null
@@ -328,6 +340,12 @@ export default async function DiscordBotMain(client, config) {
 			if (reply.content || reply.files?.length) {
 				if (reply.content.startsWith(`@${message.author.username}`))
 					reply.content = reply.content.slice(`@${message.author.username}`.length).trim()
+
+				reply.content = reply.content.replace(/@(\S+)/g, (match, username) => {
+					const mentionedUser = message.channel?.members?.find?.(member => member.displayName == username || member.user.username == username)
+					if (mentionedUser) return `<@${mentionedUser.id}>`
+					return match
+				})
 
 				let splited_reply = splitDiscordReply(reply.content)
 				let last_reply = splited_reply.pop()
@@ -385,7 +403,12 @@ export default async function DiscordBotMain(client, config) {
 					)
 				)
 				while (ChannelChatLogs[channelid].length > MAX_MESSAGE_DEPTH) ChannelChatLogs[channelid].shift()
-				let lastTrigger = myQueue.reverse().find(CheckMessageContentTrigger)
+				let lastTrigger
+				for (const message of myQueue.reverse())
+					if (await CheckMessageContentTrigger(message)) {
+						lastTrigger = message
+						break
+					}
 				if (lastTrigger) await DoMessageReply(lastTrigger)
 				ChannelMessageQueues[channelid] = []
 				return
@@ -421,7 +444,7 @@ export default async function DiscordBotMain(client, config) {
 				}
 				// skip if message author is this bot
 				if (message.author.id === client.user.id) continue
-				if (CheckMessageContentTrigger(message))
+				if (await CheckMessageContentTrigger(message))
 					await DoMessageReply(message)
 				else if (!in_hypnosis_channel_id && message.author.id != client.user.id) {
 					// 若消息记录的后10条中有5条以上的消息内容相同
