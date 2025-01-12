@@ -69,18 +69,32 @@ export default async function DiscordBotMain(client, config) {
 			].map(async (attachment) => {
 				if (!attachment.url && attachment[1].url) attachment = attachment[1] // wtf?
 				if (!attachment.url) return console.error('attachment has no url:', attachment)
-				return {
-					name: attachment.name,
-					buffer: Buffer.from(await fetch(attachment.url).then((response) => response.arrayBuffer())),
-					description: attachment.description,
-					mimeType: attachment.contentType
+				try {
+					return {
+						name: attachment.name,
+						buffer: Buffer.from(await tryFewTimes(
+							() => fetch(attachment.url).then((response) => response.arrayBuffer())
+						)),
+						description: attachment.description,
+						mimeType: attachment.contentType
+					}
+				}
+				catch (error) {
+					console.error(error)
 				}
 			}), ...message.embeds.map(embed => embed.image?.url).filter(url => url).map(async url => {
-				return {
-					name: url.split('/').pop(),
-					buffer: Buffer.from(await fetch(url).then((response) => response.arrayBuffer())),
-					description: '',
-					mimeType: 'image/png'
+				try {
+					return {
+						name: url.split('/').pop(),
+						buffer: Buffer.from(await tryFewTimes(
+							() => fetch(url).then((response) => response.arrayBuffer())
+						)),
+						description: '',
+						mimeType: 'image/png'
+					}
+				}
+				catch (error) {
+					console.error(error)
 				}
 			})])).filter(Boolean),
 			extension: {
@@ -464,7 +478,7 @@ export default async function DiscordBotMain(client, config) {
 						// 若消息内容包含"是啥"、"是什么"
 						const whatis_words = ['是啥', '是什么']
 						if (base_match_keys(message.content, whatis_words)) {
-							const part = message.content.replace(/["'‘“]/g, '').split(/[ !,.?。！，：？]/).find(split => base_match_keys(split, whatis_words))
+							const part = message.content.replace(/["'‘“]/g, '').split(/[\s!,.?。！，：？]/).find(split => base_match_keys(split, whatis_words))
 							let startIndex = part.length
 							let endIndex = 0
 

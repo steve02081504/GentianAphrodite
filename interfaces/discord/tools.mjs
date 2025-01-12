@@ -38,12 +38,12 @@ export function splitDiscordReply(reply, split_lenth = 2000) {
 		let last = ''
 		for (let content_slice of content_slices) {
 			if (last.length + content_slice.length + block_begin.length + block_end.length > split_lenth) {
-				new_content_slices.push(block_begin + last.trim() + block_end)
+				new_content_slices.push(block_begin + last + block_end)
 				last = ''
 			}
 			last += '\n' + content_slice
 		}
-		new_content_slices.push(block_begin + last.trim() + block_end)
+		new_content_slices.push(block_begin + last + block_end)
 		new_content_slices = new_content_slices.filter(e => e != block_begin + block_end)
 		return new_content_slices
 	}
