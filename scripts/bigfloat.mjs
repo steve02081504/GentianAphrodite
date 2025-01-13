@@ -231,7 +231,7 @@ class bigfloat {
 	}
 	static eval(string) {
 		// 去除所有空格
-		string = string.replace(/\s+/g, "")
+		string = string.replace(/\s+/g, '')
 
 		// 校验表达式合法性
 		if (!/^[\d!%&()*+./<=>|\-]+$/.test(string))
@@ -240,22 +240,22 @@ class bigfloat {
 
 		// 定义运算符优先级和关联性
 		const precedence = {
-			"**": { prec: 4, assoc: "right" },
-			"~": { prec: 5, assoc: "right" }, // 一元负号
-			"*": { prec: 3, assoc: "left" },
-			"/": { prec: 3, assoc: "left" },
-			"%": { prec: 3, assoc: "left" },
-			"+": { prec: 2, assoc: "left" },
-			"-": { prec: 2, assoc: "left" },
-			"<": { prec: 1, assoc: "left" },
-			">": { prec: 1, assoc: "left" },
-			"<=": { prec: 1, assoc: "left" },
-			">=": { prec: 1, assoc: "left" },
-			"==": { prec: 1, assoc: "left" },
-			"!=": { prec: 1, assoc: "left" },
-			"&&": { prec: 0, assoc: "left" },
-			"||": { prec: 0, assoc: "left" },
-			"!": { prec: 5, assoc: "right" }, // 与一元负号相同
+			'**': { prec: 4, assoc: 'right' },
+			'~': { prec: 5, assoc: 'right' }, // 一元负号
+			'*': { prec: 3, assoc: 'left' },
+			'/': { prec: 3, assoc: 'left' },
+			'%': { prec: 3, assoc: 'left' },
+			'+': { prec: 2, assoc: 'left' },
+			'-': { prec: 2, assoc: 'left' },
+			'<': { prec: 1, assoc: 'left' },
+			'>': { prec: 1, assoc: 'left' },
+			'<=': { prec: 1, assoc: 'left' },
+			'>=': { prec: 1, assoc: 'left' },
+			'==': { prec: 1, assoc: 'left' },
+			'!=': { prec: 1, assoc: 'left' },
+			'&&': { prec: 0, assoc: 'left' },
+			'||': { prec: 0, assoc: 'left' },
+			'!': { prec: 5, assoc: 'right' }, // 与一元负号相同
 		}
 
 		// 将中缀表达式转换为后缀表达式 (Shunting-Yard 算法)
@@ -271,35 +271,35 @@ class bigfloat {
 					outputQueue.push(token)
 				else if (token in precedence)
 					// 处理一元负号
-					if (token === "-" && (i === 0 || tokens[i - 1] in precedence || tokens[i - 1] === "("))
-						operatorStack.push("~") // 用 "~" 表示一元负号
+					if (token === '-' && (i === 0 || tokens[i - 1] in precedence || tokens[i - 1] === '('))
+						operatorStack.push('~') // 用 "~" 表示一元负号
 					else {
 						// 处理运算符
 						// 检查连续的运算符
-						if (i > 0 && tokens[i - 1] in precedence && tokens[i - 1] !== "~")
-							console.warn("  WARNING: Consecutive operators detected:", tokens[i - 1], token)
+						if (i > 0 && tokens[i - 1] in precedence && tokens[i - 1] !== '~')
+							console.warn('  WARNING: Consecutive operators detected:', tokens[i - 1], token)
 
 						while (
 							operatorStack.length > 0 && // 确保 operatorStack 不为空
-							operatorStack[operatorStack.length - 1] !== "(" &&
+							operatorStack[operatorStack.length - 1] !== '(' &&
 							(precedence[token].prec < precedence[operatorStack[operatorStack.length - 1]].prec ||
 								(precedence[token].prec === precedence[operatorStack[operatorStack.length - 1]].prec &&
-									precedence[token].assoc === "left"))
+									precedence[token].assoc === 'left'))
 						)
 							outputQueue.push(operatorStack.pop())
 
 						operatorStack.push(token)
 					}
-				else if (token === "(")
+				else if (token === '(')
 					// 左括号入栈
 					operatorStack.push(token)
-				else if (token === ")") {
+				else if (token === ')') {
 					// 右括号，弹出运算符直到遇到左括号
-					while (operatorStack.length > 0 && operatorStack[operatorStack.length - 1] !== "(")
+					while (operatorStack.length > 0 && operatorStack[operatorStack.length - 1] !== '(')
 						outputQueue.push(operatorStack.pop())
 
 					if (operatorStack.length === 0)
-						throw new Error("Mismatched parentheses")
+						throw new Error('Mismatched parentheses')
 
 					operatorStack.pop() // 弹出左括号
 				} else
@@ -309,8 +309,8 @@ class bigfloat {
 
 			// 将剩余的运算符弹出
 			while (operatorStack.length > 0) {
-				if (operatorStack[operatorStack.length - 1] === "(")
-					throw new Error("Mismatched parentheses")
+				if (operatorStack[operatorStack.length - 1] === '(')
+					throw new Error('Mismatched parentheses')
 
 				outputQueue.push(operatorStack.pop())
 			}
@@ -326,58 +326,58 @@ class bigfloat {
 				if (token.match(/[\d.]+/))
 					// 数字直接入栈
 					stack.push(new bigfloat(token))
-				else if (token in precedence || token === "~")
+				else if (token in precedence || token === '~')
 					// 运算符
-					if (token === "!") {
+					if (token === '!') {
 						const operand = stack.pop()
 						stack.push(new bigfloat(!operand.toBoolean()))
-					} else if (token === "~") {
+					} else if (token === '~') {
 						const operand = stack.pop()
 						stack.push(operand.neg())
 					} else {
 						const right = stack.pop()
 						const left = stack.pop()
 						switch (token) {
-							case "+":
+							case '+':
 								stack.push(left.add(right))
 								break
-							case "-":
+							case '-':
 								stack.push(left.sub(right))
 								break
-							case "*":
+							case '*':
 								stack.push(left.mul(right))
 								break
-							case "/":
+							case '/':
 								stack.push(left.div(right))
 								break
-							case "%":
+							case '%':
 								stack.push(left.mod(right))
 								break
-							case "**":
+							case '**':
 								stack.push(left.pow(right))
 								break
-							case "==":
+							case '==':
 								stack.push(new bigfloat(left.equals(right)))
 								break
-							case "<":
+							case '<':
 								stack.push(new bigfloat(left.lessThan(right)))
 								break
-							case ">":
+							case '>':
 								stack.push(new bigfloat(left.greaterThan(right)))
 								break
-							case "<=":
+							case '<=':
 								stack.push(new bigfloat(!left.greaterThan(right)))
 								break
-							case ">=":
+							case '>=':
 								stack.push(new bigfloat(!left.lessThan(right)))
 								break
-							case "!=":
+							case '!=':
 								stack.push(new bigfloat(!left.equals(right)))
 								break
-							case "&&":
+							case '&&':
 								stack.push(new bigfloat(left.toBoolean() && right.toBoolean()))
 								break
-							case "||":
+							case '||':
 								stack.push(new bigfloat(left.toBoolean() || right.toBoolean()))
 								break
 							default:

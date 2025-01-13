@@ -193,7 +193,7 @@ export default async function DiscordBotMain(client, config) {
 			if (base_match_keys(content, [/[午安早晚]安/])) possible += 100
 		}
 
-		if (message.mentions.users.has(config.ownerUserName)) {
+		if (message.mentions.users.has(config.ownerUserName) || base_match_keys(content, config.OwnnerNameKeywords)) {
 			possible += 7 // 多出 7% 的可能性回复提及主人的消息
 			if (base_match_keys(content, rude_words)) if (FuyanMode) return false; else return true // 提及还骂人？你妈妈没了
 		}
@@ -458,7 +458,10 @@ export default async function DiscordBotMain(client, config) {
 				}
 				// skip if message author is this bot
 				if (message.author.id === client.user.id) continue
-				if (await CheckMessageContentTrigger(message))
+				// 若最近5条消息都是bot和owner的消息，跳过激活检查，每个owner的消息都会触发
+				if (chatlog.slice(-5).every(message => message.role == 'user' || message.name == client.user.username))
+					await DoMessageReply(message)
+				else if (await CheckMessageContentTrigger(message))
 					await DoMessageReply(message)
 				else if (!in_hypnosis_channel_id && message.author.id != client.user.id) {
 					// 若消息记录的后10条中有5条以上的消息内容相同

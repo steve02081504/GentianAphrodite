@@ -15,6 +15,7 @@ import { HostInfoPrompt } from './hostinfo.mjs'
 import { DetailThinkingPrompt } from './detail-thinking.mjs'
 import { GoogleSearchPrompt } from './googlesearch.mjs'
 import { WebBrowsePrompt } from './webbrowse.mjs'
+import { ScreenshotPrompt } from './screenshot.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
@@ -42,6 +43,7 @@ export async function FunctionPrompt(args, logical_results, prompt_struct, detai
 	result.push(CodeRunnerPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(FileSenderPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(HostInfoPrompt(args, logical_results, prompt_struct, detail_level))
+	result.push(ScreenshotPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(PromptReviewerPrompt(args, logical_results, prompt_struct, detail_level))
 	return margePrompt(...await Promise.all(result))
 }
