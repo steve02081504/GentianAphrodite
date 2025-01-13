@@ -26,9 +26,12 @@ export default [
 			quotes: ['error', 'single'],
 			// 去除不必要小括号
 			'no-extra-parens': ['error', 'all', {
-				'nestedBinaryExpressions': false, // 允许嵌套二元表达式中有括号
-				'returnAssign': false // 允许 return 语句中的赋值表达式中有括号
+				nestedBinaryExpressions: false, // 允许嵌套二元表达式中有括号
+				returnAssign: false // 允许 return 语句中的赋值表达式中有括号
 			}],
+			// if中的没有await的promise
+			'no-constant-condition': ['error', { checkLoops: false }],
+			// 优化正则
 			'optimize-regex/optimize-regex': 'warn'
 		}
 	}
