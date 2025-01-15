@@ -19,7 +19,7 @@ function SimpleSimplify(content) {
 export async function SimplifiyContent(content) {
 	content = remove_kaomoji(content)
 	if (!content.trim()) return content
-	if (!is_PureChinese(content)) {
+	if (!is_PureChinese(content.replace(/(:|@\w*|\/)\b\d+(\.\d+)?\b/g, ''))) {
 		console.info('%ccontent "' + content + '" is not pure chinese, translating it for prompt building logic', 'color: red')
 		console.log('franc result:', francAll(content, { minLength: 0 }))
 		while (true)

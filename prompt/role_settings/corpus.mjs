@@ -52,7 +52,13 @@ export async function corpusPrompt(args, logical_results, prompt_struct, detail_
 `
 			result += `\
 语气词：[
-嘛,${random('唔', '唔呒', '唔姆')},呐,欸嘿,${random('嘿嘿', '欸嘿嘿')}
+${PickRandomN(7,
+		random('唔', '唔呒', '唔呣'),
+		random('嘿嘿', '欸嘿嘿'),
+		'嘛','呐','欸嘿',
+		'呣','嘻嘻','呼呼',
+		'哼嗯','嘿咻','哦','啊啦','呼'
+	)}
 ]
 正常对话：[
 ${PickRandomN(7,

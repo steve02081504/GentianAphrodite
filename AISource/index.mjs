@@ -23,12 +23,6 @@ export function GetAISource(type) {
 	return AIsources[type]
 }
 
-export function noAISourceAvailable() {
-	let result = !Object.values(AIsources).some(x => x)
-	if (result) console.log('No AI source available:', AIsources)
-	return result
-}
-
 /**
  * @param {string} name
  * @returns {string[]}
@@ -59,6 +53,13 @@ export function GetAISourceCallingOrder(name) {
 	}
 }
 
+export function noAISourceAvailable() {
+	let list = GetAISourceCallingOrder('nsfw')
+	let result = list.every(x => !AIsources[x])
+	if (result) console.log('No AI source available:', AIsources)
+	return result
+}
+
 /**
  * @param {string} name
  * @param {(source:AIsource_t) => Promise<string>} caller
@@ -68,7 +69,7 @@ export function GetAISourceCallingOrder(name) {
  */
 export async function OrderedAISourceCalling(name, caller, trytimes = 3, error_logger = console.error) {
 	let sources = [...new Set(GetAISourceCallingOrder(name).map(x => AIsources[x]).filter(x => x))]
-	let lastErr
+	let lastErr = new Error('No AI source available')
 	for (let source of sources)
 		for (let i = 0; i < trytimes; i++)
 			try {
