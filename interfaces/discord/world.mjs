@@ -12,7 +12,7 @@ export let discordWorld = {
 			description: 'DiscordIM style output guide for characters',
 		},
 	},
-	interfacies: {
+	interfaces: {
 		chat: {
 			GetPrompt: () => {
 				return {

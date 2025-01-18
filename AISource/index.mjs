@@ -1,6 +1,8 @@
 /** @typedef {import('../../../../../../src/decl/AIsource.ts').AIsource_t} AIsource_t */
 
+import { loadAIsource } from '../../../../../../src/server/managers/AIsources_manager.mjs'
 import { getPartInfo } from '../../../../../../src/server/parts_loader.mjs'
+import { username } from '../charbase.mjs'
 
 /**
  * @type {Record<string, AIsource_t>}
@@ -14,13 +16,17 @@ export let AIsources = {
 	logic: null
 }
 
-export function SetAISource(source, type) {
-	AIsources[type] = source
-	console.info('Set AI source:', type, getPartInfo(source).name)
+export function getAISourceData() {
+	let result = {}
+	for (let name in AIsources)
+		result[name] = AIsources[name].filename
+	return result
 }
 
-export function GetAISource(type) {
-	return AIsources[type]
+export async function setAISourceData(data) {
+	AIsources = {}
+	for (let name in data)
+		AIsources[name] = await loadAIsource(username, data[name])
 }
 
 /**
@@ -54,8 +60,7 @@ export function GetAISourceCallingOrder(name) {
 }
 
 export function noAISourceAvailable() {
-	let list = GetAISourceCallingOrder('nsfw')
-	let result = list.every(x => !AIsources[x])
+	let result = Object.values(AIsources).every(x => !x)
 	if (result) console.log('No AI source available:', AIsources)
 	return result
 }
@@ -68,7 +73,7 @@ export function noAISourceAvailable() {
  * @returns {Promise<string>}
  */
 export async function OrderedAISourceCalling(name, caller, trytimes = 3, error_logger = console.error) {
-	let sources = [...new Set(GetAISourceCallingOrder(name).map(x => AIsources[x]).filter(x => x))]
+	let sources = [...new Set([...GetAISourceCallingOrder(name).map(x => AIsources[x]).filter(x => x), ...Object.values(AIsources)])]
 	let lastErr = new Error('No AI source available')
 	for (let source of sources)
 		for (let i = 0; i < trytimes; i++)

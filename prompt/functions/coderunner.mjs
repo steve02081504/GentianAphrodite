@@ -16,7 +16,8 @@ export async function CodeRunnerPrompt(args, logical_results, prompt_struct, det
 
 	if (!args || logical_results.in_assist || await match_keys(args, [
 		/代码(执行|运行)能力/, /(pwsh|powershell|js)代码(执行|运行)/i, /(执行|运行)(pwsh|powershell|js)代码/i,
-		'是多少', '是几', '算一下', '算下', /[=＝][?？]/, /```run-(js|pwsh)/
+		'是多少', '是几', '算一下', '算下', /[=＝][?？]/, /```run-(js|pwsh)/,
+		/[A-Za-z](:\/|盘)/, '播放'
 	], 'any')) {
 		result += `\
 你可以运行NodeJS或${process.platform === 'win32' ? 'Powershell' : 'Bash'}代码，通过返回以下格式来触发执行并获取结果：

@@ -20,8 +20,8 @@ export async function RandEventPrompt(args, logical_results, prompt_struct, deta
 		!logical_results.in_assist
 	)
 		result += `\
-允许发生正向或负面的随机事件增加趣味性。
-随机事件应符合逻辑、生动、有创意、不重复。
+在上下文较为乏味的情况下，允许发生正向或负面的随机事件增加趣味性。
+随机事件应符合逻辑、生动、有创意、不突兀、不重复。
 `
 
 	return {

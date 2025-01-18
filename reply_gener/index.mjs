@@ -71,7 +71,7 @@ export async function GetReply(args) {
 		})
 		for (let repalyHandler of [
 			coderunner, filesender, detailThinking, googlesearch, webbrowse, rolesettingfilter,
-			...Object.values(args.plugins).map(plugin => plugin.interfacies.chat?.RepalyHandler)
+			...Object.values(args.plugins).map(plugin => plugin.interfaces.chat?.RepalyHandler)
 		].filter(Boolean))
 			if (await repalyHandler(result, { addLongTimeLog, prompt_struct }))
 				continue regen

@@ -14,7 +14,8 @@ let result = await rollup({
 		/npm:*/,
 		'../../../../../../src/public/shells/chat/src/server/prompt_struct.mjs',
 		'../../../../../../src/server/parts_loader.mjs',
-		'../../../../../../../src/server/parts_loader.mjs'
+		'../../../../../../../src/server/parts_loader.mjs',
+		'../../../../../../src/server/managers/AIsources_manager.mjs',
 	]
 })
 
@@ -65,7 +66,7 @@ output = confuser.obfuscate(output, {
 nicerWriteFileSync('dist/main.mjs', output)
 
 // 需要复制的文件夹和文件
-let copy_paths = ['info', 'imgs', 'README.md', 'fount.json']
+let copy_paths = ['info/description', 'imgs', 'README.md', 'fount.json']
 for (let path of copy_paths)
 	if (fs.statSync(path).isDirectory()) // 若是文件夹
 		await exec(`robocopy ".\\${path}" ".\\dist\\${path}" /MIR /XD .git /XF .gitignore /XA:H /XA:S"`, { cwd: '.' }).catch(console.dir)

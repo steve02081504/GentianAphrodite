@@ -7,8 +7,6 @@ import { findMostFrequentElement, UTCToLocal } from '../../scripts/tools.mjs'
 import { get_discord_silence_plugin } from './silence.mjs'
 import { rude_words } from '../../scripts/dict.mjs'
 import { getMessageFullContent, getReferencedMessage, splitDiscordReply } from './tools.mjs'
-import jieba from 'npm:nodejieba'
-import { random } from '../../scripts/random.mjs'
 import { discordWorld } from './world.mjs'
 /** @typedef {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
 /**
@@ -181,7 +179,7 @@ export default async function DiscordBotMain(client, config) {
 				possible += 4
 				if (base_match_keys(content, [
 					/(再|多)(来|表演)(点|.*(次|个))/, '来个', '不够', '不如', '继续',
-					/^(那|所以你|可以再|你?再(讲|说|试试)|你(觉得|想|知道))/, /^so/i,
+					/^(那|所以你|可以再|你?再(讲|说|试试)|你(觉得|想|知道)|但是)/, /^so/i,
 				])) possible += 100
 			}
 			if (message.mentions.users.has(client.user.id)) possible += 100
@@ -193,7 +191,7 @@ export default async function DiscordBotMain(client, config) {
 			if (base_match_keys(content, [/[午安早晚]安/])) possible += 100
 		}
 
-		if (message.mentions.users.has(config.ownerUserName) || base_match_keys(content, config.OwnnerNameKeywords)) {
+		if (message.mentions.users.some(user => user.username === config.ownerUserName) || base_match_keys(content, config.OwnnerNameKeywords)) {
 			possible += 7 // 多出 7% 的可能性回复提及主人的消息
 			if (base_match_keys(content, rude_words)) if (FuyanMode) return false; else return true // 提及还骂人？你妈妈没了
 		}
@@ -458,8 +456,8 @@ export default async function DiscordBotMain(client, config) {
 				}
 				// skip if message author is this bot
 				if (message.author.id === client.user.id) continue
-				// 若最近5条消息都是bot和owner的消息，跳过激活检查，每个owner的消息都会触发
-				if (chatlog.slice(-5).every(message => message.role == 'user' || message.name == client.user.username))
+				// 若最近7条消息都是bot和owner的消息，跳过激活检查，每个owner的消息都会触发
+				if (chatlog.slice(-7).every(message => message.role == 'user' || message.name == client.user.username))
 					await DoMessageReply(message)
 				else if (await CheckMessageContentTrigger(message))
 					await DoMessageReply(message)
@@ -476,27 +474,6 @@ export default async function DiscordBotMain(client, config) {
 					) {
 						console.info('复读！', repet.element)
 						GetMessageSender(message)(repet.element)
-					}
-					if (!base_match_keys(message.content, [...spec_words, '你的'])) {
-						// 若消息内容包含"是啥"、"是什么"
-						const whatis_words = ['是啥', '是什么']
-						if (base_match_keys(message.content, whatis_words)) {
-							const part = message.content.replace(/["'‘“]/g, '').split(/[\s!,.?。！，：？]/).find(split => base_match_keys(split, whatis_words))
-							let startIndex = part.length
-							let endIndex = 0
-
-							jieba.extract(part, 5).map(e => e.word).forEach(word => {
-								startIndex = Math.min(startIndex, part.indexOf(word))
-								endIndex = Math.max(endIndex, part.lastIndexOf(word) + word.length)
-							})
-
-							const mainwords_str = part.slice(startIndex, endIndex)
-
-							if (mainwords_str)
-								GetMessageSender(message)(
-									`${random('这个', '')}咱${random('知道', '会哦', '晓得', '懂呢')}，${mainwords_str}${random('是', '就是')}${mainwords_str}${random('！', '～')}`
-								)
-						}
 					}
 				}
 			}

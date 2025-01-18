@@ -62,7 +62,7 @@ export let get_discord_silence_plugin = (message) => ({
 			author: 'steve02081504',
 		}
 	},
-	interfacies: {
+	interfaces: {
 		chat: {
 			GetPrompt: async (args, result, detail_level) => {
 				if (await match_keys(args, rude_words, 'any', 6) || await match_keys(args, lewd_words, 'other', 3))
