@@ -24,9 +24,10 @@ export function getAISourceData() {
 }
 
 export async function setAISourceData(data) {
-	AIsources = {}
+	let newAIsources = {}
 	for (let name in data)
-		AIsources[name] = await loadAIsource(username, data[name])
+		newAIsources[name] = await loadAIsource(username, data[name])
+	AIsources = newAIsources
 }
 
 /**

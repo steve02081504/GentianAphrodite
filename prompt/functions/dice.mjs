@@ -40,7 +40,7 @@ XdY+Z，即扔出X个Y面骰子，结果加上Z
 			parten = parten.split(/([+d-]+)/)
 			let x = bigInt(parten[0] || 1)
 			let y = bigInt(parten[2] || 6)
-			let sign = parten[3].replace('+', '')
+			let sign = (parten[3] || '').replace('+', '')
 			let diff = bigInt(parten[4] || 0)
 			if (sign.includes('-')) diff = -diff
 			result += `\
