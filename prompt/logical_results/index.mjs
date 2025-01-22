@@ -104,7 +104,7 @@ export async function buildLogicalResults(args, prompt_struct, detail_level) {
 	}
 
 	if (!result.talking_about_prompt_review &&
-		await match_keys(args, ['冲刺', '击打', '刀', '刺出', '剑', '命绝', '战士', '战斗', '作战', '打击', '打斗', '抵挡', '挥舞', '攻击', '杀意', '枪', '格挡', '武器', '潜行', '炮', '猛击', '盔甲', '绝命', '遇袭', '重击', '铠甲', '锤击', '防具', '防御'], 'any'))
+		await match_keys(args, ['冲刺', '击打', '刀', '刺出', '剑', '命绝', '战士', '战斗', '作战', '打击', '打斗', '抵挡', '挥舞', '攻击', '杀意', '枪', '格挡', '武器', '潜行', '炮', '猛击', '盔甲', '绝命', '遇袭', '重击', '铠甲', '锤击', '防具', '防御'], 'any') >= 2)
 		result.in_fight = true
 
 	if (await match_keys(args, ['"age":', '"name":', 'Always rememer', 'Alwaysrememer', 'Block>', 'Blocks>', 'Reply Format:', 'ReplyFormat:', 'Rule:', 'START>', 'age:', 'background>', 'character:', 'example>', 'examples>', 'keep the format', 'keeptheformat', 'name:', 'output as', 'output should', 'outputas', 'outputshould', 'request>', 'requests>', 'system:', 'the reply', 'thereply', 'thinking>', 'your reply', 'yourreply', '不是一个特定的角色', '将扮演'], 'any'))
