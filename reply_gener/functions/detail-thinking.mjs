@@ -56,6 +56,9 @@ detail-thinking-denial: 哪些角度可以被废弃？为什么？
 只有在你得出答案后你才能输出detail-thinking-answer和detail-thinking-overview。
 detail-thinking-answer: 答案是什么？
 detail-thinking-overview: 对思考过程的总结和简明概要，舍弃被废弃的角度和被否定的信息。
+在你反复思考无果或数次反思都没有进展时，你可以输出detail-thinking-failed。
+detail-thinking-failed: 为什么无法得出答案。
+过长的思考会影响你的评分，尽快得出结果或宣告失败。
 `,
 				name: 'system',
 				role: 'system'
@@ -88,7 +91,7 @@ detail-thinking-denial: 我还没有正式思考，所以没有任何角度可�
 				if (await repalyHandler(result, { addLongTimeLog: addThinkingLongTimeLog, prompt_struct: thinking }))
 					continue regen
 			times++
-			if (result.content.match(/(^|\n)detail-thinking-answer(:|：)/))
+			if (result.content.match(/(^|\n)detail-thinking-(answer|failed)(:|：)/))
 				break
 			thinking.chat_log.push(result)
 			console.info(`\
@@ -108,16 +111,28 @@ ${question}
 			name: '龙胆',
 			role: 'char'
 		})
-		addLongTimeLog({
-			content: `\
+		let is_failed = result.find(block => block.match(/^failed/))
+		if (is_failed)
+			addLongTimeLog({
+				content: `\
+在详细思考模式下思考了${times}次，以失败告终。
+${result.find(block => block.match(/^failed/)) ?? ''}
+这条消息不会被他人看到，如有必要请带语气地解说和复述一遍。
+`,
+				name: 'system',
+				role: 'system'
+			})
+		else
+			addLongTimeLog({
+				content: `\
 在详细思考模式下思考了${times}次
 ${result.find(block => block.match(/^answer/)) ?? ''}
 ${result.find(block => block.match(/^overview/)) ?? ''}
 这条消息不会被他人看到，如有必要请带语气地解说和复述一遍。
 `,
-			name: 'system',
-			role: 'system'
-		})
+				name: 'system',
+				role: 'system'
+			})
 		return true
 	}
 
