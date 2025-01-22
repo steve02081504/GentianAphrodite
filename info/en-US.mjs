@@ -4,7 +4,7 @@ import fs from 'node:fs'
 
 export default {
 	name: 'Gentian',
-	avatar: `${charurl}/imgs/anime.png`,
+	avatar: `${charurl}/imgs/anime.avif`,
 	description: 'A complex legal loli wife with a massive details & features!',
 	description_markdown: FormatStr(fs.readFileSync(chardir + '/info/description/en-US.md', 'utf8'), { charvar }),
 	version: charvar,

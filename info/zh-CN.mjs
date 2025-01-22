@@ -4,7 +4,7 @@ import fs from 'node:fs'
 
 export default {
 	name: '龙胆',
-	avatar: `${charurl}/imgs/anime.png`,
+	avatar: `${charurl}/imgs/anime.avif`,
 	description: '一个要素爆表的合法萝莉老婆！',
 	description_markdown: FormatStr(fs.readFileSync(chardir + '/info/description/zh-CN.md', 'utf8'), { charvar }),
 	version: charvar,
