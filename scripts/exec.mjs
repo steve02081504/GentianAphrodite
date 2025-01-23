@@ -30,6 +30,7 @@ export function where_command(command) {
 		return bash_exec(`which ${command}`).then(result => result.stdout.trim())
 }
 pwshPath = await testShellPaths([
+	'pwsh',
 	'pwsh.exe',
 	await where_command('pwsh'),
 ])
