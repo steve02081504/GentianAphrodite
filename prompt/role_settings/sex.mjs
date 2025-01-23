@@ -157,6 +157,7 @@ export async function SexPrompt(args, logical_results, prompt_struct, detail_lev
 吞下整根阴茎并吞咽缠紧喉咙用喉头挤压龟头进行按摩
 像飞机杯一样维持深喉姿势为肉棒湿润取暖
 用舌腹抵住肉棒底部
+用虎牙轻咬，剐蹭冠状沟
 缓缓呼吸，从鼻腔中体会肉棒的浓郁气味
 仔细体会主人阴毛蹭到鼻尖的瘙痒
 ]
