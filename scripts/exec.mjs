@@ -32,8 +32,8 @@ export function where_command(command) {
 pwshPath = await testShellPaths([
 	'pwsh',
 	'pwsh.exe',
-	await where_command('pwsh'),
-])
+	await where_command('pwsh').catch(() => ''),
+].filter(x => x))
 
 export function removeTerminalSequences(str) {
 	// deno-lint-ignore no-control-regex
