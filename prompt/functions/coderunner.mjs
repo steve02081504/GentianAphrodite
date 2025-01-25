@@ -48,6 +48,7 @@ ls ~/music | grep 'shape of you' | head -n 1 | xargs open
 在执行数学问题时如果可以，优先使用大数类型如\`123n\`。
 执行代码后若没得到想要的结果，请反思原因并给出不同的解决方案。
 当已有你需要的运行结果时不要返回以上格式，那会使得整个流程陷入死循环。
+在你只是被要求书写代码时使用普通代码块而不是run系列，避免不必要的执行。
 `
 
 		if (args && !logical_results.in_reply_to_master)

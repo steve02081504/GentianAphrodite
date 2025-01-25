@@ -25,7 +25,7 @@ export default {
 				}
 			},
 			SetData: async (data) => {
-				await setAISourceData(data.AIsources)
+				if (data.AIsources) await setAISourceData(data.AIsources)
 			}
 		},
 		chat: {
