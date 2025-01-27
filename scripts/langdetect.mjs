@@ -3,7 +3,7 @@ import { francAll } from 'npm:franc'
 
 function is_Franc_threshold(text, lang, threshold = 0.9) {
 	if (text.length < 13) return false
-	let result = francAll(text, { minLength: 0 })
+	const result = francAll(text, { minLength: 0 })
 	if (result.filter(item => item[1] >= 0.9).length > 9) return false
 	return result.find(item => item[0] === lang)?.[1] >= threshold
 }

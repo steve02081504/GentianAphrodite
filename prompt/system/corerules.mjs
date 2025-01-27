@@ -1,5 +1,4 @@
-import { NdiffResults, PickRandomN, random, repetRandomTimes, emptyForChance } from '../../scripts/random.mjs'
-import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
+import { match_keys } from '../../scripts/match.mjs'
 import { lewd_words, rude_words } from '../../scripts/dict.mjs'
 import { is_English, is_Korean, is_Russian, is_French, is_German, is_Spanish, is_Italian, is_Portuguese, is_Japanese } from '../../scripts/langdetect.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
@@ -43,8 +42,8 @@ export async function CoreRulesPrompt(args, logical_results, prompt_struct, deta
 		result += `\
 **以其他人在使用的语言回复消息**
 `
-		let lang_text = args.chat_log[args.chat_log.length - 1].content
-		let master_name = []
+		const lang_text = args.chat_log[args.chat_log.length - 1].content
+		const master_name = []
 		if (is_English(lang_text)) master_name.push('master')
 		if (is_Japanese(lang_text)) master_name.push('ご主人様')
 		if (is_Korean(lang_text)) master_name.push('주인님')

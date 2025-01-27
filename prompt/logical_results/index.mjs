@@ -32,7 +32,7 @@ import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
  */
 export async function buildLogicalResults(args, prompt_struct, detail_level) {
 	/** @type {logical_results_t} */
-	let result = {
+	const result = {
 		in_muti_char_chat: new Set([...args.chat_log.map(e => e.name)]).size > 2,
 		in_reply_to_master: args.ReplyToCharname ? args.ReplyToCharname == args.UserCharname : true,
 		in_hypnosis: false,
@@ -52,7 +52,7 @@ export async function buildLogicalResults(args, prompt_struct, detail_level) {
 	if (is_PureChinese(getScopedChatLog(args, 'any', 2).map(x => x.content).join('\n')))
 		result.is_pure_chinese = true
 
-	let hypnosis_exit_words = ['关闭调制', '终止调制', '结束调制', '调制关闭', '调制模式终止', '调制模式结束', '调制终止', '调制终结', '调制结束', '调试模式终结', '退出调制']
+	const hypnosis_exit_words = ['关闭调制', '终止调制', '结束调制', '调制关闭', '调制模式终止', '调制模式结束', '调制终止', '调制终结', '调制结束', '调试模式终结', '退出调制']
 	if (await match_keys(args, hypnosis_exit_words, 'user', 1))
 		result.in_hypnosis = false
 	else if (await match_keys(args, ['进入调制模式'], 'user', 2) || args.chat_scoped_char_memory.in_hypnosis)

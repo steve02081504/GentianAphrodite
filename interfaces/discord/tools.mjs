@@ -19,16 +19,16 @@ export function splitDiscordReply(reply, split_lenth = 2000) {
 	function splitCodeBlock(code_block, split_line) {
 		let new_content_slices = []
 		let content_slices = code_block.trim().split('\n')
-		let block_begin = content_slices.shift() + '\n'
-		let block_end = '\n' + content_slices.pop()
+		const block_begin = content_slices.shift() + '\n'
+		const block_end = '\n' + content_slices.pop()
 		// 找到分割行
 		while (content_slices.length > 0) {
-			let split_line_index = content_slices.indexOf(split_line)
+			const split_line_index = content_slices.indexOf(split_line)
 			if (split_line_index === -1) {
 				new_content_slices.push(content_slices.join('\n'))
 				break
 			}
-			let before = content_slices.slice(0, split_line_index + 1).join('\n')
+			const before = content_slices.slice(0, split_line_index + 1).join('\n')
 			new_content_slices.push(before)
 			content_slices = content_slices.slice(split_line_index + 1)
 		}
@@ -36,7 +36,7 @@ export function splitDiscordReply(reply, split_lenth = 2000) {
 		new_content_slices = []
 		// 合并代码块
 		let last = ''
-		for (let content_slice of content_slices) {
+		for (const content_slice of content_slices) {
 			if (last.length + content_slice.length + block_begin.length + block_end.length > split_lenth) {
 				new_content_slices.push(block_begin + last + block_end)
 				last = ''
@@ -48,7 +48,7 @@ export function splitDiscordReply(reply, split_lenth = 2000) {
 		return new_content_slices
 	}
 	// 处理```代码块，合并块内容确保其在一个消息中
-	for (let content_slice of content_slices)
+	for (const content_slice of content_slices)
 		if (content_slice.startsWith('```'))
 			if (last) {
 				new_content_slices.push(last + '\n' + content_slice)
@@ -64,11 +64,11 @@ export function splitDiscordReply(reply, split_lenth = 2000) {
 	mapend()
 	// 处理超大代码块或超长单行，分割为多个块内容或多行
 	code_handle:
-	for (let content_slice of content_slices)
+	for (const content_slice of content_slices)
 		if (content_slice.length > split_lenth)
 			if (content_slice.startsWith('```')) {
-				for (let spliter of ['}', '};', ')', '']) {
-					let splited_blocks = splitCodeBlock(content_slice, spliter)
+				for (const spliter of ['}', '};', ')', '']) {
+					const splited_blocks = splitCodeBlock(content_slice, spliter)
 					if (splited_blocks.every(e => e.length <= split_lenth)) {
 						new_content_slices = new_content_slices.concat(splited_blocks)
 						continue code_handle
@@ -77,9 +77,9 @@ export function splitDiscordReply(reply, split_lenth = 2000) {
 				new_content_slices.push(content_slice)
 			}
 			else {
-				let splited_lines = content_slice.split(/(?<=[ !"');?\]}’”。》！）：；？])/)
+				const splited_lines = content_slice.split(/(?<=[ !"');?\]}’”。》！）：；？])/)
 				let last = ''
-				for (let splited_line of splited_lines) {
+				for (const splited_line of splited_lines) {
 					if (last.length + splited_line.length > split_lenth) {
 						new_content_slices.push(last)
 						last = ''
@@ -92,13 +92,13 @@ export function splitDiscordReply(reply, split_lenth = 2000) {
 
 	mapend()
 	// 对于仍然超出长度的块，生硬拆分其内容
-	for (let content_slice of content_slices)
+	for (const content_slice of content_slices)
 		if (content_slice.length > split_lenth)
 			new_content_slices = new_content_slices.concat(content_slice.match(new RegExp(`[^]{1,${split_lenth}}`, 'g')))
 		else new_content_slices.push(content_slice)
 	mapend()
 	// 合并消息使其不超过split_lenth
-	for (let content_slice of content_slices)
+	for (const content_slice of content_slices)
 		if (last.length + content_slice.length < split_lenth)
 			last += '\n' + content_slice
 		else {
@@ -113,7 +113,7 @@ function formatEmbed(embed) {
 	let embedContent = ''
 	if (embed.title) embedContent += embed.title + '\n'
 	if (embed.description) embedContent += embed.description + '\n'
-	for (let field of embed.fields || []) {
+	for (const field of embed.fields || []) {
 		if (field.name) embedContent += field.name + '\n'
 		if (field.value) embedContent += field.value + '\n'
 	}

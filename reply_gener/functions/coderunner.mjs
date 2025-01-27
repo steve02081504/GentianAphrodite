@@ -11,7 +11,7 @@ import { bash_exec_NATS, pwsh_exec_NATS } from '../../scripts/exec.mjs'
 /** @type {import("../../../../../../../src/decl/pluginAPI.ts").RepalyHandler_t} */
 export async function coderunner(result, { AddLongTimeLog }) {
 	result.extension.execed_codes ??= {}
-	let jsrunner = result.content.match(/```run-js\n(?<code>[^]*)\n```/)?.groups?.code
+	const jsrunner = result.content.match(/```run-js\n(?<code>[^]*)\n```/)?.groups?.code
 	if (jsrunner) {
 		AddLongTimeLog({
 			name: '龙胆',
@@ -91,7 +91,7 @@ export async function coderunner(result, { AddLongTimeLog }) {
 		}
 	}
 	else {
-		let bashrunner = result.content.match(/```run-bash\n(?<code>[^]*)\n```/)?.groups?.code
+		const bashrunner = result.content.match(/```run-bash\n(?<code>[^]*)\n```/)?.groups?.code
 		if (bashrunner) {
 			AddLongTimeLog({
 				name: '龙胆',

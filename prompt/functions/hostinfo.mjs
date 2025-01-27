@@ -1,5 +1,4 @@
-import { NdiffResults, PickRandomN, random, repetRandomTimes, emptyForChance } from '../../scripts/random.mjs'
-import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
+import { match_keys } from '../../scripts/match.mjs'
 import os from 'node:os'
 import osinfo from 'npm:node-os-utils'
 import process from 'node:process'
@@ -18,11 +17,11 @@ import { exec } from '../../scripts/exec.mjs'
 export async function HostInfoPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	let all_info = await match_keys(args, [/电脑(信息|怎样|怎么样|咋样)/i], 'user')
+	const all_info = await match_keys(args, [/电脑(信息|怎样|怎么样|咋样)/i], 'user')
 
 	if (all_info) {
 		// 获取系统基本信息
-		let { hostname, type, release, arch, platform } = os
+		const { hostname, type, release, arch, platform } = os
 		result += `\
 主机名：${hostname()}
 操作系统：${type()} ${release()}
@@ -56,7 +55,7 @@ CPU信息：
 
 	if (await match_keys(args, [/硬盘占用/i, /硬盘使用(率|情况)/i, /(还剩|多少|已用|空闲)硬盘/i, /硬盘(还剩|多少|已用|空闲)/i], 'user')) {
 		// 获取磁盘使用情况，使用 fs 模块
-		let diskUsage = {}
+		const diskUsage = {}
 		if (process.platform === 'win32') {
 			// windows 平台使用 WMIC 命令获取磁盘信息
 			const disks = (await exec('wmic logicaldisk get DeviceID,Size,FreeSpace')).stdout

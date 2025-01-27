@@ -1,6 +1,5 @@
 import { Monitor } from 'npm:node-screenshots'
-import { NdiffResults, PickRandomN, random, repetRandomTimes, emptyForChance } from '../../scripts/random.mjs'
-import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
+import { match_keys } from '../../scripts/match.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
@@ -20,7 +19,7 @@ async function captureScreen() {
  * @param {number} detail_level
  */
 export async function ScreenshotPrompt(args, logical_results, prompt_struct, detail_level) {
-	let additional_chat_log = []
+	const additional_chat_log = []
 
 	if (await match_keys(args, ['屏幕上', '电脑上'], 'any', 2) || (
 		await match_keys(args, ['屏幕', '电脑'], 'any', 2) &&

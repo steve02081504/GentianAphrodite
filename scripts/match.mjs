@@ -8,7 +8,7 @@ import { remove_kaomoji } from './dict.mjs'
 import { francAll } from 'npm:franc'
 import { normalizeFancyText } from './fancytext.mjs'
 
-let chT2S = OpenCC.Converter({ from: 'twp', to: 'cn' })
+const chT2S = OpenCC.Converter({ from: 'twp', to: 'cn' })
 export function SimplifiyChinese(content) {
 	return chT2S(content)
 }
@@ -117,8 +117,8 @@ export function getScopedChatLog(args, from = 'any', depth = 4) {
 export async function match_keys(args, keys, from = 'any', depth = 4,
 	matcher = (content, reg_keys) => reg_keys.filter(key => content.match(key)).length
 ) {
-	let chat_log = getScopedChatLog(args, from, depth)
-	let content = (await Promise.all(chat_log.map(PreprocessChatLogEntry))).join('\n')
+	const chat_log = getScopedChatLog(args, from, depth)
+	const content = (await Promise.all(chat_log.map(PreprocessChatLogEntry))).join('\n')
 
 	return base_match_keys(content, keys, matcher)
 }

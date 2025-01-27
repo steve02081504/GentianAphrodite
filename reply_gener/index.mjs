@@ -15,7 +15,7 @@ import { inspect } from 'node:util'
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 
 export function getLongTimeLogAdder(result, prompt_struct, max_forever_looping_num = 6, warning_forever_looping_num = 4, similarity_threshold = 0.9) {
-	let sim_check_before = []
+	const sim_check_before = []
 	let forever_looping_num = 0
 	function AddLongTimeLog(entry) {
 		result?.logContextBefore?.push?.(entry)
@@ -49,24 +49,24 @@ export function getLongTimeLogAdder(result, prompt_struct, max_forever_looping_n
 export async function GetReply(args) {
 	if (noAISourceAvailable()) return noAIreply(args)
 
-	let prompt_struct = await buildPromptStruct(args)
-	let logical_results = await buildLogicalResults(args, prompt_struct, 0)
+	const prompt_struct = await buildPromptStruct(args)
+	const logical_results = await buildLogicalResults(args, prompt_struct, 0)
 	/** @type {chatLogEntry_t} */
-	let result = {
+	const result = {
 		content: '',
 		logContextBefore: [],
 		logContextAfter: [],
 		files: [],
 		extension: {},
 	}
-	let AddLongTimeLog = getLongTimeLogAdder(result, prompt_struct)
+	const AddLongTimeLog = getLongTimeLogAdder(result, prompt_struct)
 	regen: while (true) {
 		console.log('logical_results', logical_results)
 		console.log('prompt_struct')
 		console.log(inspect(prompt_struct, { depth: 4, colors: true }))
-		let AItype = logical_results.in_assist ? 'expert' : logical_results.in_nsfw ? 'nsfw' : 'sfw'
+		const AItype = logical_results.in_assist ? 'expert' : logical_results.in_nsfw ? 'nsfw' : 'sfw'
 		result.content = await OrderedAISourceCalling(AItype, async AI => {
-			let result = await AI.StructCall(prompt_struct)
+			const result = await AI.StructCall(prompt_struct)
 			if (!String(result).trim()) throw new Error('empty reply')
 			return result
 		})
@@ -75,7 +75,7 @@ export async function GetReply(args) {
 			coderunner, filesender, detailThinking, googlesearch, webbrowse, rolesettingfilter, timer,
 			...Object.values(args.plugins).map(plugin => plugin.interfaces.chat?.RepalyHandler)
 		].filter(Boolean)
-		for (let repalyHandler of replyHandlers)
+		for (const repalyHandler of replyHandlers)
 			if (await repalyHandler(result, { ...args, AddLongTimeLog, prompt_struct }))
 				continue regen
 		break

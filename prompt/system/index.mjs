@@ -18,7 +18,7 @@ import { StatusBarPrompt } from './StatusBar.mjs'
  * @param {number} detail_level
  */
 export async function SystemPrompt(args, logical_results, prompt_struct, detail_level) {
-	let result = []
+	const result = []
 	result.push(SOSPrompt(args, logical_results, prompt_struct, detail_level))
 
 	if (logical_results.talking_about_prompt_review || logical_results.prompt_input)

@@ -6,7 +6,7 @@ import { MarkdownWebFetch } from '../../scripts/web.mjs'
 
 /** @type {import("../../../../../../../src/decl/pluginAPI.ts").RepalyHandler_t} */
 export async function webbrowse(result, { AddLongTimeLog, prompt_struct }) {
-	let match = result.content.match(/```web-browse\n(?<url>[^\n]+)\n(?<question>[^]*?)\n```/)
+	const match = result.content.match(/```web-browse\n(?<url>[^\n]+)\n(?<question>[^]*?)\n```/)
 	if (match?.groups) {
 		const { url, question } = match.groups
 
@@ -24,7 +24,7 @@ export async function webbrowse(result, { AddLongTimeLog, prompt_struct }) {
 			console.info('网页内容：')
 			console.dir(markdown)
 
-			let browseing = {
+			const browseing = {
 				...prompt_struct,
 				char_prompt: await DetailThinkingMainPrompt(),
 				other_chars_prompt: {},
@@ -54,7 +54,7 @@ ${question}
 					role: 'system'
 				}
 			]
-			let result = await OrderedAISourceCalling('web-browse', AI => AI.StructCall(browseing))
+			const result = await OrderedAISourceCalling('web-browse', AI => AI.StructCall(browseing))
 			AddLongTimeLog({
 				content: '浏览结果：\n' + result,
 				name: 'system',

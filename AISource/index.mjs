@@ -17,15 +17,15 @@ export let AIsources = {
 }
 
 export function getAISourceData() {
-	let result = {}
-	for (let name in AIsources)
+	const result = {}
+	for (const name in AIsources)
 		result[name] = AIsources[name].filename
 	return result
 }
 
 export async function setAISourceData(data) {
-	let newAIsources = {}
-	for (let name in data)
+	const newAIsources = {}
+	for (const name in data)
 		newAIsources[name] = await loadAIsource(username, data[name])
 	AIsources = newAIsources
 }
@@ -61,7 +61,7 @@ export function GetAISourceCallingOrder(name) {
 }
 
 export function noAISourceAvailable() {
-	let result = Object.values(AIsources).every(x => !x)
+	const result = Object.values(AIsources).every(x => !x)
 	if (result) console.log('No AI source available:', AIsources)
 	return result
 }
@@ -74,13 +74,13 @@ export function noAISourceAvailable() {
  * @returns {Promise<string>}
  */
 export async function OrderedAISourceCalling(name, caller, trytimes = 3, error_logger = console.error) {
-	let sources = [...new Set([...GetAISourceCallingOrder(name).map(x => AIsources[x]).filter(x => x), ...Object.values(AIsources)])]
+	const sources = [...new Set([...GetAISourceCallingOrder(name).map(x => AIsources[x]).filter(x => x), ...Object.values(AIsources)])]
 	let lastErr = new Error('No AI source available')
-	for (let source of sources)
+	for (const source of sources)
 		for (let i = 0; i < trytimes; i++)
 			try {
 				console.info('OrderedAISourceCalling', name, getPartInfo(source).name)
-				let result = await caller(source)
+				const result = await caller(source)
 				return result
 			} catch (err) {
 				await error_logger(lastErr = err)

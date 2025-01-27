@@ -1,4 +1,3 @@
-import { NdiffResults, PickRandomN, random, repetRandomTimes, emptyForChance } from '../../scripts/random.mjs'
 import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
 import bigInt from 'npm:big-integer'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
@@ -32,15 +31,15 @@ export async function DicePrompt(args, logical_results, prompt_struct, detail_le
 XdY+Z，即扔出X个Y面骰子，结果加上Z
 若不指定X，则默认为1
 `
-		let matches = getScopedChatLog(args, 'any').map(x => x.content).join().match(/\b(\d*)d(\d+)([+-]\d+)?\b/g)
+		const matches = getScopedChatLog(args, 'any').map(x => x.content).join().match(/\b(\d*)d(\d+)([+-]\d+)?\b/g)
 		result += `\
 以下是一些可能有用的roll结果，在你需要时可直接取用：
 `
 		for (let parten of matches) {
 			parten = parten.split(/([+d-]+)/)
-			let x = bigInt(parten[0] || 1)
-			let y = bigInt(parten[2] || 6)
-			let sign = (parten[3] || '').replace('+', '')
+			const x = bigInt(parten[0] || 1)
+			const y = bigInt(parten[2] || 6)
+			const sign = (parten[3] || '').replace('+', '')
 			let diff = bigInt(parten[4] || 0)
 			if (sign.includes('-')) diff = -diff
 			result += `\

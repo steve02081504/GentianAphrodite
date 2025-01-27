@@ -23,7 +23,7 @@ import { SexPrompt } from './sex.mjs'
  * @param {number} detail_level
  */
 export async function RoleSettingsPrompt(args, logical_results, prompt_struct, detail_level) {
-	let result = []
+	const result = []
 	result.push(corpusPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(BasedefPrompt(args, logical_results, prompt_struct, detail_level))
 	if (!logical_results.in_hypnosis || logical_results.hypnosis_exit)

@@ -15,7 +15,7 @@ export async function googlesearch(result, { AddLongTimeLog }) {
 
 		try {
 			searchQuery = searchQuery.split('\n').filter((query) => !['```', '```google-search'].includes(query))
-			for (let searchQueryItem of searchQuery) {
+			for (const searchQueryItem of searchQuery) {
 				const queryResult = await search({
 					query: searchQueryItem,
 					resultTypes: [OrganicResult],

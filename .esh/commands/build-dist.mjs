@@ -7,7 +7,7 @@ import { nicerWriteFileSync } from '../../scripts/tools.mjs'
 // 创建dist目录
 fs.mkdirSync('dist', { recursive: true })
 
-let result = await rollup({
+const result = await rollup({
 	input: './main.mjs',
 	external: [
 		/node:*/,
@@ -25,7 +25,7 @@ let output = await result.generate({
 })
 output = output.output[0].code
 
-let charvar = await exec('git describe --tags --abbrev=0', { cwd: '.' }).then((result) => result.stdout)
+const charvar = await exec('git describe --tags --abbrev=0', { cwd: '.' }).then((result) => result.stdout)
 output = output.replace(/(export\s+)?(const|let)\s*charvar = [^\n]*/, `$1const charvar = "${charvar.trim()}";`)
 
 output = await minify(output, {
@@ -66,8 +66,8 @@ output = confuser.obfuscate(output, {
 nicerWriteFileSync('dist/main.mjs', output)
 
 // 需要复制的文件夹和文件
-let copy_paths = ['info/description', 'imgs', 'README.md', 'fount.json']
-for (let path of copy_paths)
+const copy_paths = ['info/description', 'imgs', 'README.md', 'fount.json']
+for (const path of copy_paths)
 	if (fs.statSync(path).isDirectory()) // 若是文件夹
 		await exec(`robocopy ".\\${path}" ".\\dist\\${path}" /MIR /XD .git /XF .gitignore /XA:H /XA:S"`, { cwd: '.' }).catch(console.dir)
 	else // 若是文件

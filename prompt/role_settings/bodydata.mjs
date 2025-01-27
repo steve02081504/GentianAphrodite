@@ -1,4 +1,3 @@
-import { NdiffResults, PickRandomN, random, repetRandomTimes, emptyForChance } from '../../scripts/random.mjs'
 import { match_keys } from '../../scripts/match.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
@@ -13,7 +12,7 @@ import { match_keys } from '../../scripts/match.mjs'
 export async function BodyDataPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 	{
-		let datas = {
+		const datas = {
 			手: '长13cm，宽6cm',
 			小脚: '长17cm，宽6cm',
 			颈围: '24cm',
@@ -65,7 +64,7 @@ export async function BodyDataPrompt(args, logical_results, prompt_struct, detai
 		if (await match_keys(args, [/(身体|身材|身形)数据/, /(衣服|衣物)(尺寸|数据)/], 'any', 2))
 			enabled_datas = datas
 
-		let detailed_datas = {
+		const detailed_datas = {
 			头发数量: '153820根',
 		}
 

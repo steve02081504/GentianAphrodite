@@ -1,7 +1,7 @@
 /**
  * @type {import('../../../../../../../src/decl/WorldAPI.ts').WorldAPI_t}
  */
-export let discordWorld = {
+export const discordWorld = {
 	info: {
 		'zh-CN': {
 			name: 'Discord世界观',

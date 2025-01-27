@@ -6,7 +6,7 @@ import { where_command } from './exec.mjs'
  * @param {string} name
  */
 export async function NewBrowserGenerByName(name) {
-	let path = await where_command(name)
+	const path = await where_command(name)
 	if (!path) return null
 	return (configs) => puppeteer.launch({
 		...configs,
@@ -19,8 +19,8 @@ export async function NewBrowserGenerByName(name) {
  * @param {import('npm:puppeteer').LaunchOptions} configs
  */
 export async function NewBrowser(configs) {
-	for (let name of ['firefox', 'chrome']) {
-		let gener = await NewBrowserGenerByName(name)
+	for (const name of ['firefox', 'chrome']) {
+		const gener = await NewBrowserGenerByName(name)
 		if (gener) return gener(configs)
 	}
 }

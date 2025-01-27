@@ -1,4 +1,4 @@
-var map = {
+const map = {
 	'&': ['⅋'],
 	'%': ['⅍', '℀', '℁', '℆', '℅'],
 	'0': ['０', 'Ѳ', 'ʘ'],
@@ -73,8 +73,8 @@ var map = {
 }
 
 export function normalizeFancyText(text) {
-	for (let [char, variants] of Object.entries(map))
-		for (let variant of variants)
+	for (const [char, variants] of Object.entries(map))
+		for (const variant of variants)
 			text = text.replaceAll(variant, char)
 	return text
 }

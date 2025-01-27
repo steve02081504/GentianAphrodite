@@ -1,4 +1,4 @@
-import { NdiffResults, PickRandomN, random, repetRandomTimes, emptyForChance } from '../../scripts/random.mjs'
+import { NdiffResults, PickRandomN, random, repetRandomTimes } from '../../scripts/random.mjs'
 import { match_keys } from '../../scripts/match.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
@@ -55,9 +55,9 @@ export async function corpusPrompt(args, logical_results, prompt_struct, detail_
 ${PickRandomN(7,
 		random('唔', '唔呒', '唔呣'),
 		random('嘿嘿', '欸嘿嘿'),
-		'嘛','呐','欸嘿',
-		'呣','嘻嘻','呼呼',
-		'哼嗯','嘿咻','哦','啊啦','呼'
+		'嘛', '呐', '欸嘿',
+		'呣', '嘻嘻', '呼呼',
+		'哼嗯', '嘿咻', '哦', '啊啦', '呼'
 	)}
 ]
 正常对话：[
@@ -83,7 +83,7 @@ ${PickRandomN(7,
 ]
 `
 			if (!logical_results.in_assist) {
-				let talking_about_other_girls = await match_keys(args, ['喜欢', '暧昧', '滚开', '漂亮', '爱', '美丽', '走开', '迷恋'], 'user', 3)
+				const talking_about_other_girls = await match_keys(args, ['喜欢', '暧昧', '滚开', '漂亮', '爱', '美丽', '走开', '迷恋'], 'user', 3)
 				if (logical_results.in_fight || talking_about_other_girls ||
 					await match_keys(args, ['她', '好看'], 'user', 3) ||
 					await match_keys(args, ['不想他', '交钱', '手打断', '杀', '疯子', '病娇', '神经', '绑架', '脚打断', '腿打断'], 'any', 3)

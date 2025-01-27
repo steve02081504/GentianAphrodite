@@ -28,7 +28,7 @@ import { TimerPrompt } from './timer.mjs'
  * @param {number} detail_level
  */
 export async function FunctionPrompt(args, logical_results, prompt_struct, detail_level) {
-	let result = []
+	const result = []
 	result.push(RockPaperScissorsPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(DicePrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(AutoCalcPrompt(args, logical_results, prompt_struct, detail_level))

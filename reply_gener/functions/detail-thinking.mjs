@@ -15,9 +15,9 @@ import { getLongTimeLogAdder } from '../index.mjs'
 /** @type {import("../../../../../../../src/decl/pluginAPI.ts").RepalyHandler_t} */
 export async function detailThinking(result, { AddLongTimeLog, prompt_struct }) {
 	result.extension.execed_codes ??= {}
-	let question = result.content.match(/```detail-thinking\n(?<question>[^]*?)\n```/)?.groups?.question
+	const question = result.content.match(/```detail-thinking\n(?<question>[^]*?)\n```/)?.groups?.question
 	if (question) {
-		let thinking = {
+		const thinking = {
 			...prompt_struct,
 			char_prompt: margePrompt(
 				await DetailThinkingMainPrompt(),
@@ -81,7 +81,7 @@ detail-thinking-denial: 我还没有正式思考，所以没有任何角度可�
 				role: 'char',
 				extension: {}
 			}
-			for (let repalyHandler of [
+			for (const repalyHandler of [
 				coderunner, googlesearch, webbrowse,
 			])
 				if (await repalyHandler(result, { AddLongTimeLog: addThinkingLongTimeLog, prompt_struct: thinking }))
@@ -107,7 +107,7 @@ ${question}
 			name: '龙胆',
 			role: 'char'
 		})
-		let is_failed = result.find(block => block.match(/^failed/))
+		const is_failed = result.find(block => block.match(/^failed/))
 		if (is_failed)
 			AddLongTimeLog({
 				content: `\

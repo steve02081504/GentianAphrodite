@@ -10,7 +10,7 @@ export function arraysEqual(a, b) {
 	if (!a || !b) return false
 	if (a.length !== b.length) return false
 
-	for (var i = 0; i < a.length; ++i)
+	for (let i = 0; i < a.length; ++i)
 		if (a[i] !== b[i])
 			return false
 	return true
@@ -25,7 +25,7 @@ export function arraysEqual(a, b) {
  * @return {void}
  */
 export function nicerWriteFileSync(filePath, data, encoding = 'utf8') {
-	var oldData
+	let oldData
 	if (fs.existsSync(filePath))
 		oldData = fs.readFileSync(filePath, encoding)
 	if (oldData != data)
@@ -38,10 +38,10 @@ export function nicerWriteFileSync(filePath, data, encoding = 'utf8') {
  * @return {boolean} True if the directory was cleared successfully, false otherwise.
  */
 export function clearEmptyDirs(dirPath) {
-	var files = fs.readdirSync(dirPath, { recursive: true })
-	var empty = true
+	const files = fs.readdirSync(dirPath, { recursive: true })
+	let empty = true
 	for (const file of files) {
-		var filePath = dirPath + '/' + file
+		const filePath = dirPath + '/' + file
 		if (fs.lstatSync(filePath).isDirectory() && clearEmptyDirs(filePath)) continue
 		empty = false
 	}
@@ -70,7 +70,7 @@ export function reverseStr(/** @type {string} */str) {
  */
 export function parseRegexFromString(input) {
 	// Extracting the regex pattern and flags
-	let match = input.match(/^\/([\W\w]+?)\/([gimsuy]*)$/)
+	const match = input.match(/^\/([\W\w]+?)\/([gimsuy]*)$/)
 	if (!match) return null // Not a valid regex format
 
 	let [, pattern, flags] = match
@@ -132,7 +132,7 @@ export function deepCopy(object, weakMap = new WeakMap()) {
 
 	if (weakMap.has(object)) return weakMap.get(object)
 
-	let target = Array.isArray(object) ? [] : {}
+	const target = Array.isArray(object) ? [] : {}
 	weakMap.set(object, target)
 	for (const key in object)
 		if (Object.hasOwnProperty.call(object, key)) target[key] = deepCopy(object[key], weakMap)
@@ -186,7 +186,7 @@ export function suffleArray(a, Rng = Math.random) {
 	let currentIndex = a.length
 
 	while (currentIndex != 0) {
-		let randomIndex = RandIntLeesThan(currentIndex, 0, Rng)
+		const randomIndex = RandIntLeesThan(currentIndex, 0, Rng)
 		currentIndex--;
 		[a[currentIndex], a[randomIndex]] = [a[randomIndex], a[currentIndex]]
 	}
@@ -199,7 +199,7 @@ export function suffleArray(a, Rng = Math.random) {
  * @param {Record<string, any>} formats
  */
 export function FormatStr(str, formats) {
-	let unpickscript = `let {${Object.keys(formats).join(', ')}} = formats;`
+	const unpickscript = `let {${Object.keys(formats).join(', ')}} = formats;`
 	return str.replace(/\${([^}]+)}/g, (match, p1) => eval(unpickscript + p1))
 }
 
@@ -270,7 +270,7 @@ export function UTCToLocal(utcTime) {
  * @returns {number} The number of milliseconds.
  */
 export function parseDuration(durationString) {
-	let dict = {
+	const dict = {
 		seconds: 1000,
 		sec: 1000,
 		s: 1000,
@@ -312,8 +312,8 @@ export function parseDuration(durationString) {
 	}
 
 	let duration = 0
-	for (let unit in dict) {
-		let match = durationString.match(new RegExp(`(?<value>\\d+)${unit}`))
+	for (const unit in dict) {
+		const match = durationString.match(new RegExp(`(?<value>\\d+)${unit}`))
 		if (match?.groups?.value) {
 			duration += parseInt(match.groups.value) * dict[unit]
 			durationString = durationString.replace(match[0], '')

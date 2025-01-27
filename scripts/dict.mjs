@@ -1,9 +1,9 @@
-export let rude_words = [
+export const rude_words = [
 	'傻逼', '白痴', '蠢货', '弱智', '傻子', '废物', '下贱', '低能', '无能', '死妈', '恶心', '不知死活', '活得不耐烦',
 	'骂人', '人身攻击', '歧视', '侮辱', '生气', '呃呃', '阴阳怪气', '死',
 	'禁言', '踢了', '飞了', '杀了', '肏了', '废物', '蠢逼'
 ]
-export let Kaomoji_list = [
+export const Kaomoji_list = [
 	'(*´▽｀*)ヾ', '(＃￣ω￣)', '(￣▽￣)ノ', '(⊙ω⊙)', '(｡•̀ᴗ-)✧',
 	'(*/ω＼*)', '(｀・ω・´)', '(￣▽￣)', '(*°∀°)=3', 'ヾ(^▽^*)',
 	'(*´▽`*)', '(≧▽≦)', '(⁄ ⁄•⁄ω⁄•⁄ ⁄)', '(｡♥‿♥｡)',
@@ -12,12 +12,12 @@ export let Kaomoji_list = [
 ]
 
 export function remove_kaomoji(text) {
-	for (let kaomoji of Kaomoji_list)
+	for (const kaomoji of Kaomoji_list)
 		text = text.replaceAll(kaomoji, '')
 	return text
 }
 
-export let lewd_words = [
+export const lewd_words = [
 	'一夜情', '一柱擎天', '乱伦', '乳交', '乳牛', '乳穴', '乳肉', '云雨', '交配', '假阳具', '做爱',
 	'先走汁', '内射', '前列腺液', '勃起', '包皮', '发情', '发春', '口交', '后入', '后入式', '后庭',
 	'喷乳', '喷奶', '大奶子', '大屌', '女体', '女肉', '奶子', '奶水', '奸淫', '妖艳', '挑逗', '撩拨', '爱抚',

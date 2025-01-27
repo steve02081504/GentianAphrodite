@@ -6,13 +6,13 @@ class ubigfloat {
 	numerator = 0n
 	denominator = 1n
 	gc() {
-		let gcd = (a, b) => a ? gcd(b % a, a) : b
+		const gcd = (a, b) => a ? gcd(b % a, a) : b
 		this.numerator /= gcd(this.numerator, this.denominator)
 		this.denominator = this.denominator / gcd(this.numerator, this.denominator)
 		return this
 	}
 	static fromPair(numerator, denominator) {
-		let ubf = new ubigfloat()
+		const ubf = new ubigfloat()
 		ubf.numerator = BigInt(numerator)
 		ubf.denominator = BigInt(denominator)
 		return ubf
@@ -26,7 +26,7 @@ class ubigfloat {
 		if (value instanceof Number && Math.floor(value) === value)
 			this.numerator = BigInt(value)
 		else if (value) {
-			let string = String(value)
+			const string = String(value)
 			return ubigfloat.fromString(string)
 		}
 	}
@@ -84,20 +84,20 @@ class ubigfloat {
 	toString() {
 		if (this.denominator == 1) return this.numerator.toString()
 		else if (this.denominator == 0) return '∞'
-		let integer = this.numerator / this.denominator
+		const integer = this.numerator / this.denominator
 		let decimal = this.numerator - integer * this.denominator
 		let result = integer.toString()
 		if (decimal) {
 			result += '.'
-			let forever_loop_set = new Set()
+			const forever_loop_set = new Set()
 			while (decimal) {
 				decimal *= 10n
-				let char = (decimal / this.denominator).toString()
+				const char = (decimal / this.denominator).toString()
 				decimal %= this.denominator
 				if (forever_loop_set.has(decimal)) {
 					// add [ and ] to looping part
-					let loop_part = result.slice(-forever_loop_set.size)
-					let loop_before = result.slice(0, result.length - loop_part.length)
+					const loop_part = result.slice(-forever_loop_set.size)
+					const loop_before = result.slice(0, result.length - loop_part.length)
 					result = loop_before + '[' + loop_part + ']'
 					break
 				}
@@ -110,25 +110,25 @@ class ubigfloat {
 	static fromString(string) {
 		// handle [ and ]
 		if (string.includes('[')) {
-			let loop_part = string.slice(string.indexOf('[') + 1, string.indexOf(']'))
-			let loop_before = string.slice(0, string.indexOf('['))
-			let times = 7
-			let loopfewtimes = loop_part.repeat(times)
+			const loop_part = string.slice(string.indexOf('[') + 1, string.indexOf(']'))
+			const loop_before = string.slice(0, string.indexOf('['))
+			const times = 7
+			const loopfewtimes = loop_part.repeat(times)
 			let missing_numerator = ubigfloat.fromPair(BigInt('1' + '0'.repeat(times * loop_part.length)), BigInt(loopfewtimes) - BigInt(loop_part))
-			let scale = loop_before.split('.')[1]?.length || 0
+			const scale = loop_before.split('.')[1]?.length || 0
 			missing_numerator = ubigfloat.fromPair(1n, missing_numerator.floor() * 10n ** BigInt(scale))
-			let basenum = ubigfloat.fromString(loop_before)
+			const basenum = ubigfloat.fromString(loop_before)
 			return basenum.add(missing_numerator)
 		}
 		else {
-			let result = new ubigfloat()
-			let point_index = string.indexOf('.')
+			const result = new ubigfloat()
+			const point_index = string.indexOf('.')
 			if (point_index === -1) {
 				result.numerator = BigInt(string)
 				return result
 			}
-			let before_point = string.slice(0, point_index)
-			let after_point = string.slice(point_index + 1)
+			const before_point = string.slice(0, point_index)
+			const after_point = string.slice(point_index + 1)
 			result.denominator = 10n ** BigInt(after_point.length)
 			result.numerator = BigInt(before_point) * result.denominator + BigInt(after_point)
 			return result
@@ -162,7 +162,7 @@ class bigfloat {
 		return new bigfloat(string)
 	}
 	static fromNumAndSign(sign, ufloat) {
-		let result = new bigfloat()
+		const result = new bigfloat()
 		result.sign = sign
 		result.basenum = ufloat
 		return result
@@ -404,10 +404,10 @@ class bigfloat {
 		return evaluatePostfix(postfix)
 	}
 	static evalFromStrings(string) {
-		let exprs = string.match(/[\d!%()*+/<=>[\]\-]+/g)
+		const exprs = string.match(/[\d!%()*+/<=>[\]\-]+/g)
 		/** @type {Record<string, bigfloat>} */
-		let result = {}
-		for (let expr of exprs) try {
+		const result = {}
+		for (const expr of exprs) try {
 			if (expr.match(/^[\d.]*$/)) continue // 跳过纯数字
 			else if (!expr.match(/\d/)) continue // 跳过纯运算符
 			result[expr] = bigfloat.eval(expr)
@@ -418,7 +418,7 @@ class bigfloat {
 /**
  * @type {bigfloat & ((value: string | number) => bigfloat)}
  */
-let bigfloatProxy = new Proxy(bigfloat, {
+const bigfloatProxy = new Proxy(bigfloat, {
 	apply(target, thisArg, args) {
 		return new bigfloat(args[0])
 	}

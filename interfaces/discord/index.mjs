@@ -1,4 +1,4 @@
-import { Events, ChannelType, Message } from 'npm:discord.js'
+import { Events, ChannelType } from 'npm:discord.js'
 import { Buffer } from 'node:buffer'
 import { base_match_keys, SimplifiyChinese, PreprocessChatLogEntry } from '../../scripts/match.mjs'
 import { GetReply } from '../../reply_gener/index.mjs'
@@ -33,18 +33,18 @@ async function tryFewTimes(func, times = MaxRetries) {
 export default async function DiscordBotMain(client, config) {
 	const MAX_MESSAGE_DEPTH = config.maxMessageDepth || 20
 	const MAX_FEACH_COUNT = config.maxFetchCount || Math.floor(MAX_MESSAGE_DEPTH * 3 / 2) || MAX_MESSAGE_DEPTH
-	let lastSendMessageTime = {}
-	let replayInfoCache = {}
-	let userinfoCache = {}
-	let FuyanMode = false
+	const lastSendMessageTime = {}
+	const replayInfoCache = {}
+	const userinfoCache = {}
+	let FuyanMode = false, in_hypnosis_channel_id = null
 
-	let chat_scoped_char_memory = {}, in_hypnosis_channel_id = null
+	const chat_scoped_char_memory = {}
 	/**
 	 * @param {import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
 	 * @returns {Promise<chatLogEntry_t>}
 	 */
 	async function DiscordMessageToFountChatLogEntry(message) {
-		let author = userinfoCache[message.author.id] || message.author
+		const author = userinfoCache[message.author.id] || message.author
 		if (!userinfoCache[message.author.id] || Math.random() < 0.25)
 			message.author.fetch().then((user) => userinfoCache[message.author.id] = user).catch(_ => 0)
 		let name = author.displayName || author.globalName
@@ -52,10 +52,10 @@ export default async function DiscordBotMain(client, config) {
 		else if (author.username == config.ownerUserName) name = author.username
 		else name += name.toLowerCase() === author.username.toLowerCase() ? '' : ` (${author.username})`
 
-		let content = await getMessageFullContent(message, client)
+		const content = await getMessageFullContent(message, client)
 
 		/** @type {chatLogEntry_t} */
-		let result = {
+		const result = {
 			...replayInfoCache[message.id] || { extension: {} },
 			timeStamp: UTCToLocal(message.createdTimestamp),
 			role: author.username === config.ownerUserName ? 'user' : 'char',
@@ -101,16 +101,16 @@ export default async function DiscordBotMain(client, config) {
 		}
 		return result
 	}
-	let Gentian_words = ['龙胆', 'gentian']
-	let spec_words = [...config.OwnnerNameKeywords, ...rude_words, ...Gentian_words]
+	const Gentian_words = ['龙胆', 'gentian']
+	const spec_words = [...config.OwnnerNameKeywords, ...rude_words, ...Gentian_words]
 	function isBotCommand(content) {
 		return content.match(/^[!$%&/\\！]/)
 	}
-	let ChannelMuteStartTimes = {}
+	const ChannelMuteStartTimes = {}
 
 	function isInFavor(channelID) {
-		let lastSendTime = lastSendMessageTime[channelID] || 0
-		let lastMessage = client.channels.cache.get(channelID).messages.cache.last() || { createdTimestamp: 0 }
+		const lastSendTime = lastSendMessageTime[channelID] || 0
+		const lastMessage = client.channels.cache.get(channelID).messages.cache.last() || { createdTimestamp: 0 }
 		return new Date(lastMessage.createdTimestamp) - new Date(lastSendTime) < 3 * 60000 // 间隔 3 分钟内的对话
 	}
 	function isMuted(channelID) {
@@ -121,7 +121,7 @@ export default async function DiscordBotMain(client, config) {
 	 * @returns {Promise<boolean>}
 	 */
 	async function CheckMessageContentTrigger(message) {
-		let content = await getMessageFullContent(message, client)
+		const content = await getMessageFullContent(message, client)
 		console.info({
 			content: content,
 			authorUserName: message.author.username,
@@ -143,11 +143,11 @@ export default async function DiscordBotMain(client, config) {
 
 		possible += base_match_keys(content, [/(花|华)(萝|箩|罗)(蘑|磨|摩)/g]) * 3 // 每个匹配对该消息追加 3% 可能性回复消息
 
-		let is_bot_command = isBotCommand(content) // 跳过疑似bot命令
+		const is_bot_command = isBotCommand(content) // 跳过疑似bot命令
 
-		let inFavor = isInFavor(message.channel.id)
-		let EngWords = content.split(' ')
-		let mentionedWithoutAt = (base_match_keys(
+		const inFavor = isInFavor(message.channel.id)
+		const EngWords = content.split(' ')
+		const mentionedWithoutAt = (base_match_keys(
 			content.substring(0, 5) + ' ' + content.substring(content.length - 3), ['龙胆']
 		) || base_match_keys(EngWords.slice(0, 6).concat(EngWords.slice(-3)).join(' '), ['gentian'])) &&
 			!base_match_keys(content, [/(龙胆(有|能|这边|目前|[^ 。你，]{0,3}的)|gentian('s|is|are|can|has))/i]) &&
@@ -209,23 +209,23 @@ export default async function DiscordBotMain(client, config) {
 		else
 			delete ChannelMuteStartTimes[message.channel.id]
 
-		let result = Math.random() < possible / 100
+		const result = Math.random() < possible / 100
 		console.info('CheckMessageContentTrigger', possible + '%', result)
 		return result
 	}
 
-	let ChannelHandlers = {}
-	let ChannelMessageQueues = {}
+	const ChannelHandlers = {}
+	const ChannelMessageQueues = {}
 	/**
 	 * @type {Record<string, chatLogEntry_t[]>}
 	 */
-	let ChannelChatLogs = {}
+	const ChannelChatLogs = {}
 	/**
 	 * @param {import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
 	 * @returns {(...args: any[]) => Promise<void>}
 	 */
 	function GetMessageSender(message) {
-		let default_messagesender = async reply => await tryFewTimes(() => message.channel.send(reply))
+		const default_messagesender = async reply => await tryFewTimes(() => message.channel.send(reply))
 		let messagesender = default_messagesender
 		if (message.mentions?.users?.has?.(client.user.id))
 			messagesender = async reply => {
@@ -237,14 +237,14 @@ export default async function DiscordBotMain(client, config) {
 				finally { messagesender = default_messagesender }
 			}
 		return async (message) => {
-			let result = await messagesender(message)
+			const result = await messagesender(message)
 			if (!(Object(message) instanceof String)) replayInfoCache[result.id] = message
 			return result
 		}
 	}
-	let ErrorRecord = {}
+	const ErrorRecord = {}
 	async function ErrorHandler(error, message) {
-		let error_message = `${error.name}: ${error.message}\n\`\`\`${error.stack}\n\`\`\``
+		const error_message = `${error.name}: ${error.message}\n\`\`\`${error.stack}\n\`\`\``
 		if (ErrorRecord[error_message]) return
 		else ErrorRecord[error_message] = true
 		let AIsuggestion
@@ -288,13 +288,13 @@ export default async function DiscordBotMain(client, config) {
 				AIsuggestion = { content: '```\n' + another_error.stack + '\n```\n' + (in_hypnosis_channel_id ? '抱歉，洗脑母畜龙胆没有解决思路。' : '没什么解决思路呢？') }
 		}
 		AIsuggestion = error_message + '\n' + AIsuggestion.content
-		let randIPdict = {}
+		const randIPdict = {}
 		AIsuggestion = AIsuggestion.replace(/(?:\d{1,3}\.){3}\d{1,3}/g, ip => randIPdict[ip] ??= Array(4).fill(0).map(() => Math.floor(Math.random() * 255)).join('.'))
 
-		let messagesender = GetMessageSender(message)
+		const messagesender = GetMessageSender(message)
 		try {
-			let splited_reply = splitDiscordReply(AIsuggestion)
-			for (let message of splited_reply) await messagesender(message)
+			const splited_reply = splitDiscordReply(AIsuggestion)
+			for (const message of splited_reply) await messagesender(message)
 		} catch (error) {
 			await messagesender(AIsuggestion)
 		}
@@ -320,13 +320,13 @@ export default async function DiscordBotMain(client, config) {
 					return
 				}
 				else if (base_match_keys(message.content, [/^龙胆.{0,2}复诵.{0,2}`.*`$/])) {
-					let content = message.content.match(/^龙胆.{0,2}复诵.{0,2}`(?<content>.*)`$/).groups.content
+					const content = message.content.match(/^龙胆.{0,2}复诵.{0,2}`(?<content>.*)`$/).groups.content
 					return GetMessageSender(message)(content)
 				}
 				else if (!in_hypnosis_channel_id && base_match_keys(message.content, [/^(龙胆|[\n,.~、。呵哦啊嗯噫欸，～])*$/, /^龙胆龙胆(龙胆|[\n!,.?~、。呵哦啊嗯噫欸！，？～])+$/]))
 					return GetMessageSender(message)(SimplifiyChinese(message.content).replaceAll('龙胆', '主人'))
 
-			let replyHandler = async (reply) => {
+			const replyHandler = async (reply) => {
 
 				if (chat_scoped_char_memory.in_hypnosis)
 					in_hypnosis_channel_id = message.channel.id
@@ -342,9 +342,9 @@ export default async function DiscordBotMain(client, config) {
 						return match
 					})
 
-					let splited_reply = splitDiscordReply(reply.content)
-					let last_reply = splited_reply.pop()
-					let last_reply_message = {
+					const splited_reply = splitDiscordReply(reply.content)
+					const last_reply = splited_reply.pop()
+					const last_reply_message = {
 						content: last_reply,
 						files: (reply.files || []).map((file) => {
 							return {
@@ -354,8 +354,8 @@ export default async function DiscordBotMain(client, config) {
 							}
 						})
 					}
-					let messagesender = GetMessageSender(message)
-					for (let message of splited_reply) await messagesender(message)
+					const messagesender = GetMessageSender(message)
+					for (const message of splited_reply) await messagesender(message)
 					clearTypeingInterval()
 					await messagesender(last_reply_message)
 					lastSendMessageTime[message.channel.id] = new Date()
@@ -368,7 +368,7 @@ export default async function DiscordBotMain(client, config) {
 			 *
 			 * @returns {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReplyRequest_t}
 			 */
-			let replayQuestGener = () => ({
+			const replayQuestGener = () => ({
 				Charname: '龙胆',
 				UserCharname: config.ownerUserName,
 				ReplyToCharname: message.author.username,
@@ -387,7 +387,7 @@ export default async function DiscordBotMain(client, config) {
 				Update: replayQuestGener,
 				AddChatLogEntry: replyHandler
 			})
-			let reply = FuyanMode ? { content: '嗯嗯！' } : await GetReply(replayQuestGener())
+			const reply = FuyanMode ? { content: '嗯嗯！' } : await GetReply(replayQuestGener())
 
 			await replyHandler(reply)
 		} catch (error) {
@@ -397,8 +397,9 @@ export default async function DiscordBotMain(client, config) {
 		}
 	}
 	function MargeChatLog(log) {
-		let last, newlog = []
-		for (let entry of log)
+		const newlog = []
+		let last
+		for (const entry of log)
 			if (
 				last?.name == entry.name &&
 				entry.timeStamp - last.timeStamp < 3 * 60000 &&
@@ -415,7 +416,7 @@ export default async function DiscordBotMain(client, config) {
 		return newlog
 	}
 	async function HandleMessageQueue(channelid) {
-		let myQueue = ChannelMessageQueues[channelid]
+		const myQueue = ChannelMessageQueues[channelid]
 		try {
 			if (!ChannelChatLogs[channelid]) {
 				ChannelChatLogs[channelid] ??= MargeChatLog(
@@ -435,15 +436,15 @@ export default async function DiscordBotMain(client, config) {
 				ChannelMessageQueues[channelid] = []
 				return
 			}
-			let chatlog = ChannelChatLogs[channelid]
+			const chatlog = ChannelChatLogs[channelid]
 
 			while (myQueue?.length) {
 				/** @type {import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>} */
-				let message = myQueue.shift()
+				const message = myQueue.shift()
 
 				{
-					let newlog = await DiscordMessageToFountChatLogEntry(message)
-					let last = chatlog[chatlog.length - 1]
+					const newlog = await DiscordMessageToFountChatLogEntry(message)
+					const last = chatlog[chatlog.length - 1]
 
 					if (
 						last?.name == newlog.name &&
@@ -474,7 +475,7 @@ export default async function DiscordBotMain(client, config) {
 				else if (!in_hypnosis_channel_id && message.author.id != client.user.id) {
 					// 若消息记录的后10条中有5条以上的消息内容相同
 					// 则直接使用相同内容的消息作为回复
-					let repet = findMostFrequentElement(chatlog.slice(-10).map(message => message.content).filter(content => content))
+					const repet = findMostFrequentElement(chatlog.slice(-10).map(message => message.content).filter(content => content))
 					if (
 						repet.count >= 4 &&
 						!base_match_keys(repet.element, spec_words) &&
@@ -517,14 +518,14 @@ export default async function DiscordBotMain(client, config) {
 	})
 	client.on(Events.MessageUpdate, async (message) => {
 		if (message.author.id === client.user.id) return
-		let chatlog = ChannelChatLogs[message.channel.id] || []
+		const chatlog = ChannelChatLogs[message.channel.id] || []
 		// 我们先检查下这个消息是否在消息记录中，若不在直接跳过
 		if (!chatlog.find(logentry => logentry.extension?.discord_messages?.find(id => id == message.id))) return
-		let Update = chatlog.find(logentry => logentry.extension?.discord_messages?.find(id => id == message.id))
+		const Update = chatlog.find(logentry => logentry.extension?.discord_messages?.find(id => id == message.id))
 		if (Update) {
-			let newlog = MargeChatLog(await Promise.all(Update.extension.discord_messages.map(DiscordMessageToFountChatLogEntry)))[0]
-			for (let key in newlog) Update[key] = newlog[key]
-			for (let key in Update) if (!(key in newlog)) delete Update[key]
+			const newlog = MargeChatLog(await Promise.all(Update.extension.discord_messages.map(DiscordMessageToFountChatLogEntry)))[0]
+			for (const key in newlog) Update[key] = newlog[key]
+			for (const key in Update) if (!(key in newlog)) delete Update[key]
 			Update.content += '\n（已编辑）'
 			return
 		}

@@ -38,7 +38,7 @@ export async function filesender(result, { AddLongTimeLog }) {
 			}
 			filesendlog += file + '\t'
 			try {
-				let filebuffer = fs.readFileSync(file)
+				const filebuffer = fs.readFileSync(file)
 				result.files.push({ name: path.basename(file), buffer: filebuffer, mimeType: mime.lookup(file) || 'application/octet-stream' })
 				filesendlog += '成功！\n'
 				result.extension.sended_files[file] = true

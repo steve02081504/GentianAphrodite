@@ -7,11 +7,11 @@ export function PickRandomN(number, ...args) {
 	return suffleArray(args).slice(0, number)
 }
 export function repetRandomTimes(str, min, max) {
-	let time = Math.floor(Math.random() * (max - min) + min)
+	const time = Math.floor(Math.random() * (max - min) + min)
 	return str.repeat(time)
 }
 export function NdiffResults(times, lambda) {
-	let result = new Set()
+	const result = new Set()
 	while (result.size < times) result.add(lambda())
 	return [...result]
 }

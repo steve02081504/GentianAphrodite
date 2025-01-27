@@ -8,11 +8,11 @@ export function bash_exec(code) {
 
 async function testShellPaths(paths) {
 	for (const path of paths)
-		if(await exec('1', { 'shell': path }).catch(() => false))
+		if (await exec('1', { 'shell': path }).catch(() => false))
 			return path
 }
 
-let powershellPath = await testShellPaths([
+const powershellPath = await testShellPaths([
 	'powershell.exe',
 	'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe',
 ])

@@ -6,23 +6,23 @@ import { GetReply } from '../index.mjs'
 
 /** @type {import("../../../../../../../src/decl/pluginAPI.ts").RepalyHandler_t} */
 export async function timer(result, { AddChatLogEntry, Update, AddLongTimeLog }) {
-	let timerlist = result.content.match(/```timer\n(?<timerlist>(.*\|.*\n?)*)\n```/)?.groups?.timerlist
+	const timerlist = result.content.match(/```timer\n(?<timerlist>(.*\|.*\n?)*)\n```/)?.groups?.timerlist
 
 	if (timerlist) {
-		let timerlist_lines = timerlist.split('\n').map(line => line.trim()).filter(line => line)
+		const timerlist_lines = timerlist.split('\n').map(line => line.trim()).filter(line => line)
 		let timerLog = '' // 用于记录定时器信息的字符串
 		result.extension.timers ??= []
-		for (let timerlist_line of timerlist_lines) {
-			let timerlist_line_items = timerlist_line.split('|')
-			let timestr = timerlist_line_items[0].trim()
-			let time = parseDuration(timestr)
-			let reason = timerlist_line_items[1].trim()
+		for (const timerlist_line of timerlist_lines) {
+			const timerlist_line_items = timerlist_line.split('|')
+			const timestr = timerlist_line_items[0].trim()
+			const time = parseDuration(timestr)
+			const reason = timerlist_line_items[1].trim()
 			console.log('AI设置的定时器:', timestr, reason)
 
 			timerLog += `时长：${timestr}（${time}ms），原因：${reason}\n` // 添加到定时器信息字符串
 
 			setTimeout(async () => {
-				let new_req = await Update()
+				const new_req = await Update()
 				new_req.chat_log = [...new_req.chat_log, {
 					name: 'system',
 					role: 'system',

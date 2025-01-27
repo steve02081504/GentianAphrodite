@@ -11,7 +11,7 @@ import { ps12exePrompt } from './ps12exe.mjs'
  * @param {number} detail_level
  */
 export async function ADPrompt(args, logical_results, prompt_struct, detail_level) {
-	let result = []
+	const result = []
 	result.push(ps12exePrompt(args, logical_results, prompt_struct, detail_level))
 	return margePrompt(...await Promise.all(result))
 }
