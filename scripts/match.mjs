@@ -19,7 +19,11 @@ function SimpleSimplify(content) {
 export async function SimplifiyContent(content) {
 	content = remove_kaomoji(content)
 	if (!content.trim()) return content
-	if (!is_PureChinese(content.replace(/(:|@\w*|\/)\b\d+(\.\d+)?\b/g, '').replace(/@\w*/g, ''))) {
+	/** @type {string} */
+	let simplified_langcheck_content = content.replace(/(:|@\w*|\/)\b\d+(\.\d+)?\b/g, '').replace(/@\w*/g, '')
+	if (simplified_langcheck_content.split('\n').map(x => x.trim()).some(x => x.startsWith('```')))
+		simplified_langcheck_content = simplified_langcheck_content.replace(/```[^]*?```/g, '').replace(/`[^\n]*?`/g, '')
+	if (!is_PureChinese(simplified_langcheck_content)) {
 		console.info('%ccontent "' + content + '" is not pure chinese, translating it for prompt building logic', 'color: red')
 		console.log('franc result:', francAll(content, { minLength: 0 }))
 		while (true)
@@ -91,6 +95,7 @@ export function getScopedChatLog(args, from = 'any', depth = 4) {
 			break
 		case 'notuser':
 			chat_log = chat_log.filter(x => x.name != args.UserCharname)
+			break
 		case 'char':
 			chat_log = chat_log.filter(x => x.name == args.Charname)
 			break
