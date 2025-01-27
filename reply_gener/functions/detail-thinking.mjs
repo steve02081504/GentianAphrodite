@@ -12,12 +12,8 @@ import { coderunner } from './coderunner.mjs'
 import { GoogleSearchPrompt } from '../../prompt/functions/googlesearch.mjs'
 import { getLongTimeLogAdder } from '../index.mjs'
 
-/**
- * @param {chatLogEntry_t} result
- * @param {(entry: chatLogEntry_t) => void} addLongTimeLog
- * @returns {Promise<boolean>}
- */
-export async function detailThinking(result, { addLongTimeLog, prompt_struct }) {
+/** @type {import("../../../../../../../src/decl/pluginAPI.ts").RepalyHandler_t} */
+export async function detailThinking(result, { AddLongTimeLog, prompt_struct }) {
 	result.extension.execed_codes ??= {}
 	let question = result.content.match(/```detail-thinking\n(?<question>[^]*?)\n```/)?.groups?.question
 	if (question) {
@@ -88,7 +84,7 @@ detail-thinking-denial: 我还没有正式思考，所以没有任何角度可�
 			for (let repalyHandler of [
 				coderunner, googlesearch, webbrowse,
 			])
-				if (await repalyHandler(result, { addLongTimeLog: addThinkingLongTimeLog, prompt_struct: thinking }))
+				if (await repalyHandler(result, { AddLongTimeLog: addThinkingLongTimeLog, prompt_struct: thinking }))
 					continue regen
 			times++
 			if (result.content.match(/(^|\n)detail-thinking-(answer|failed)(:|：)/))
@@ -102,7 +98,7 @@ ${result.content}
 			await new Promise(resolve => setTimeout(resolve, 3000)) // 等3秒，防止AI源被频繁调用，也给人时间看log
 		}
 		result = result.content.split('detail-thinking-').map(block => block.trim()).filter(block => block)
-		addLongTimeLog({
+		AddLongTimeLog({
 			content: `\
 \`\`\`detail-thinking
 ${question}
@@ -113,7 +109,7 @@ ${question}
 		})
 		let is_failed = result.find(block => block.match(/^failed/))
 		if (is_failed)
-			addLongTimeLog({
+			AddLongTimeLog({
 				content: `\
 在详细思考模式下思考了${times}次，以失败告终。
 ${result.find(block => block.match(/^failed/)) ?? ''}
@@ -123,7 +119,7 @@ ${result.find(block => block.match(/^failed/)) ?? ''}
 				role: 'system'
 			})
 		else
-			addLongTimeLog({
+			AddLongTimeLog({
 				content: `\
 在详细思考模式下思考了${times}次
 ${result.find(block => block.match(/^answer/)) ?? ''}

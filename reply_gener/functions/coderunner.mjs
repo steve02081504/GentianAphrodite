@@ -8,16 +8,12 @@ import { bash_exec_NATS, pwsh_exec_NATS } from '../../scripts/exec.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
-/**
- * @param {chatLogEntry_t} result
- * @param {(entry: chatLogEntry_t) => void} addLongTimeLog
- * @returns {Promise<boolean>}
- */
-export async function coderunner(result, { addLongTimeLog }) {
+/** @type {import("../../../../../../../src/decl/pluginAPI.ts").RepalyHandler_t} */
+export async function coderunner(result, { AddLongTimeLog }) {
 	result.extension.execed_codes ??= {}
 	let jsrunner = result.content.match(/```run-js\n(?<code>[^]*)\n```/)?.groups?.code
 	if (jsrunner) {
-		addLongTimeLog({
+		AddLongTimeLog({
 			name: '龙胆',
 			role: 'char',
 			content: '```run-js\n' + jsrunner + '\n```',
@@ -61,7 +57,7 @@ export async function coderunner(result, { addLongTimeLog }) {
 			coderesult = err
 		}
 		console.info('coderesult', coderesult)
-		addLongTimeLog({
+		AddLongTimeLog({
 			name: 'system',
 			role: 'system',
 			content: '执行结果：\n' + util.inspect(coderesult),
@@ -73,7 +69,7 @@ export async function coderunner(result, { addLongTimeLog }) {
 	if (process.platform === 'win32') {
 		let pwshrunner = result.content.match(/```run-pwsh\n(?<code>[^]*)\n```/)?.groups?.code
 		if (pwshrunner) {
-			addLongTimeLog({
+			AddLongTimeLog({
 				name: '龙胆',
 				role: 'char',
 				content: '```run-pwsh\n' + pwshrunner + '\n```',
@@ -84,7 +80,7 @@ export async function coderunner(result, { addLongTimeLog }) {
 			let pwshresult
 			try { pwshresult = await pwsh_exec_NATS(pwshrunner) } catch (err) { pwshresult = err }
 			console.info('pwshresult', pwshresult)
-			addLongTimeLog({
+			AddLongTimeLog({
 				name: 'system',
 				role: 'system',
 				content: '执行结果：\n' + util.inspect(pwshresult),
@@ -97,7 +93,7 @@ export async function coderunner(result, { addLongTimeLog }) {
 	else {
 		let bashrunner = result.content.match(/```run-bash\n(?<code>[^]*)\n```/)?.groups?.code
 		if (bashrunner) {
-			addLongTimeLog({
+			AddLongTimeLog({
 				name: '龙胆',
 				role: 'char',
 				content: '```run-bash\n' + bashrunner + '\n```',
@@ -107,7 +103,7 @@ export async function coderunner(result, { addLongTimeLog }) {
 			let bashresult
 			try { bashresult = await bash_exec_NATS(bashrunner) } catch (err) { bashresult = err }
 			console.info('bashresult', bashresult)
-			addLongTimeLog({
+			AddLongTimeLog({
 				name: 'system',
 				role: 'system',
 				content: '执行结果：\n' + util.inspect(bashresult),

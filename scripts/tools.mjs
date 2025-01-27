@@ -249,3 +249,75 @@ export function localToUTC(localTime) {
 export function UTCToLocal(utcTime) {
 	return convertTimezone(utcTime, false)
 }
+
+/**
+ * @function parseDuration
+ * @description Converts a duration string to a number of milliseconds.
+ * @param {string} durationString A duration string. The string can contain
+ * multiple space-separated parts, each part consists of a number and a unit.
+ * The unit can be any of the following:
+ * <ul>
+ * <li>seconds, sec, s,  </li>
+ * <li>minutes, min, m,  </li>
+ * <li>hours, hour, h,  </li>
+ * <li>days, day, d,  </li>
+ * <li>weeks, week, wk, w,  </li>
+ * <li>months, month, mo,  </li>
+ * <li>years, year, y,  </li>
+ * <li>century, cent, c,  </li>
+ * </ul>
+ * For example, "3 days 2 hours" will be converted to 3*24*60*60*1000 + 2*60*60*1000 milliseconds.
+ * @returns {number} The number of milliseconds.
+ */
+export function parseDuration(durationString) {
+	let dict = {
+		seconds: 1000,
+		sec: 1000,
+		s: 1000,
+		minutes: 60 * 1000,
+		min: 60 * 1000,
+		m: 60 * 1000,
+		hours: 60 * 60 * 1000,
+		hour: 60 * 60 * 1000,
+		h: 60 * 60 * 1000,
+		days: 24 * 60 * 60 * 1000,
+		day: 24 * 60 * 60 * 1000,
+		d: 24 * 60 * 60 * 1000,
+		weeks: 7 * 24 * 60 * 60 * 1000,
+		week: 7 * 24 * 60 * 60 * 1000,
+		wk: 7 * 24 * 60 * 60 * 1000,
+		w: 7 * 24 * 60 * 60 * 1000,
+		months: 30 * 24 * 60 * 60 * 1000,
+		month: 30 * 24 * 60 * 60 * 1000,
+		mo: 30 * 24 * 60 * 60 * 1000,
+		years: 365 * 24 * 60 * 60 * 1000,
+		year: 365 * 24 * 60 * 60 * 1000,
+		y: 365 * 24 * 60 * 60 * 1000,
+		century: 100 * 365 * 24 * 60 * 60 * 1000,
+		cent: 100 * 365 * 24 * 60 * 60 * 1000,
+		c: 100 * 365 * 24 * 60 * 60 * 1000,
+		秒: 1000,
+		分钟: 60 * 1000,
+		分: 60 * 1000,
+		小时: 60 * 60 * 1000,
+		时: 60 * 60 * 1000,
+		时辰: 2 * 60 * 60 * 1000,
+		天: 24 * 60 * 60 * 1000,
+		日: 24 * 60 * 60 * 1000,
+		星期: 7 * 24 * 60 * 60 * 1000,
+		周: 7 * 24 * 60 * 60 * 1000,
+		月: 30 * 24 * 60 * 60 * 1000,
+		年: 365 * 24 * 60 * 60 * 1000,
+		世纪: 100 * 365 * 24 * 60 * 60 * 1000,
+	}
+
+	let duration = 0
+	for (let unit in dict) {
+		let match = durationString.match(new RegExp(`(?<value>\\d+)${unit}`))
+		if (match?.groups?.value) {
+			duration += parseInt(match.groups.value) * dict[unit]
+			durationString = durationString.replace(match[0], '')
+		}
+	}
+	return duration
+}

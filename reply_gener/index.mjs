@@ -7,6 +7,7 @@ import { filesender } from './functions/filesender.mjs'
 import { googlesearch } from './functions/googlesearch.mjs'
 import { rolesettingfilter } from './functions/rolesettingfilter.mjs'
 import { webbrowse } from './functions/webbrowse.mjs'
+import { timer } from './functions/timer.mjs'
 import { noAIreply } from './noAI/index.mjs'
 import { compareTwoStrings as string_similarity } from 'npm:string-similarity'
 import { inspect } from 'node:util'
@@ -16,7 +17,7 @@ import { inspect } from 'node:util'
 export function getLongTimeLogAdder(result, prompt_struct, max_forever_looping_num = 6, warning_forever_looping_num = 4, similarity_threshold = 0.9) {
 	let sim_check_before = []
 	let forever_looping_num = 0
-	function addLongTimeLog(entry) {
+	function AddLongTimeLog(entry) {
 		result?.logContextBefore?.push?.(entry)
 		prompt_struct.char_prompt.additional_chat_log.push(entry)
 		if (entry.role === 'char') {
@@ -28,7 +29,7 @@ export function getLongTimeLogAdder(result, prompt_struct, max_forever_looping_n
 			if (forever_looping_num >= max_forever_looping_num)
 				throw new Error('infinite loop by AI')
 			else if (forever_looping_num >= warning_forever_looping_num)
-				addLongTimeLog({
+				AddLongTimeLog({
 					name: 'system',
 					role: 'system',
 					content: `\
@@ -38,7 +39,7 @@ export function getLongTimeLogAdder(result, prompt_struct, max_forever_looping_n
 				})
 		}
 	}
-	return addLongTimeLog
+	return AddLongTimeLog
 }
 
 /**
@@ -58,7 +59,7 @@ export async function GetReply(args) {
 		files: [],
 		extension: {},
 	}
-	let addLongTimeLog = getLongTimeLogAdder(result, prompt_struct)
+	let AddLongTimeLog = getLongTimeLogAdder(result, prompt_struct)
 	regen: while (true) {
 		console.log('logical_results', logical_results)
 		console.log('prompt_struct')
@@ -69,11 +70,13 @@ export async function GetReply(args) {
 			if (!String(result).trim()) throw new Error('empty reply')
 			return result
 		})
-		for (let repalyHandler of [
-			coderunner, filesender, detailThinking, googlesearch, webbrowse, rolesettingfilter,
+		/** @type {(import('../../../../../../src/decl/PluginAPI.ts').RepalyHandler_t)[]} */
+		const replyHandlers = [
+			coderunner, filesender, detailThinking, googlesearch, webbrowse, rolesettingfilter, timer,
 			...Object.values(args.plugins).map(plugin => plugin.interfaces.chat?.RepalyHandler)
-		].filter(Boolean))
-			if (await repalyHandler(result, { addLongTimeLog, prompt_struct }))
+		].filter(Boolean)
+		for (let repalyHandler of replyHandlers)
+			if (await repalyHandler(result, { ...args, AddLongTimeLog, prompt_struct }))
 				continue regen
 		break
 	}

@@ -4,17 +4,13 @@ import { MarkdownWebFetch } from '../../scripts/web.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
-/**
- * @param {chatLogEntry_t} result
- * @param {(entry: chatLogEntry_t) => void} addLongTimeLog
- * @returns {Promise<boolean>}
- */
-export async function webbrowse(result, { addLongTimeLog, prompt_struct }) {
+/** @type {import("../../../../../../../src/decl/pluginAPI.ts").RepalyHandler_t} */
+export async function webbrowse(result, { AddLongTimeLog, prompt_struct }) {
 	let match = result.content.match(/```web-browse\n(?<url>[^\n]+)\n(?<question>[^]*?)\n```/)
 	if (match?.groups) {
 		const { url, question } = match.groups
 
-		addLongTimeLog({
+		AddLongTimeLog({
 			name: '龙胆',
 			role: 'char',
 			content: '```web-browse\n' + url + '\n' + question + '\n```',
@@ -59,13 +55,13 @@ ${question}
 				}
 			]
 			let result = await OrderedAISourceCalling('web-browse', AI => AI.StructCall(browseing))
-			addLongTimeLog({
+			AddLongTimeLog({
 				content: '浏览结果：\n' + result,
 				name: 'system',
 				role: 'system'
 			})
 		} catch (err) {
-			addLongTimeLog({
+			AddLongTimeLog({
 				name: 'system',
 				role: 'system',
 				content: '访问网页时出现错误：\n' + err,

@@ -11,16 +11,12 @@ function resolvePath(relativePath) {
 	return path.resolve(relativePath)
 }
 
-/**
- * @param {chatLogEntry_t} result
- * @param {(entry: chatLogEntry_t) => void} addLongTimeLog
- * @returns {Promise<boolean>}
- */
-export async function filesender(result, { addLongTimeLog }) {
+/** @type {import("../../../../../../../src/decl/pluginAPI.ts").RepalyHandler_t} */
+export async function filesender(result, { AddLongTimeLog }) {
 	let filesender = result.content.match(/```send-file\n(?<file>[^]*?)\n```/)?.groups?.file
 	if (filesender) {
 		filesender = filesender.split('\n')
-		addLongTimeLog({
+		AddLongTimeLog({
 			name: '龙胆',
 			role: 'char',
 			content: '```send-file\n' + filesender.join('\n') + '\n```',
@@ -32,7 +28,7 @@ export async function filesender(result, { addLongTimeLog }) {
 		for (let file of filesender) {
 			file = resolvePath(file)
 			if (result.extension.sended_files[file]) {
-				addLongTimeLog({
+				AddLongTimeLog({
 					name: 'system',
 					role: 'system',
 					content: '你已经发送过文件：\n' + file + '\n**请根据生成不带文件发送语法的回复而不是重复发送已发送的内容**',
@@ -53,7 +49,7 @@ export async function filesender(result, { addLongTimeLog }) {
 			}
 		}
 		if (filesendlog)
-			addLongTimeLog({
+			AddLongTimeLog({
 				name: 'system',
 				role: 'system',
 				content: '你发送了文件：\n' + filesendlog,

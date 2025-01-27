@@ -6,10 +6,7 @@ let role_setting_match_keys = [
 ]
 let role_setting_match_keys_regex = new RegExp(role_setting_match_keys.join('|'), 'ig')
 
-/**
- * @param {chatLogEntry_t} result
- * @returns {Promise<boolean>}
- */
+/** @type {import("../../../../../../../src/decl/pluginAPI.ts").RepalyHandler_t} */
 export async function rolesettingfilter(result) {
 	role_setting_match_keys_regex.lastIndex = 0
 	if (result.content.match(role_setting_match_keys_regex)?.length >= 3) {

@@ -326,60 +326,70 @@ export default async function DiscordBotMain(client, config) {
 				else if (!in_hypnosis_channel_id && base_match_keys(message.content, [/^(龙胆|[\n,.~、。呵哦啊嗯噫欸，～])*$/, /^龙胆龙胆(龙胆|[\n!,.?~、。呵哦啊嗯噫欸！，？～])+$/]))
 					return GetMessageSender(message)(SimplifiyChinese(message.content).replaceAll('龙胆', '主人'))
 
-			let reply = FuyanMode ? { content: '嗯嗯！' } :
-				await GetReply({
-					Charname: '龙胆',
-					UserCharname: config.ownerUserName,
-					ReplyToCharname: message.author.username,
-					locale: '',
-					time: new Date(),
-					world: discordWorld,
-					user: null,
-					char: GentianAphrodite,
-					other_chars: [],
-					plugins: {
-						discord_silence: get_discord_silence_plugin(message)
-					},
-					chat_summary: '',
-					chat_scoped_char_memory,
-					chat_log: ChannelChatLogs[message.channel.id],
-				})
+			let replyHandler = async (reply) => {
 
-			if (chat_scoped_char_memory.in_hypnosis)
-				in_hypnosis_channel_id = message.channel.id
-			else in_hypnosis_channel_id = null
+				if (chat_scoped_char_memory.in_hypnosis)
+					in_hypnosis_channel_id = message.channel.id
+				else in_hypnosis_channel_id = null
 
-			if (reply.content || reply.files?.length) {
-				if (reply.content.startsWith(`@${message.author.username}`))
-					reply.content = reply.content.slice(`@${message.author.username}`.length).trim()
+				if (reply.content || reply.files?.length) {
+					if (reply.content.startsWith(`@${message.author.username}`))
+						reply.content = reply.content.slice(`@${message.author.username}`.length).trim()
 
-				reply.content = reply.content.replace(/@(\S+)/g, (match, username) => {
-					const mentionedUser = message.channel?.members?.find?.(member => member.displayName == username || member.user.username == username)
-					if (mentionedUser) return `<@${mentionedUser.id}>`
-					return match
-				})
-
-				let splited_reply = splitDiscordReply(reply.content)
-				let last_reply = splited_reply.pop()
-				let last_reply_message = {
-					content: last_reply,
-					files: (reply.files || []).map((file) => {
-						return {
-							attachment: file.buffer,
-							name: file.name,
-							description: file.description
-						}
+					reply.content = reply.content.replace(/@(\S+)/g, (match, username) => {
+						const mentionedUser = message.channel?.members?.find?.(member => member.displayName == username || member.user.username == username)
+						if (mentionedUser) return `<@${mentionedUser.id}>`
+						return match
 					})
+
+					let splited_reply = splitDiscordReply(reply.content)
+					let last_reply = splited_reply.pop()
+					let last_reply_message = {
+						content: last_reply,
+						files: (reply.files || []).map((file) => {
+							return {
+								attachment: file.buffer,
+								name: file.name,
+								description: file.description
+							}
+						})
+					}
+					let messagesender = GetMessageSender(message)
+					for (let message of splited_reply) await messagesender(message)
+					clearTypeingInterval()
+					await messagesender(last_reply_message)
+					lastSendMessageTime[message.channel.id] = new Date()
+					return true
 				}
-				let messagesender = GetMessageSender(message)
-				for (let message of splited_reply) await messagesender(message)
-				clearTypeingInterval()
-				await messagesender(last_reply_message)
-				lastSendMessageTime[message.channel.id] = new Date()
-				return true
+				else
+					console.info('no reply form AI, skipping reply')
 			}
-			else
-				console.info('no reply form AI, skipping reply')
+			/**
+			 *
+			 * @returns {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReplyRequest_t}
+			 */
+			let replayQuestGener = () => ({
+				Charname: '龙胆',
+				UserCharname: config.ownerUserName,
+				ReplyToCharname: message.author.username,
+				locale: '',
+				time: new Date(),
+				world: discordWorld,
+				user: null,
+				char: GentianAphrodite,
+				other_chars: [],
+				plugins: {
+					discord_silence: get_discord_silence_plugin(message)
+				},
+				chat_summary: '',
+				chat_scoped_char_memory,
+				chat_log: ChannelChatLogs[message.channel.id],
+				Update: replayQuestGener,
+				AddChatLogEntry: replyHandler
+			})
+			let reply = FuyanMode ? { content: '嗯嗯！' } : await GetReply(replayQuestGener())
+
+			await replyHandler(reply)
 		} catch (error) {
 			ErrorHandler(error, message)
 		} finally {

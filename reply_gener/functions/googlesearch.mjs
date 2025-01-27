@@ -2,15 +2,11 @@ import { search, OrganicResult, ResultTypes } from 'npm:google-sr'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
-/**
- * @param {chatLogEntry_t} result
- * @param {(entry: chatLogEntry_t) => void} addLongTimeLog
- * @returns {Promise<boolean>}
- */
-export async function googlesearch(result, { addLongTimeLog }) {
+/** @type {import("../../../../../../../src/decl/pluginAPI.ts").RepalyHandler_t} */
+export async function googlesearch(result, { AddLongTimeLog }) {
 	let searchQuery = result.content.match(/```google-search\n(?<query>[^]*?)\n```/)?.groups?.query
 	if (searchQuery) {
-		addLongTimeLog({
+		AddLongTimeLog({
 			name: '龙胆',
 			role: 'char',
 			content: '```google-search\n' + searchQuery + '\n```',
@@ -34,7 +30,7 @@ export async function googlesearch(result, { addLongTimeLog }) {
 				if (searchQuery.length > 1)
 					searchResults = `${searchQueryItem} 的${searchResults}`
 
-				addLongTimeLog({
+				AddLongTimeLog({
 					name: 'system',
 					role: 'system',
 					content: searchResults,
@@ -44,7 +40,7 @@ export async function googlesearch(result, { addLongTimeLog }) {
 
 			return true
 		} catch (err) {
-			addLongTimeLog({
+			AddLongTimeLog({
 				name: 'system',
 				role: 'system',
 				content: '搜索时出现错误：\n' + err,
