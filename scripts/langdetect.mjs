@@ -59,6 +59,7 @@ export function is_Italian(text) {
 }
 
 export function is_PureChinese(text) {
+	if (is_Franc_threshold(text, 'cmn', 0.9)) return true
 	if (is_English(text) || is_Japanese(text) || is_Korean(text) || is_French(text) || is_Spanish(text) || is_Russian(text) || is_German(text) || is_Hindi(text) || is_Swedish(text) || is_Portuguese(text) || is_Italian(text)) return false
 	return true
 }
