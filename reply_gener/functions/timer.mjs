@@ -4,7 +4,7 @@
 import { parseDuration } from '../../scripts/tools.mjs'
 import { GetReply } from '../index.mjs'
 
-/** @type {import("../../../../../../../src/decl/pluginAPI.ts").RepalyHandler_t} */
+/** @type {import("../../../../../../../src/decl/PluginAPI.ts").RepalyHandler_t} */
 export async function timer(result, { AddChatLogEntry, Update, AddLongTimeLog }) {
 	const timerlist = result.content.match(/```timer\n(?<timerlist>(.*\|.*\n?)*)\n```/)?.groups?.timerlist
 

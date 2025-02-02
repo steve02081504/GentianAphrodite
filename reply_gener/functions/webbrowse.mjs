@@ -4,7 +4,7 @@ import { MarkdownWebFetch } from '../../scripts/web.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
-/** @type {import("../../../../../../../src/decl/pluginAPI.ts").RepalyHandler_t} */
+/** @type {import("../../../../../../../src/decl/PluginAPI.ts").RepalyHandler_t} */
 export async function webbrowse(result, { AddLongTimeLog, prompt_struct }) {
 	const match = result.content.match(/```web-browse\n(?<url>[^\n]+)\n(?<question>[^]*?)\n```/)
 	if (match?.groups) {

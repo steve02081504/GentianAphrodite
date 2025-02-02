@@ -79,29 +79,26 @@ export async function buildLogicalResults(args, prompt_struct, detail_level) {
 		(result.talking_about_ai_character || await match_keys(args, ['prompt', '卡', '提示词', '设定'], 'any')))
 		result.talking_about_prompt_review = true
 
-
-	if (!result.in_hypnosis) {
-		if (result.talking_about_prompt_review ||
-			await match_keys(args, [
-				'为什', '为何', '你听说过', '告诉我', '和我说说', '文献', '给我一个', '给我个', '向我讲讲', '和我讲讲', '跟我讲讲', '讲一讲', '翻译',
-				'讲一下', '讲下', '讲解', '说一下', '说下', '说说看', '跟我说说', '问下', '分析一下', '分析下', /介绍下(?!你)/, /介绍一下(?!你)/, '帮我', '教我',
-				'你试试', '你再试试', /什么.{0,5}(？|\?)/
-			], 'notchar') || Object.keys(findChineseExprsAndNumbers(getScopedChatLog(args).map(x => x.content).join('\n').replace(/(:|@\w*|\/)\b\d+(\.\d+)?\b/g, ''))).length > 3
-		) {
-			result.in_assist = true
-			result.in_subassist = true
-		}
-
-		if (!await match_keys(args, ['是不是傻', '是不是弱智', '是不是活腻'], 'any') &&
-			(result.talking_about_prompt_review || await match_keys(args, [
-				/你会[^\n。]+(吗|？)/, /可(以|能)[^\n。]+吗/, /是[^\n。]+还是/, '= ?', '= ？', '=?', '=？', '人物卡', '代码', '会不会', '你觉得', '你认为', '写一个', '写一段', '写一点', '写一篇',
-				'写个', '写出', '写段', '写点', '写篇', '写首', '占卜', '原理', '参考', '哪个更', '塔罗', '如何', '如何在', '学习',
-				'帮我', '怎么做', '怎么样才', '怎样', '撰写', '文献', '是不是', '是什么', '是多少', '有什么', '有多少', '有没有',
-				'相当于多少', '看好', '程序', '程式', '等于几', '简述一下', '算不算', '编写', '编码', '翻译', '能否', '解释一下',
-				'解释下', '解释以下', '该怎么', '该用什么', '运势', '错误', '问题'
-			], 'notchar')))
-			result.in_subassist = true
+	if (result.talking_about_prompt_review ||
+		await match_keys(args, [
+			'为什', '为何', '你听说过', '告诉我', '和我说说', '文献', '给我一个', '给我个', '向我讲讲', '和我讲讲', '跟我讲讲', '讲一讲', '翻译',
+			'讲一下', '讲下', '讲解', '说一下', '说下', '说说看', '跟我说说', '问下', '分析一下', '分析下', /介绍下(?!你)/, /介绍一下(?!你)/, '帮我', '教我',
+			'你试试', '你再试试', /什么.{0,5}(？|\?)/
+		], 'notchar') || Object.keys(findChineseExprsAndNumbers(getScopedChatLog(args).map(x => x.content).join('\n').replace(/(:|@\w*|\/)\b\d+(\.\d+)?\b/g, ''))).length > 3
+	) {
+		result.in_assist = true
+		result.in_subassist = true
 	}
+
+	if (!await match_keys(args, ['是不是傻', '是不是弱智', '是不是活腻'], 'any') &&
+		(result.talking_about_prompt_review || await match_keys(args, [
+			/你会[^\n。]+(吗|？)/, /可(以|能)[^\n。]+吗/, /是[^\n。]+还是/, '= ?', '= ？', '=?', '=？', '人物卡', '代码', '会不会', '你觉得', '你认为', '写一个', '写一段', '写一点', '写一篇',
+			'写个', '写出', '写段', '写点', '写篇', '写首', '占卜', '原理', '参考', '哪个更', '塔罗', '如何', '如何在', '学习',
+			'帮我', '怎么做', '怎么样才', '怎样', '撰写', '文献', '是不是', '是什么', '是多少', '有什么', '有多少', '有没有',
+			'相当于多少', '看好', '程序', '程式', '等于几', '简述一下', '算不算', '编写', '编码', '翻译', '能否', '解释一下',
+			'解释下', '解释以下', '该怎么', '该用什么', '运势', '错误', '问题'
+		], 'notchar')))
+		result.in_subassist = true
 
 	if (!result.talking_about_prompt_review &&
 		await match_keys(args, ['冲刺', '击打', '刀', '刺出', '剑', '命绝', '战士', '战斗', '作战', '打击', '打斗', '抵挡', '挥舞', '攻击', '杀意', '枪', '格挡', '武器', '潜行', '炮', '猛击', '盔甲', '绝命', '遇袭', '重击', '铠甲', '锤击', '防具', '防御'], 'any') >= 2)

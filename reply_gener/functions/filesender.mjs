@@ -11,7 +11,7 @@ function resolvePath(relativePath) {
 	return path.resolve(relativePath)
 }
 
-/** @type {import("../../../../../../../src/decl/pluginAPI.ts").RepalyHandler_t} */
+/** @type {import("../../../../../../../src/decl/PluginAPI.ts").RepalyHandler_t} */
 export async function filesender(result, { AddLongTimeLog }) {
 	let filesender = result.content.match(/```send-file\n(?<file>[^]*?)\n```/)?.groups?.file
 	if (filesender) {

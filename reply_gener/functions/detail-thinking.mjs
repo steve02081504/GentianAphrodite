@@ -12,7 +12,7 @@ import { coderunner } from './coderunner.mjs'
 import { GoogleSearchPrompt } from '../../prompt/functions/googlesearch.mjs'
 import { getLongTimeLogAdder } from '../index.mjs'
 
-/** @type {import("../../../../../../../src/decl/pluginAPI.ts").RepalyHandler_t} */
+/** @type {import("../../../../../../../src/decl/PluginAPI.ts").RepalyHandler_t} */
 export async function detailThinking(result, { AddLongTimeLog, prompt_struct }) {
 	result.extension.execed_codes ??= {}
 	const question = result.content.match(/```detail-thinking\n(?<question>[^]*?)\n```/)?.groups?.question

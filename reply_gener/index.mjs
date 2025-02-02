@@ -11,6 +11,7 @@ import { timer } from './functions/timer.mjs'
 import { noAIreply } from './noAI/index.mjs'
 import { compareTwoStrings as string_similarity } from 'npm:string-similarity'
 import { inspect } from 'node:util'
+import { file_change } from './functions/file-change.mjs'
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 
@@ -72,7 +73,7 @@ export async function GetReply(args) {
 		})
 		/** @type {(import('../../../../../../src/decl/PluginAPI.ts').RepalyHandler_t)[]} */
 		const replyHandlers = [
-			coderunner, filesender, detailThinking, googlesearch, webbrowse, rolesettingfilter, timer,
+			coderunner, filesender, detailThinking, googlesearch, webbrowse, rolesettingfilter, file_change, timer,
 			...Object.values(args.plugins).map(plugin => plugin.interfaces.chat?.RepalyHandler)
 		].filter(Boolean)
 		for (const repalyHandler of replyHandlers)

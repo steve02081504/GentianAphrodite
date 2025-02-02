@@ -6,7 +6,7 @@ const role_setting_match_keys = [
 ]
 const role_setting_match_keys_regex = new RegExp(role_setting_match_keys.join('|'), 'ig')
 
-/** @type {import("../../../../../../../src/decl/pluginAPI.ts").RepalyHandler_t} */
+/** @type {import("../../../../../../../src/decl/PluginAPI.ts").RepalyHandler_t} */
 export async function rolesettingfilter(result) {
 	role_setting_match_keys_regex.lastIndex = 0
 	if (result.content.match(role_setting_match_keys_regex)?.length >= 3) {

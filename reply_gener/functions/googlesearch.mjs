@@ -2,7 +2,7 @@ import { search, OrganicResult, ResultTypes } from 'npm:google-sr'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
-/** @type {import("../../../../../../../src/decl/pluginAPI.ts").RepalyHandler_t} */
+/** @type {import("../../../../../../../src/decl/PluginAPI.ts").RepalyHandler_t} */
 export async function googlesearch(result, { AddLongTimeLog }) {
 	let searchQuery = result.content.match(/```google-search\n(?<query>[^]*?)\n```/)?.groups?.query
 	if (searchQuery) {

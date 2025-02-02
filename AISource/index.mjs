@@ -19,13 +19,13 @@ export let AIsources = {
 export function getAISourceData() {
 	const result = {}
 	for (const name in AIsources)
-		result[name] = AIsources[name].filename
+		result[name] = AIsources[name].filename || ""
 	return result
 }
 
 export async function setAISourceData(data) {
 	const newAIsources = {}
-	for (const name in data)
+	for (const name in data) if(data[name])
 		newAIsources[name] = await loadAIsource(username, data[name])
 	AIsources = newAIsources
 }

@@ -179,7 +179,7 @@ export default async function DiscordBotMain(client, config) {
 				possible += 4
 				if (base_match_keys(content, [
 					/(再|多)(来|表演)(点|.*(次|个))/, '来个', '不够', '不如', '继续',
-					/^(那|所以你|可以再|你?再(讲|说|试试)|你(觉得|想|知道)|但是)/, /^so/i,
+					/^(那|所以你|可以再|你?再(讲|说|试试)|你(觉得|想|知道|确定)|但是)/, /^so/i,
 				])) possible += 100
 			}
 			if (message.mentions.users.has(client.user.id)) possible += 100
@@ -244,7 +244,7 @@ export default async function DiscordBotMain(client, config) {
 	}
 	const ErrorRecord = {}
 	async function ErrorHandler(error, message) {
-		const error_message = `${error.name}: ${error.message}\n\`\`\`${error.stack}\n\`\`\``
+		const error_message = `\`\`\`\n${error.stack}\n\`\`\``
 		if (ErrorRecord[error_message]) return
 		else ErrorRecord[error_message] = true
 		let AIsuggestion

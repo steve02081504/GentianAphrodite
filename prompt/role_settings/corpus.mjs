@@ -13,7 +13,6 @@ import { match_keys } from '../../scripts/match.mjs'
 export async function corpusPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = '<Example>\n'
 	if (!logical_results.in_hypnosis) {
-
 		if (logical_results.in_muti_char_chat)
 			result += `\
 对非主人的人：[
