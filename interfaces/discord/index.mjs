@@ -332,7 +332,7 @@ export default async function DiscordBotMain(client, config) {
 					in_hypnosis_channel_id = message.channel.id
 				else in_hypnosis_channel_id = null
 
-				if (reply.content || reply.files?.length) {
+				if (reply?.content || reply?.files?.length) {
 					if (reply.content.startsWith(`@${message.author.username}`))
 						reply.content = reply.content.slice(`@${message.author.username}`.length).trim()
 

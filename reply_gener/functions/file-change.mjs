@@ -45,7 +45,7 @@ export async function file_change(result, { AddLongTimeLog }) {
 			files: []
 		})
 		console.info('AI替换的文件：', path, replaceBlocks)
-		let failed_replaces = []
+		const failed_replaces = []
 		const replaceRegex = /```search(?<is_regex>-regex)?\n(?<search>[^]+?)\n```\n```replace\n(?<content>[^]*?)\n/g
 		let match
 		let replace_count = 0

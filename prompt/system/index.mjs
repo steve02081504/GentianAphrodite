@@ -1,6 +1,7 @@
 import { margePrompt } from '../build.mjs'
 import { CoreRulesPrompt } from './corerules.mjs'
 import { MasterRecognizePrompt } from './master-recognize.mjs'
+import { NullReplayPrompt } from './nullreplay.mjs'
 import { OptionsPrompt } from './Options.mjs'
 import { PromptReviewerPrompt } from './prompt-reviewer.mjs'
 import { RandEventPrompt } from './randevent.mjs'
@@ -33,6 +34,8 @@ export async function SystemPrompt(args, logical_results, prompt_struct, detail_
 	result.push(CoreRulesPrompt(args, logical_results, prompt_struct, detail_level))
 
 	result.push(MasterRecognizePrompt(args, logical_results, prompt_struct, detail_level))
+
+	result.push(NullReplayPrompt(args, logical_results, prompt_struct, detail_level))
 
 	return margePrompt(...await Promise.all(result))
 }

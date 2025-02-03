@@ -14,11 +14,29 @@ import { inspect } from 'node:util'
 import { file_change } from './functions/file-change.mjs'
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReply_t} chatReply_t */
+/** @typedef {import("../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
+/**
+ *
+ * @param {chatReply_t} result
+ * @param {prompt_struct_t} prompt_struct
+ * @param {number} max_forever_looping_num
+ * @param {number} warning_forever_looping_num
+ * @param {number} similarity_threshold
+ * @returns {(entry: chatLogEntry_t) => void}
+ */
 export function getLongTimeLogAdder(result, prompt_struct, max_forever_looping_num = 6, warning_forever_looping_num = 4, similarity_threshold = 0.9) {
 	const sim_check_before = []
 	let forever_looping_num = 0
+	/**
+	 * @description
+	 * This function is used to add a log entry to the character's additional chat log.
+	 * It will also check if the AI has entered an infinite loop, and if so, throw an error and end the conversation.
+	 * @param {chatLogEntry_t} entry The log entry to add.
+	 */
 	function AddLongTimeLog(entry) {
+		entry.charVisibility = [prompt_struct.char_id]
 		result?.logContextBefore?.push?.(entry)
 		prompt_struct.char_prompt.additional_chat_log.push(entry)
 		if (entry.role === 'char') {
@@ -71,6 +89,7 @@ export async function GetReply(args) {
 			if (!String(result).trim()) throw new Error('empty reply')
 			return result
 		})
+		if (result.content.trim() == '<-<null>->') return null // AI skipped
 		/** @type {(import('../../../../../../src/decl/PluginAPI.ts').RepalyHandler_t)[]} */
 		const replyHandlers = [
 			coderunner, filesender, detailThinking, googlesearch, webbrowse, rolesettingfilter, file_change, timer,

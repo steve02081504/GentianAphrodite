@@ -31,6 +31,7 @@ export async function timer(result, { AddChatLogEntry, Update, AddLongTimeLog })
 请根据定时器内容进行回复。
 `
 				}]
+				new_req.extension.from_timer = true
 				AddChatLogEntry(await GetReply(new_req))
 			}, time)
 			result.extension.timers.push({ timestr, time, reason })

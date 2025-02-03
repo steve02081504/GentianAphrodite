@@ -22,7 +22,7 @@ export async function googlesearch(result, { AddLongTimeLog }) {
 					requestConfig: {},
 				})
 
-				let searchResults = '搜索结果：\n\n'
+				let searchResults = '搜索结果：\n'
 				queryResult.slice(0, 5).forEach((item, index) => {
 					if (item.type === ResultTypes.OrganicResult)
 						searchResults += `${index + 1}. ${item.title}\n${item.link}\n${item.description}\n\n`
