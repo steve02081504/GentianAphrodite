@@ -41,7 +41,7 @@ export async function file_change(result, { AddLongTimeLog }) {
 		AddLongTimeLog({
 			name: '龙胆',
 			role: 'char',
-			content: '```replace-file ' + path + '\n' + replaceBlocks + '\n```',
+			content: '````replace-file ' + path + '\n' + replaceBlocks + '\n````',
 			files: []
 		})
 		console.info('AI替换的文件：', path, replaceBlocks)

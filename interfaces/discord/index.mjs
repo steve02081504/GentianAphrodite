@@ -269,7 +269,7 @@ export default async function DiscordBotMain(client, config) {
 					extension: {}
 				}, {
 					name: config.ownerUserName,
-					content: error_message + '\n龙胆，我该如何解决这个错误？',
+					content: error_message + '\n龙胆，我该如何解决这个错误？可以的话你来直接修复它。',
 					timeStamp: new Date(),
 					role: 'user',
 					extension: {}

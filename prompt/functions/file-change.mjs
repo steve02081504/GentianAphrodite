@@ -42,6 +42,7 @@ search2
 replace2
 \`\`\`
 \`\`\`\`
+注意这里的格式是replace-file大块包裹search和replace子块，而不是并列关系。
 其中，\`search(-regex|)\`是要被替换的内容，\`replace\`是替换后的内容。
 search和replace可以多行。
 search-regex是正则表达式，其必须和js的正则表达式字面量一样，以\`/\`开头，以\`/(flags)\`结尾。
