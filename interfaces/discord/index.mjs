@@ -269,7 +269,7 @@ export default async function DiscordBotMain(client, config) {
 					extension: {}
 				}, {
 					name: config.ownerUserName,
-					content: error_message + '\n龙胆，我该如何解决这个错误？',
+					content: error_message + '\n龙胆，我该如何解决这个错误？可以的话你来直接修复它。',
 					timeStamp: new Date(),
 					role: 'user',
 					extension: {}
@@ -385,7 +385,8 @@ export default async function DiscordBotMain(client, config) {
 				chat_scoped_char_memory,
 				chat_log: ChannelChatLogs[message.channel.id],
 				Update: replayQuestGener,
-				AddChatLogEntry: replyHandler
+				AddChatLogEntry: replyHandler,
+				extension: {}
 			})
 			const reply = FuyanMode ? { content: '嗯嗯！' } : await GetReply(replayQuestGener())
 
