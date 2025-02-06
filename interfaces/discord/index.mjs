@@ -356,7 +356,6 @@ export default async function DiscordBotMain(client, config) {
 					}
 					const messagesender = GetMessageSender(message)
 					for (const message of splited_reply) await messagesender(message)
-					clearTypeingInterval()
 					await messagesender(last_reply_message)
 					lastSendMessageTime[message.channel.id] = new Date()
 					return true
