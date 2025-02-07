@@ -19,7 +19,7 @@ export let AIsources = {
 export function getAISourceData() {
 	const result = {}
 	for (const name in AIsources)
-		result[name] = AIsources[name].filename || ''
+		result[name] = AIsources[name]?.filename || ''
 	return result
 }
 
