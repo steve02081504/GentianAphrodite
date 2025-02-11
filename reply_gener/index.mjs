@@ -63,14 +63,14 @@ export function getLongTimeLogAdder(result, prompt_struct, max_forever_looping_n
 
 /**
  * @param {chatReplyRequest_t} args
- * @returns {Promise<chatLogEntry_t>}
+ * @returns {Promise<chatReply_t>}
  */
 export async function GetReply(args) {
 	if (noAISourceAvailable()) return noAIreply(args)
 
 	const prompt_struct = await buildPromptStruct(args)
 	const logical_results = await buildLogicalResults(args, prompt_struct, 0)
-	/** @type {chatLogEntry_t} */
+	/** @type {chatReply_t} */
 	const result = {
 		content: '',
 		logContextBefore: [],
@@ -92,7 +92,10 @@ export async function GetReply(args) {
 		if (result.content.trim() == '<-<null>->') return null // AI skipped
 		/** @type {(import('../../../../../../src/decl/PluginAPI.ts').RepalyHandler_t)[]} */
 		const replyHandlers = [
-			coderunner, filesender, detailThinking, googlesearch, webbrowse, rolesettingfilter, file_change, timer,
+			coderunner,
+			args.supported_functions.files ? filesender : null,
+			detailThinking, googlesearch, webbrowse, rolesettingfilter, file_change,
+			args.supported_functions.add_message ? timer : null,
 			...Object.values(args.plugins).map(plugin => plugin.interfaces.chat?.RepalyHandler)
 		].filter(Boolean)
 		for (const repalyHandler of replyHandlers)

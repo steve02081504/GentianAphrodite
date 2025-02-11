@@ -1,0 +1,47 @@
+/**
+ * @type {import('../../../../../../../src/decl/pluginAPI.ts').pluginAPI_t}
+ */
+export const recommend_command_plugin = {
+	info: {
+		'zh-CN': {
+			name: 'shell推荐命令插件',
+			description: '推荐命令插件，让AI能够在shell环境中推荐命令',
+			author: 'steve02081504',
+		},
+		'en-US': {
+			name: 'shell recommend command plugin',
+			description: 'recommend command plugin, let AI recommend commands in shell environment',
+			author: 'steve02081504',
+		},
+	},
+	interfaces: {
+		chat: {
+			GetPrompt: async (args, result, detail_level) => {
+				return {
+					additional_chat_log: [
+						{
+							role: 'system',
+							name: 'system',
+							content: `\
+你可以通过回复以下格式来推荐命令让${args.UserCharname}选择是否执行：
+
+\`\`\`recommend_command
+command_body
+\`\`\`
+`,
+						}
+					]
+				}
+			},
+			RepalyHandler: async (result) => {
+				const command = result.content.match(/```recommend_command\n(?<command>[^]+?)\n```/)?.groups?.command
+				if (command) {
+					result.extension.recommend_command = result.recommend_command = command
+					result.content = result.content.replace(/\s*```recommend_command\n[^]+?\n```\s*/g, '\n')
+				}
+
+				return false
+			}
+		}
+	}
+}

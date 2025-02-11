@@ -21,8 +21,8 @@ export async function SimplifiyContent(content) {
 	if (!content.trim()) return content
 	/** @type {string} */
 	let simplified_langcheck_content = content.replace(/(:|@\w*|\/)\b\d+(\.\d+)?\b/g, '').replace(/@\w*/g, '')
-	if (simplified_langcheck_content.split('\n').map(x => x.trim()).some(x => x.startsWith('```')))
-		simplified_langcheck_content = simplified_langcheck_content.replace(/```[^]*?```/g, '').replace(/`[^\n]*?`/g, '')
+	simplified_langcheck_content = simplified_langcheck_content.replace(/```[^]*?```/g, '')
+	simplified_langcheck_content = simplified_langcheck_content.replace(/`[^\n]*?`/g, '')
 	if (!is_PureChinese(simplified_langcheck_content)) {
 		console.info('%ccontent "' + content + '" is not pure chinese, translating it for prompt building logic', 'color: red')
 		console.log('franc result:', francAll(content, { minLength: 0 }))

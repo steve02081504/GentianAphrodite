@@ -39,6 +39,11 @@ export default {
 			OnceClientReady: (client, config) => {
 				import('./interfaces/discord/index.mjs').then((mod) => mod.default(client, config))
 			}
+		},
+		shellassist: {
+			Assist: async (args) => {
+				return import('./interfaces/shellassist/index.mjs').then((mod) => mod.default(args))
+			}
 		}
 	}
 }

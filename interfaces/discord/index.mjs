@@ -250,6 +250,14 @@ export default async function DiscordBotMain(client, config) {
 		let AIsuggestion
 		try {
 			AIsuggestion = await GetReply({
+				supported_functions: {
+					markdown: true,
+					mathjax: true,
+					html: false,
+					unsafe_html: false,
+					files: true,
+					add_message: false,
+				},
 				Charname: '龙胆',
 				UserCharname: config.ownerUserName,
 				locale: '',
@@ -368,6 +376,14 @@ export default async function DiscordBotMain(client, config) {
 			 * @returns {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReplyRequest_t}
 			 */
 			const replayQuestGener = () => ({
+				supported_functions: {
+					markdown: true,
+					mathjax: true,
+					html: false,
+					unsafe_html: false,
+					files: true,
+					add_message: true,
+				},
 				Charname: '龙胆',
 				UserCharname: config.ownerUserName,
 				ReplyToCharname: message.author.username,

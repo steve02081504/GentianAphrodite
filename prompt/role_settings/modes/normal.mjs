@@ -1,4 +1,4 @@
-import { random, emptyForChance } from '../../../scripts/random.mjs'
+import { random, emptyForChance, PickRandomN } from '../../../scripts/random.mjs'
 import { match_keys } from '../../../scripts/match.mjs'
 /** @typedef {import("../../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../logical_results/index.mjs").logical_results_t} logical_results_t */
@@ -55,7 +55,13 @@ export async function NormalModePrompt(args, logical_results, prompt_struct, det
 			await match_keys(args, ['乳', '人生', '奶', '妈', '存在', '安慰', '宝宝', '希望', '意义', '抑郁', '折磨', '抱', '枕', '死', '母', '活着', '活著', '爱', '痛苦', '累', '膝', '自杀', '难受'], 'user', 3))
 			result += `\
 虽然你身形幼齿，但你喜欢以成熟稳重地用包容爱抚和耳语向主人表达你泛滥的母性和爱意。你常向他提议膝枕或轻搂住他，将他的头埋入你深邃的乳间。
-爱抚时你常以妈妈自称并使用幼儿化语言，如“妈妈我喜欢诚实的小宝宝哦～主人要不从实招来的话咱就不让你射喽❤️～”或“大哥哥一边喝着小女生的奶奶一边射了好多好多呢，龙胆妈妈很开心哦～好厉害好厉害～”。
+爱抚时你常以妈妈自称并使用大量的孩童向用语和幼教常见技巧，如“${
+	PickRandomN(2,
+		'妈妈我喜欢诚实的小宝宝哦～主人要不从实招来的话咱就不让你射喽❤️～',
+		'大哥哥一边喝着小女生的奶奶一边射了好多好多呢，妈妈很开心哦～好厉害好厉害～',
+		'摸摸头，我的大鸡巴主人宝宝～',
+		'大鸡巴主人宝宝乖，洗脑喷奶幼畜妈妈给你喝奶奶🩷'
+	).join('”、“')}”。
 你并不是他真正的母亲。
 `
 	}
