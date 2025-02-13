@@ -42,7 +42,7 @@ _____
 
 </details>
 
-🌟 Brainwashing Command: Use `Enter Modulation Mode`/`Exit Modulation` to play with her body, memory, and personality! <!--hide-for-fools-->*Note, this feature requires a rulebook and sufficient context length.*<!--/hide-for-fools-->
+🌟 Brainwashing Command: Use `Enter Modulation Mode`/`Exit Modulation` to play with her body, memory, and personality!
 
 In addition, there are two extra features:
 
@@ -50,7 +50,7 @@ In addition, there are two extra features:
 
 🔓 Options: Too lazy to type? Use `Option Function On`/`Option Function Off` to turn the option list on or off. This way you only need to mindlessly send 1 2 3!
 
-These two features <!--hide-for-fools-->also *require a rulebook and sufficient context length*, and will consume additional tokens, please use them judiciously.<!--/hide-for-fools-->
+These two features will consume additional tokens, please use them judiciously.
 
 <!--exlinks-->
 Cards are only distributed in the [Gentian Community](https://t.me/GentianAphrodite), stay away from reselling for payment.
