@@ -12,13 +12,27 @@ const chT2S = OpenCC.Converter({ from: 'twp', to: 'cn' })
 export function SimplifiyChinese(content) {
 	return chT2S(content)
 }
+/**
+ * A simpler version of SimplifiyContent that does not do any translation.
+ * @param {string} content
+ * @returns {[string, string, string]} The input, its simplified chinese version, and its normalized fancy text version
+ */
 function SimpleSimplify(content) {
-	return [...new Set([...SimplifiyChinese(content).split('\n'), ...normalizeFancyText(content).split('\n')])].join('\n')
+	let base_content = SimplifiyChinese(content)
+	return [content, base_content, normalizeFancyText(base_content)]
 }
 
+/**
+ * Simplify the given content so that it can be used in prompts.
+ * @param {string} content
+ * @returns {[string, string, string]} The input, its simplified chinese version, and its normalized fancy text version
+ * If the given content is not pure chinese, it will be translated to chinese first.
+ * The translation may fail if the translate API rate limit is exceeded.
+ * If the translation fails, the original content will be returned.
+ */
 export async function SimplifiyContent(content) {
 	content = remove_kaomoji(content)
-	if (!content.trim()) return content
+	if (!content.trim()) return [content]
 	/** @type {string} */
 	let simplified_langcheck_content = content.replace(/(:|@\w*|\/)\b\d+(\.\d+)?\b/g, '').replace(/@\w*/g, '')
 	simplified_langcheck_content = simplified_langcheck_content.replace(/```[^]*?```/g, '')
@@ -41,26 +55,41 @@ export async function SimplifiyContent(content) {
 				}
 			}
 	}
-	content = SimpleSimplify(content)
-	return content
+	return SimpleSimplify(content)
 }
 
+/**
+ * Preprocesses a content (usually a chat log entry) and returns a dictionary which extends the input extension.
+ * The returned dictionary contains the following properties:
+ * - `SimplifiedContents`: The simplified content in an array of 3 elements: original content, simplified content, and normalized simplified content.
+ * This function is used to preprocess a chat log entry before passing it to the prompts.
+ * @template T
+ * @param {string} content The content to preprocess.
+ * @param {T} [extension={}] The input extension to extend.
+ * @returns {T & {
+ * 	SimplifiedContents: string[]
+ * }} The preprocessed content.
+ */
 export async function PreprocessContent(content, extension = {}) {
 	extension ||= {}
-	extension.SimplifiedContent ??= await SimplifiyContent(content)
+	extension.SimplifiedContents ??= await SimplifiyContent(content)
 
 	return extension
 }
 
+/**
+ * @param {chatLogEntry_t} entry
+ * @returns {Promise<string[]>}
+ */
 export async function PreprocessChatLogEntry(entry) {
 	entry.extension = await PreprocessContent(entry.content, entry.extension)
-	return [...new Set([...entry.extension.SimplifiedContent.split('\n'), ...entry.content.split('\n')])].join('\n')
+	return [entry.content, ...entry.extension.SimplifiedContents]
 }
 
 export function base_match_keys(content, keys,
 	matcher = (content, reg_keys) => {
-		content = SimpleSimplify(content)
-		return reg_keys.filter(key => content.match(key)).length
+		let contents = SimpleSimplify(content)
+		return Math.max(...contents.map(content => reg_keys.filter(key => content.match(key)).length))
 	}
 ) {
 	// convert all keys to regexp, if it's have chinese like character, no match hole word
@@ -73,8 +102,8 @@ export function base_match_keys(content, keys,
 
 export function base_match_keys_all(content, keys) {
 	return base_match_keys(content, keys, (content, reg_keys) => {
-		content = SimpleSimplify(content)
-		return reg_keys.every(key => content.match(key))
+		let contents = SimpleSimplify(content)
+		return contents.some(content => reg_keys.every(key => content.match(key)))
 	})
 }
 
@@ -123,9 +152,16 @@ export async function match_keys(args, keys, from = 'any', depth = 4,
 	matcher = (content, reg_keys) => reg_keys.filter(key => content.match(key)).length
 ) {
 	const chat_log = getScopedChatLog(args, from, depth)
-	const content = (await Promise.all(chat_log.map(PreprocessChatLogEntry))).join('\n')
+	const contents = await Promise.all(chat_log.map(PreprocessChatLogEntry))
 
-	return base_match_keys(content, keys, matcher)
+	let maxFetchCount = 0
+	for (const key in contents[0]) {
+		let content_list = contents.map(x => x[key])
+		let content = content_list.join('\n')
+		maxFetchCount = Math.max(maxFetchCount, base_match_keys(content, keys, matcher))
+	}
+
+	return maxFetchCount
 }
 
 export async function match_keys_all(args, keys, from = 'any', depth = 4) {
