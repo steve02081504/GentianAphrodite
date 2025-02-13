@@ -34,6 +34,7 @@ export async function infoPrompt(args, logical_results, prompt_struct, detail_le
 当前时间：${timeToStr(timeNow)}
 `
 		if (await match_keys(args, [
+			'什么日子', '什么节日', '什么时间',
 			'农历', '阴历', '生肖', '正月', '腊月',
 			'节气', '雨水', '惊蛰', '春分', '清明',
 			'谷雨', '立夏', '小满', '芒种', '夏至', '小暑', '大暑', '立秋', '处暑', '白露', '秋分', '寒露', '霜降', '立冬',
