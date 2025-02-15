@@ -40,7 +40,7 @@ export default async function shellAssistMain(args) {
 				role: 'system',
 				name: args.shelltype || '终端',
 				content: `\
-用户执行了命令\`${entry.command}\`
+用户执行了命令: \`${entry.command}\`
 
 执行结果：
 stdout: ${entry.output.includes('\n') ? '\n```\n'+entry.output+'\n```' : '`'+entry.output+'`'}
@@ -55,10 +55,10 @@ stderr: ${entry.error.includes('\n') ? '\n```\n'+entry.error+'\n```' : '`'+entry
 				extension: entry.extension ??= {},
 				files: [],
 			})
-	for (const entry of chat_log) 
+	for (const entry of chat_log)
 		if (entry.extension.recommend_command)
 			entry.content = entry.content.trimEnd() + `\n\`\`\`recommend_command\n${entry.extension.recommend_command}\n\`\`\``
-	
+
 	let user_doing_now = `\
 用户现在执行的命令：\`${args.command_now}\`
 所在路径：\`${args.pwd}\`

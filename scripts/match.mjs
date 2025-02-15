@@ -18,7 +18,7 @@ export function SimplifiyChinese(content) {
  * @returns {[string, string, string]} The input, its simplified chinese version, and its normalized fancy text version
  */
 function SimpleSimplify(content) {
-	let base_content = SimplifiyChinese(content)
+	const base_content = SimplifiyChinese(content)
 	return [content, base_content, normalizeFancyText(base_content)]
 }
 
@@ -35,8 +35,8 @@ export async function SimplifiyContent(content) {
 	if (!content.trim()) return [content]
 	/** @type {string} */
 	let simplified_langcheck_content = content.replace(/(:|@\w*|\/)\b\d+(\.\d+)?\b/g, '').replace(/@\w*/g, '')
-	simplified_langcheck_content = simplified_langcheck_content.replace(/```[^]*?```/g, '')
-	simplified_langcheck_content = simplified_langcheck_content.replace(/`[^\n]*?`/g, '')
+	simplified_langcheck_content = simplified_langcheck_content.replace(/```+.*\n[^]*?```+/g, '')
+	simplified_langcheck_content = simplified_langcheck_content.replace(/(命令|代码|stdout|stderr)(:|：)\s*`[^\n]*?`/g, '')
 	if (!is_PureChinese(simplified_langcheck_content)) {
 		console.info('%ccontent "' + content + '" is not pure chinese, translating it for prompt building logic', 'color: red')
 		console.log('franc result:', francAll(content, { minLength: 0 }))
@@ -88,7 +88,7 @@ export async function PreprocessChatLogEntry(entry) {
 
 export function base_match_keys(content, keys,
 	matcher = (content, reg_keys) => {
-		let contents = SimpleSimplify(content)
+		const contents = SimpleSimplify(content)
 		return Math.max(...contents.map(content => reg_keys.filter(key => content.match(key)).length))
 	}
 ) {
@@ -102,7 +102,7 @@ export function base_match_keys(content, keys,
 
 export function base_match_keys_all(content, keys) {
 	return base_match_keys(content, keys, (content, reg_keys) => {
-		let contents = SimpleSimplify(content)
+		const contents = SimpleSimplify(content)
 		return contents.some(content => reg_keys.every(key => content.match(key)))
 	})
 }
@@ -156,8 +156,8 @@ export async function match_keys(args, keys, from = 'any', depth = 4,
 
 	let maxFetchCount = 0
 	for (const key in contents[0]) {
-		let content_list = contents.map(x => x[key])
-		let content = content_list.join('\n')
+		const content_list = contents.map(x => x[key])
+		const content = content_list.join('\n')
 		maxFetchCount = Math.max(maxFetchCount, base_match_keys(content, keys, matcher))
 	}
 
