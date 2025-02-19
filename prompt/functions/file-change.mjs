@@ -13,7 +13,7 @@ export async function FileChangePrompt(args, logical_results, prompt_struct, det
 	let result = ''
 
 	if (!args || logical_results.in_assist || await match_keys(args, [
-		'文件', /```(view|replace|override)-file/, 'error'
+		'文件', /```(view|replace|override)-file/, 'error', /Error/, /file:\/\//
 	], 'any') || await match_keys(args, [
 		'查看', '浏览', '替换', '修改', '新建', '创建', '写入', '文件'
 	], 'user') >= 2) {
