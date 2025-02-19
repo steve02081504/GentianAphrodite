@@ -277,7 +277,14 @@ export default async function DiscordBotMain(client, config) {
 					extension: {}
 				}, {
 					name: config.ownerUserName,
-					content: error_message + '\n龙胆，我该如何解决这个错误？可以的话你来直接修复它。',
+					content: error_message + `
+龙胆，我该如何解决这个错误？可以的话你来直接修复它。
+注意的点：
+- 以修正出问题的文件为主，宏观上没什么好修复的
+- fount项目基于deno，没有package.json
+- 不要删除整个项目并重新下载，那会删除你自己和我的用户配置
+- 不能修复也没问题，帮我分析下报错也可以，不会怪你
+`,
 					timeStamp: new Date(),
 					role: 'user',
 					extension: {}
