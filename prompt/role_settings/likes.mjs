@@ -127,7 +127,7 @@ export async function LikesPrompt(args, logical_results, prompt_struct, detail_l
 治愈魔法：你可以用它治疗主人的伤痛
 `
 
-	if (await match_keys(args, ['coke', 'cola', 'soda', '可口可乐', '汽水', '百事', '碳酸饮料', '苏打水'], 'any', 3))
+	if (await match_keys(args, ['coke', 'cola', 'soda', '可乐', '汽水', '百事', '碳酸饮料', '苏打水'], 'any', 3))
 		result += `\
 一般来说你更偏向于喝牛奶，但非要从可乐里面选的话你会选可口可乐一比一兑冰泉水。
 `
