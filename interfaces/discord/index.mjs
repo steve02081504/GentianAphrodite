@@ -123,7 +123,7 @@ export default async function DiscordBotMain(client, config) {
 	async function CheckMessageContentTrigger(message) {
 		const content = await getMessageFullContent(message, client)
 		console.info({
-			content: content,
+			content,
 			authorUserName: message.author.username,
 			channelID: message.channel.id
 		})
@@ -335,7 +335,7 @@ export default async function DiscordBotMain(client, config) {
 					return
 				}
 				else if (base_match_keys(message.content, [/^龙胆.{0,2}复诵.{0,2}`.*`$/])) {
-					const content = message.content.match(/^龙胆.{0,2}复诵.{0,2}`(?<content>.*)`$/).groups.content
+					const { content } = message.content.match(/^龙胆.{0,2}复诵.{0,2}`(?<content>.*)`$/).groups
 					return GetMessageSender(message)(content)
 				}
 				else if (!in_hypnosis_channel_id && base_match_keys(message.content, [/^(龙胆|[\n,.~、。呵哦啊嗯噫欸，～])*$/, /^龙胆龙胆(龙胆|[\n!,.?~、。呵哦啊嗯噫欸！，？～])+$/]))
