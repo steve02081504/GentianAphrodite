@@ -13,8 +13,8 @@ const result = await rollup({
 		/node:*/,
 		/npm:*/,
 		'../../../../../../src/public/shells/chat/src/server/prompt_struct.mjs',
-		'../../../../../../src/server/parts_loader.mjs',
-		'../../../../../../../src/server/parts_loader.mjs',
+		'../../../../../../../src/scripts/locale.mjs',
+		'../../../../../../src/scripts/locale.mjs',
 		'../../../../../../src/server/managers/AIsources_manager.mjs',
 	]
 })
@@ -26,7 +26,7 @@ let output = await result.generate({
 output = output.output[0].code
 
 const charvar = await exec('git describe --tags --abbrev=0', { cwd: '.' }).then((result) => result.stdout)
-output = output.replace(/(export\s+)?(const|let)\s*charvar = [^\n]*/, `$1const charvar = "${charvar.trim()}";`)
+output = output.replace(/(export\s+)?(const|let)\s*charvar = .*?\n\)/, `$1const charvar = "${charvar.trim()}";`)
 
 output = await minify(output, {
 	module: true,
