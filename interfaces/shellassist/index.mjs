@@ -87,7 +87,7 @@ stderr: ${entry.error.includes('\n') ? '\n```\n'+entry.error+'\n```' : '`'+entry
 		},
 		Charname: '龙胆',
 		UserCharname: args.UserCharname,
-		locale: '',
+		locales: [],
 		time: new Date(),
 		world: GetShellWorld(args.shelltype),
 		user: null,

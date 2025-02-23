@@ -1,5 +1,5 @@
 async function commonGreetings(args) {
-	switch (args.locale.split('-')[0]) {
+	switch (args.locales[0].split('-')[0]) {
 		case 'zh':
 			return (await import('./zh-CN.mjs')).commonGreetings(args)
 		case 'en':

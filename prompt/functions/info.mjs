@@ -1,6 +1,6 @@
 import { match_keys } from '../../scripts/match.mjs'
 import { AIsources } from '../../AISource/index.mjs'
-import { getPartInfo } from '../../../../../../../src/server/parts_loader.mjs'
+import { getPartInfo } from '../../../../../../../src/scripts/locale.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
@@ -23,10 +23,10 @@ export async function infoPrompt(args, logical_results, prompt_struct, detail_le
 		const timeNow = new Date()
 		const timeToStrSetting = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }
 		function timeToStr(date, setting = timeToStrSetting) {
-			return new Date(date).toLocaleString(args.locale || undefined, setting)
+			return new Date(date).toLocaleString(args.locales[0] || undefined, setting)
 		}
 		function timeToTimeStr(date) {
-			return new Date(date).toLocaleTimeString(args.locale || undefined, { hour12: false })
+			return new Date(date).toLocaleTimeString(args.locales[0] || undefined, { hour12: false })
 		}
 		const lastMessage = args.chat_log.slice(-1)[0]
 		const lastMessageTime = lastMessage.timeStamp
@@ -73,7 +73,7 @@ export async function infoPrompt(args, logical_results, prompt_struct, detail_le
 		const modelMap = {}
 		for (const key in AIsources)
 			if (AIsources[key]) {
-				const info = getPartInfo(AIsources[key], args.locale)
+				const info = getPartInfo(AIsources[key], args.locales)
 				const sign = `${info.name}（由${info.provider}提供）`;
 				(modelMap[sign] ??= []).push(key)
 			}
