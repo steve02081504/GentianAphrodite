@@ -93,6 +93,9 @@ export function base_match_keys(content, keys,
 	}
 ) {
 	// convert all keys to regexp, if it's have chinese like character, no match hole word
+	keys.forEach(key => {
+		if (key instanceof RegExp) key.lastIndex = 0
+	})
 	keys = keys.map(key =>
 		key instanceof RegExp ? key :
 			new RegExp(/\p{Unified_Ideograph}/u.test(key) ? escapeRegExp(key) : `\\b${escapeRegExp(key)}\\b`, 'ugi'))
