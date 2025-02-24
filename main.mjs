@@ -36,14 +36,11 @@ export default {
 			GetReply,
 		},
 		discord: {
-			OnceClientReady: (client, config) => {
-				import('./interfaces/discord/index.mjs').then((mod) => mod.default(client, config))
-			}
+			OnceClientReady: (client, config) => import('./interfaces/discord/index.mjs').then((mod) => mod.DiscordBotMain(client, config)),
+			GetBotConfigTemplate: () => import('./interfaces/discord/index.mjs').then((mod) => mod.GetBotConfigTemplate()),
 		},
 		shellassist: {
-			Assist: async (args) => {
-				return import('./interfaces/shellassist/index.mjs').then((mod) => mod.default(args))
-			}
+			Assist: async (args) => import('./interfaces/shellassist/index.mjs').then((mod) => mod.shellAssistMain(args))
 		}
 	}
 }

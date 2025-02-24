@@ -31,7 +31,7 @@ import { recommend_command_plugin } from './recommend_command.mjs'
  * 	chat_scoped_char_memory: {}
  * }>}
  */
-export default async function shellAssistMain(args) {
+export async function shellAssistMain(args) {
 	/** @type {chatLogEntry_t[]} */
 	const chat_log = []
 	for(const entry of args.shellhistory)

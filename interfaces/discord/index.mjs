@@ -16,6 +16,13 @@ import { discordWorld } from './world.mjs'
 * }} discord_config_t
 */
 
+export function GetBotConfigTemplate() {
+	return {
+		ownerUserName: 'your_discord_username',
+		OwnnerNameKeywords: ['your_name_keyword1', 'your_name_keyword2'],
+	}
+}
+
 const MaxRetries = 3
 async function tryFewTimes(func, times = MaxRetries) {
 	while (times--)
@@ -30,7 +37,7 @@ async function tryFewTimes(func, times = MaxRetries) {
  * @param {Client} client
  * @param {discord_config_t} config
  */
-export default async function DiscordBotMain(client, config) {
+export async function DiscordBotMain(client, config) {
 	const MAX_MESSAGE_DEPTH = config.maxMessageDepth || 20
 	const MAX_FEACH_COUNT = config.maxFetchCount || Math.floor(MAX_MESSAGE_DEPTH * 3 / 2) || MAX_MESSAGE_DEPTH
 	const lastSendMessageTime = {}
