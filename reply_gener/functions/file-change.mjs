@@ -4,7 +4,7 @@ import { escapeRegExp, parseRegexFromString } from '../../scripts/tools.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
-/** @type {import("../../../../../../../src/decl/PluginAPI.ts").RepalyHandler_t} */
+/** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
 export async function file_change(result, { AddLongTimeLog }) {
 	const view_files = result.content.match(/```view-file\n(?<paths>([^\n]*\n)+)```/)?.groups?.paths
 	if (view_files) {

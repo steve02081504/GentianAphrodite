@@ -6,19 +6,19 @@ import GentianAphrodite from '../../main.mjs'
 import { findMostFrequentElement, UTCToLocal } from '../../scripts/tools.mjs'
 import { get_discord_silence_plugin } from './silence.mjs'
 import { rude_words } from '../../scripts/dict.mjs'
-import { getMessageFullContent, getReferencedMessage, splitDiscordReply } from './tools.mjs'
+import { getMessageFullContent, splitDiscordReply } from './tools.mjs'
 import { discordWorld } from './world.mjs'
 /** @typedef {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
 /**
  * @typedef {{
-* 	ownerUserName: string
+* 	OwnerUserName: string
 * 	OwnnerNameKeywords: string[]
 * }} discord_config_t
 */
 
 export function GetBotConfigTemplate() {
 	return {
-		ownerUserName: 'your_discord_username',
+		OwnerUserName: 'your_discord_username',
 		OwnnerNameKeywords: ['your_name_keyword1', 'your_name_keyword2'],
 	}
 }
@@ -56,7 +56,7 @@ export async function DiscordBotMain(client, config) {
 			message.author.fetch().then((user) => userinfoCache[message.author.id] = user).catch(_ => 0)
 		let name = author.displayName || author.globalName
 		if (!name) name = author.username
-		else if (author.username == config.ownerUserName) name = author.username
+		else if (author.username == config.OwnerUserName) name = author.username
 		else name += name.toLowerCase() === author.username.toLowerCase() ? '' : ` (${author.username})`
 
 		const content = await getMessageFullContent(message, client)
@@ -65,15 +65,19 @@ export async function DiscordBotMain(client, config) {
 		const result = {
 			...replayInfoCache[message.id] || { extension: {} },
 			timeStamp: UTCToLocal(message.createdTimestamp),
-			role: author.username === config.ownerUserName ? 'user' : 'char',
+			role: author.username === config.OwnerUserName ? 'user' : 'char',
 			name,
 			content,
 			files: (await Promise.all([...[
-				...message.attachments,
-				...getReferencedMessage(message, client)?.attachments || []
-			].map(async (attachment) => {
-				if (!attachment.url && attachment[1].url) attachment = attachment[1] // wtf?
-				if (!attachment.url) return console.error('attachment has no url:', attachment)
+				message.attachments,
+				message.messageSnapshots.map(referencedMessage => referencedMessage.attachments)
+			].flatMap(x => x).filter(Boolean).map(async (attachment) => {
+				if (!attachment.url && attachment[1]?.url) attachment = attachment[1] // wtf?
+				if (!attachment.url) {
+					if (Object.keys(attachment).length)
+						console.error('attachment has no url:', attachment)
+					return
+				}
 				try {
 					return {
 						name: attachment.name,
@@ -128,7 +132,7 @@ export async function DiscordBotMain(client, config) {
 	 * @returns {Promise<boolean>}
 	 */
 	async function CheckMessageContentTrigger(message) {
-		const content = await getMessageFullContent(message, client)
+		const content = (await getMessageFullContent(message, client)).replace(/^(@[^\s]+\s+)+/g, '')
 		console.info({
 			content,
 			authorUserName: message.author.username,
@@ -137,10 +141,10 @@ export async function DiscordBotMain(client, config) {
 
 		if (message.channel.type == ChannelType.DM) {
 			console.info('DM message')
-			if (message.author.id != client.user.id && message.author.username != config.ownerUserName) return false
+			if (message.author.id != client.user.id && message.author.username != config.OwnerUserName) return false
 			else return true
 		}
-		else if (in_hypnosis_channel_id && message.author.username != config.ownerUserName) return false
+		else if (in_hypnosis_channel_id && message.author.username != config.OwnerUserName) return false
 
 		let possible = 0
 
@@ -162,7 +166,7 @@ export async function DiscordBotMain(client, config) {
 
 		let inMute = isMuted(message.channel.id)
 
-		if (message.author.username === config.ownerUserName) {
+		if (message.author.username === config.OwnerUserName) {
 			if (mentionedWithoutAt || message.mentions.users.has(client.user.id)) {
 				possible += 100
 				delete ChannelMuteStartTimes[message.channel.id]
@@ -176,7 +180,7 @@ export async function DiscordBotMain(client, config) {
 			}
 		}
 
-		if (message.author.username === config.ownerUserName) {
+		if (message.author.username === config.OwnerUserName) {
 			if (base_match_keys(content, ['老婆', '女票', '女朋友', '炮友'])) possible += 50
 			if (base_match_keys(content, [/(有点|好)紧张/, '救救', '帮帮', '帮我', '来人', '咋用', '教教', /是真的(吗|么)/])) possible += 100
 			if (base_match_keys(content, ['龙胆']) && base_match_keys(content, [/怎么(想|看)/])) possible += 100
@@ -198,7 +202,7 @@ export async function DiscordBotMain(client, config) {
 			if (base_match_keys(content, [/[午安早晚]安/])) possible += 100
 		}
 
-		if (message.mentions.users.some(user => user.username === config.ownerUserName) || base_match_keys(content, config.OwnnerNameKeywords)) {
+		if (message.mentions.users.some(user => user.username === config.OwnerUserName) || base_match_keys(content, config.OwnnerNameKeywords)) {
 			possible += 7 // 多出 7% 的可能性回复提及主人的消息
 			if (base_match_keys(content, rude_words)) if (FuyanMode) return false; else return true // 提及还骂人？你妈妈没了
 		}
@@ -266,7 +270,7 @@ export async function DiscordBotMain(client, config) {
 					add_message: false,
 				},
 				Charname: '龙胆',
-				UserCharname: config.ownerUserName,
+				UserCharname: config.OwnerUserName,
 				locales: [],
 				time: new Date(),
 				world: discordWorld,
@@ -283,7 +287,7 @@ export async function DiscordBotMain(client, config) {
 					role: 'char',
 					extension: {}
 				}, {
-					name: config.ownerUserName,
+					name: config.OwnerUserName,
 					content: error_message + `
 龙胆，我该如何解决这个错误？可以的话你来直接修复它。
 注意的点：
@@ -333,7 +337,7 @@ export async function DiscordBotMain(client, config) {
 		}
 
 		try {
-			if (message.author.username === config.ownerUserName)
+			if (message.author.username === config.OwnerUserName)
 				if (!in_hypnosis_channel_id && base_match_keys(message.content, [/^龙胆.*不敷衍点.{0,2}$/])) FuyanMode = false
 				else if (!in_hypnosis_channel_id && base_match_keys(message.content, [/^龙胆.*敷衍点.{0,2}$/])) FuyanMode = true
 				else if (base_match_keys(message.content, [/^龙胆.*自裁.{0,2}$/])) {
@@ -399,7 +403,7 @@ export async function DiscordBotMain(client, config) {
 					add_message: true,
 				},
 				Charname: '龙胆',
-				UserCharname: config.ownerUserName,
+				UserCharname: config.OwnerUserName,
 				ReplyToCharname: message.author.username,
 				locales: [],
 				time: new Date(),
@@ -538,7 +542,7 @@ export async function DiscordBotMain(client, config) {
 				if (error.name == 'DiscordAPIError' && error.code == 10008) return // message deleted
 			}
 			if (message.channel.type == ChannelType.DM)
-				if (message.author.id != client.user.id && message.author.username != config.ownerUserName) return
+				if (message.author.id != client.user.id && message.author.username != config.OwnerUserName) return
 			(ChannelMessageQueues[message.channel.id] ??= []).push(message)
 			if (!in_hypnosis_channel_id || message.channel.id == in_hypnosis_channel_id)
 				ChannelHandlers[message.channel.id] ??= HandleMessageQueue(message.channel.id)

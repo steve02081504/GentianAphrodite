@@ -12,7 +12,7 @@ import { coderunner } from './coderunner.mjs'
 import { GoogleSearchPrompt } from '../../prompt/functions/googlesearch.mjs'
 import { getLongTimeLogAdder } from '../index.mjs'
 
-/** @type {import("../../../../../../../src/decl/PluginAPI.ts").RepalyHandler_t} */
+/** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
 export async function detailThinking(result, { AddLongTimeLog, prompt_struct }) {
 	result.extension.execed_codes ??= {}
 	const question = result.content.match(/```detail-thinking\n(?<question>[^]*?)\n```/)?.groups?.question
@@ -81,10 +81,10 @@ detail-thinking-denial: 我还没有正式思考，所以没有任何角度可�
 				role: 'char',
 				extension: {}
 			}
-			for (const repalyHandler of [
+			for (const replyHandler of [
 				coderunner, googlesearch, webbrowse,
 			])
-				if (await repalyHandler(result, { AddLongTimeLog: addThinkingLongTimeLog, prompt_struct: thinking }))
+				if (await replyHandler(result, { AddLongTimeLog: addThinkingLongTimeLog, prompt_struct: thinking }))
 					continue regen
 			times++
 			if (result.content.match(/(^|\n)detail-thinking-(answer|failed)(:|：)/))

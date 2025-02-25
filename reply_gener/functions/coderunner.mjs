@@ -8,7 +8,7 @@ import { bash_exec_NATS, pwsh_exec_NATS } from '../../scripts/exec.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
-/** @type {import("../../../../../../../src/decl/PluginAPI.ts").RepalyHandler_t} */
+/** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
 export async function coderunner(result, { AddLongTimeLog }) {
 	result.extension.execed_codes ??= {}
 	const jsrunner = result.content.match(/```run-js\n(?<code>[^]*)\n```/)?.groups?.code

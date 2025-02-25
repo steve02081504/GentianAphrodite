@@ -84,22 +84,24 @@ export async function GetReply(args) {
 		console.log('prompt_struct')
 		console.log(inspect(prompt_struct, { depth: 4, colors: true }))
 		const AItype = logical_results.in_assist ? 'expert' : logical_results.in_nsfw ? 'nsfw' : 'sfw'
-		result.content = await OrderedAISourceCalling(AItype, async AI => {
+		let requestresult = await OrderedAISourceCalling(AItype, async AI => {
 			const result = await AI.StructCall(prompt_struct)
-			if (!String(result).trim()) throw new Error('empty reply')
+			if (!String(result.content).trim()) throw new Error('empty reply')
 			return result
 		})
+		result.content = requestresult.content
+		result.files = result.files.concat(requestresult.files || [])
 		if (result.content.trim() == '<-<null>->') return null // AI skipped
-		/** @type {(import('../../../../../../src/decl/PluginAPI.ts').RepalyHandler_t)[]} */
+		/** @type {(import('../../../../../../src/decl/PluginAPI.ts').ReplyHandler_t)[]} */
 		const replyHandlers = [
 			coderunner,
 			args.supported_functions.files ? filesender : null,
 			detailThinking, googlesearch, webbrowse, rolesettingfilter, file_change,
 			args.supported_functions.add_message ? timer : null,
-			...Object.values(args.plugins).map(plugin => plugin.interfaces.chat?.RepalyHandler)
+			...Object.values(args.plugins).map(plugin => plugin.interfaces.chat?.ReplyHandler)
 		].filter(Boolean)
-		for (const repalyHandler of replyHandlers)
-			if (await repalyHandler(result, { ...args, AddLongTimeLog, prompt_struct }))
+		for (const replyHandler of replyHandlers)
+			if (await replyHandler(result, { ...args, AddLongTimeLog, prompt_struct }))
 				continue regen
 		break
 	}

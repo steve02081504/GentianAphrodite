@@ -50,8 +50,9 @@ export async function infoPrompt(args, logical_results, prompt_struct, detail_le
 
 		if (lastMessage.name != args.UserCharname) {
 			const lastUserMessage = args.chat_log.reverse().find(x => x.name == args.UserCharname)
-			const lastUserMessageTime = lastUserMessage.timeStamp
-			result += `\
+			const lastUserMessageTime = lastUserMessage?.timeStamp
+			if (lastUserMessageTime)
+				result += `\
 距离上条主人发送的消息已过去：${timeToTimeStr(timeNow - lastUserMessageTime, null)}
 `
 		}

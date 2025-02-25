@@ -131,7 +131,6 @@ function formatMessageContent(message) {
 			content = content.replaceAll(mentionTag, `@${value.username}`)
 		else
 			content = `@${value.username} ${content}`
-
 	}
 
 	// 添加 embed
@@ -156,19 +155,16 @@ function formatMessageContent(message) {
 	return content
 }
 
-export async function getReferencedMessage(message, client) {
-	// discord.js会在未来支持这个
-}
-
 export async function getMessageFullContent(message, client) {
 	let fullContent = formatMessageContent(message)
 
 	// 处理转发消息
-	const referencedMessage = await getReferencedMessage(message, client)
-	if (referencedMessage) {
+	const referencedMessages = message.messageSnapshots.map(t => t)
+	for (const referencedMessage of referencedMessages) {
 		const refContent = formatMessageContent(referencedMessage, client)
 		const authorName = referencedMessage.author?.username || '未知用户'
-		fullContent += `\n\n（转发消息）\n${authorName}：${refContent}`
+		if (fullContent) fullContent += '\n\n'
+		fullContent += `（转发消息）\n${authorName}：${refContent}`
 	}
 
 	return fullContent

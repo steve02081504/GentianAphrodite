@@ -33,7 +33,7 @@ command_body
 					]
 				}
 			},
-			RepalyHandler: async (result) => {
+			ReplyHandler: async (result) => {
 				const command = result.content.match(/```recommend_command\n(?<command>[^]+?)\n```/)?.groups?.command
 				if (command) {
 					result.extension.recommend_command = result.recommend_command = command

@@ -45,7 +45,7 @@ hitler | 1week | 种族灭绝
 
 				return {}
 			},
-			RepalyHandler: async (result, { AddLongTimeLog }) => {
+			ReplyHandler: async (result, { AddLongTimeLog }) => {
 				const banlist = result.content.match(/```ban\n(?<banlist>(.*\|.*\|.*\n?)*)\n```/)?.groups?.banlist
 
 				if (banlist) {
