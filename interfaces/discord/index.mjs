@@ -43,6 +43,14 @@ export async function DiscordBotMain(client, config) {
 	const lastSendMessageTime = {}
 	const replayInfoCache = {}
 	const userinfoCache = {}
+	const userNameMap = {
+		name2id: {
+			[client.user.username.replace(/gentian/ig, '龙胆')]: client.user.id
+		},
+		id2name: {
+			[client.user.id]: client.user.username
+		},
+	}
 	let FuyanMode = false, in_hypnosis_channel_id = null
 
 	const chat_scoped_char_memory = {}
@@ -58,6 +66,13 @@ export async function DiscordBotMain(client, config) {
 		if (!name) name = author.username
 		else if (author.username == config.OwnerUserName) name = author.username
 		else name += name.toLowerCase() === author.username.toLowerCase() ? '' : ` (${author.username})`
+
+		{
+			let index = 0; const originalName = name
+			while ((userNameMap.name2id[name.replace(/gentian/ig, '龙胆')] ??= message.author.id) != message.author.id)
+				name = `${originalName} (${++index}号同名)`
+			userNameMap.id2name[message.author.id] = name
+		}
 
 		const content = await getMessageFullContent(message, client)
 
@@ -269,7 +284,7 @@ export async function DiscordBotMain(client, config) {
 					files: true,
 					add_message: false,
 				},
-				Charname: '龙胆',
+				Charname: userNameMap.id2name[client.user.id],
 				UserCharname: config.OwnerUserName,
 				locales: [],
 				time: new Date(),
@@ -281,7 +296,7 @@ export async function DiscordBotMain(client, config) {
 				chat_summary: '',
 				chat_scoped_char_memory,
 				chat_log: [{
-					name: '龙胆',
+					name: userNameMap.id2name[client.user.id],
 					content: in_hypnosis_channel_id ? '请主人下达指令。' : '主人，有什么我可以帮到您的吗～？',
 					timeStamp: new Date(),
 					role: 'char',
@@ -402,7 +417,7 @@ export async function DiscordBotMain(client, config) {
 					files: true,
 					add_message: true,
 				},
-				Charname: '龙胆',
+				Charname: userNameMap.id2name[client.user.id],
 				UserCharname: config.OwnerUserName,
 				ReplyToCharname: message.author.username,
 				locales: [],

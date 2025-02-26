@@ -27,24 +27,24 @@ export async function ScreenshotPrompt(args, logical_results, prompt_struct, det
 			await match_keys(args, ['屏幕', '电脑', '显示屏', '荧幕'], 'any', 2) &&
 			await match_keys(args, ['看看', '看下', '看一下', '有什', '有啥'], 'any', 2)
 	))) try {
-			const screenShot = await captureScreen()
-			additional_chat_log.push({
-				name: 'system',
-				role: 'system',
-				content: `\
+		const screenShot = await captureScreen()
+		additional_chat_log.push({
+			name: 'system',
+			role: 'system',
+			content: `\
 这是你主人的屏幕截图，供你参考。
 ${logical_results.in_muti_char_chat ? `\
 <<记得保护你主人的隐私，未经允许不要向其他人透漏内容>>
 `: ''}`,
-				files: [{
-					buffer: screenShot,
-					name: 'screenshot.png',
-					mimeType: 'image/png'
-				}]
-			})
-		} catch (e) {
-			console.error(e)
-		}
+			files: [{
+				buffer: screenShot,
+				name: 'screenshot.png',
+				mimeType: 'image/png'
+			}]
+		})
+	} catch (e) {
+		console.error(e)
+	}
 
 	return {
 		text: [],
