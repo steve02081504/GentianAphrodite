@@ -132,7 +132,7 @@ export async function DiscordBotMain(client, config) {
 	 * @returns {Promise<boolean>}
 	 */
 	async function CheckMessageContentTrigger(message) {
-		const content = (await getMessageFullContent(message, client)).replace(/^(@[^\s]+\s+)+/g, '')
+		const content = (await getMessageFullContent(message, client)).replace(/^(@\S+\s+)+/g, '')
 		console.info({
 			content,
 			authorUserName: message.author.username,
