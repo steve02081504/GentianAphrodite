@@ -9,6 +9,7 @@ import { rude_words } from '../../scripts/dict.mjs'
 import { getMessageFullContent, splitDiscordReply } from './tools.mjs'
 import { discordWorld } from './world.mjs'
 /** @typedef {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
+/** @typedef {import('npm:discord.js').Message} Message */
 /**
  * @typedef {{
 * 	OwnerUserName: string
@@ -146,7 +147,7 @@ export async function DiscordBotMain(client, config) {
 	 * @param {import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
 	 * @returns {Promise<boolean>}
 	 */
-	async function CheckMessageContentTrigger(message) {
+	async function CheckMessageContentTrigger(message, env) {
 		const content = (await getMessageFullContent(message, client)).replace(/^(@\S+\s+)+/g, '')
 		console.info({
 			content,
@@ -173,11 +174,14 @@ export async function DiscordBotMain(client, config) {
 
 		const inFavor = isInFavor(message.channel.id)
 		const EngWords = content.split(' ')
-		const mentionedWithoutAt = (base_match_keys(
-			content.substring(0, 5) + ' ' + content.substring(content.length - 3), ['龙胆']
-		) || base_match_keys(EngWords.slice(0, 6).concat(EngWords.slice(-3)).join(' '), ['gentian'])) &&
-			!base_match_keys(content, [/(龙胆(有|能|这边|目前|[^ 。你，]{0,3}的)|gentian('s|is|are|can|has))/i]) &&
-			!base_match_keys(content, [/^.{0,5}龙胆$/i])
+		const mentionedWithoutAt = !env.has_other_gentian_bot && (
+			(base_match_keys(
+				content.substring(0, 5) + ' ' + content.substring(content.length - 3), ['龙胆']
+			) || base_match_keys(EngWords.slice(0, 6).concat(EngWords.slice(-3)).join(' '), ['gentian'])) &&
+				!base_match_keys(content, [/(龙胆(有|能|这边|目前|[^ 。你，]{0,3}的)|gentian('s|is|are|can|has))/i]) &&
+				!base_match_keys(content, [/^.{0,5}龙胆$/i]
+			)
+		)
 
 		let inMute = isMuted(message.channel.id)
 
@@ -475,16 +479,15 @@ export async function DiscordBotMain(client, config) {
 					)
 				)
 				while (ChannelChatLogs[channelid].length > MAX_MESSAGE_DEPTH) ChannelChatLogs[channelid].shift()
-				let lastTrigger
-				for (const message of myQueue.reverse())
-					if (await CheckMessageContentTrigger(message)) {
-						lastTrigger = message
-						break
-					}
-				if (lastTrigger) await DoMessageReply(lastTrigger)
 				ChannelMessageQueues[channelid] = []
 				return
 			}
+			/**
+			 * @type {(
+			 * 	chatLogEntry_t & {
+			 *	extension: {discord_messages: (import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>[])}
+			 * })[]}
+			 */
 			const chatlog = ChannelChatLogs[channelid]
 
 			while (myQueue?.length) {
@@ -514,12 +517,19 @@ export async function DiscordBotMain(client, config) {
 						while (chatlog.length > MAX_MESSAGE_DEPTH) chatlog.shift()
 					}
 				}
+
+				// 所有非自己的bot消息中
+				const hasOtherGentianBot = chatlog.filter(message => message.extension.discord_messages[0]?.author.id != client.user.id && message.extension.discord_messages[0]?.author.bot).some(
+					message => message.content.includes('龙胆') && message.content.includes('主人')
+				)
 				// skip if message author is this bot
 				if (message.author.id === client.user.id) continue
 				// 若最近7条消息都是bot和owner的消息，跳过激活检查，每个owner的消息都会触发
 				if (chatlog.slice(-7).every(message => message.role == 'user' || message.name == client.user.username))
 					await DoMessageReply(message)
-				else if (await CheckMessageContentTrigger(message))
+				else if (await CheckMessageContentTrigger(message, {
+					has_other_gentian_bot: hasOtherGentianBot
+				}))
 					await DoMessageReply(message)
 				else if (!in_hypnosis_channel_id && message.author.id != client.user.id) {
 					// 若消息记录的后10条中有5条以上的消息内容相同
