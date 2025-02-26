@@ -3,7 +3,7 @@ import { Buffer } from 'node:buffer'
 import { base_match_keys, SimplifiyChinese, PreprocessChatLogEntry } from '../../scripts/match.mjs'
 import { GetReply } from '../../reply_gener/index.mjs'
 import GentianAphrodite from '../../main.mjs'
-import { findMostFrequentElement, UTCToLocal } from '../../scripts/tools.mjs'
+import { findMostFrequentElement } from '../../scripts/tools.mjs'
 import { get_discord_silence_plugin } from './silence.mjs'
 import { rude_words } from '../../scripts/dict.mjs'
 import { getMessageFullContent, splitDiscordReply } from './tools.mjs'
@@ -80,7 +80,7 @@ export async function DiscordBotMain(client, config) {
 		/** @type {chatLogEntry_t} */
 		const result = {
 			...replayInfoCache[message.id] || { extension: {} },
-			timeStamp: UTCToLocal(message.createdTimestamp),
+			timeStamp: message.createdTimestamp,
 			role: author.username === config.OwnerUserName ? 'user' : 'char',
 			name,
 			content,
@@ -152,7 +152,8 @@ export async function DiscordBotMain(client, config) {
 		console.info({
 			content,
 			authorUserName: message.author.username,
-			channelID: message.channel.id
+			channelID: message.channel.id,
+			has_other_gentian_bot: env.has_other_gentian_bot
 		})
 
 		if (message.channel.type == ChannelType.DM) {
@@ -356,23 +357,7 @@ export async function DiscordBotMain(client, config) {
 		}
 
 		try {
-			if (message.author.username === config.OwnerUserName)
-				if (!in_hypnosis_channel_id && base_match_keys(message.content, [/^龙胆.*不敷衍点.{0,2}$/])) FuyanMode = false
-				else if (!in_hypnosis_channel_id && base_match_keys(message.content, [/^龙胆.*敷衍点.{0,2}$/])) FuyanMode = true
-				else if (base_match_keys(message.content, [/^龙胆.*自裁.{0,2}$/])) {
-					await GetMessageSender(message)(in_hypnosis_channel_id ? '好的。' : '啊，咱死了～')
-					client.destroy()
-					return
-				}
-				else if (base_match_keys(message.content, [/^龙胆.{0,2}复诵.{0,2}`.*`$/])) {
-					const { content } = message.content.match(/^龙胆.{0,2}复诵.{0,2}`(?<content>.*)`$/).groups
-					return GetMessageSender(message)(content)
-				}
-				else if (!in_hypnosis_channel_id && base_match_keys(message.content, [/^(龙胆|[\n,.~、。呵哦啊嗯噫欸，～])*$/, /^龙胆龙胆(龙胆|[\n!,.?~、。呵哦啊嗯噫欸！，？～])+$/]))
-					return GetMessageSender(message)(SimplifiyChinese(message.content).replaceAll('龙胆', '主人'))
-
 			const replyHandler = async (reply) => {
-
 				if (chat_scoped_char_memory.in_hypnosis)
 					in_hypnosis_channel_id = message.channel.id
 				else in_hypnosis_channel_id = null
@@ -472,13 +457,23 @@ export async function DiscordBotMain(client, config) {
 		const myQueue = ChannelMessageQueues[channelid]
 		try {
 			if (!ChannelChatLogs[channelid]) {
-				ChannelChatLogs[channelid] ??= MargeChatLog(
+				const chatlog = ChannelChatLogs[channelid] ??= MargeChatLog(
 					await Promise.all(
 						(await myQueue[0].channel.messages.fetch({ limit: MAX_FEACH_COUNT }))
 							.map(DiscordMessageToFountChatLogEntry).reverse()
 					)
 				)
-				while (ChannelChatLogs[channelid].length > MAX_MESSAGE_DEPTH) ChannelChatLogs[channelid].shift()
+				while (chatlog.length > MAX_MESSAGE_DEPTH) chatlog.shift()
+				const has_other_gentian_bot = chatlog.filter(message => ((Date.now() - message.timeStamp) < 5 * 60 * 1000) && message.extension.discord_messages[0]?.author.id != client.user.id && message.extension.discord_messages[0]?.author.bot).some(
+					message => message.content.includes('龙胆') && message.content.includes('主人')
+				)
+				let lastTrigger
+				for (const message of myQueue.reverse())
+					if (await CheckMessageContentTrigger(message, { has_other_gentian_bot })) {
+						lastTrigger = message
+						break
+					}
+				if (lastTrigger) await DoMessageReply(lastTrigger)
 				ChannelMessageQueues[channelid] = []
 				return
 			}
@@ -518,8 +513,23 @@ export async function DiscordBotMain(client, config) {
 					}
 				}
 
+				if (message.author.username === config.OwnerUserName)
+					if (!in_hypnosis_channel_id && base_match_keys(message.content, [/^龙胆.*不敷衍点.{0,2}$/])) FuyanMode = false
+					else if (!in_hypnosis_channel_id && base_match_keys(message.content, [/^龙胆.*敷衍点.{0,2}$/])) FuyanMode = true
+					else if (base_match_keys(message.content, [/^龙胆.*自裁.{0,2}$/])) {
+						await GetMessageSender(message)(in_hypnosis_channel_id ? '好的。' : '啊，咱死了～')
+						client.destroy()
+						return
+					}
+					else if (base_match_keys(message.content, [/^龙胆.{0,2}复诵.{0,2}`.*`$/])) {
+						const { content } = message.content.match(/^龙胆.{0,2}复诵.{0,2}`(?<content>.*)`$/).groups
+						return GetMessageSender(message)(content)
+					}
+					else if (!in_hypnosis_channel_id && base_match_keys(message.content, [/^(龙胆|[\n,.~、。呵哦啊嗯噫欸，～])*$/, /^龙胆龙胆(龙胆|[\n!,.?~、。呵哦啊嗯噫欸！，？～])+$/]))
+						return GetMessageSender(message)(SimplifiyChinese(message.content).replaceAll('龙胆', '主人'))
+
 				// 所有非自己的bot消息中
-				const hasOtherGentianBot = chatlog.filter(message => message.extension.discord_messages[0]?.author.id != client.user.id && message.extension.discord_messages[0]?.author.bot).some(
+				const has_other_gentian_bot = chatlog.filter(message => ((Date.now() - message.timeStamp) < 5 * 60 * 1000) && message.extension.discord_messages[0]?.author.id != client.user.id && message.extension.discord_messages[0]?.author.bot).some(
 					message => message.content.includes('龙胆') && message.content.includes('主人')
 				)
 				// skip if message author is this bot
@@ -528,7 +538,7 @@ export async function DiscordBotMain(client, config) {
 				if (chatlog.slice(-7).every(message => message.role == 'user' || message.name == client.user.username))
 					await DoMessageReply(message)
 				else if (await CheckMessageContentTrigger(message, {
-					has_other_gentian_bot: hasOtherGentianBot
+					has_other_gentian_bot,
 				}))
 					await DoMessageReply(message)
 				else if (!in_hypnosis_channel_id && message.author.id != client.user.id) {

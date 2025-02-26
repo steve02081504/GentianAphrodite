@@ -34,7 +34,7 @@ export async function SimplifiyContent(content) {
 	content = remove_kaomoji(content)
 	if (!content.trim()) return [content]
 	/** @type {string} */
-	let simplified_langcheck_content = content.replace(/(:|@\w*|\/)\b\d+(\.\d+)?\b/g, '').replace(/@\w*/g, '')
+	let simplified_langcheck_content = content.replace(/(:|@\w*|\/)\b\d+(\.\d+)?\b/g, '').replace(/@\w*/g, '').replace(/https?:\/\/[\w#%+.:=@\\~-]+/g, '')
 	simplified_langcheck_content = simplified_langcheck_content.replace(/```+.*\n[^]*?```+/g, '')
 	simplified_langcheck_content = simplified_langcheck_content.replace(/(命令|代码|stdout|stderr)(:|：)\s*`[^\n]*?`/g, '')
 	if (!is_PureChinese(simplified_langcheck_content)) {
