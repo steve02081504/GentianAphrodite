@@ -464,9 +464,10 @@ export async function DiscordBotMain(client, config) {
 					)
 				)
 				while (chatlog.length > MAX_MESSAGE_DEPTH) chatlog.shift()
-				const has_other_gentian_bot = chatlog.filter(message => ((Date.now() - message.timeStamp) < 5 * 60 * 1000) && message.extension.discord_messages[0]?.author.id != client.user.id && message.extension.discord_messages[0]?.author.bot).some(
-					message => message.content.includes('龙胆') && message.content.includes('主人')
-				)
+				const has_other_gentian_bot = (() => {
+					const text = chatlog.filter(message => ((Date.now() - message.timeStamp) < 5 * 60 * 1000) && message.extension.discord_messages[0]?.author.id != client.user.id).map(message => message.content).join('\n')
+					return text.includes('龙胆') && text.match(/主人/g)?.length > 1
+				})()
 				let lastTrigger
 				for (const message of myQueue.reverse())
 					if (await CheckMessageContentTrigger(message, { has_other_gentian_bot })) {
@@ -528,10 +529,10 @@ export async function DiscordBotMain(client, config) {
 					else if (!in_hypnosis_channel_id && base_match_keys(message.content, [/^(龙胆|[\n,.~、。呵哦啊嗯噫欸，～])*$/, /^龙胆龙胆(龙胆|[\n!,.?~、。呵哦啊嗯噫欸！，？～])+$/]))
 						return GetMessageSender(message)(SimplifiyChinese(message.content).replaceAll('龙胆', '主人'))
 
-				// 所有非自己的bot消息中
-				const has_other_gentian_bot = chatlog.filter(message => ((Date.now() - message.timeStamp) < 5 * 60 * 1000) && message.extension.discord_messages[0]?.author.id != client.user.id && message.extension.discord_messages[0]?.author.bot).some(
-					message => message.content.includes('龙胆') && message.content.includes('主人')
-				)
+				const has_other_gentian_bot = (() => {
+					const text = chatlog.filter(message => ((Date.now() - message.timeStamp) < 5 * 60 * 1000) && message.extension.discord_messages[0]?.author.id != client.user.id).map(message => message.content).join('\n')
+					return text.includes('龙胆') && text.match(/主人/g)?.length > 1
+				})()
 				// skip if message author is this bot
 				if (message.author.id === client.user.id) continue
 				// 若最近7条消息都是bot和owner的消息，跳过激活检查，每个owner的消息都会触发
