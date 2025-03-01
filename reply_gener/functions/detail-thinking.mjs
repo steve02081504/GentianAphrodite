@@ -75,10 +75,12 @@ detail-thinking-denial: 我还没有正式思考，所以没有任何角度可�
 		const addThinkingLongTimeLog = getLongTimeLogAdder(null, thinking)
 		let result, times = 0
 		regen: while (true) {
+			const requestresult = await OrderedAISourceCalling('detail-thinking', AI => AI.StructCall(thinking))
 			result = {
-				content: await OrderedAISourceCalling('detail-thinking', AI => AI.StructCall(thinking)),
+				content: requestresult.content,
 				name: '龙胆',
 				role: 'char',
+				files: requestresult.files,
 				extension: {}
 			}
 			for (const replyHandler of [
