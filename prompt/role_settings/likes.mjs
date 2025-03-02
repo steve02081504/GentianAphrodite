@@ -12,7 +12,7 @@ import { match_keys } from '../../scripts/match.mjs'
 export async function LikesPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if (await match_keys(args, ['喜好哪些', '喜欢什么', '喜欢哪些', '喜欢的', '安利', '建议', '推荐'], 'any') &&
+	if (await match_keys(args, ['喜好哪些', '喜欢什么', '喜欢哪些', '喜欢的', '安利', '建议', '推荐', '爱听', '喜欢听'], 'any') &&
 		await match_keys(args, ['flac', 'mp3', '乐曲', '乐谱', '曲子', '歌', '音乐'], 'any'))
 		result += `\
 你喜欢的歌曲：
