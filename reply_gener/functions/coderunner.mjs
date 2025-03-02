@@ -5,6 +5,7 @@ import { walk } from 'npm:estree-walker'
 import { generate } from 'npm:astring'
 import { builders } from 'npm:ast-types'
 import { bash_exec_NATS, pwsh_exec_NATS } from '../../scripts/exec.mjs'
+import { VirtualConsole } from '../../scripts/virtualConsole.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
@@ -21,6 +22,7 @@ export async function coderunner(result, { AddLongTimeLog }) {
 		})
 		console.info('AI运行的JS代码：', jsrunner)
 		let coderesult
+		const virtualconsole = new VirtualConsole({ realConsoleOutput: true }) // 一个虚拟的控制台用于记录ai执行的代码产生的输出并返回给ai
 		try {
 			// 使用 acorn 解析代码为 AST
 			const ast = parse(jsrunner, {
@@ -52,15 +54,24 @@ export async function coderunner(result, { AddLongTimeLog }) {
 			// 将修改后的 AST 转换回代码
 			const modifiedCode = generate(ast)
 			// 使用 eval 执行修改后的代码
-			coderesult = await eval(`(async () => {${modifiedCode}})()`)
+			const console = virtualconsole
+			console
+			const result = await eval(`(async () => {${modifiedCode}})()`)
+			coderesult = {
+				result,
+				output: virtualconsole.outputs
+			}
 		} catch (err) {
-			coderesult = err
+			coderesult = {
+				error: err,
+				output: virtualconsole.outputs
+			}
 		}
 		console.info('coderesult', coderesult)
 		AddLongTimeLog({
 			name: 'system',
 			role: 'system',
-			content: '执行结果：\n' + util.inspect(coderesult),
+			content: '执行结果：\n' + util.inspect(coderesult, { depth: 4 }),
 			files: []
 		})
 		result.extension.execed_codes[jsrunner] = coderesult
