@@ -138,9 +138,9 @@ export function chineseToExpr(str) {
 	str = chineseToNumber(str)
 	for (const Operator of Object.keys(OperatorMap))
 		str = str.replaceAll(Operator, OperatorMap[Operator])
-	if (NormalExprRegex.test(str)) return str
 	for (const [rule, replace] of OperatorRuleMap)
-		str = str.replace(rule, (...args) => replace(args.pop()))
+		if (NormalExprRegex.test(str)) return str
+		else str = str.replace(rule, (...args) => replace(args.pop()))
 	return str
 }
 

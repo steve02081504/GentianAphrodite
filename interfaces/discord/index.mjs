@@ -49,7 +49,7 @@ export async function DiscordBotMain(client, config) {
 			[client.user.username.replace(/gentian/ig, '龙胆')]: client.user.id
 		},
 		id2name: {
-			[client.user.id]: client.user.username
+			[client.user.id]: client.user.username + ' (咱自己)'
 		},
 	}
 	let FuyanMode = false, in_hypnosis_channel_id = null
