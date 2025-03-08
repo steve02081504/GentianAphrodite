@@ -69,6 +69,9 @@ export async function GetReply(args) {
 	if (noAISourceAvailable()) return noAIreply(args)
 
 	const prompt_struct = await buildPromptStruct(args)
+	prompt_struct.alternative_charnames = [
+		'Gentian', 'Gentian•Aphrodite', '龙胆', '龙胆•阿芙萝黛蒂', 'Gentian·Aphrodite', '龙胆·阿芙萝黛蒂'
+	]
 	const logical_results = await buildLogicalResults(args, prompt_struct, 0)
 	/** @type {chatReply_t} */
 	const result = {
