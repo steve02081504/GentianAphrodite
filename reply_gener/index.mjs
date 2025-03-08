@@ -91,7 +91,7 @@ export async function GetReply(args) {
 		})
 		result.content = requestresult.content
 		result.files = result.files.concat(requestresult.files || [])
-		if (result.content.trim() == '<-<null>->') return null // AI skipped
+		if (result.content.split('\n').pop().trim() == '<-<null>->') return null // AI skipped
 		/** @type {(import('../../../../../../src/decl/PluginAPI.ts').ReplyHandler_t)[]} */
 		const replyHandlers = [
 			coderunner,
