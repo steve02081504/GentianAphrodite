@@ -87,8 +87,7 @@ export async function DiscordBotMain(client, config) {
 			files: (await Promise.all([...[
 				message.attachments,
 				message.messageSnapshots.map(referencedMessage => referencedMessage.attachments)
-			].flatMap(x => x).filter(Boolean).map(async (attachment) => {
-				if (!attachment.url && attachment[1]?.url) attachment = attachment[1] // wtf?
+			].flatMap(x => x.map(x => x)).flatMap(x => x).filter(Boolean).map(async (attachment) => {
 				if (!attachment.url) {
 					if (Object.keys(attachment).length)
 						console.error('attachment has no url:', attachment)
