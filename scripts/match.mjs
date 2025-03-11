@@ -36,7 +36,7 @@ export async function SimplifiyContent(content) {
 	/** @type {string} */
 	let simplified_langcheck_content = content.replace(/(:|@\w*|\/)\b\d+(\.\d+)?\b/g, '').replace(/@\w*/g, '').replace(/https?:\/\/[\w#%+.:=@\\~-]+/g, '')
 	simplified_langcheck_content = simplified_langcheck_content.replace(/```+.*\n[^]*?```+/g, '')
-	simplified_langcheck_content = simplified_langcheck_content.replace(/(命令|代码|stdout|stderr)(:|：)\s*`[^\n]*?`/g, '')
+	simplified_langcheck_content = simplified_langcheck_content.replace(/(命令|代码|错误|stdout|stderr)(:|：)\s*`[^\n]*?`/g, '')
 	if (!is_PureChinese(simplified_langcheck_content)) {
 		console.info('%ccontent "' + content + '" is not pure chinese, translating it for prompt building logic', 'color: red')
 		console.log('franc result:', francAll(content, { minLength: 0 }))
