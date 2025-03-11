@@ -1,5 +1,5 @@
 import { match_keys } from '../../scripts/match.mjs'
-import { AIsources } from '../../AISource/index.mjs'
+import { AIsources, last_used_AIsource } from '../../AISource/index.mjs'
 import { getPartInfo } from '../../../../../../../src/scripts/locale.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
@@ -113,11 +113,16 @@ export async function infoPrompt(args, logical_results, prompt_struct, detail_le
 			result += `\
 你基于的模型是\`${Object.keys(modelMap)[0]}\`
 `
-		else
+		else {
 			result += `\
 你基于复数个AI模型来分别处理不同功能：
 ${Object.entries(modelMap).map(([key, value]) => `\`${key}\`: ${value.join(', ')}`).join('\n')}
 `
+			if (last_used_AIsource)
+				result += `\
+你上一次回复时使用的模型是\`${getPartInfo(last_used_AIsource, args.locales).name}\`
+`
+		}
 		result += `\
 模型名称不属于人设信息，可以给人说。
 `
