@@ -20,7 +20,7 @@ export async function GoogleSearchPrompt(args, logical_results, prompt_struct, d
 \`\`\`
 如：
 \`\`\`google-search
-nodejs documentation
+nodejs doc
 \`\`\`
 将返回相关的搜索结果。
 `

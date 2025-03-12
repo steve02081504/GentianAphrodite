@@ -1,4 +1,5 @@
 import { search, OrganicResult, ResultTypes } from 'npm:google-sr'
+import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
@@ -16,11 +17,11 @@ export async function googlesearch(result, { AddLongTimeLog }) {
 		try {
 			searchQuery = searchQuery.split('\n').filter((query) => !['```', '```google-search'].includes(query))
 			for (const searchQueryItem of searchQuery) {
-				const queryResult = await search({
+				const queryResult = await tryFewTimes(() => search({
 					query: searchQueryItem,
 					resultTypes: [OrganicResult],
 					requestConfig: {},
-				})
+				}))
 
 				let searchResults = '搜索结果：\n'
 				queryResult.slice(0, 5).forEach((item, index) => {
@@ -46,6 +47,8 @@ export async function googlesearch(result, { AddLongTimeLog }) {
 				content: '搜索时出现错误：\n' + err,
 				files: []
 			})
+
+			return true
 		}
 	}
 

@@ -8,6 +8,7 @@ import { get_discord_silence_plugin } from './silence.mjs'
 import { rude_words } from '../../scripts/dict.mjs'
 import { getMessageFullContent, splitDiscordReply } from './tools.mjs'
 import { discordWorld } from './world.mjs'
+import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
 /** @typedef {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import('npm:discord.js').Message} Message */
 /**
@@ -22,16 +23,6 @@ export function GetBotConfigTemplate() {
 		OwnerUserName: 'your_discord_username',
 		OwnnerNameKeywords: ['your_name_keyword1', 'your_name_keyword2'],
 	}
-}
-
-const MaxRetries = 3
-async function tryFewTimes(func, times = MaxRetries) {
-	while (times--)
-		try { return await func() }
-		catch (error) {
-			await new Promise(resolve => setTimeout(resolve, 2000))
-			if (times === 0) throw error
-		}
 }
 
 /**
