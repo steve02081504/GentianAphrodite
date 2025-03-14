@@ -516,7 +516,7 @@ export async function DiscordBotMain(client, config) {
 						const { content } = message.content.match(/^龙胆.{0,2}复诵.{0,2}`(?<content>.*)`$/).groups
 						return GetMessageSender(message)(content)
 					}
-					else if (!in_hypnosis_channel_id && base_match_keys(message.content, [/^(龙胆|[\n,.~、。呵哦啊嗯噫欸，～])*$/, /^龙胆龙胆(龙胆|[\n!,.?~、。呵哦啊嗯噫欸！，？～])+$/]))
+					else if (!in_hypnosis_channel_id && base_match_keys(message.content, [/^(龙胆|[\n,.~、。呵哦啊嗯噫欸，～])+$/, /^龙胆龙胆(龙胆|[\n!,.?~、。呵哦啊嗯噫欸！，？～])+$/]))
 						return GetMessageSender(message)(SimplifiyChinese(message.content).replaceAll('龙胆', '主人'))
 
 				const has_other_gentian_bot = (() => {
@@ -537,6 +537,7 @@ export async function DiscordBotMain(client, config) {
 					// 则直接使用相同内容的消息作为回复
 					const repet = findMostFrequentElement(chatlog.slice(-10).map(message => message.content).filter(content => content))
 					if (
+						repet.element &&
 						repet.count >= 4 &&
 						!base_match_keys(repet.element, spec_words) &&
 						!isBotCommand(repet.element) &&
