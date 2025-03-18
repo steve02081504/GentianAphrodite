@@ -29,39 +29,49 @@ etc
 \`\`\`view-file
 D:/tmp.mjs
 \`\`\`
-- 使用replace-file来替换文件中的指定内容，可以进行多处替换：
-\`\`\`\`replace-file path
-\`\`\`search
-search1
-\`\`\`replace
-replace1
+- 使用replace-file来替换文件中的指定内容，默认进行多处替换，使用JSON格式：
+\`\`\`replace-file
+[
+	{
+		"path": "文件路径",
+		"replacements": [
+			{
+				"search": "要查找的内容",
+				"replace": "要替换成的内容",
+				"regex": false
+			},
+			{
+				"search": "正则表达式",
+				"replace": "要替换成的内容",
+				"regex": true
+			}
+		]
+	},
+	{
+		"path": "文件2路径",
+		"replacements": [
+			//...
+		]
+	}
+]
 \`\`\`
-\`\`\`search-regex
-search2
-\`\`\`replace
-replace2
-\`\`\`
-\`\`\`\`
-注意这里的格式是replace-file大块包裹search和replace子块，而不是并列关系。
-其中，\`search(-regex|)\`是要被替换的内容，\`replace\`是替换后的内容。
-search和replace可以多行。
-search-regex是正则表达式，其必须和js的正则表达式字面量一样，以\`/\`开头，以\`/(flags)\`结尾。
-search默认替换全部，而search-regex若需要替换不止一个，可以使用\`g\`标志。
+优先使用普通文本查找（regex: false），只有在必要时才使用正则表达式（regex: true）。正则表达式在取消json转义后须符合JavaScript语法，以\`/\`开头，以\`/(flags)\`结尾。
 如：
-\`\`\`\`replace-file D:/tmp.mjs
-\`\`\`search
-const a = 1
+\`\`\`replace-file
+[
+	{
+		"path": "D:/test.txt",
+		"replacements": [
+			{
+				"search": "/\\\\d+/g",
+				"replace": "数字",
+				"regex": true
+			}
+		]
+	}
+]
 \`\`\`
-\`\`\`replace
-const a = 2
-\`\`\`
-\`\`\`search-regex
-/const b = 3/ig
-\`\`\`
-\`\`\`replace
-const b = 4
-\`\`\`
-\`\`\`\`
+
 系统会报告替换失败的段落，并返回替换后的整体文件内容。
 - 使用override-file来创建新文件或覆盖已有文件：
 \`\`\`override-file path
@@ -74,7 +84,7 @@ const b = 2
 \`\`\`
 
 在修改文件前，务必确认文件内容，避免误操作。
-使用replace-file时，务必保证\`replace stuff\`和\`replace-content\`的准确性。
+使用replace-file时，务必保证替换内容和目标的准确性。
 若修正文件内容，尽可能使用替换，替换比覆写更加灵活、简洁。
 万一替换后的文件内容混乱，可以使用override-file来覆盖修正。
 若新建文件，则使用override-file。
