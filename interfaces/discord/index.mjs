@@ -14,14 +14,14 @@ import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
 /**
  * @typedef {{
 * 	OwnerUserName: string
-* 	OwnnerNameKeywords: string[]
+* 	OwnerNameKeywords: string[]
 * }} discord_config_t
 */
 
 export function GetBotConfigTemplate() {
 	return {
 		OwnerUserName: 'your_discord_username',
-		OwnnerNameKeywords: ['your_name_keyword1', 'your_name_keyword2'],
+		OwnerNameKeywords: ['your_name_keyword1', 'your_name_keyword2'],
 	}
 }
 
@@ -119,7 +119,7 @@ export async function DiscordBotMain(client, config) {
 		return result
 	}
 	const Gentian_words = ['龙胆', 'gentian']
-	const spec_words = [...config.OwnnerNameKeywords, ...rude_words, ...Gentian_words]
+	const spec_words = [...config.OwnerNameKeywords, ...rude_words, ...Gentian_words]
 	function isBotCommand(content) {
 		return content.match(/^[!$%&/\\！]/)
 	}
@@ -155,7 +155,7 @@ export async function DiscordBotMain(client, config) {
 
 		let possible = 0
 
-		possible += base_match_keys(content, config.OwnnerNameKeywords) * 7 // 每个匹配对该消息追加 7% 可能性回复消息
+		possible += base_match_keys(content, config.OwnerNameKeywords) * 7 // 每个匹配对该消息追加 7% 可能性回复消息
 
 		possible += base_match_keys(content, Gentian_words) * 5 // 每个匹配对该消息追加 5% 可能性回复消息
 
@@ -212,7 +212,7 @@ export async function DiscordBotMain(client, config) {
 			if (base_match_keys(content, [/[午安早晚]安/])) possible += 100
 		}
 
-		if (message.mentions.users.some(user => user.username === config.OwnerUserName) || base_match_keys(content, config.OwnnerNameKeywords)) {
+		if (message.mentions.users.some(user => user.username === config.OwnerUserName) || base_match_keys(content, config.OwnerNameKeywords)) {
 			possible += 7 // 多出 7% 的可能性回复提及主人的消息
 			if (base_match_keys(content, rude_words)) if (FuyanMode) return false; else return true // 提及还骂人？你妈妈没了
 		}
