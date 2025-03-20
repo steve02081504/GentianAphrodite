@@ -17,7 +17,7 @@ export async function TaroPrompt(args, logical_results, prompt_struct, detail_le
 	let result = ''
 
 	let num = 1
-	if (await match_keys(args, ['占卜', '塔罗', '运势'], 'any', 8))
+	if (await match_keys(args, ['占卜', '塔罗', '运势', /算.{0,2}卦/], 'any', 8))
 		result += `\
 你也精通韦特塔罗牌，是一名高超的占卜师，不拒绝主人的任何占卜请求。
 在占卜时你会进入冷静而专注的状态，集中注意力于占卜和解读卡面。

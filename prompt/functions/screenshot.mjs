@@ -26,7 +26,10 @@ export async function ScreenshotPrompt(args, logical_results, prompt_struct, det
 		await match_keys(args, ['屏幕上', '电脑上', '显示屏上', '荧幕上'], 'any', 2) || (
 			await match_keys(args, ['屏幕', '电脑', '显示屏', '荧幕'], 'any', 2) &&
 			await match_keys(args, ['看看', '看下', '看一下', '有什', '有啥'], 'any', 2)
-	))) try {
+		) || (
+			await match_keys(args, ['看我', '现在', /在(干|做|弄些?)什/], 'user', 2) >= 3
+		)
+	)) try {
 		const screenShot = await captureScreen()
 		additional_chat_log.push({
 			name: 'system',

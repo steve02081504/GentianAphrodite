@@ -199,7 +199,7 @@ export async function DiscordBotMain(client, config) {
 			if (inFavor) {
 				possible += 4
 				if (base_match_keys(content, [
-					/(再|多)(来|表演)(点|.*(次|个))/, '来个', '不够', '不如', '继续',
+					/(再|多)(来|表演)(点|.*(次|个))/, '来个', '不够', '不如', '继续', '确认', '执行',
 					/^(那|所以你|可以再|你?再(讲|说|试试)|你(觉得|想|知道|确定)|但是)/, /^so/i,
 				])) possible += 100
 			}
