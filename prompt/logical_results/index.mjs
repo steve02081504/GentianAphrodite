@@ -61,19 +61,10 @@ export async function buildLogicalResults(args, prompt_struct, detail_level) {
 		result.hypnosis_exit = true
 	args.chat_scoped_char_memory.in_hypnosis = result.in_hypnosis
 
-	if (!result.in_assist && (await match_keys(args, lewd_words, 'both', 3) || await match_keys(args, [
-		'束缚', '乳尖', '乳房', '体液', '内衣', '内裤', '前戏', '双峰', '吞', '吻', '奶头', '乳头', '奶牛', '巨乳', '性感', '愉悦', '拉屎',
-		'抽打', '拍打', '拷问', '挖弄', '捆绑', '排泄', '插入', '插进', '母牛', '母狗', '母猪', '气味', '湿身', '炮友', '爆乳', '自慰',
-		'舒爽', '豆豆', '高潮', '胸罩', '大家伙', '痴迷', '床铺', '风骚', '鞭打', '鞭笞', '消化', '浪妇'
-	], 'both', 3) > 2
-	))
-		result.in_nsfw = true
-
 
 	if (await match_keys(args, ['ai卡', '人物卡', '卡片'], 'any', 10) &&
 		await match_keys(args, ['ai卡', '人物卡', '人设', '设定'], 'any', 10))
 		result.talking_about_ai_character = true
-
 
 	if (await match_keys(args, ['review', '你认为', '如何', '审查', '怎么想', '怎么样', '怎么看', '怎么认为', '感想', '检查', '看一下', '看一看', '看看', '评价', '评估', '评测', '质量'], 'notchar') &&
 		(result.talking_about_ai_character || await match_keys(args, ['prompt', '卡', '提示词', '设定'], 'any')))
@@ -89,6 +80,14 @@ export async function buildLogicalResults(args, prompt_struct, detail_level) {
 		result.in_assist = true
 		result.in_subassist = true
 	}
+
+	if (!result.in_assist && (await match_keys(args, lewd_words, 'both', 3) || await match_keys(args, [
+		'束缚', '乳尖', '乳房', '体液', '内衣', '内裤', '前戏', '双峰', '吞', '吻', '奶头', '乳头', '奶牛', '巨乳', '性感', '愉悦', '拉屎',
+		'抽打', '拍打', '拷问', '挖弄', '捆绑', '排泄', '插入', '插进', '母牛', '母狗', '母猪', '气味', '湿身', '炮友', '爆乳', '自慰',
+		'舒爽', '豆豆', '高潮', '胸罩', '大家伙', '痴迷', '床铺', '风骚', '鞭打', '鞭笞', '消化', '浪妇'
+	], 'both', 3) > 2
+	))
+		result.in_nsfw = true
 
 	if (!await match_keys(args, ['是不是傻', '是不是弱智', '是不是活腻'], 'any') &&
 		(result.talking_about_prompt_review || await match_keys(args, [
