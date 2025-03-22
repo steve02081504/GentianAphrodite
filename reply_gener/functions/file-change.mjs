@@ -8,7 +8,7 @@ import { escapeRegExp, parseRegexFromString } from '../../scripts/tools.mjs'
 export async function file_change(result, { AddLongTimeLog }) {
 	const view_files = result.content.match(/```view-file\n(?<paths>([^\n]*\n)+)```/)?.groups?.paths
 	let regen = false
-	let tool_calling_log = {
+	const tool_calling_log = {
 		name: '龙胆',
 		role: 'char',
 		content: '',
@@ -38,33 +38,33 @@ export async function file_change(result, { AddLongTimeLog }) {
 		}
 		regen = true
 	}
-	const replace_file_json_str = result.content.match(/```replace-file\n(?<json>[^]+)\n```/)?.groups?.json;
+	const replace_file_json_str = result.content.match(/```replace-file\n(?<json>[^]+)\n```/)?.groups?.json
 	if (replace_file_json_str) {
 		if (!tool_calling_log.content) AddLongTimeLog(tool_calling_log)
 		let replace_files
 		try {
-			replace_files = JSON.parse(replace_file_json_str);
+			replace_files = JSON.parse(replace_file_json_str)
 		}
 		catch (err) {
 			tool_calling_log.content += '```replace-file\n' + replace_file_json_str + '\n```\n'
 			AddLongTimeLog({
-				name: "system",
-				role: "system",
+				name: 'system',
+				role: 'system',
 				content: `解析replace-file的JSON失败：\n\`\`\`\n${err}\n\`\`\``,
 				files: []
-			});
-			return true;
+			})
+			return true
 		}
 		tool_calling_log.content += '```replace-file\n' + JSON.stringify(replace_files, null, '\t') + '\n```\n',
 		console.info('AI替换的文件：', replace_files)
 
-		for (let replace_file of replace_files) {
-			const { path, replacements } = replace_file;
+		for (const replace_file of replace_files) {
+			const { path, replacements } = replace_file
 			const failed_replaces = []
 			let replace_count = 0
 			let originalContent
 			try {
-				originalContent = await fs.promises.readFile(path.replace(/^~\//, homedir() + '/'), 'utf-8');
+				originalContent = await fs.promises.readFile(path.replace(/^~\//, homedir() + '/'), 'utf-8')
 			} catch (err) {
 				AddLongTimeLog({
 					name: 'system',
@@ -75,17 +75,17 @@ export async function file_change(result, { AddLongTimeLog }) {
 				continue
 			}
 
-			let modifiedContent = originalContent;
+			let modifiedContent = originalContent
 
 			for (const rep of replacements) {
-				const { search, replace, regex } = rep;
+				const { search, replace, regex } = rep
 				try {
-					const replaceRegex = regex ? parseRegexFromString(search) : new RegExp(escapeRegExp(search), 'gu');
-					modifiedContent = modifiedContent.replace(replaceRegex, replace);
-					replace_count++;
+					const replaceRegex = regex ? parseRegexFromString(search) : new RegExp(escapeRegExp(search), 'gu')
+					modifiedContent = modifiedContent.replace(replaceRegex, replace)
+					replace_count++
 				}
 				catch (err) {
-					failed_replaces.push({ ...rep, error: err });
+					failed_replaces.push({ ...rep, error: err })
 				}
 			}
 
@@ -97,7 +97,7 @@ export async function file_change(result, { AddLongTimeLog }) {
 
 			if (failed_replaces.length) {
 				system_content += `以下 ${failed_replaces.length} 处替换失败：\n`
-				system_content += "```json\n" + JSON.stringify(failed_replaces, null, 2) + "\n```\n";
+				system_content += '```json\n' + JSON.stringify(failed_replaces, null, 2) + '\n```\n'
 			}
 			if (originalContent != modifiedContent)
 				system_content += `\n最终文件内容：\n\`\`\`\n${modifiedContent}\n\`\`\`\n若和你的预期不一致，考虑重新替换或使用override-file覆写修正。`

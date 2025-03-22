@@ -101,6 +101,7 @@ stderr: ${entry.error.includes('\n') ? '\n```\n'+entry.error+'\n```' : '`'+entry
 		chat_log
 	})
 	return {
+		name: '龙胆',
 		recommend_command: AIsuggestion.recommend_command,
 		content: AIsuggestion.content,
 		chat_scoped_char_memory: args.chat_scoped_char_memory,

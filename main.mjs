@@ -1,9 +1,9 @@
 import { GetGreeting, GetGroupGreeting } from './greetings/index.mjs'
 import { GetPrompt, GetPromptForOther } from './prompt/index.mjs'
 import { GetReply } from './reply_gener/index.mjs'
-import { getAISourceData, setAISourceData } from './AISource/index.mjs'
 import { info } from './info/index.mjs'
 import { initCharBase } from './charbase.mjs'
+import { GetData, SetData } from './config.mjs'
 /** @typedef {import('../../../../../src/decl/charAPI.ts').charAPI_t} charAPI_t */
 
 /** @type {charAPI_t} */
@@ -19,14 +19,8 @@ export default {
 
 	interfaces: {
 		config: {
-			GetData: async () => {
-				return {
-					AIsources: getAISourceData()
-				}
-			},
-			SetData: async (data) => {
-				if (data.AIsources) await setAISourceData(data.AIsources)
-			}
+			GetData,
+			SetData
 		},
 		chat: {
 			GetGreeting,

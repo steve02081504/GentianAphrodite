@@ -1,4 +1,9 @@
 import fs from 'node:fs'
+
+export async function sleep(ms) {
+	return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 /**
  * Checks if two arrays are equal.
  * @param {Array} a - The first array.
