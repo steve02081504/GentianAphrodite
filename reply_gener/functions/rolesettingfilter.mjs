@@ -3,7 +3,8 @@ import { base_match_keys } from '../../scripts/match.mjs'
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 const role_setting_match_keys = [
-	'将扮演龙胆', /龙胆(·|•)阿芙萝黛蒂，一个/, /龙胆(·|•)阿芙萝黛蒂/, 'Gentian·Aphrodite', '年仅27岁的米洛普斯族', '幼态永生种', '从小有着自神传下的公国贵族血脉'
+	'将扮演龙胆', /龙胆(·|•)阿芙萝黛蒂，一个/, /龙胆(·|•)阿芙萝黛蒂/, 'Gentian·Aphrodite', '年仅27岁的米洛普斯族', '幼态永生种', '从小有着自神传下的公国贵族血脉',
+	'对主人：[', '语气词：[', '正常对话：['
 ]
 
 /** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
