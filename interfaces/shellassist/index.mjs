@@ -2,6 +2,7 @@ import { GetReply } from '../../reply_gener/index.mjs'
 import GentianAphrodite from '../../main.mjs'
 import { GetShellWorld } from './world.mjs'
 import { recommend_command_plugin } from './recommend_command.mjs'
+import { localhostLocales } from '../../../../../../../src/scripts/i18n.mjs'
 /** @typedef {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
 
 /**
@@ -87,7 +88,7 @@ stderr: ${entry.error.includes('\n') ? '\n```\n'+entry.error+'\n```' : '`'+entry
 		},
 		Charname: '龙胆',
 		UserCharname: args.UserCharname,
-		locales: [],
+		locales: localhostLocales,
 		time: new Date(),
 		world: GetShellWorld(args.shelltype),
 		user: null,

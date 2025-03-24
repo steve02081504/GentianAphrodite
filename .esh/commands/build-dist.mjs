@@ -17,6 +17,7 @@ const result = await rollup({
 		'../../../../../../src/scripts/locale.mjs',
 		'../../../../../../src/server/managers/AIsources_manager.mjs',
 		'../../../../../../../src/scripts/env.mjs',
+		'../../../../../../../src/scripts/i18n.mjs',
 	]
 })
 

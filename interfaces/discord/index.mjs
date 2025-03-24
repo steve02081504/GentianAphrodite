@@ -9,6 +9,7 @@ import { rude_words } from '../../scripts/dict.mjs'
 import { getMessageFullContent, splitDiscordReply } from './tools.mjs'
 import { discordWorld } from './world.mjs'
 import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
+import { localhostLocales } from '../../../../../../../src/scripts/i18n.mjs'
 /** @typedef {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import('npm:discord.js').Message} Message */
 /**
@@ -281,7 +282,7 @@ export async function DiscordBotMain(client, config) {
 				},
 				Charname: userNameMap.id2name[client.user.id],
 				UserCharname: config.OwnerUserName,
-				locales: [],
+				locales: localhostLocales,
 				time: new Date(),
 				world: discordWorld,
 				user: null,
@@ -399,7 +400,7 @@ export async function DiscordBotMain(client, config) {
 				Charname: userNameMap.id2name[client.user.id],
 				UserCharname: config.OwnerUserName,
 				ReplyToCharname: message.author.username,
-				locales: [],
+				locales: localhostLocales,
 				time: new Date(),
 				world: discordWorld,
 				user: null,
