@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import mime from 'npm:mime-types'
 import os from 'node:os'
+import { mimetypeFromBufferAndName } from '../../scripts/mimetype.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
@@ -39,7 +39,7 @@ export async function filesender(result, { AddLongTimeLog }) {
 			filesendlog += file + '\t'
 			try {
 				const filebuffer = fs.readFileSync(file)
-				result.files.push({ name: path.basename(file), buffer: filebuffer, mimeType: mime.lookup(file) || 'application/octet-stream' })
+				result.files.push({ name: path.basename(file), buffer: filebuffer, mimeType: await mimetypeFromBufferAndName(filebuffer, file) })
 				filesendlog += '成功！\n'
 				result.extension.sended_files[file] = true
 			}

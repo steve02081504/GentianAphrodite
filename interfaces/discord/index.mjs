@@ -10,6 +10,7 @@ import { getMessageFullContent, splitDiscordReply } from './tools.mjs'
 import { discordWorld } from './world.mjs'
 import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
 import { localhostLocales } from '../../../../../../../src/scripts/i18n.mjs'
+import { mimetypeFromBufferAndName } from '../../scripts/mimetype.mjs'
 /** @typedef {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import('npm:discord.js').Message} Message */
 /**
@@ -86,13 +87,14 @@ export async function DiscordBotMain(client, config) {
 					return
 				}
 				try {
+					const buffer = Buffer.from(await tryFewTimes(
+						() => fetch(attachment.url).then((response) => response.arrayBuffer())
+					))
 					return {
 						name: attachment.name,
-						buffer: Buffer.from(await tryFewTimes(
-							() => fetch(attachment.url).then((response) => response.arrayBuffer())
-						)),
+						buffer,
 						description: attachment.description,
-						mimeType: attachment.contentType
+						mimeType: attachment.contentType || await mimetypeFromBufferAndName(buffer, attachment.name)
 					}
 				}
 				catch (error) {
