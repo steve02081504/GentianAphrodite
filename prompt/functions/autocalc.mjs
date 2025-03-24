@@ -23,10 +23,10 @@ export async function AutoCalcPrompt(args, logical_results, prompt_struct, detai
 ${Object.entries(nums).sort((a, b) => a[1].compare(b[1])).map(([expr, value]) => `${expr}${expr == value ? '' : `（${value}）`}`).join('小于')}
 `
 	}
-	if (await match_keys(args, ['是多少', '是几', '算一下', '算下', /[=＝][?？]/], 'any')) {
+	if (await match_keys(args, ['是多少', '是几', '算一下', '算下', '计算', /[=＝][?？]/], 'any')) {
 		const exprs = findChineseExprs(getLog().replace(/(:|@\w*)\b\d+(\.\d+)?\b/g, '').replace(/\b(\d*)d(\d+)([+-]\d+)?\b/g, ''))
 		if (Object.keys(exprs).length) {
-			const expr_result = Object.entries(exprs).map(([expr, value]) => `${expr} = ${value}`).join('\n')
+			const expr_result = Object.entries(exprs).map(([expr, value]) => `${expr} = ${value}`).filter(x => x.length < 1024).join('\n')
 			result += `\
 以下是一些计算结果，可能对你的回答有帮助：
 ${expr_result}
