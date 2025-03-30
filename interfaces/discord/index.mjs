@@ -334,6 +334,7 @@ export async function DiscordBotMain(client, config) {
 			await messagesender(AIsuggestion)
 		}
 	}
+	const BannedStrings = []
 	/**
 	 * @param {import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
 	 * @returns {Promise<void>}
@@ -415,6 +416,9 @@ export async function DiscordBotMain(client, config) {
 				extension: {}
 			})
 			const reply = FuyanMode ? { content: '嗯嗯！' } : await GetReply(replayQuestGener())
+
+			for (const BannedString of BannedStrings)
+				reply.content = reply.content.replaceAll(BannedString, '')
 
 			await replyHandler(reply)
 		} catch (error) {
@@ -513,6 +517,10 @@ export async function DiscordBotMain(client, config) {
 					else if (base_match_keys(message.content, [/^龙胆.{0,2}复诵.{0,2}`.*`$/])) {
 						const { content } = message.content.match(/^龙胆.{0,2}复诵.{0,2}`(?<content>.*)`$/).groups
 						return GetMessageSender(message)(content)
+					}
+					else if (base_match_keys(message.content, [/^龙胆.{0,2}禁止.{0,2}`.*`$/])) {
+						const { content } = message.content.match(/^龙胆.{0,2}禁止.{0,2}`(?<content>.*)`$/).groups
+						BannedStrings.push(content)
 					}
 					else if (!in_hypnosis_channel_id && base_match_keys(message.content, [/^(龙胆|[\n,.~、。呵哦啊嗯噫欸，～])+$/, /^龙胆龙胆(龙胆|[\n!,.?~、。呵哦啊嗯噫欸！，？～])+$/]))
 						return GetMessageSender(message)(SimplifiyChinese(message.content).replaceAll('龙胆', '主人'))
