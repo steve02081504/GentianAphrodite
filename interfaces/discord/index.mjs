@@ -79,13 +79,9 @@ export async function DiscordBotMain(client, config) {
 			content,
 			files: (await Promise.all([...[
 				message.attachments,
-				message.messageSnapshots.map(referencedMessage => referencedMessage.attachments)
-			].flatMap(x => x.map(x => x)).flatMap(x => x).filter(Boolean).map(async (attachment) => {
-				if (!attachment.url) {
-					if (Object.keys(attachment).length)
-						console.error('attachment has no url:', attachment)
-					return
-				}
+				...message.messageSnapshots.map(referencedMessage => referencedMessage.attachments)
+			].flatMap(x => x.map(x => x)).filter(Boolean).map(async (attachment) => {
+				if (!attachment.url) return console.error('attachment has no url:', attachment)
 				try {
 					const buffer = Buffer.from(await tryFewTimes(
 						() => fetch(attachment.url).then((response) => response.arrayBuffer())
@@ -439,7 +435,6 @@ export async function DiscordBotMain(client, config) {
 				last.content += '\n' + entry.content
 				last.files = entry.files
 				last.extension ??= {}
-				last.extension.discord_messages ??= []
 				last.extension.discord_messages = last.extension.discord_messages.concat(entry.extension.discord_messages)
 			}
 			else
@@ -489,7 +484,7 @@ export async function DiscordBotMain(client, config) {
 
 					if (
 						last?.name == newlog.name &&
-						newlog.timeStamp - last.timeStamp < 3 * 60000 &&
+						(newlog.timeStamp - last.timeStamp < 3 * 60000) &&
 						last.files.length == 0
 					) {
 						last.content += '\n' + newlog.content
