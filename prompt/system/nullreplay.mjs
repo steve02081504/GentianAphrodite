@@ -20,12 +20,10 @@ ${args.UserCharname}: 那张三你觉得我什么时候去合适？
 `
 
 	return {
-		text: [],
-		additional_chat_log: [{
-			name: 'system',
-			role: 'system',
+		text: [{
 			content: result,
-			files: []
-		}]
+			important: 0
+		}],
+		additional_chat_log: []
 	}
 }

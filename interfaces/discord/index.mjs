@@ -191,7 +191,7 @@ export async function DiscordBotMain(client, config) {
 
 		if (message.author.username === config.OwnerUserName) {
 			if (base_match_keys(content, ['老婆', '女票', '女朋友', '炮友'])) possible += 50
-			if (base_match_keys(content, [/(有点|好)紧张/, '救救', '帮帮', '帮我', '来人', '咋用', '教教', /是真的(吗|么)/])) possible += 100
+			if (base_match_keys(content, [/(有点|好)紧张/, '救救', '帮帮', /帮(我|(你|你家)?(主人|老公|丈夫|爸爸|宝宝))/, '来人', '咋用', '教教', /是真的(吗|么)/])) possible += 100
 			if (base_match_keys(content, ['龙胆']) && base_match_keys(content, [/怎么(想|看)/])) possible += 100
 			if (base_match_keys(content, ['睡了', '眠了', '晚安', '睡觉去了'])) possible += 50
 			if (base_match_keys(content, ['失眠了', '睡不着'])) possible += 100
