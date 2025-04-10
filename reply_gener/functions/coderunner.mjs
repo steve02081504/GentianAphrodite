@@ -22,48 +22,115 @@ export async function coderunner(result, { AddLongTimeLog }) {
 		})
 		console.info('AI运行的JS代码：', jsrunner)
 		let coderesult
-		const virtualconsole = new VirtualConsole({ realConsoleOutput: true }) // 一个虚拟的控制台用于记录ai执行的代码产生的输出并返回给ai
+		const virtualconsole = new VirtualConsole({ realConsoleOutput: true }) // 捕获输出
 		try {
-			// 使用 acorn 解析代码为 AST
 			const ast = parse(jsrunner, {
 				ecmaVersion: 'latest',
 				sourceType: 'module',
 			})
-			// 使用 estree-walker 遍历 AST，并进行修改
+
 			walk(ast, {
-				enter(node, parent, prop, index) {
-					if (
+				enter(/** @type {import('estree').Node} */ node, parent, prop, index) {
+					// 将 import xxx from 'module' 转换为 const { xxx } = await import('module')
+					if (node.type === 'ImportDeclaration') {
+						const dynamicImportCall = builders.awaitExpression(
+							builders.callExpression(
+								builders.identifier('import'),
+								[node.source]
+							)
+						)
+
+						if (node.specifiers && node.specifiers.length > 0) {
+							let hasNamespace = false
+							const properties = []
+
+							for (const specifier of node.specifiers)
+								if (specifier.type === 'ImportNamespaceSpecifier') {
+									// import * as name from '...' => const name = await import('...')
+									hasNamespace = true
+									const declaration = builders.variableDeclaration('const', [
+										builders.variableDeclarator(specifier.local, dynamicImportCall)
+									])
+									this.replace(declaration)
+									break
+								} else if (specifier.type === 'ImportDefaultSpecifier')
+									// import defaultName from '...' => { default: defaultName }
+									properties.push(
+										builders.property(
+											'init',
+											builders.identifier('default'),
+											specifier.local,
+											false,
+											false
+										)
+									)
+								 else if (specifier.type === 'ImportSpecifier')
+									// import { name } from '...' / import { name as alias } from '...' => { name } / { name: alias }
+									properties.push(
+										builders.property(
+											'init',
+											specifier.imported,
+											specifier.local,
+											specifier.imported.name === specifier.local.name,
+											false
+										)
+									)
+
+							if (!hasNamespace && properties.length > 0) {
+								// const { default: D, X, Y: Z } = await import('...');
+								const declaration = builders.variableDeclaration('const', [
+									builders.variableDeclarator(
+										builders.objectPattern(properties),
+										dynamicImportCall
+									)
+								])
+								this.replace(declaration)
+							} else if (!hasNamespace && properties.length === 0) {
+								// import {} from '...' => await import('...');
+								const expressionStatement = builders.expressionStatement(dynamicImportCall)
+								this.replace(expressionStatement)
+							}
+						} else {
+							// import '...' => await import('...'); (Side effects)
+							const expressionStatement = builders.expressionStatement(dynamicImportCall)
+							this.replace(expressionStatement)
+						}
+					}
+					// 添加隐式 return
+					else if (
 						node.type === 'Program' &&
 						!node.body.some(n => n.type === 'ReturnStatement')
 					) {
-						// 如果没有 return 语句，则添加 return 语句
 						const lastStatement = node.body[node.body.length - 1]
-						if (lastStatement && lastStatement.type === 'ExpressionStatement')
-							node.body[node.body.length - 1] = builders.returnStatement(
-								lastStatement.expression,
-							)
-						else if (lastStatement && lastStatement.type === 'VariableDeclaration') {
-							const lastDeclaration = lastStatement.declarations[lastStatement.declarations.length - 1]
-							if (lastDeclaration.init)
-								node.body.push(builders.returnStatement(lastDeclaration.id))
+						switch (lastStatement.type) {
+							case 'ExpressionStatement':
+								// return a + b;
+								node.body[node.body.length - 1] = builders.returnStatement(
+									lastStatement.expression,
+								)
+								break
+							case 'VariableDeclaration':
+								// const a = 1; => const a = 1; return a;
+								const lastDeclaration = lastStatement.declarations[lastStatement.declarations.length - 1]
+								if (lastDeclaration.init && lastDeclaration.id.type === 'Identifier')
+									node.body.push(builders.returnStatement(lastDeclaration.id))
+
+								break
 						}
 					}
 				},
 			})
 
-			// 将修改后的 AST 转换回代码
 			const modifiedCode = generate(ast)
-			// 使用 eval 执行修改后的代码
-			const console = virtualconsole
-			console
+			const console = virtualconsole; console
 			const result = await eval(`(async () => {${modifiedCode}})()`)
 			coderesult = {
 				result,
 				output: virtualconsole.outputs
 			}
-		} catch (err) {
+		} catch (error) {
 			coderesult = {
-				error: err,
+				error,
 				output: virtualconsole.outputs
 			}
 		}
