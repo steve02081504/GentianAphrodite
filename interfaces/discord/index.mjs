@@ -3,7 +3,7 @@ import { Buffer } from 'node:buffer'
 import { base_match_keys, SimplifiyChinese, PreprocessChatLogEntry } from '../../scripts/match.mjs'
 import { GetReply } from '../../reply_gener/index.mjs'
 import GentianAphrodite from '../../main.mjs'
-import { findMostFrequentElement } from '../../scripts/tools.mjs'
+import { escapeRegExp, findMostFrequentElement } from '../../scripts/tools.mjs'
 import { get_discord_silence_plugin } from './silence.mjs'
 import { rude_words } from '../../scripts/dict.mjs'
 import { getMessageFullContent, splitDiscordReply } from './tools.mjs'
@@ -247,7 +247,7 @@ export async function DiscordBotMain(client, config) {
 	function GetMessageSender(message) {
 		const default_messagesender = async reply => await tryFewTimes(() => message.channel.send(reply))
 		let messagesender = default_messagesender
-		if (message.mentions?.users?.has?.(client.user.id))
+		if (message.mentions?.users?.has?.(client.user.id) && ChannelMessageQueues[message.channel.id].length)
 			messagesender = async reply => {
 				// Check for actual mentions like <@id>
 				if ((reply.content || reply)?.match?.(/<@\d+>/))
@@ -353,14 +353,26 @@ export async function DiscordBotMain(client, config) {
 				else in_hypnosis_channel_id = null
 
 				if (reply?.content || reply?.files?.length) {
-					if (reply.content.startsWith(`@${message.author.username}`))
-						reply.content = reply.content.slice(`@${message.author.username}`.length).trim()
+					const members = message.channel?.members
+					if (members && reply.content.includes('@')) {
+						const nameToIdMap = new Map()
+						let sortedNames = []
+						members.map(member => {
+							nameToIdMap.set(member.user.username, member.user.id)
+							sortedNames.push(member.user.username)
+							nameToIdMap.set(member.displayName, member.user.id)
+							sortedNames.push(member.displayName)
+						})
+						sortedNames = [...new Set(sortedNames)].sort((a, b) => b.length - a.length)
 
-					reply.content = reply.content.replace(/@(\S+)/g, (match, username) => {
-						const mentionedUser = message.channel?.members?.find?.(member => member.displayName == username || member.user.username == username)
-						if (mentionedUser) return `<@${mentionedUser.id}>`
-						return match
-					})
+						if (sortedNames.length > 0) {
+							const mentionRegex = new RegExp(`@(${sortedNames.map(escapeRegExp).join('|')})(?!\\w)`, 'g')
+							reply.content = reply.content.replace(mentionRegex, (match, matchedName) => {
+								const userId = nameToIdMap.get(matchedName)
+								return userId ? `<@${userId}>` : match
+							})
+						}
+					}
 
 					const splited_reply = splitDiscordReply(reply.content)
 					const last_reply = splited_reply.pop()
