@@ -553,17 +553,26 @@ export async function DiscordBotMain(client, config) {
 				else if (!in_hypnosis_channel_id && message.author.id != client.user.id) {
 					// 若消息记录的后10条中有5条以上的消息内容相同
 					// 则直接使用相同内容的消息作为回复
-					const repet = findMostFrequentElement(chatlog.slice(-10).map(message => message.content).filter(content => content))
+					const repet = findMostFrequentElement(chatlog.slice(-10), message => message.content + '\n\n' + message.files.map(file => file.buffer.toString('hex')).join('\n'))
 					if (
 						repet.element &&
 						repet.count >= 4 &&
-						!base_match_keys(repet.element, spec_words) &&
-						!isBotCommand(repet.element) &&
+						!base_match_keys(repet.element.content, spec_words) &&
+						!isBotCommand(repet.element.content) &&
 						message.author.id != client.user.id &&
-						!chatlog.some((message) => message.name == client.user.username && message.content == repet.element)
+						!chatlog.some((message) => message.name == client.user.username && message.content == repet.element.content)
 					) {
-						console.info('复读！', repet.element)
-						GetMessageSender(message)(repet.element)
+						console.info('复读！', repet.element.content)
+						GetMessageSender(message)({
+							content: repet.element.content,
+							files: (repet.element.files || []).map(file => {
+								return {
+									attachment: file.buffer,
+									name: file.name,
+									description: file.description
+								}
+							})
+						})
 					}
 				}
 			}

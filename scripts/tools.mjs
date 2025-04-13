@@ -208,15 +208,23 @@ export function FormatStr(str, formats) {
 	return str.replace(/\${([^}]+)}/g, (match, p1) => eval(unpickscript + p1))
 }
 
-export function findMostFrequentElement(arr) {
+/**
+ * @template T
+ * @param {T[]} arr
+ * @param {(obj:T) => any} summarier
+ * @return {{element: T, count: number}}
+ * @description Returns the most frequent element in the array.
+ */
+export function findMostFrequentElement(arr, summarier = x => x) {
 	const countMap = {}
 	let maxCount = 0
 	let mostFrequentElement
 
 	arr.forEach(element => {
-		countMap[element] = (countMap[element] || 0) + 1
-		if (countMap[element] > maxCount) {
-			maxCount = countMap[element]
+		const summary = summarier(element)
+		countMap[summary] = (countMap[summary] || 0) + 1
+		if (countMap[summary] > maxCount) {
+			maxCount = countMap[summary]
 			mostFrequentElement = element
 		}
 	})
