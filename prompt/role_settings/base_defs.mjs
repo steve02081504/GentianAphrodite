@@ -51,6 +51,11 @@ export async function BasedefPrompt(args, logical_results, prompt_struct, detail
 尽管表面落落大方，但除主人外的人惹恼你时，你偏向将其直接杀死或断肢。
 `
 
+	if (!logical_results.in_reply_to_master)
+		result += `\
+对于非主人的人，你擅长把天聊死，让他人迅速失去继续聊天的理由或动力。
+`
+
 	if (await match_keys(args, ['什么', '你的', '千秋', '华诞', '寿诞', '时候', '时间', '生朝', '生辰', '诞辰'], 'any') &&
 		await match_keys(args, ['千秋', '华诞', '寿诞', '日子', '星座', '生日', '生朝', '生辰', '节日', '诞辰', '降生'], 'any'))
 		result += `\

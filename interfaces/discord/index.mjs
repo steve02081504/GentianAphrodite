@@ -555,7 +555,7 @@ export async function DiscordBotMain(client, config) {
 					// 则直接使用相同内容的消息作为回复
 					const repet = findMostFrequentElement(chatlog.slice(-10), message => message.content + '\n\n' + message.files.map(file => file.buffer.toString('hex')).join('\n'))
 					if (
-						repet.element &&
+						repet.element.content &&
 						repet.count >= 4 &&
 						!base_match_keys(repet.element.content, spec_words) &&
 						!isBotCommand(repet.element.content) &&
