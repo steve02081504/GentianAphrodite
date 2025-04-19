@@ -35,8 +35,8 @@ import { localhostLocales } from '../../../../../../../src/scripts/i18n.mjs'
 export async function shellAssistMain(args) {
 	/** @type {chatLogEntry_t[]} */
 	const chat_log = []
-	for(const entry of args.shellhistory)
-		if(entry.command)
+	for (const entry of args.shellhistory)
+		if (entry.command)
 			chat_log.push({
 				role: 'system',
 				name: args.shelltype || '终端',
@@ -44,8 +44,8 @@ export async function shellAssistMain(args) {
 用户执行了命令: \`${entry.command}\`
 
 执行结果：
-stdout: ${entry.output.includes('\n') ? '\n```\n'+entry.output+'\n```' : '`'+entry.output+'`'}
-stderr: ${entry.error.includes('\n') ? '\n```\n'+entry.error+'\n```' : '`'+entry.error+'`'}
+stdout: ${entry.output.includes('\n') ? '\n```\n' + entry.output + '\n```' : '`' + entry.output + '`'}
+stderr: ${entry.error.includes('\n') ? '\n```\n' + entry.error + '\n```' : '`' + entry.error + '`'}
 `,
 				files: [],
 				extension: entry.extension ??= {}

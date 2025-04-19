@@ -168,8 +168,8 @@ export async function DiscordBotMain(client, config) {
 			(base_match_keys(
 				content.substring(0, 5) + ' ' + content.substring(content.length - 3), ['龙胆']
 			) || base_match_keys(EngWords.slice(0, 6).concat(EngWords.slice(-3)).join(' '), ['gentian'])) &&
-				!base_match_keys(content, [/(龙胆(有|能|这边|目前|[^ 。你，]{0,3}的)|gentian('s|is|are|can|has))/i]) &&
-				!base_match_keys(content, [/^.{0,5}龙胆$/i]
+			!base_match_keys(content, [/(龙胆(有|能|这边|目前|[^ 。你，]{0,3}的)|gentian('s|is|are|can|has))/i]) &&
+			!base_match_keys(content, [/^.{0,5}龙胆$/i]
 			)
 		)
 
@@ -278,6 +278,7 @@ export async function DiscordBotMain(client, config) {
 					files: true,
 					add_message: false,
 				},
+				chat_name: 'self-recovery-' + new Date().getTime(),
 				Charname: userNameMap.id2name[client.user.id],
 				UserCharname: config.OwnerUserName,
 				locales: localhostLocales,
@@ -408,6 +409,7 @@ export async function DiscordBotMain(client, config) {
 					files: true,
 					add_message: true,
 				},
+				chat_name: `${message.guild.name}: #${message.channel.name}`,
 				Charname: userNameMap.id2name[client.user.id],
 				UserCharname: config.OwnerUserName,
 				ReplyToCharname: message.author.username,

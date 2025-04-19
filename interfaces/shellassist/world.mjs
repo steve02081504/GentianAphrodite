@@ -1,5 +1,5 @@
 
-export function GetShellWorld (shelltype) {
+export function GetShellWorld(shelltype) {
 	/**
 	* @type {import('../../../../../../../src/decl/WorldAPI.ts').WorldAPI_t}
 	*/

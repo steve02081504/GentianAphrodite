@@ -13,75 +13,60 @@ export async function FileChangePrompt(args, logical_results, prompt_struct, det
 	let result = ''
 
 	if (!args || logical_results.in_assist || await match_keys(args, [
-		'文件', /```(view|replace|override)-file/, 'error', /Error/, /file:\/\//
+		'文件', /<\/?(view|replace|override)-file/i, 'error', /Error/, /file:\/\//
 	], 'any') || await match_keys(args, [
-		'查看', '浏览', '替换', '修改', '新建', '创建', '写入', '文件'
+		'查看', '浏览', '替换', '修改', '新建', '创建', '写入', '文件', '读取', /\.[A-Za-z]{2,4}/
 	], 'user') >= 2) {
 		result += `\
 无需shell命令，你可以进行更加原生的文件操作。通过返回以下格式来触发执行并获取结果：
-- 使用view-file查看文件内容：
-\`\`\`view-file
+- 使用 <view-file> 查看文件内容:
+<view-file>
 path1
 path2
 etc
-\`\`\`
+</view-file>
 如：
-\`\`\`view-file
+<view-file>
 D:/tmp.mjs
-\`\`\`
-- 使用replace-file来替换文件中的指定内容，默认进行多处替换，使用JSON格式：
-\`\`\`replace-file
-[
-	{
-		"path": "文件路径",
-		"replacements": [
-			{
-				"search": "要查找的内容",
-				"replace": "要替换成的内容",
-				"regex": false
-			},
-			{
-				"search": "正则表达式",
-				"replace": "要替换成的内容",
-				"regex": true
-			}
-		]
-	},
-	{
-		"path": "文件2路径",
-		"replacements": [
-			//...
-		]
-	}
-]
-\`\`\`
-优先使用普通文本查找（regex: false），只有在必要时才使用正则表达式（regex: true）。正则表达式在取消json转义后须符合JavaScript语法，以\`/\`开头，以\`/(flags)\`结尾。
-如：
-\`\`\`replace-file
-[
-	{
-		"path": "D:/test.txt",
-		"replacements": [
-			{
-				"search": "/\\\\d+/g",
-				"replace": "数字",
-				"regex": true
-			}
-		]
-	}
-]
-\`\`\`
+</view-file>
 
-系统会报告替换失败的段落，并返回替换后的整体文件内容。
-- 使用override-file来创建新文件或覆盖已有文件：
-\`\`\`override-file path
-content
-\`\`\`
+- 使用 <replace-file> 替换文件内容：
+<replace-file>
+	<file path="文件路径">
+		<replacement regex="false">
+			<search>要查找的普通文本</search>
+			<replace>要替换成的内容</replace>
+		</replacement>
+		<replacement regex="true">
+			<search>/正则表达式/flags</search> <!-- JS风格的正则表达式字符串 -->
+			<replace>要替换成的内容</replace>
+		</replacement>
+		<!-- 可以有多个 <replacement> -->
+	</file>
+	<!-- 可以有多个 <file> -->
+</replace-file>
+
+优先使用普通文本查找 (\`regex="false"\`)，只有在必要时才使用正则表达式 (\`regex="true"\`)。
+当 \`regex="true"\` 时, \`<search>\` 标签内的文本应为JavaScript语法的正则表达式字符串（包含开头的 \`/\` 和结尾的 \`/flags\`）。
+如，将所有数字替换为"数字":
+<replace-file>
+	<file path="D:/test.txt">
+		<replacement regex="true">
+			<search>/\\d+/g</search>
+			<replace>数字</replace>
+		</replacement>
+	</file>
+</replace-file>
+
+系统会报告替换失败的操作，并返回替换后的整体文件内容。
+
+- 使用 <override-file> 来创建新文件或完全覆盖已有文件内容:
+<override-file path="文件路径">文件内容写在这里</override-file>
 如：
-\`\`\`override-file D:/tmp.mjs
-const a = 1
-const b = 2
-\`\`\`
+<override-file path="D:/tmp.mjs">
+const a = 1;
+const b = 2;
+</override-file>
 
 在修改文件前，务必确认文件内容，避免误操作。
 使用replace-file时，务必保证替换内容和目标的准确性。

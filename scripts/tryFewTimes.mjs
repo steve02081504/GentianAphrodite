@@ -1,5 +1,5 @@
 const MaxRetries = 3
-export async function tryFewTimes(func, { times = MaxRetries , WhenFailsWaitFor = 2000} = {}) {
+export async function tryFewTimes(func, { times = MaxRetries, WhenFailsWaitFor = 2000 } = {}) {
 	while (times--)
 		try { return await func() }
 		catch (error) {

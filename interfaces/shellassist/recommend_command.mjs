@@ -25,21 +25,24 @@ export const recommend_command_plugin = {
 							content: `\
 你可以通过回复以下格式来推荐命令让${args.UserCharname}选择是否执行：
 
-\`\`\`recommend_command
+<recommend_command>
 command_body
-\`\`\`
+</recommend_command>
 `,
 						}
 					]
 				}
 			},
 			ReplyHandler: async (result) => {
-				const command = result.content.match(/```recommend_command\n(?<command>[^]+?)\n```/)?.groups?.command
+				const match = result.content.match(/<recommend_command>(?<command>[\S\s]*?)<\/recommend_command>/)
+				const command = match?.groups?.command?.trim() // Extract and trim the command
+
 				if (command) {
 					result.extension.recommend_command = result.recommend_command = command
-					result.content = result.content.replace(/\s*```recommend_command\n[^]+?\n```\s*/g, '\n')
+					result.content = result.content.replace(/\s*<recommend_command>[\S\s]*?<\/recommend_command>\s*/g, '\n').trim() // Also trim result
 				}
 
+				// Return false as this handler only modifies the result, doesn't fully handle the reply
 				return false
 			}
 		}

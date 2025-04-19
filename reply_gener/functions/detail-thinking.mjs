@@ -58,8 +58,7 @@ export async function detailThinking(result, { AddLongTimeLog, prompt_struct }) 
 
 	result.extension.execed_codes ??= {}
 
-	// Use [\s\S] to match across lines, including newlines
-	const questionMatch = result.content.match(/```detail-thinking\n(?<question>[\S\s]*?)\n```/)
+	const questionMatch = result.content.match(/<detail-thinking>(?<question>[\S\s]*?)<\/detail-thinking>/)
 	if (!questionMatch?.groups?.question) return false
 	const question = questionMatch.groups.question.trim()
 	if (!question) {
@@ -80,7 +79,7 @@ export async function detailThinking(result, { AddLongTimeLog, prompt_struct }) 
 			extension: {}
 		},
 		plugin_prompts: {},
-		chat_log: [] // History specific to this internal thinking process
+		chat_log: prompt_struct.chat_log.slice(-10),
 	}
 
 	let plan = []
@@ -89,7 +88,7 @@ export async function detailThinking(result, { AddLongTimeLog, prompt_struct }) 
 	const startTime = Date.now()
 
 	AddLongTimeLog({
-		content: `\`\`\`detail-thinking\n${question}\n\`\`\`\n`,
+		content: `<detail-thinking>\n${question}\n</detail-thinking>\n`,
 		name: '龙胆', // Assuming '龙胆' is the character triggering this
 		role: 'char',
 	})
@@ -150,7 +149,7 @@ Step 2: <步骤2主题>
 				})
 				if (retries < initial_plan_max_retries) {
 					thinkingContext.chat_log.push({
-						content: `你上次的输出是：\n\`\`\`\n${planText}\n\`\`\`\n这未能解析为有效的计划。请确保你的回答直接以 "Step 1: ..." 开始，或者以 "Plan:" 开头然后紧跟 "Step 1: ..."。步骤必须从1开始且连续。请严格按要求重新生成 (${retries}/${initial_plan_max_retries})。`,
+						content: `你上次的输出未能解析为有效的计划。请确保你的回答直接以 "Step 1: ..." 开始，或者以 "Plan:" 开头然后紧跟 "Step 1: ..."。步骤必须从1开始且连续。请严格按要求重新生成 (${retries}/${initial_plan_max_retries})。`,
 						name: 'system',
 						role: 'system',
 					})
@@ -185,7 +184,6 @@ Step 2: <步骤2主题>
 			planningCycles++
 			console.info(`Detail-thinking: Starting planning cycle ${planningCycles}/${max_planning_cycles}`)
 
-			// Set combined prompt for execution phase, including available tools
 			thinkingContext.char_prompt = margePrompt(
 				await DetailThinkingMainPrompt(),
 				await GoogleSearchPrompt(),
@@ -207,7 +205,7 @@ Step 2: <步骤2主题>
 **任务：**
 1. **执行** 此步骤。
 2. **输出结果：**
-	* **若需工具：** 输出工具调用指令（例如 \`\`\`google-search\n查询内容\n\`\`\`）。工具执行后，其结果将添加到对话记录中，你需基于新信息继续处理**本步骤**，直到你能输出本步骤的最终文本结果或明确的障碍说明。
+	* **若需工具：** 输出工具调用指令（例如 \`<run-js>code</run-js>\` 或 \`<google-search>查询内容</google-search>\`）。工具执行后，其结果将添加到对话记录中，你需基于新信息继续处理**本步骤**，直到你能输出本步骤的最终文本结果或明确的障碍说明。
 	* **若无需工具或工具已执行完毕：** 输出**本步骤最终的文本结果**。
 	* **若当前无法执行（例如信息不足且无法通过工具获取）：** 明确说明遇到的障碍。
 
@@ -309,10 +307,11 @@ ${!isFinalCycle ? `
 			})
 
 			let summaryRetries = 0
+			let summaryRaw = '' // Define summaryRaw outside the loop to be accessible in the final fallback log
 			summary_regen: while (true) {
 				console.info(`Detail-thinking: Cycle ${planningCycles}, Requesting summary/replan (Attempt ${summaryRetries}/${summary_max_retries})...`)
 				const requestResult = await OrderedAISourceCalling('detail-thinking', AI => AI.StructCall(thinkingContext))
-				const summaryRaw = requestResult.content
+				summaryRaw = requestResult.content // Assign here
 				const summary = summaryRaw.trim() // Use trimmed version for marker checks
 
 				// Log AI attempt immediately
@@ -328,7 +327,7 @@ ${!isFinalCycle ? `
 					const answer = summary.substring('detail-thinking-answer:'.length).trim()
 					console.info(`Detail-thinking: Finished (Answer) after ${planningCycles} cycles. Time: ${thinkingTime.toFixed(2)}s. Answer:\n${answer}`)
 					AddLongTimeLog({
-						content: `详细思考完成 (耗时 ${thinkingTime.toFixed(2)} 秒, ${planningCycles} 轮)。\n\`\`\`detail-thinking-answer:\n${answer}\n\`\`\`\n(请用自然语气复述以上结果)`,
+						content: `详细思考完成 (耗时 ${thinkingTime.toFixed(2)} 秒, ${planningCycles} 轮)。\n<detail-thinking-answer>\n${answer}\n</detail-thinking-answer>\n(请用自然语气复述以上结果)`,
 						name: 'system',
 						role: 'system',
 					})
@@ -339,7 +338,7 @@ ${!isFinalCycle ? `
 					const reason = summary.substring('detail-thinking-failed:'.length).trim()
 					console.info(`Detail-thinking: Finished (Failed) after ${planningCycles} cycles. Time: ${thinkingTime.toFixed(2)}s. Reason:\n${reason}`)
 					AddLongTimeLog({
-						content: `详细思考未能成功 (耗时 ${thinkingTime.toFixed(2)} 秒, ${planningCycles} 轮)。\n\`\`\`detail-thinking-failed:\n${reason}\n\`\`\`\n(请用自然语气说明失败原因)`,
+						content: `详细思考未能成功 (耗时 ${thinkingTime.toFixed(2)} 秒, ${planningCycles} 轮)。\n<detail-thinking-failed>\n${reason}\n</detail-thinking-failed>\n(请用自然语气说明失败原因)`,
 						name: 'system',
 						role: 'system',
 					})
@@ -363,10 +362,13 @@ ${!isFinalCycle ? `
 							role: 'system',
 						})
 						await sleep(thinking_interval)
+						summaryRetries++ // Increment retries before continuing
 						continue summary_regen // Retry the summary/replan generation
 					}
 				}
-				else if (summaryRetries >= summary_max_retries) {
+				// Increment summaryRetries only if we are about to retry or fail due to retries
+				summaryRetries++
+				if (summaryRetries >= summary_max_retries) {
 					console.error(`Detail-thinking: Failed to generate valid summary/replan after ${summary_max_retries} retries in cycle ${planningCycles}.`)
 					AddLongTimeLog({
 						content: `\
@@ -391,7 +393,7 @@ ${summaryRaw}
 						role: 'system',
 					})
 					await sleep(thinking_interval)
-					summaryRetries++
+					// Retries already incremented above
 					continue summary_regen // Retry the summary/replan generation
 				}
 			} // End summary_regen loop

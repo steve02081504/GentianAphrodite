@@ -1,4 +1,7 @@
 {
 	"type": "chars",
-	"dirname": "GentianAphrodite"
+	"dirname": "GentianAphrodite",
+	"data_files": [
+		"memory"
+	]
 }

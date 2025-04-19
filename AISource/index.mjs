@@ -25,7 +25,7 @@ export function getAISourceData() {
 
 export async function setAISourceData(data) {
 	const newAIsources = {}
-	for (const name in data) if(data[name])
+	for (const name in data) if (data[name])
 		newAIsources[name] = await loadAIsource(username, data[name])
 	AIsources = newAIsources
 }

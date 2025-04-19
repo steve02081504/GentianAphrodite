@@ -4,6 +4,7 @@ import { GetReply } from './reply_gener/index.mjs'
 import { info } from './info/index.mjs'
 import { initCharBase } from './charbase.mjs'
 import { GetData, SetData } from './config.mjs'
+import { saveMemorys } from './prompt/memory/index.mjs'
 /** @typedef {import('../../../../../src/decl/charAPI.ts').charAPI_t} charAPI_t */
 
 /** @type {charAPI_t} */
@@ -14,7 +15,9 @@ export default {
 	Load: async (stat) => {
 		await initCharBase(stat)
 	},
-	Unload: (reason) => { },
+	Unload: async (reason) => {
+		await saveMemorys()
+	},
 	Uninstall: (reason, from) => { },
 
 	interfaces: {

@@ -6,14 +6,16 @@ import { MarkdownWebFetch } from '../../scripts/web.mjs'
 
 /** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
 export async function webbrowse(result, { AddLongTimeLog, prompt_struct }) {
-	const match = result.content.match(/```web-browse\n(?<url>[^\n]+)\n(?<question>[^]*?)\n```/)
+	const match = result.content.match(/<web-browse>\s*<url>(?<url>.*?)<\/url>\s*<question>(?<question>[\S\s]*?)<\/question>\s*<\/web-browse>/)
+
 	if (match?.groups) {
-		const { url, question } = match.groups
+		const url = match.groups.url.trim()
+		const question = match.groups.question.trim()
 
 		AddLongTimeLog({
 			name: '龙胆',
 			role: 'char',
-			content: '```web-browse\n' + url + '\n' + question + '\n```',
+			content: match[0],
 			files: []
 		})
 
@@ -54,9 +56,9 @@ ${question}
 					role: 'system'
 				}
 			]
-			const result = await OrderedAISourceCalling('web-browse', AI => AI.StructCall(browseing))
+			const browseResult = await OrderedAISourceCalling('web-browse', AI => AI.StructCall(browseing)) // Renamed result variable to avoid shadowing
 			AddLongTimeLog({
-				content: '浏览结果：\n' + result,
+				content: '浏览结果：\n' + browseResult.content,
 				name: 'system',
 				role: 'system'
 			})
