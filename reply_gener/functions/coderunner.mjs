@@ -17,7 +17,7 @@ export async function coderunner(result, { AddLongTimeLog }) {
 			files: []
 		})
 		console.info('AI运行的JS代码：', jsrunner)
-		const coderesult = async_eval(jsrunner)
+		const coderesult = await async_eval(jsrunner)
 		console.info('coderesult', coderesult)
 		AddLongTimeLog({
 			name: 'system',
