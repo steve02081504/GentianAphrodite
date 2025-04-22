@@ -18,6 +18,7 @@ import { WebBrowsePrompt } from './webbrowse.mjs'
 import { ScreenshotPrompt } from './screenshot.mjs'
 import { TimerPrompt } from './timer.mjs'
 import { FileChangePrompt } from './file-change.mjs'
+import { qrcodeParserPrompt } from './qrcodeParser.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
@@ -48,6 +49,7 @@ export async function FunctionPrompt(args, logical_results, prompt_struct, detai
 		result.push(FileSenderPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(HostInfoPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(ScreenshotPrompt(args, logical_results, prompt_struct, detail_level))
+	result.push(qrcodeParserPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(PromptReviewerPrompt(args, logical_results, prompt_struct, detail_level))
 	if (args.supported_functions.add_message)
 		result.push(TimerPrompt(args, logical_results, prompt_struct, detail_level))

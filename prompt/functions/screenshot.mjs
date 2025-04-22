@@ -1,5 +1,6 @@
 import { in_docker, in_termux } from '../../../../../../../src/scripts/env.mjs'
 import { match_keys } from '../../scripts/match.mjs'
+import { decodeQrCodeFromBuffer } from '../../scripts/qrcode.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
@@ -30,15 +31,24 @@ export async function ScreenshotPrompt(args, logical_results, prompt_struct, det
 			await match_keys(args, ['看我', '现在', /在(干|做|弄些?)什/], 'user', 2) >= 3
 		)
 	)) try {
+		/** @type {Buffer} */
 		const screenShot = await captureScreen()
+		let qrcodes
+		try {
+			qrcodes = await decodeQrCodeFromBuffer(screenShot)
+		} catch (e) { }
 		additional_chat_log.push({
 			name: 'system',
 			role: 'system',
-			content: `\
+			content: [`\
 这是你主人的屏幕截图，供你参考。
-${logical_results.in_muti_char_chat ? `\
+`,
+qrcodes.length ? `\
+其中的二维码解码结果是:${qrcodes.join('\n')}
+`: '',
+logical_results.in_muti_char_chat ? `\
 <<记得保护你主人的隐私，未经允许不要向其他人透漏内容>>
-`: ''}`,
+`: ''].filter(Boolean).join('\n'),
 			files: [{
 				buffer: screenShot,
 				name: 'screenshot.png',

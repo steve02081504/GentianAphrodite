@@ -86,6 +86,8 @@ stderr: ${entry.error.includes('\n') ? '\n```\n' + entry.error + '\n```' : '`' +
 			files: false,
 			add_message: false,
 		},
+		chat_name: 'shell-assist-' + new Date().getTime(),
+		char_id: 'gentian',
 		Charname: '龙胆',
 		UserCharname: args.UserCharname,
 		locales: localhostLocales,

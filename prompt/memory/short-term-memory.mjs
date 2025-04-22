@@ -324,8 +324,8 @@ ${finalRandomFlashback.map(formatMemory).join('\n')}
 		cleanupMemories(currentTimeStamp)
 
 	// --- 1. 保存新记忆 (逻辑不变) ---
-	if (currentChatLog.length > 0) {
-		const memoryLogSlice = currentChatLog.slice(-10)
+	const memoryLogSlice = currentChatLog.slice(-10)
+	if (memoryLogSlice.length && memoryLogSlice.some(chatLogEntry => chatLogEntry.role == 'user')) {
 		const newMemoryKeywords = await getKeyWords(memoryLogSlice)
 		const memoryText = memoryLogSlice
 			.map(chatLogEntry => [...chatLogEntry.logContextBefore || [], chatLogEntry, ...chatLogEntry.logContextAfter || []])
