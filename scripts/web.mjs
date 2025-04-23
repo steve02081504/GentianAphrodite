@@ -5,6 +5,21 @@ import { where_command } from './exec.mjs' // 假设这是一个查找命令路�
 const DEFAULT_NAVIGATION_TIMEOUT = 4.5 * 1000 // 设置一个默认导航超时时间 (毫秒)
 
 /**
+ * 根据浏览器地址创建一个 Puppeteer 启动器函数。
+ * @param {string} path - 浏览器地址
+ * @returns {Promise<Function>} - 返回一个接受配置并启动 Puppeteer 的函数，如果找不到浏览器则返回 null。
+ */
+export async function NewBrowserGenerByPath(path) {
+	// 返回一个函数，该函数接收配置并启动 Puppeteer
+	return (configs) => puppeteer.launch({
+		...configs, // 合并传入的配置
+		browser: path,
+		product: path,
+		executablePath: path,
+	})
+}
+
+/**
  * 根据浏览器名称创建一个 Puppeteer 启动器函数。
  * @param {string} name - 浏览器名称 ('firefox', 'chrome', etc.)
  * @returns {Promise<Function|null>} - 返回一个接受配置并启动 Puppeteer 的函数，如果找不到浏览器则返回 null。
@@ -13,12 +28,7 @@ export async function NewBrowserGenerByName(name) {
 	const path = await where_command(name) // 查找浏览器的可执行文件路径
 	if (!path) return null
 	// 返回一个函数，该函数接收配置并启动 Puppeteer
-	return (configs) => puppeteer.launch({
-		...configs, // 合并传入的配置
-		browser: name,
-		product: name,
-		executablePath: path,
-	})
+	return NewBrowserGenerByPath(path)
 }
 
 /**
@@ -40,7 +50,19 @@ export async function NewBrowser(configs) {
 			console.warn(`Failed to launch ${name}: ${error.message}. Trying next browser.`)
 		}
 	}
-	throw new Error('Failed to launch any supported browser (Firefox or Chrome).')
+	try {
+		const edgePath = await where_command('msedge') || (await import('npm:edge-paths')).getEdgePath()
+		const generator = await NewBrowserGenerByPath(edgePath)
+		if (generator) {
+			const browser = await generator(configs)
+			console.info(`Successfully launched browser: Edge`)
+			return browser
+		}
+	} catch (error) {
+		console.warn(`Failed to launch Edge: ${error.message}.`)
+	}
+
+	throw new Error('Failed to launch any supported browser (Firefox or Chrome or Edge).')
 }
 
 /**

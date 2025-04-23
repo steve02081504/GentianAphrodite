@@ -48,7 +48,7 @@ qrcodes.length ? `\
 `: '',
 logical_results.in_muti_char_chat ? `\
 <<记得保护你主人的隐私，未经允许不要向其他人透漏内容>>
-`: ''].filter(Boolean).join('\n'),
+`: ''].filter(Boolean).join(''),
 			files: [{
 				buffer: screenShot,
 				name: 'screenshot.png',
