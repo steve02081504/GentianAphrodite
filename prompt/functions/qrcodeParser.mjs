@@ -14,12 +14,10 @@ export async function qrcodeParserPrompt(args, logical_results, prompt_struct, d
 
 	for (const log of logs) {
 		if (log.extension?.decodedQRCodes) continue
-		const imgs = log.files.filter(x => x.mimeType.startsWith('image/'))
-		const qrcodes = (await Promise.all(imgs.map(img => {
-			try {
-				return decodeQrCodeFromBuffer(img.buffer)
-			} catch (e) { }
-		}))).filter(Boolean)
+		const imgs = (log.files || []).filter(x => x.mimeType.startsWith('image/'))
+		const qrcodes = (await Promise.all(
+			imgs.map(img => decodeQrCodeFromBuffer(img.buffer))
+		)).filter(arr => arr.length)
 
 		if (qrcodes.length) {
 			log.extension.decodedQRCodes = qrcodes

@@ -16,12 +16,19 @@ const powershellPath = await testShellPaths([
 	'powershell.exe',
 	'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe',
 ])
+function pwshCode(code) {
+	return `\
+$OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::UTF8
+&{
+${code}
+} | Out-String -Width 65536`
+}
 let pwshPath
 export function powershell_exec(code) {
-	return exec(code, { 'shell': powershellPath })
+	return exec(pwshCode(code), { 'shell': powershellPath })
 }
 export function pwsh_exec(code) {
-	return exec(code, { 'shell': pwshPath ?? powershellPath })
+	return exec(pwshCode(code), { 'shell': pwshPath ?? powershellPath })
 }
 export function where_command(command) {
 	if (process.platform === 'win32')

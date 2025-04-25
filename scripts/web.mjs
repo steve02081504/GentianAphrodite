@@ -55,7 +55,7 @@ export async function NewBrowser(configs) {
 		const generator = await NewBrowserGenerByPath(edgePath)
 		if (generator) {
 			const browser = await generator(configs)
-			console.info(`Successfully launched browser: Edge`)
+			console.info('Successfully launched browser: Edge')
 			return browser
 		}
 	} catch (error) {

@@ -79,7 +79,7 @@ export async function detailThinking(result, { AddLongTimeLog, prompt_struct }) 
 			extension: {}
 		},
 		plugin_prompts: {},
-		chat_log: prompt_struct.chat_log.slice(-10),
+		chat_log: [],
 	}
 
 	let plan = []
@@ -97,8 +97,14 @@ export async function detailThinking(result, { AddLongTimeLog, prompt_struct }) 
 	try {
 		thinkingContext.char_prompt = await DetailThinkingMainPrompt() // Base prompt for planning AI
 		const initialPlanPrompt = `\
+<chatLog>
+${prompt_struct.chat_log.slice(-10).map(x => x.name + ': ' + x.content).join('\n')}
+</chatLog>
+
 为解决此问题制定计划：
+<question>
 ${question}
+</question>
 
 **重要：你的回答必须严格按照以下格式，没有其他任何文字！**
 \`\`\`

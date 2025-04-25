@@ -38,8 +38,6 @@ export async function coderunner(result, { AddLongTimeLog }) {
 				files: []
 			})
 			console.info('AI运行的Powershell代码：', pwshrunner)
-			const originalPwshRunner = pwshrunner
-			pwshrunner = `&{\n${pwshrunner}\n} | Out-String -Width 65536`
 			let pwshresult
 			try { pwshresult = await pwsh_exec_NATS(pwshrunner) } catch (err) { pwshresult = err }
 			console.info('pwshresult', pwshresult)
@@ -49,7 +47,7 @@ export async function coderunner(result, { AddLongTimeLog }) {
 				content: '执行结果：\n' + util.inspect(pwshresult),
 				files: []
 			})
-			result.extension.execed_codes[originalPwshRunner] = pwshresult
+			result.extension.execed_codes[pwshrunner] = pwshresult
 			return true
 		}
 	}
