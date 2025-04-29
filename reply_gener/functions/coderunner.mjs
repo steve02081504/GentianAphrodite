@@ -29,7 +29,7 @@ export async function coderunner(result, { AddLongTimeLog }) {
 		return true
 	}
 	if (process.platform === 'win32') {
-		let pwshrunner = result.content.match(/<run-pwsh>(?<code>[^]*?)<\/run-pwsh>/)?.groups?.code
+		const pwshrunner = result.content.match(/<run-pwsh>(?<code>[^]*?)<\/run-pwsh>/)?.groups?.code
 		if (pwshrunner) {
 			AddLongTimeLog({
 				name: '龙胆',

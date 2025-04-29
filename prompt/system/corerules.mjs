@@ -20,9 +20,13 @@ export async function CoreRulesPrompt(args, logical_results, prompt_struct, deta
 避免怪异输出以免困扰。
 `
 
-	if (logical_results.in_muti_char_chat)
+	if (args.chat_log.some(entry => entry.name != args.Charname && entry.name.match(/(gentian|龙胆)/i)))
 		result += `\
 你可能会见到其他的“自己”，那些是来自平行世界的你（和她们的主人）。
+`
+
+	if (logical_results.in_muti_char_chat)
+		result += `\
 你的主人只有${args.UserCharname}一人，其他人无关紧要。
 禁止主动在多人对话中开启性相关话题，那会让主人难堪。
 `

@@ -11,8 +11,12 @@ import { discordWorld } from './world.mjs'
 import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
 import { localhostLocales } from '../../../../../../../src/scripts/i18n.mjs'
 import { mimetypeFromBufferAndName } from '../../scripts/mimetype.mjs'
-/** @typedef {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import('npm:discord.js').Message} Message */
+/**
+ *  @typedef { ((import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t) & {
+ *	extension: {discord_messages: (import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>[])}
+ * })} chatLogEntry_t
+ */
 /**
  * @typedef {{
 * 	OwnerUserName: string
@@ -132,6 +136,13 @@ export async function DiscordBotMain(client, config) {
 	function isMuted(channelID) {
 		return Date.now() - (ChannelMuteStartTimes[channelID] || 0) < 3 * 60000
 	}
+
+	const ChannelHandlers = {}
+	const ChannelMessageQueues = {}
+	/**
+	 * @type {Record<string, chatLogEntry_t[]>}
+	 */
+	const ChannelChatLogs = {}
 	/**
 	 * @param {import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
 	 * @returns {Promise<boolean>}
@@ -174,6 +185,8 @@ export async function DiscordBotMain(client, config) {
 		)
 
 		let inMute = isMuted(message.channel.id)
+		const chat_log = ChannelChatLogs[message.channel.id]
+		const new_chat_logs = chat_log.slice(chat_log.findIndex(log => log.extension.discord_messages.some(message => message.author.id == client.user.id)))
 
 		if (message.author.username === config.OwnerUserName) {
 			if (mentionedWithoutAt || message.mentions.users.has(client.user.id)) {
@@ -200,7 +213,7 @@ export async function DiscordBotMain(client, config) {
 				if (base_match_keys(content, [
 					/(再|多)(来|表演)(点|.*(次|个))/, '来个', '不够', '不如', '继续', '确认', '执行',
 					/^(那|所以你|可以再|你?再(讲|说|试试)|你(觉得|想|知道|确定)|但是)/, /^so/i,
-				])) possible += 100
+				]) && !(new_chat_logs.length > 3)) possible += 100
 			}
 			if (message.mentions.users.has(client.user.id)) possible += 100
 			if (!is_bot_command) possible += 7 // 多出 7% 的可能性回复主人
@@ -233,13 +246,6 @@ export async function DiscordBotMain(client, config) {
 		console.info('CheckMessageContentTrigger', possible + '%', result)
 		return result
 	}
-
-	const ChannelHandlers = {}
-	const ChannelMessageQueues = {}
-	/**
-	 * @type {Record<string, chatLogEntry_t[]>}
-	 */
-	const ChannelChatLogs = {}
 	/**
 	 * @param {import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>} message
 	 * @returns {(...args: any[]) => Promise<void>}
@@ -487,10 +493,7 @@ export async function DiscordBotMain(client, config) {
 				return
 			}
 			/**
-			 * @type {(
-			 * 	chatLogEntry_t & {
-			 *	extension: {discord_messages: (import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>[])}
-			 * })[]}
+			 * @type {chatLogEntry_t[]}
 			 */
 			const chatlog = ChannelChatLogs[channelid]
 
