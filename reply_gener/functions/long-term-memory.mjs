@@ -22,7 +22,7 @@ import { addLongTermMemory, deleteLongTermMemory, listLongTermMemory } from '../
 
 /**
  * Handles AI commands for managing long-term memories (add, delete, list).
- * Updated for new <add-pinned-memory> format with <trigger> and <prompt-content>.
+ * Updated for new <add-long-term-memory> format with <trigger> and <prompt-content>.
  * @type {ReplyHandler_t}
  */
 export async function LongTermMemoryHandler(result, { AddLongTimeLog }) {
@@ -35,9 +35,9 @@ export async function LongTermMemoryHandler(result, { AddLongTimeLog }) {
 	}
 	let log_content_added = false // Track if we added any content to the char log
 
-	// --- Handle <add-pinned-memory> ---
+	// --- Handle <add-long-term-memory> ---
 	// Match the outer tag, capturing all inner content
-	const addMatch = result.content.match(/<add-pinned-memory>(?<content>.*?)<\/add-pinned-memory>/s)
+	const addMatch = result.content.match(/<add-long-term-memory>(?<content>.*?)<\/add-long-term-memory>/s)
 	if (addMatch?.groups?.content) {
 		const content = addMatch.groups.content.trim()
 		// Match the inner tags based on the new structure
@@ -50,7 +50,7 @@ export async function LongTermMemoryHandler(result, { AddLongTimeLog }) {
 		const memoryName = nameMatch?.groups?.name?.trim()
 		const memoryPromptContent = promptContentMatch?.groups?.prompt?.trim() // Changed variable name for clarity
 
-		const logEntry = `<add-pinned-memory>${addMatch.groups.content}</add-pinned-memory>\n`
+		const logEntry = `<add-long-term-memory>${addMatch.groups.content}</add-long-term-memory>\n`
 		tool_calling_log.content += logEntry
 		if (!log_content_added) AddLongTimeLog(tool_calling_log)
 		log_content_added = true
@@ -96,12 +96,12 @@ export async function LongTermMemoryHandler(result, { AddLongTimeLog }) {
 		}
 	}
 
-	// --- Handle <delete-pinned-memory> --- (No changes needed here)
-	const deleteMatch = result.content.match(/<delete-pinned-memory>(?<name>.*?)<\/delete-pinned-memory>/s)
+	// --- Handle <delete-long-term-memory> --- (No changes needed here)
+	const deleteMatch = result.content.match(/<delete-long-term-memory>(?<name>.*?)<\/delete-long-term-memory>/s)
 	if (deleteMatch?.groups?.name) {
 		const memoryName = deleteMatch.groups.name.trim()
 
-		const logEntry = `<delete-pinned-memory>${deleteMatch.groups.name}</delete-pinned-memory>\n`
+		const logEntry = `<delete-long-term-memory>${deleteMatch.groups.name}</delete-long-term-memory>\n`
 		tool_calling_log.content += logEntry
 		if (!log_content_added) AddLongTimeLog(tool_calling_log)
 		log_content_added = true
@@ -109,21 +109,13 @@ export async function LongTermMemoryHandler(result, { AddLongTimeLog }) {
 
 		if (memoryName)
 			try {
-				const success = deleteLongTermMemory(memoryName) // Use the helper function
-				if (success)
-					AddLongTimeLog({
-						name: 'system',
-						role: 'system',
-						content: `已成功删除永久记忆："${memoryName}"`,
-						files: []
-					})
-				else
-					AddLongTimeLog({
-						name: 'system',
-						role: 'system',
-						content: `删除永久记忆失败：未找到名为 "${memoryName}" 的记忆。`,
-						files: []
-					})
+				deleteLongTermMemory(memoryName)
+				AddLongTimeLog({
+					name: 'system',
+					role: 'system',
+					content: `已成功删除永久记忆："${memoryName}"`,
+					files: []
+				})
 
 				processed = true
 			} catch (err) {
@@ -140,16 +132,16 @@ export async function LongTermMemoryHandler(result, { AddLongTimeLog }) {
 			AddLongTimeLog({
 				name: 'system',
 				role: 'system',
-				content: '删除永久记忆失败：<delete-pinned-memory> 标签内容为空。',
+				content: '删除永久记忆失败：<delete-long-term-memory> 标签内容为空。',
 				files: []
 			})
 			processed = true // Processed the tag, but it was invalid
 		}
 	}
 
-	// --- Handle <list-pinned-memory> --- (No changes needed here)
-	if (result.content.includes('<list-pinned-memory></list-pinned-memory>')) {
-		const logEntry = '<list-pinned-memory></list-pinned-memory>\n'
+	// --- Handle <list-long-term-memory> --- (No changes needed here)
+	if (result.content.includes('<list-long-term-memory></list-long-term-memory>')) {
+		const logEntry = '<list-long-term-memory></list-long-term-memory>\n'
 		tool_calling_log.content += logEntry
 		if (!log_content_added) AddLongTimeLog(tool_calling_log)
 		log_content_added = true

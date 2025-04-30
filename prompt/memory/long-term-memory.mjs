@@ -35,12 +35,12 @@ export async function LongTermMemoryPrompt(args, logical_results, prompt_struct,
 	let result = ''
 	if (actived_memories.length > 0)
 		result = `\
-<pinned-memory>
+<long-term-memories>
 ${actived_memories.map(memory => `\
 记忆名称：${memory.name}
 内容：${memory.prompt}
 `).join('')}
-</pinned-memory>
+</long-term-memories>
 `
 	let enable_memory_prompt = false
 	if (!logical_results.in_assist || await match_keys(args, ['记忆', '记住'], 'user'))
@@ -54,20 +54,20 @@ ${actived_memories.map(memory => `\
 			role: 'system',
 			content: `\
 你可以通过输出以下格式来追加永久记忆：
-<add-pinned-memory>
+<add-long-term-memory>
 <trigger>触发逻辑</trigger>
 <name>名称</name>
 <prompt-content>内容</prompt-content>
-</add-pinned-memory>
+</add-long-term-memory>
 其中的trigger可以是任意异步js代码，并且你可以使用以下格式来匹配对话内容：
 <trigger>await match_keys(args, ['key', /regkey/], 'any|user|char|both|other', depth?)</trigger>
 比如：[
 ${args.UserCharname}: 我的生日是1970年7月17日哦。
-龙胆: <add-pinned-memory>
+龙胆: <add-long-term-memory>
 <trigger>(await match_keys(args, ['生日', '诞辰', /什么(日子|节日)/], 'any')) || (new Date().getMonth() === 7 && new Date().getDate() === 17)</trigger>
 <name>主人的生日</name>
 <prompt-content>主人的生日是1970年7月17日。</prompt-content>
-</add-pinned-memory>
+</add-long-term-memory>
 ]
 这意味着在任意对话中的最近几个回复中触发关键词或今天是7月17日，此记忆就会被激活。
 match_keys接受的参数意义如下：
@@ -77,11 +77,15 @@ from：匹配的范围，any：任意角色，user：用户，char：角色，bo
 depth：匹配的回复深度，省略时默认为4
 其会返回匹配的key数量，这意味着你可以通过\`(await match_keys(args, [...], 'any')) >= N\` 来判断内容是否同时触发多个关键词。
 你还可以使用\`(await match_keys_all(args, [...], 'any'))\` 来判断内容是否同时触发所有关键词。
+prompt-content部分的内容应当简洁明了，拒绝重复和废话。
+trigger的关键词应容易触发并涵盖大部分情况，鼓励使用或\`||\`进行交集：
+反面例子：await match_keys(args, ['有个妹妹', '龙凤胎妹妹'], 'user')
+正面例子：await match_keys(args, ['妹', '龙凤胎'], 'any') || await match_keys(args, ['亲戚', /[家亲]人/], 'user')
 
 你也可以这样删除永久记忆：
-<delete-pinned-memory>名称</delete-pinned-memory>
+<delete-long-term-memory>名称</delete-long-term-memory>
 列出永久记忆：
-<list-pinned-memory></list-pinned-memory>
+<list-long-term-memory></list-long-term-memory>
 
 鼓励你对有关主人的事情追加和维护永久记忆。
 `

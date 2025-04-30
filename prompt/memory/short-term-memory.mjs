@@ -1,7 +1,7 @@
 import { loadJsonFileIfExists, saveJsonFile } from '../../../../../../../src/scripts/json_loader.mjs'
 import { chardir } from '../../charbase.mjs'
 import path from 'node:path'
-import { PreprocessChatLogEntry } from '../../scripts/match.mjs'
+import { match_keys, PreprocessChatLogEntry } from '../../scripts/match.mjs'
 import jieba from 'npm:nodejieba'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
@@ -319,6 +319,19 @@ ${finalRandomFlashback.map(formatMemory).join('\n')}
 	result += '</memories>'
 	if (result.trim() === '<memories>\n</memories>') result = ''
 
+	if (
+		await match_keys(args, ['删了', '清除', '丢掉', '丢弃', '舍弃', '移除', '清空', '忘了', '忘掉'], 'user') &&
+		await match_keys(args, ['记忆'], 'user')
+	)
+		result = `\
+你可以通过以下格式删除涉及某词语的短期记忆（<memories> 标签内的内容）：
+<delete-short-term-memories>关键词</delete-short-term-memories>
+如：[
+${args.UserCharname}: 给我把有关华为的记忆全忘掉。
+龙胆: <delete-short-term-memories>华为</delete-short-term-memories>
+]
+`
+
 	// --- 7. 执行清理 ---
 	if (currentTimeStamp - lastCleanupTime > CLEANUP_INTERVAL_MS)
 		cleanupMemories(currentTimeStamp)
@@ -359,4 +372,11 @@ ${finalRandomFlashback.map(formatMemory).join('\n')}
 export function saveShortTermMemory() {
 	cleanupMemories(Date.now())
 	saveJsonFile(path.join(chardir, 'memory/short-term-memory.json'), chat_memorys)
+}
+
+export function deleteShortTermMemory(keyword) {
+	const oldLength = chat_memorys.length
+	chat_memorys = chat_memorys.filter(mem => !mem.text.includes(keyword))
+	saveShortTermMemory()
+	return oldLength - chat_memorys.length
 }

@@ -13,6 +13,7 @@ import { compareTwoStrings as string_similarity } from 'npm:string-similarity'
 import { inspect } from 'node:util'
 import { file_change } from './functions/file-change.mjs'
 import { LongTermMemoryHandler } from './functions/long-term-memory.mjs'
+import { ShortTermMemoryHandler } from './functions/short-term-memory.mjs'
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReply_t} chatReply_t */
@@ -108,7 +109,7 @@ export async function GetReply(args) {
 		}
 		/** @type {(import('../../../../../../src/decl/PluginAPI.ts').ReplyHandler_t)[]} */
 		const replyHandlers = [
-			coderunner, LongTermMemoryHandler,
+			coderunner, LongTermMemoryHandler, ShortTermMemoryHandler,
 			args.supported_functions.files ? filesender : null,
 			detailThinking, googlesearch, webbrowse, rolesettingfilter, file_change,
 			args.supported_functions.add_message ? timer : null,
