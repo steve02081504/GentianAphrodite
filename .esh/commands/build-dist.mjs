@@ -12,12 +12,14 @@ const result = await rollup({
 	external: [
 		/node:*/,
 		/npm:*/,
+		/https:\/\/*/,
 		'../../../../../../src/public/shells/chat/src/server/prompt_struct.mjs',
 		'../../../../../../../src/scripts/locale.mjs',
 		'../../../../../../src/scripts/locale.mjs',
 		'../../../../../../src/server/managers/AIsources_manager.mjs',
 		'../../../../../../../src/scripts/env.mjs',
 		'../../../../../../../src/scripts/i18n.mjs',
+		'../../../../../../../src/scripts/json_loader.mjs',
 	]
 })
 
@@ -74,3 +76,7 @@ for (const path of copy_paths)
 		await exec(`robocopy ".\\${path}" ".\\dist\\${path}" /MIR /XD .git /XF .gitignore /XA:H /XA:S"`, { cwd: '.' }).catch(console.dir)
 	else // 若是文件
 		nicerWriteFileSync(`dist/${path}`, fs.readFileSync(path))
+// 创建的空文件夹
+const empty_dirs = ['memory']
+for (const path of empty_dirs)
+	fs.mkdirSync(`dist/${path}`, { recursive: true })
