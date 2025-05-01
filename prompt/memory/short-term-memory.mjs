@@ -325,10 +325,10 @@ ${finalRandomFlashback.map(formatMemory).join('\n')}
 	)
 		result = `\
 你可以通过以下格式删除涉及某词语的短期记忆（<memories> 标签内的内容）：
-<delete-short-term-memories>关键词</delete-short-term-memories>
+<delete-short-term-memories>关键词正则</delete-short-term-memories>
 如：[
 ${args.UserCharname}: 给我把有关华为的记忆全忘掉。
-龙胆: <delete-short-term-memories>华为</delete-short-term-memories>
+龙胆: <delete-short-term-memories>/华为|Huawei/i</delete-short-term-memories>
 ]
 `
 
@@ -376,7 +376,10 @@ export function saveShortTermMemory() {
 
 export function deleteShortTermMemory(keyword) {
 	const oldLength = chat_memorys.length
-	chat_memorys = chat_memorys.filter(mem => !mem.text.includes(keyword))
+	chat_memorys = chat_memorys.filter(mem => !(Object(keyword) instanceof RegExp ? keyword.match(mem.text) : mem.text.includes(keyword)))
 	saveShortTermMemory()
 	return oldLength - chat_memorys.length
+}
+export function getShortTermMemoryNum() {
+	return chat_memorys.length
 }
