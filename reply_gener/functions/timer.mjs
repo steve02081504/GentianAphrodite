@@ -5,7 +5,8 @@ import { parseDuration } from '../../scripts/tools.mjs'
 import { GetReply } from '../index.mjs'
 
 /** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
-export async function timer(result, { AddChatLogEntry, Update, AddLongTimeLog }) {
+export async function timer(result, args) {
+	const { AddChatLogEntry, AddLongTimeLog } = args
 	// Match the <timer>...</timer> block and capture its content
 	const timerBlockMatch = result.content.match(/<timer>(?<timercontent>[\S\s]*?)<\/timer>/)
 	const timercontent = timerBlockMatch?.groups?.timercontent
@@ -40,26 +41,28 @@ export async function timer(result, { AddChatLogEntry, Update, AddLongTimeLog })
 			// Schedule the timers after parsing all of them
 			for (const { timestr, time, reason } of timersToSet)
 				setTimeout(async () => {
-					try {
-						const new_req = await Update()
-						new_req.chat_log = [...new_req.chat_log, {
-							name: 'system',
-							role: 'system',
-							content: `\
+					let logger = AddChatLogEntry
+					const feedback = {
+						name: 'system',
+						role: 'system',
+						content: `\
 你设置的定时器已经到期，时长为${timestr}（${time}ms），原因为${reason}
 请根据定时器内容进行回复。
-`
-						}]
+`,
+						charVisibility: [args.char_id],
+					}
+					try {
+						const new_req = await args.Update()
+						logger = new_req.AddChatLogEntry
+						new_req.chat_log = [...new_req.chat_log, feedback]
 						new_req.extension.from_timer = true
-						AddChatLogEntry(await GetReply(new_req))
+						const reply = await GetReply(new_req)
+						reply.logContextBefore = [feedback]
+						logger(reply)
 					} catch (error) {
 						console.error(`Error processing timer callback for "${reason}":`, error)
-						// Optionally notify the user/system about the failure
-						AddChatLogEntry({
-							name: 'system',
-							role: 'system',
-							content: `处理定时器 "${reason}" 的回调时发生错误: ${error.message}`,
-						})
+						feedback.content += `处理定时器时出错：${error.message}\n`
+						logger(feedback)
 					}
 				}, time)
 

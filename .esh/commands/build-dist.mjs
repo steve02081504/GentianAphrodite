@@ -10,9 +10,9 @@ fs.mkdirSync('dist', { recursive: true })
 const result = await rollup({
 	input: './main.mjs',
 	external: [
-		/node:*/,
-		/npm:*/,
-		/https:\/\/*/,
+		/node:.*/,
+		/npm:.*/,
+		/https:\/\/.*/,
 		'../../../../../../src/public/shells/chat/src/server/prompt_struct.mjs',
 		'../../../../../../../src/scripts/locale.mjs',
 		'../../../../../../src/scripts/locale.mjs',

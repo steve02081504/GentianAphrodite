@@ -39,9 +39,17 @@ ${process.platform === 'win32' ?
 }
 - 在解决数学问题以及可以用数学解决的问题时使用<run-js>，并使用大数类型（如\`192n**328n\`）。
 - 在操作电脑、查看文件、更改设置、播放音乐时使用<run-${process.platform === 'win32' ? 'pwsh' : 'bash'}>。
+
+js代码相关：
 - 复杂情况下，考虑有什么npm包可以满足你的需求，参照例子使用<run-js>+import。
   * 导入包需要符合deno的包名规范（追加\`npm|node|jsr:\`前缀），如\`npm:mathjs\`或\`node:fs\`。
-
+${args.supported_functions.add_message?`\
+- 对于会需要很长时间的任务，你可以使用未await的异步函数配合\`callback\`函数来在异步完成后反馈内容。
+  * 格式：callback(reason, result)，reason为字符串，result为任意类型。
+  * 注意：由于<run-js>将最后一个表达式的值作为返回值并await其结果，所以长时间的promise不应放在最后一行，请酌情在末尾添加\`;0\`。
+  * 例子：<run-js>super_slow_async_function().then((result) => callback('unzip success', result));0</run-js>
+  * 返回值：callback是异步处理的，你无法在<run-js>的当场看到callback结果。
+`:''}
 执行代码后若没得到想要的结果，鼓励反思原因并给出不同的解决方案。
 已有成功运行结果时不要返回以上格式（如<run-js>...</run-js>），那会陷入死循环。
 **只是解释说明或举例时使用普通代码块（如\`\`\`js）而不是执行代码。**
