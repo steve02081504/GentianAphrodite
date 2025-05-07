@@ -15,7 +15,6 @@ AI被允许使用特殊返回格式进行永久记忆的删除或更新。
 import { addLongTermMemory, deleteLongTermMemory, listLongTermMemory } from '../../prompt/memory/long-term-memory.mjs'
 
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatReplyRequest_t} chatReplyRequest_t */
-/** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 /** @typedef {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} ReplyHandler_t */
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */

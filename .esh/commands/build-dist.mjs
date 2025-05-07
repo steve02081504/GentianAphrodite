@@ -13,13 +13,7 @@ const result = await rollup({
 		/node:.*/,
 		/npm:.*/,
 		/https:\/\/.*/,
-		'../../../../../../src/public/shells/chat/src/server/prompt_struct.mjs',
-		'../../../../../../../src/scripts/locale.mjs',
-		'../../../../../../src/scripts/locale.mjs',
-		'../../../../../../src/server/managers/AIsources_manager.mjs',
-		'../../../../../../../src/scripts/env.mjs',
-		'../../../../../../../src/scripts/i18n.mjs',
-		'../../../../../../../src/scripts/json_loader.mjs',
+		/(?:.{2}\/){6}.*/
 	]
 })
 

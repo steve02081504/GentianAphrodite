@@ -47,7 +47,7 @@ export async function NewBrowser(configs) {
 			return browser // 成功则返回浏览器实例
 		}
 		catch (error) {
-			console.warn(`Failed to launch ${name}: ${error.message}. Trying next browser.`)
+			console.warn(`Failed to launch ${name}: ${error.stack}. Trying next browser.`)
 		}
 	}
 	try {
@@ -59,7 +59,7 @@ export async function NewBrowser(configs) {
 			return browser
 		}
 	} catch (error) {
-		console.warn(`Failed to launch Edge: ${error.message}.`)
+		console.warn(`Failed to launch Edge: ${error.stack}.`)
 	}
 
 	throw new Error('Failed to launch any supported browser (Firefox or Chrome or Edge).')

@@ -62,7 +62,7 @@ export function GetAISourceCallingOrder(name) {
 
 export function noAISourceAvailable() {
 	const result = Object.values(AIsources).every(x => !x)
-	if (result) console.log('No AI source available:', AIsources)
+	if (result) console.error('No AI source available:', AIsources)
 	return result
 }
 

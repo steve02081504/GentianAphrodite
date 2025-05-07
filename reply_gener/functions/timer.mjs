@@ -1,103 +1,211 @@
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
+import { getTimers, removeTimer, setTimer } from '../../../../../../../src/server/timers.mjs'
+import { charname } from '../../charbase.mjs'
+import { flatChatLog } from '../../scripts/match.mjs'
+import { UseNofityAbleChannel } from '../../scripts/notify.mjs'
 import { parseDuration } from '../../scripts/tools.mjs'
 import { GetReply } from '../index.mjs'
 
 /** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
 export async function timer(result, args) {
-	const { AddChatLogEntry, AddLongTimeLog } = args
-	// Match the <timer>...</timer> block and capture its content
-	const timerBlockMatch = result.content.match(/<timer>(?<timercontent>[\S\s]*?)<\/timer>/)
-	const timercontent = timerBlockMatch?.groups?.timercontent
+	const { AddLongTimeLog } = args
+	let processed = false
 
-	if (timercontent) {
-		let timerLog = '' // 用于记录定时器信息的字符串
-		result.extension.timers ??= []
-		const itemRegex = /<item>\s*<time>(.*?)<\/time>\s*<reason>(.*?)<\/reason>\s*<\/item>/gs // Regex to find each item and capture time/reason
+	const tool_calling_log = {
+		name: '龙胆',
+		role: 'char',
+		content: '',
+		files: []
+	}
+	let log_content_added = false
 
-		let match
+	const timers = getTimers(args.username, 'chars', args.char_id)
+
+	const setTimerMatch = result.content.match(/<set-timer>(?<content>[\S\s]*?)<\/set-timer>/is)
+	if (setTimerMatch?.groups?.content) {
+		processed = true
+		const timerContent = setTimerMatch.groups.content
+		const fullMatch = setTimerMatch[0]
+
+		tool_calling_log.content += fullMatch + '\n'
+		if (!log_content_added) AddLongTimeLog(tool_calling_log)
+		log_content_added = true
+
+		let systemLogContent = ''
+		const itemRegex = /<item>([\S\s]*?)<\/item>/gis
+		let itemMatch
 		const timersToSet = []
 
-		// Find all timer items within the content
-		while ((match = itemRegex.exec(timercontent)) !== null) {
-			const timestr = match[1].trim()
-			const reason = match[2].trim()
-			try {
-				const time = parseDuration(timestr)
-				if (isNaN(time) || time <= 0) throw new Error('无效的时间')
-				console.log('AI设置的定时器:', timestr, reason)
-				timerLog += `时长：${timestr}（${time}ms），原因：${reason}\n` // 添加到定时器信息字符串
-				timersToSet.push({ timestr, time, reason })
-				result.extension.timers.push({ timestr, time, reason })
-			} catch (e) {
-				console.warn('解析定时器时间时出错:', timestr, e)
-				timerLog += `跳过错误条目：时间="${timestr}", 原因="${reason}" (解析时出错: ${e.message})\n`
+		while ((itemMatch = itemRegex.exec(timerContent)) !== null) {
+			const itemContent = itemMatch[1]
+			const timeMatch = itemContent.match(/<time>(.*?)<\/time>/is)
+			const triggerMatch = itemContent.match(/<trigger>(.*?)<\/trigger>/is)
+			const reasonMatch = itemContent.match(/<reason>(.*?)<\/reason>/is)
+			const repeatMatch = itemContent.match(/<repeat>(.*?)<\/repeat>/is)
+
+			const timestr = timeMatch?.[1]?.trim()
+			const triggerstr = triggerMatch?.[1]?.trim()
+			const reason = reasonMatch?.[1]?.trim()
+			const repeatstr = repeatMatch?.[1]?.trim().toLowerCase()
+			const repeat = repeatstr === 'true'
+
+			if (!reason) {
+				systemLogContent += `跳过无效条目：缺少 <reason> 标签。\n内容：\n${itemContent}\n`
+				console.warn('解析定时器时出错：缺少 <reason>', itemContent)
+				continue
 			}
+			if (!timestr && !triggerstr) {
+				systemLogContent += `跳过无效条目“${reason}”：必须提供 <time> 或 <trigger> 标签。\n`
+				console.warn('解析定时器时出错：缺少 <time> 或 <trigger>', itemContent)
+				continue
+			}
+			if (timestr && triggerstr) {
+				systemLogContent += `跳过无效条目“${reason}”：不能同时提供 <time> 和 <trigger> 标签。\n`
+				console.warn('解析定时器时出错：同时提供了 <time> 和 <trigger>', itemContent)
+				continue
+			}
+
+			let finalTrigger = triggerstr
+
+			if (timestr)
+				try {
+					const timeInMs = parseDuration(timestr)
+					if (repeat) finalTrigger = `Date.now() - ${Date.now() + timeInMs} % ${timeInMs} <= 1000`
+					else finalTrigger = `Date.now() >= ${Date.now() + timeInMs}`
+				} catch (e) {
+					systemLogContent += `跳过错误条目 (原因: ${reason}): 时间="${timestr}" 解析失败: ${e.message}\n`
+					console.warn('解析定时器时间时出错:', timestr, e)
+					continue
+				}
+
+			console.info('AI设置定时器:', { trigger: finalTrigger, reason, repeat })
+
+
+			timersToSet.push({
+				trigger: finalTrigger,
+				reason,
+				repeat,
+			})
 		}
 
-		// Only proceed if valid timers were found
-		if (timersToSet.length > 0) {
-			// Schedule the timers after parsing all of them
-			for (const { timestr, time, reason } of timersToSet)
-				setTimeout(async () => {
-					let logger = AddChatLogEntry
-					const feedback = {
-						name: 'system',
-						role: 'system',
-						content: `\
-你设置的定时器已经到期，时长为${timestr}（${time}ms），原因为${reason}
-请根据定时器内容进行回复。
-`,
-						charVisibility: [args.char_id],
-					}
-					try {
-						const new_req = await args.Update()
-						logger = new_req.AddChatLogEntry
-						new_req.chat_log = [...new_req.chat_log, feedback]
-						new_req.extension.from_timer = true
-						const reply = await GetReply(new_req)
-						reply.logContextBefore = [feedback]
-						logger(reply)
-					} catch (error) {
-						console.error(`Error processing timer callback for "${reason}":`, error)
-						feedback.content += `处理定时器时出错：${error.message}\n`
-						logger(feedback)
-					}
-				}, time)
+		if (timersToSet.length) {
+			let successCount = 0
+			for (const data of timersToSet)
+				try {
+					let uid = 0
+					while (Object.keys(timers).includes(uid.toString())) uid++
+					setTimer(args.username, 'chars', args.char_id, uid, {
+						trigger: data.trigger,
+						callbackdata: {
+							type: 'timer',
+							trigger: data.trigger,
+							reason: data.reason,
+							chat_log_snip: flatChatLog(args.chat_log.slice(-5)).map(e => e.name + ': ' + e.content).join('\n'),
+						},
+						repeat: data.repeat,
+					})
+					successCount++
+				} catch (error) {
+					systemLogContent += `设置定时器“${data.reason}”失败: ${error.stack}\n`
+					console.error(`设置定时器“${data.reason}”时出错：`, error)
+				}
+
+			systemLogContent += `已设置${successCount}个定时器。\n`
+			systemLogContent += '届时将触发新回复，现在你可以继续当前对话。\n'
+		} else
+			systemLogContent += '未找到有效的定时器条目进行设置。\n'
 
 
-			AddLongTimeLog({
-				name: '龙胆',
-				role: 'char',
-				content: timerBlockMatch[0],
-				files: []
-			})
+		AddLongTimeLog({
+			name: 'system',
+			role: 'system',
+			content: systemLogContent,
+			files: []
+		})
 
-			AddLongTimeLog({
-				name: 'system',
-				role: 'system',
-				content: `已设置以下定时器：\n${timerLog}\n届时会触发新回复，现在你可以继续当前对话。`,
-				files: []
-			})
-
-			return true // Indicate that a timer was processed
-		} else {
-			// Log that the block was found but contained no valid timers
-			AddLongTimeLog({
-				name: '龙胆',
-				role: 'char',
-				content: timerBlockMatch[0], // Log what was sent
-				files: []
-			})
-			AddLongTimeLog({
-				name: 'system',
-				role: 'system',
-				content: `收到了定时器请求，但未能解析出有效的定时器条目。\n解析日志:\n${timerLog}`,
-				files: []
-			})
-			return true
-		}
 	}
-	return false // No <timer> block found
+
+	if (result.content.match(/<list-timers>\s*<\/list-timers>/)) {
+		processed = true
+		const commandText = '<list-timers></list-timers>'
+
+		tool_calling_log.content += commandText + '\n'
+		if (!log_content_added) AddLongTimeLog(tool_calling_log)
+		log_content_added = true
+		console.info('AI请求列出定时器')
+
+		AddLongTimeLog({
+			name: 'system',
+			role: 'system',
+			content: '当前的定时器列表：\n' + Object.values(timers).map(({ callbackdata }) => `- “${callbackdata.reason}”：${callbackdata.trigger}`).join('\n') || '无',
+			files: []
+		})
+	}
+
+	const removeTimerMatch = result.content.match(/<remove-timer>(?<reasons>.*?)<\/remove-timer>/is)
+	if (removeTimerMatch?.groups?.reasons) {
+		processed = true
+		const reasonsToRemove = removeTimerMatch.groups.reasons.trim().split('\n').map(e => e.trim())
+		const fullMatch = removeTimerMatch[0]
+
+		tool_calling_log.content += fullMatch + '\n'
+		if (!log_content_added) AddLongTimeLog(tool_calling_log)
+		log_content_added = true
+		console.info('AI请求删除定时器:', reasonsToRemove)
+
+		let systemLogContent = ''
+		if (!reasonsToRemove.length) systemLogContent += '未提供要删除的定时器。\n'
+		for (const reason of reasonsToRemove) {
+			const timerUid = Object.keys(timers).find(uid => timers[uid].callbackdata.reason === reason)
+			if (timerUid)
+				try {
+					removeTimer(args.username, 'chars', args.char_id, timerUid)
+					systemLogContent += `已成功删除定时器：“${reason}”\n`
+				} catch (error) {
+					systemLogContent += `删除定时器“${reason}”失败: ${error.stack}\n`
+					console.error('删除定时器时出错:', error)
+				}
+			else
+				systemLogContent += `未找到定时器：“${reason}”\n`
+
+		}
+
+		AddLongTimeLog({
+			name: 'system',
+			role: 'system',
+			content: systemLogContent,
+			files: []
+		})
+	}
+
+	tool_calling_log.content = tool_calling_log.content.trim()
+
+	return processed
+}
+export function timerCallBack(callbackdata) {
+	const { reason, chat_log_snip } = callbackdata
+	const logEntry = {
+		name: 'system',
+		role: 'system',
+		content: `\
+定时器“${reason}”到期
+设置定时器时的聊天记录节选：
+<chat_log_snip>
+${chat_log_snip}
+</chat_log_snip>
+请你根据定时器相关回复或行动。
+`,
+		files: [],
+		charVisibility: [charname],
+	}
+	UseNofityAbleChannel(async channel => {
+		const result = await GetReply({
+			...channel,
+			chat_log: [...channel.chat_log, logEntry],
+		})
+		result.logContextBefore.push(logEntry)
+		await channel.AddChatLogEntry(result)
+	})
 }

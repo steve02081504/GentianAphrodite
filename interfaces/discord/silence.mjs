@@ -102,7 +102,7 @@ export const get_discord_silence_plugin = (message) => ({
 							// Log more specific errors
 							const errorContext = `用户: "${username}", 时长: "${timeStr}", 原因: "${reason}"`
 							console.error(`禁言失败 (${errorContext}):`, error)
-							ban_results.push(`禁言失败 (${errorContext}) - 原因: ${error.message}`) // Provide clearer error message
+							ban_results.push(`禁言失败 (${errorContext}) - 原因: ${error.stack}`) // Provide clearer error message
 						}
 					}
 

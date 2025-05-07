@@ -10,10 +10,10 @@ import { webbrowse } from './functions/webbrowse.mjs'
 import { timer } from './functions/timer.mjs'
 import { noAIreply } from './noAI/index.mjs'
 import { compareTwoStrings as string_similarity } from 'npm:string-similarity'
-import { inspect } from 'node:util'
 import { file_change } from './functions/file-change.mjs'
 import { LongTermMemoryHandler } from './functions/long-term-memory.mjs'
 import { ShortTermMemoryHandler } from './functions/short-term-memory.mjs'
+import { addNotifyAbleChannel } from '../scripts/notify.mjs'
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReply_t} chatReply_t */
@@ -87,7 +87,7 @@ export async function GetReply(args) {
 	regen: while (true) {
 		console.log('logical_results', logical_results)
 		console.log('prompt_struct')
-		console.log(inspect(prompt_struct, { depth: 4, colors: true }))
+		// console.log(inspect(prompt_struct, { depth: 4, colors: true }))
 		const AItype = logical_results.in_nsfw ? 'nsfw' : logical_results.in_assist ? 'expert' : 'sfw'
 		const requestresult = await OrderedAISourceCalling(AItype, async AI => {
 			const result = await AI.StructCall(prompt_struct)
@@ -107,6 +107,8 @@ export async function GetReply(args) {
 			})
 			return null
 		}
+		result.content = result.content.replace(/\s*<-<null>->\s*$/, '')
+		if (args.supported_functions.add_message) addNotifyAbleChannel(args)
 		/** @type {(import('../../../../../../src/decl/PluginAPI.ts').ReplyHandler_t)[]} */
 		const replyHandlers = [
 			coderunner, LongTermMemoryHandler, ShortTermMemoryHandler,

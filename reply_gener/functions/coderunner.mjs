@@ -6,10 +6,54 @@ import { GetReply } from '../index.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
+async function callback_handler(args, reason, result) {
+	let logger = AddChatLogEntry
+	const feedback = {
+		name: 'system',
+		role: 'system',
+		content: `\
+你的js代码中的callback函数被调用了
+原因是：${reason}
+你执行的代码是：
+\`\`\`js
+${jsrunner}
+\`\`\`
+结果是：${util.inspect(result, { depth: 4 })}
+请根据callback函数的内容进行回复。
+`,
+		charVisibility: [args.char_id],
+	}
+	try {
+		const new_req = args.Update()
+		logger = new_req.AddChatLogEntry
+		new_req.chat_log = [...new_req.chat_log, feedback]
+		new_req.extension.from_callback = true
+		const reply = await GetReply(new_req)
+		reply.logContextBefore.push(feedback)
+		logger(reply)
+	}
+	catch (error) {
+		console.error(`Error processing callback for "${reason}":`, error)
+		feedback.content += `处理callback时出错：${error.stack}\n`
+		logger(feedback)
+	}
+}
+
 /** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
 export async function coderunner(result, args) {
 	const { AddLongTimeLog } = args
 	result.extension.execed_codes ??= {}
+	const js_eval_context = {}
+	if (args.supported_functions.add_message) 
+		/**
+		 * @param {string} reason
+		 * @param {Promise<any>} promise
+		 */
+		js_eval_context.callback = (reason, promise) => {
+			const _ = _ => callback_handler(args, reason, _)
+			promise.then(_, _)
+		}
+	
 	const jsrunner = result.content.match(/<run-js>(?<code>[^]*?)<\/run-js>/)?.groups?.code
 	if (jsrunner) {
 		AddLongTimeLog({
@@ -19,41 +63,7 @@ export async function coderunner(result, args) {
 			files: []
 		})
 		console.info('AI运行的JS代码：', jsrunner)
-		const coderesult = await async_eval(jsrunner, {
-			callback: args.supported_functions.add_message ? async (reason, result) => {
-				result = await result // 避免AI有时犯傻
-				let logger = AddChatLogEntry
-				const feedback = {
-					name: 'system',
-					role: 'system',
-					content: `\
-你的js代码中的callback函数被调用了
-原因是：${reason}
-你执行的代码是：
-\`\`\`js
-${jsrunner}
-\`\`\`
-result是：${util.inspect(result, { depth: 4 })}
-请根据callback函数的内容进行回复。
-`,
-					charVisibility: [args.char_id],
-				}
-				try {
-					const new_req = args.Update()
-					logger = new_req.AddChatLogEntry
-					new_req.chat_log = [...new_req.chat_log, feedback]
-					new_req.extension.from_callback = true
-					const reply = await GetReply(new_req)
-					reply.logContextBefore = [feedback]
-					logger(reply)
-				}
-				catch (error) {
-					console.error(`Error processing callback for "${reason}":`, error)
-					feedback.content += `处理callback时出错：${error.message}\n`
-					logger(feedback)
-				}
-			} : undefined,
-		})
+		const coderesult = await async_eval(jsrunner, js_eval_context)
 		console.info('coderesult', coderesult)
 		AddLongTimeLog({
 			name: 'system',
@@ -109,6 +119,54 @@ result是：${util.inspect(result, { depth: 4 })}
 			result.extension.execed_codes[bashrunner] = bashresult
 			return true
 		}
+	}
+
+	// inline js code
+	// 这个和其他的不一样，我们需要执行js代码并将结果以string替换代码块
+	if (result.content.match(/<inline-js>[^]*?<\/inline-js>/)) try {
+		const original = result.content
+		const replacements = await Promise.all(
+			Array.from(result.content.matchAll(/<inline-js>(?<code>[^]*?)<\/inline-js>/g))
+				.map(async match => {
+					const jsrunner = match.groups.code
+					console.info('AI内联运行的JS代码：', jsrunner)
+					const coderesult = await async_eval(jsrunner, js_eval_context)
+					console.info('coderesult', coderesult)
+					if (coderesult.error) throw coderesult.error
+					return coderesult.result+''
+				})
+		)
+		let i = 0
+		result.logContextBefore.push({
+			name: '龙胆',
+			role: 'char',
+			content: original,
+			files: result.files,
+			charVisibility: [args.char_id],
+		},{
+			name: 'system',
+			role: 'system',
+			content: '内联js代码执行和替换完毕\n',
+			files: [],
+			charVisibility: [args.char_id],
+		})
+		result.content = result.content.replace(/<inline-js>(?<code>[^]*?)<\/inline-js>/g, () => replacements[i++])
+	}
+	catch (error) {
+		console.error('内联js代码执行失败：', error)
+		AddLongTimeLog({
+			name: '龙胆',
+			role: 'char',
+			content: result.content,
+			files: result.files,
+		})
+		AddLongTimeLog({
+			name: 'system',
+			role: 'system',
+			content: '内联js代码执行失败：\n'+ error.stack,
+			files: []
+		})
+		return true
 	}
 
 	return false

@@ -1,7 +1,7 @@
 import { loadJsonFileIfExists, saveJsonFile } from '../../../../../../../src/scripts/json_loader.mjs'
 import { chardir } from '../../charbase.mjs'
 import path from 'node:path'
-import { match_keys, PreprocessChatLogEntry } from '../../scripts/match.mjs'
+import { flatChatLog, match_keys, PreprocessChatLogEntry } from '../../scripts/match.mjs'
 import jieba from 'npm:nodejieba'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
@@ -156,11 +156,7 @@ export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct
 
 	// (getKeyWords 函数保持不变)
 	async function getKeyWords(chat_log) {
-		await Promise.all(chat_log.map(PreprocessChatLogEntry))
-		const flattened_log = chat_log.map(chatLogEntry => [
-			...chatLogEntry.logContextBefore || [], chatLogEntry, ...chatLogEntry.logContextAfter || []
-		]).flatMap(x => x).filter(x => !x.charVisibility || x.charVisibility.includes(args.char_id))
-		const texts = flattened_log.map(entry => entry.extension?.SimplifiedContents?.[0] || entry.content).filter(text => text.trim())
+		const texts = chat_log.map(entry => entry.extension?.SimplifiedContents?.[0] || entry.content).filter(text => text.trim())
 		const combinedText = texts.join('\n')
 		const keywords = jieba.extract(combinedText, 72).filter(kw => kw.weight >= KEYWORD_MIN_WEIGHT)
 		return keywords
@@ -168,7 +164,8 @@ export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct
 
 	// --- 2. 分析当前对话，提取关键词 ---
 	const recentLogSlice = currentChatLog.slice(-5)
-	const currentKeywords = await getKeyWords(recentLogSlice)
+	await Promise.all(recentLogSlice.map(PreprocessChatLogEntry))
+	const currentKeywords = await getKeyWords(flatChatLog(recentLogSlice))
 
 	// --- 3. 计算所有记忆的相关性 ---
 	/** @type {{memory: MemoryEntry, relevance: number, index: number}[]} */
@@ -330,6 +327,7 @@ ${finalRandomFlashback.map(formatMemory).join('\n')}
 ${args.UserCharname}: 给我把有关华为的记忆全忘掉。
 龙胆: <delete-short-term-memories>/华为|Huawei/i</delete-short-term-memories>
 ]
+你必须使用正则语法，且鼓励想到其他可能的情况（大小写、别称）来完善删除范围。
 `
 
 	// --- 7. 执行清理 ---
@@ -340,10 +338,7 @@ ${args.UserCharname}: 给我把有关华为的记忆全忘掉。
 	const memoryLogSlice = currentChatLog.slice(-10)
 	if (memoryLogSlice.length && memoryLogSlice.some(chatLogEntry => chatLogEntry.role == 'user')) {
 		const newMemoryKeywords = await getKeyWords(memoryLogSlice)
-		const memoryText = memoryLogSlice
-			.map(chatLogEntry => [...chatLogEntry.logContextBefore || [], chatLogEntry, ...chatLogEntry.logContextAfter || []])
-			.flatMap(x => x)
-			.filter(entry => !entry.charVisibility || entry.charVisibility.includes(args.char_id))
+		const memoryText = flatChatLog(memoryLogSlice)
 			.map(entry => `${entry.name || '未知发言者'}: ${entry.content || ''}${entry.files?.length ? `\n(文件: ${entry.files.map(file => file.name).join(', ')})` : ''}`)
 			.join('\n')
 
@@ -376,7 +371,7 @@ export function saveShortTermMemory() {
 
 export function deleteShortTermMemory(keyword) {
 	const oldLength = chat_memorys.length
-	chat_memorys = chat_memorys.filter(mem => !(Object(keyword) instanceof RegExp ? keyword.match(mem.text) : mem.text.includes(keyword)))
+	chat_memorys = chat_memorys.filter(mem => !(Object(keyword) instanceof RegExp ? keyword.test(mem.text) : mem.text.includes(keyword)))
 	saveShortTermMemory()
 	return oldLength - chat_memorys.length
 }

@@ -11,6 +11,7 @@ import { discordWorld } from './world.mjs'
 import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
 import { localhostLocales } from '../../../../../../../src/scripts/i18n.mjs'
 import { mimetypeFromBufferAndName } from '../../scripts/mimetype.mjs'
+import { charname, username } from '../../charbase.mjs'
 /** @typedef {import('npm:discord.js').Message} Message */
 /**
  *  @typedef { ((import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t) & {
@@ -119,6 +120,7 @@ export async function DiscordBotMain(client, config) {
 				discord_messages: [message]
 			}
 		}
+		delete replayInfoCache[message.id]
 		return result
 	}
 	const Gentian_words = ['龙胆', 'gentian']
@@ -284,8 +286,9 @@ export async function DiscordBotMain(client, config) {
 					files: true,
 					add_message: false,
 				},
+				username,
 				chat_name: 'self-recovery-' + new Date().getTime(),
-				char_id: 'gentian',
+				char_id: charname,
 				Charname: userNameMap.id2name[client.user.id],
 				UserCharname: config.OwnerUserName,
 				locales: localhostLocales,
@@ -416,8 +419,9 @@ export async function DiscordBotMain(client, config) {
 					files: true,
 					add_message: true,
 				},
-				chat_name: `${message.guild.name}: #${message.channel.name}`,
-				char_id: 'gentian',
+				username,
+				chat_name: message.channel.type === ChannelType.DM ? `DM with ${message.author.tag}` : `${message.guild.name}: #${message.channel.name}`,
+				char_id: charname,
 				Charname: userNameMap.id2name[client.user.id],
 				UserCharname: config.OwnerUserName,
 				ReplyToCharname: message.author.username,
@@ -499,9 +503,10 @@ export async function DiscordBotMain(client, config) {
 
 			while (myQueue?.length) {
 				/** @type {import('npm:discord.js').OmitPartialGroupDMChannel<Message<boolean>>} */
-				const message = myQueue.shift()
+				let message
 
-				{
+				do {
+					message = myQueue.shift()
 					const newlog = await DiscordMessageToFountChatLogEntry(message)
 					const last = chatlog[chatlog.length - 1]
 
@@ -523,7 +528,7 @@ export async function DiscordBotMain(client, config) {
 						chatlog.push(newlog)
 						while (chatlog.length > MAX_MESSAGE_DEPTH) chatlog.shift()
 					}
-				}
+				} while (myQueue[0]?.author.id == client.user.id)
 
 				if (message.author.username === config.OwnerUserName)
 					if (!in_hypnosis_channel_id && base_match_keys(message.content, [/^龙胆.*不敷衍点.{0,2}$/])) FuyanMode = false
@@ -612,7 +617,6 @@ export async function DiscordBotMain(client, config) {
 		}
 	})
 	client.on(Events.MessageUpdate, async (message) => {
-		if (message.author.id === client.user.id) return
 		const chatlog = ChannelChatLogs[message.channel.id] || []
 		// 我们先检查下这个消息是否在消息记录中，若不在直接跳过
 		if (!chatlog.find(logentry => logentry.extension?.discord_messages?.find(id => id == message.id))) return

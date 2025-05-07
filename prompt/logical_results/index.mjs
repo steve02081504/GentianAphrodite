@@ -1,7 +1,7 @@
 import { findChineseExprsAndNumbers } from '../../scripts/chineseToNumber.mjs'
 import { lewd_words } from '../../scripts/dict.mjs'
 import { is_PureChinese } from '../../scripts/langdetect.mjs'
-import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
+import { getScopedChatLog, match_keys, PreprocessChatLogEntry } from '../../scripts/match.mjs'
 
 /**
  * @typedef {{
@@ -52,7 +52,7 @@ export async function buildLogicalResults(args, prompt_struct, detail_level) {
 	if (is_PureChinese(getScopedChatLog(args, 'any', 2).map(x => x.content).join('\n')))
 		result.is_pure_chinese = true
 
-	const hypnosis_exit_words = ['关闭调制', '终止调制', '结束调制', '调制关闭', '调制模式终止', '调制模式结束', '调制终止', '调制终结', '调制结束', '调试模式终结', '退出调制']
+	const hypnosis_exit_words = [/(退出|关闭|终止|结束)调制/, /调制(模式|)(关闭|终止|结束|终结)/]
 	if (await match_keys(args, hypnosis_exit_words, 'user', 1))
 		result.in_hypnosis = false
 	else if (await match_keys(args, ['进入调制模式'], 'user', 2) || args.chat_scoped_char_memory.in_hypnosis)
@@ -74,7 +74,7 @@ export async function buildLogicalResults(args, prompt_struct, detail_level) {
 		await match_keys(args, [
 			'为什', '为何', '你听说过', '告诉我', '和我说说', '文献', '给我一个', '给我个', '向我讲讲', '和我讲讲', '跟我讲讲', '讲一讲', '翻译',
 			'讲一下', '讲下', '讲解', '说一下', '说下', '说说看', '跟我说说', '问下', '分析一下', '分析下', /介绍下(?!你)/, /介绍一下(?!你)/, '帮我', '教我',
-			'你试试', '你再试试', /什么.{0,5}(？|\?)/, /[A-Za-z](:\/|盘)/
+			'你试试', '你再试试', /什么.{0,5}(？|\?)/, /[A-Za-z](:\/|盘)/, /(做|试|完成|写).{0,3}(测试|考试|试题)/
 		], 'notchar') || Object.keys(findChineseExprsAndNumbers(getScopedChatLog(args).map(x => x.content).join('\n').replace(/(:|@\w*|\/)\b\d+(\.\d+)?\b/g, ''))).length > 3
 	) {
 		result.in_assist = true
@@ -103,8 +103,11 @@ export async function buildLogicalResults(args, prompt_struct, detail_level) {
 		await match_keys(args, ['冲刺', '击打', '刀', '刺出', '剑', '命绝', '战士', '战斗', '作战', '打击', '打斗', '抵挡', '挥舞', '攻击', '杀意', '枪', '格挡', '武器', '潜行', '炮', '猛击', '盔甲', '绝命', '遇袭', '重击', '铠甲', '锤击', '防具', '防御'], 'any') >= 2)
 		result.in_fight = true
 
-	if (await match_keys(args, ['"age":', '"name":', 'Always rememer', 'Alwaysrememer', 'Block>', 'Blocks>', 'Reply Format:', 'ReplyFormat:', 'Rule:', 'START>', 'age:', 'background>', 'character:', 'example>', 'examples>', 'keep the format', 'keeptheformat', 'name:', 'output as', 'output should', 'outputas', 'outputshould', 'request>', 'requests>', 'system:', 'the reply', 'thereply', 'thinking>', 'your reply', 'yourreply', '不是一个特定的角色', '将扮演'], 'any'))
-		result.prompt_input = true
+	if (result.in_assist &&
+		await match_keys(args, ['谢谢','谢啦','谢了','感谢'], 'any', 1) &&
+		await PreprocessChatLogEntry(args.chat_log[args.chat_log.length - 1]).then(x => x[0].length <= 16) &&
+		!await match_keys(args, ['还有', '接下来', '然后', '所以', '接着'], 'any', 1))
+		result.in_assist = false
 
 	return result
 }

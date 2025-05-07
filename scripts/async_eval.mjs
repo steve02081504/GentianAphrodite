@@ -18,6 +18,7 @@ export async function async_eval(code, args = {}, virtualconsole = new VirtualCo
 		const ast = parse(code, {
 			ecmaVersion: 'latest',
 			sourceType: 'module',
+			allowReturnOutsideFunction: true,
 		})
 
 		walk(ast, {

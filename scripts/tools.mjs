@@ -300,5 +300,8 @@ export function parseDuration(durationString) {
 			durationString = durationString.replace(match[0], '')
 		}
 	}
+	if (durationString.trim()) 
+		throw new Error('Invalid duration input')
+	
 	return duration
 }

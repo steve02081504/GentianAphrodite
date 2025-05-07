@@ -7,6 +7,7 @@ import { is_PureChinese } from './langdetect.mjs'
 import { remove_kaomoji } from './dict.mjs'
 import { francAll } from 'npm:franc'
 import { normalizeFancyText } from './fancytext.mjs'
+import { charname } from '../charbase.mjs'
 
 const chT2S = OpenCC.Converter({ from: 'twp', to: 'cn' })
 export function SimplifiyChinese(content) {
@@ -144,6 +145,13 @@ export function getScopedChatLog(args, from = 'any', depth = 4) {
 	return chat_log
 }
 
+export function flatChatLog(chat_log) {
+	return chat_log
+		.map(chatLogEntry => [...chatLogEntry.logContextBefore || [], chatLogEntry, ...chatLogEntry.logContextAfter || []])
+		.flatMap(x => x)
+		.filter(entry => !entry.charVisibility || entry.charVisibility.includes(charname))
+}
+
 /**
  * @param {chatReplyRequest_t} args
  * @param {(string|RegExp)[]} keys
@@ -162,6 +170,11 @@ export async function match_keys(args, keys, from = 'any', depth = 4,
 		const content_list = contents.map(x => x[key])
 		const content = content_list.join('\n')
 		maxFetchCount = Math.max(maxFetchCount, base_match_keys(content, keys, matcher))
+	}
+
+	if (maxFetchCount) {
+		console.log('args matching keys:', keys)
+		console.log('result:', maxFetchCount)
 	}
 
 	return maxFetchCount

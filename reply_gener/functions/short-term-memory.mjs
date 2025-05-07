@@ -15,17 +15,17 @@ export async function ShortTermMemoryHandler(result, { AddLongTimeLog }) {
 	// Match the outer tag, capturing all inner content
 	const deleteMatch = result.content.match(/<delete-short-term-memories>(?<keyword>[^\n]*?)<\/delete-short-term-memories>/s)
 	if (deleteMatch?.groups?.keyword) {
-		const keyword = deleteMatch.groups.keyword.trim()
 		AddLongTimeLog({
 			name: '龙胆',
 			role: 'char',
 			content: `<delete-short-term-memories>${deleteMatch.groups.keyword}</delete-short-term-memories>\n`,
 			files: []
 		})
-		console.info('AI请求删除短期记忆:', { keyword })
 		try {
+			const keyword = parseRegexFromString(deleteMatch.groups.keyword.trim())
+			console.info('AI请求删除短期记忆:', { keyword })
 			const all = getShortTermMemoryNum()
-			const num = deleteShortTermMemory(parseRegexFromString(keyword))
+			const num = deleteShortTermMemory(keyword)
 			AddLongTimeLog({
 				name: 'system',
 				role: 'system',
@@ -36,7 +36,7 @@ export async function ShortTermMemoryHandler(result, { AddLongTimeLog }) {
 			AddLongTimeLog({
 				name: 'system',
 				role: 'system',
-				content: `短期记忆删除失败，错误信息：${e}`,
+				content: `短期记忆删除失败，错误信息：${e.stack}`,
 				files: []
 			})
 		}
