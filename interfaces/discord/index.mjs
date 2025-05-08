@@ -629,5 +629,4 @@ export async function DiscordBotMain(client, config) {
 			return
 		}
 	})
-	console.info('bot ' + client.user.username + ' ready!')
 }
