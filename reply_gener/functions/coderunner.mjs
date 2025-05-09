@@ -3,11 +3,14 @@ import util from 'node:util'
 import { bash_exec_NATS, pwsh_exec_NATS } from '../../scripts/exec.mjs'
 import { async_eval } from '../../scripts/async_eval.mjs'
 import { GetReply } from '../index.mjs'
+import path from 'node:path'
+import fs from 'node:fs'
+import { mimetypeFromBufferAndName } from '../../scripts/mimetype.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
-async function callback_handler(args, reason, result) {
-	let logger = AddChatLogEntry
+async function callback_handler(args, reason, code, result) {
+	let logger = args.AddChatLogEntry
 	const feedback = {
 		name: 'system',
 		role: 'system',
@@ -16,7 +19,7 @@ async function callback_handler(args, reason, result) {
 原因是：${reason}
 你执行的代码是：
 \`\`\`js
-${jsrunner}
+${code}
 \`\`\`
 结果是：${util.inspect(result, { depth: 4 })}
 请根据callback函数的内容进行回复。
@@ -39,22 +42,43 @@ ${jsrunner}
 	}
 }
 
+function resolvePath(relativePath) {
+	if (relativePath.startsWith('~'))
+		return path.join(os.homedir(), relativePath.slice(1))
+	return path.resolve(relativePath)
+}
+
 /** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
 export async function coderunner(result, args) {
 	const { AddLongTimeLog } = args
 	result.extension.execed_codes ??= {}
-	const js_eval_context = {}
-	if (args.supported_functions.add_message) 
-		/**
-		 * @param {string} reason
-		 * @param {Promise<any>} promise
-		 */
-		js_eval_context.callback = (reason, promise) => {
-			const _ = _ => callback_handler(args, reason, _)
-			promise.then(_, _)
-		}
-	
-	const jsrunner = result.content.match(/<run-js>(?<code>[^]*?)<\/run-js>/)?.groups?.code
+	function get_js_eval_context(code) {
+		const js_eval_context = {}
+		if (args.supported_functions.add_message)
+			/**
+			 * @param {string} reason
+			 * @param {Promise<any>} promise
+			 */
+			js_eval_context.callback = (reason, promise) => {
+				const _ = _ => callback_handler(args, reason, code, _)
+				promise.then(_, _)
+				return "callback已注册"
+			}
+		if (args.supported_functions.files)
+			js_eval_context.add_files = (pathOrFileObj) => {
+				if (Object(pathOrFileObj) instanceof String) {
+					const path = resolvePath(pathOrFileObj)
+					const buffer = fs.readFileSync(path)
+					const name = path.basename(path)
+					pathOrFileObj = { name, buffer, mimeType: mimetypeFromBufferAndName(buffer, name) }
+				}
+				result.files.push(pathOrFileObj)
+				return "文件添加成功"
+			}
+		return js_eval_context
+	}
+
+	const jsrunner = result.content.match(/<run-js>(?<code>[^]*?)<\/run-js>/)?.groups?.code?.split?.('<run-js>')?.pop?.()
 	if (jsrunner) {
 		AddLongTimeLog({
 			name: '龙胆',
@@ -63,7 +87,7 @@ export async function coderunner(result, args) {
 			files: []
 		})
 		console.info('AI运行的JS代码：', jsrunner)
-		const coderesult = await async_eval(jsrunner, js_eval_context)
+		const coderesult = await async_eval(jsrunner, get_js_eval_context(jsrunner))
 		console.info('coderesult', coderesult)
 		AddLongTimeLog({
 			name: 'system',
@@ -128,9 +152,9 @@ export async function coderunner(result, args) {
 		const replacements = await Promise.all(
 			Array.from(result.content.matchAll(/<inline-js>(?<code>[^]*?)<\/inline-js>/g))
 				.map(async match => {
-					const jsrunner = match.groups.code
+					const jsrunner = match.groups.code.split('<inline-js>').pop()
 					console.info('AI内联运行的JS代码：', jsrunner)
-					const coderesult = await async_eval(jsrunner, js_eval_context)
+					const coderesult = await async_eval(jsrunner, get_js_eval_context(jsrunner))
 					console.info('coderesult', coderesult)
 					if (coderesult.error) throw coderesult.error
 					return coderesult.result+''

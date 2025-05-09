@@ -9,7 +9,6 @@ import { RockPaperScissorsPrompt } from './rock-paper-scissors.mjs'
 import { TaroPrompt } from './taro.mjs'
 import { CopusGeneratorPrompt } from './corpusGenerator.mjs'
 import { infoPrompt } from './info.mjs'
-import { FileSenderPrompt } from './filesender.mjs'
 import { AutoCalcPrompt } from './autocalc.mjs'
 import { HostInfoPrompt } from './hostinfo.mjs'
 import { DetailThinkingPrompt } from './detail-thinking.mjs'
@@ -46,8 +45,6 @@ export async function FunctionPrompt(args, logical_results, prompt_struct, detai
 	result.push(WebBrowsePrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(CodeRunnerPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(FileChangePrompt(args, logical_results, prompt_struct, detail_level))
-	if (args.supported_functions.files)
-		result.push(FileSenderPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(HostInfoPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(ScreenshotPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(qrcodeParserPrompt(args, logical_results, prompt_struct, detail_level))

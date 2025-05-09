@@ -3,7 +3,6 @@ import { noAISourceAvailable, OrderedAISourceCalling } from '../AISource/index.m
 import { buildLogicalResults } from '../prompt/logical_results/index.mjs'
 import { coderunner } from './functions/coderunner.mjs'
 import { detailThinking } from './functions/detail-thinking.mjs'
-import { filesender } from './functions/filesender.mjs'
 import { googlesearch } from './functions/googlesearch.mjs'
 import { rolesettingfilter } from './functions/rolesettingfilter.mjs'
 import { webbrowse } from './functions/webbrowse.mjs'
@@ -112,7 +111,6 @@ export async function GetReply(args) {
 		/** @type {(import('../../../../../../src/decl/PluginAPI.ts').ReplyHandler_t)[]} */
 		const replyHandlers = [
 			coderunner, LongTermMemoryHandler, ShortTermMemoryHandler,
-			args.supported_functions.files ? filesender : null,
 			detailThinking, googlesearch, webbrowse, rolesettingfilter, file_change,
 			args.supported_functions.add_message ? timer : null,
 			...Object.values(args.plugins).map(plugin => plugin.interfaces.chat?.ReplyHandler)

@@ -95,7 +95,7 @@ function cleanupMemories(currentTimeStamp) {
 	for (const mem of chat_memorys) {
 		mem.relevance = calculateRelevance(mem, [], currentTimeStamp)
 		if (mem.timeStamp < oneYearAgo) failingMemories.push(mem)
-		if (baseRelevance >= CLEANUP_MIN_SCORE_THRESHOLD) passingMemories.push(mem)
+		if (mem.relevance >= CLEANUP_MIN_SCORE_THRESHOLD) passingMemories.push(mem)
 		else failingMemories.push(mem)
 	}
 
