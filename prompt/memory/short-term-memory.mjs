@@ -26,6 +26,7 @@ const KEYWORD_MIN_WEIGHT = 4       // 提取关键词的最低权重阈值 (可�
 const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000 // 清理间隔（1天）
 const MEMORY_TTL_MS = 365 * 24 * 60 * 60 * 1000 // 记忆最大存活时间（1年）
 const CLEANUP_MIN_SCORE_THRESHOLD = -5 // 清理时，无关键词相关性的最低分数阈值
+const MIN_RETAINED_MEMORIES = 512    // 清理后最少保留的记忆数量
 // -- 激活逻辑去重/过滤 --
 const MIN_TIME_DIFFERENCE_ANY_MS = 10 * 60 * 1000 // 10分钟，避免选取时间过近的*任何已选*记忆 (包括相关、次相关、随机之间)
 const MIN_TIME_DIFFERENCE_SAME_CHAT_MS = 20 * 60 * 1000 // 20分钟，激活检查时跳过来自*同一个聊天*的近期记忆
@@ -87,16 +88,30 @@ function calculateRelevance(memoryEntry, currentKeywords, currentTimeStamp) {
 function cleanupMemories(currentTimeStamp) {
 	const initialMemoryCount = chat_memorys.length
 	const oneYearAgo = currentTimeStamp - MEMORY_TTL_MS
-	chat_memorys = chat_memorys.filter(mem => {
-		if (mem.timeStamp < oneYearAgo) return false
-		const baseRelevance = calculateRelevance(mem, [], currentTimeStamp)
-		// 增加日志说明清理原因
-		if (baseRelevance < CLEANUP_MIN_SCORE_THRESHOLD)
-			// console.log(`[Memory Cleanup] Removing memory due to low base relevance (${baseRelevance.toFixed(2)} < ${CLEANUP_MIN_SCORE_THRESHOLD}). Score: ${mem.score}, Age: ${((currentTimeStamp - mem.timeStamp)/(1000*60*60*24)).toFixed(1)} days`);
-			return false
 
-		return true
-	})
+	const passingMemories = []
+	const failingMemories = []
+
+	for (const mem of chat_memorys) {
+		mem.relevance = calculateRelevance(mem, [], currentTimeStamp)
+		if (mem.timeStamp < oneYearAgo) failingMemories.push(mem)
+		if (baseRelevance >= CLEANUP_MIN_SCORE_THRESHOLD) passingMemories.push(mem)
+		else failingMemories.push(mem)
+	}
+
+	if (passingMemories.length >= MIN_RETAINED_MEMORIES)
+		chat_memorys = passingMemories
+	else {
+		// 达标的记忆数量不足 MIN_RETAINED_MEMORIES，需要从未达标的记忆中补充
+		const neededFromFailing = MIN_RETAINED_MEMORIES - passingMemories.length
+		failingMemories.sort((a, b) => b.relevance - a.relevance)
+		// 取权重最高的 neededFromFailing 条未达标记忆
+		const supplementaryMemories = failingMemories.slice(0, neededFromFailing)
+		chat_memorys = [...passingMemories, ...supplementaryMemories]
+	}
+
+	for (const mem of chat_memorys) delete mem.relevance
+
 	lastCleanupTime = currentTimeStamp
 	if (initialMemoryCount !== chat_memorys.length)
 		console.log(`[Memory] Cleanup ran. Removed ${initialMemoryCount - chat_memorys.length} entries. Current size: ${chat_memorys.length}`)

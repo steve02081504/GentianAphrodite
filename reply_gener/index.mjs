@@ -14,6 +14,7 @@ import { file_change } from './functions/file-change.mjs'
 import { LongTermMemoryHandler } from './functions/long-term-memory.mjs'
 import { ShortTermMemoryHandler } from './functions/short-term-memory.mjs'
 import { addNotifyAbleChannel } from '../scripts/notify.mjs'
+import { inspect } from 'node:util'
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReply_t} chatReply_t */
@@ -86,7 +87,7 @@ export async function GetReply(args) {
 	const AddLongTimeLog = getLongTimeLogAdder(result, prompt_struct)
 	regen: while (true) {
 		console.log('logical_results', logical_results)
-		// console.log('prompt_struct', inspect(prompt_struct, { depth: 4, colors: true }))
+		console.log('prompt_struct', inspect(prompt_struct, { depth: 4, colors: true }))
 		const AItype = logical_results.in_nsfw ? 'nsfw' : logical_results.in_assist ? 'expert' : 'sfw'
 		const requestresult = await OrderedAISourceCalling(AItype, async AI => {
 			const result = await AI.StructCall(prompt_struct)
