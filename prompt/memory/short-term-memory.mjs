@@ -351,7 +351,10 @@ ${args.UserCharname}: 给我把有关华为的记忆全忘掉。
 
 	// --- 1. 保存新记忆 (逻辑不变) ---
 	const memoryLogSlice = currentChatLog.slice(-10)
-	if (memoryLogSlice.length && memoryLogSlice.some(chatLogEntry => chatLogEntry.role == 'user')) {
+	if (memoryLogSlice.length &&
+		memoryLogSlice.some(chatLogEntry => chatLogEntry.name == args.UserCharname) &&
+		memoryLogSlice.some(chatLogEntry => chatLogEntry.name == args.Charname)
+	) {
 		const newMemoryKeywords = await getKeyWords(memoryLogSlice)
 		const memoryText = flatChatLog(memoryLogSlice)
 			.map(entry => `${entry.name || '未知发言者'}: ${entry.content || ''}${entry.files?.length ? `\n(文件: ${entry.files.map(file => file.name).join(', ')})` : ''}`)
