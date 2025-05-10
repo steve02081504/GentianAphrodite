@@ -1,13 +1,18 @@
 import { fileTypeFromBuffer } from 'npm:file-type'
-import mime from 'npm:mime-types'
+import mimetype from 'npm:mime-types'
+import mime from 'npm:mime'
 
 /**
  * @param {Buffer} buffer
  */
 export async function mimetypeFromBufferAndName(buffer, name) {
-	let mimetype = (await fileTypeFromBuffer(buffer))?.mime
-	mimetype ||= mime.lookup(name)
-	mimetype ||= buffer.toString('utf-8').isWellFormed() ? 'text/plain' : undefined
-	mimetype ||= 'application/octet-stream'
-	return mimetype
+	let result = (await fileTypeFromBuffer(buffer))?.mime
+	result ||= mimetype.lookup(name)
+	result ||= buffer.toString('utf-8').isWellFormed() ? 'text/plain' : undefined
+	result ||= 'application/octet-stream'
+	return result
+}
+
+export function getFileExtFormMimetype(type) {
+	return mime.getExtension(type)
 }

@@ -71,7 +71,7 @@ ${args.supported_functions.add_message?`\
   * 返回值：callback是异步的，你无法在<run-js>的当场看到callback结果。
 `:''}
 ${args.supported_functions.files?`\
-- 你可以通过在js中使用\`add_files\`函数来发送文件，其可以传递代表文件路径的string或自buffer构建带有附加信息的结构体。
+- 你可以通过在js中使用\`add_files\`函数来发送文件，其可以传递代表文件路径或url的string或自buffer构建带有附加信息的结构体。
   * 格式：add_files(file1: {
 		name: string;
 		mimeType: string;
@@ -86,7 +86,7 @@ ${args.UserCharname}: 发我屏幕截图看看？
 		const image = await Monitor.all()[0].captureImage()
 		return await image.toPng()
 	}
-	add_files({
+	await add_files({
 		name: 'screenShot.png',
 		mimeType: 'image/png',
 		buffer: await captureScreen(),
@@ -94,9 +94,11 @@ ${args.UserCharname}: 发我屏幕截图看看？
 	})
 </run-js>
 ${args.UserCharname}: 把E盘下的paper.pdf和我桌面的data.zip发来。
-龙胆: <run-js>add_files('E:\\paper.pdf','~/Desktop/data.zip')</run-js>
+龙胆: <run-js>await add_files('E:\\paper.pdf','~/Desktop/data.zip')</run-js>
+${args.UserCharname}: 帮我下载http://host/file.txt然后发来。
+龙胆: <run-js>await add_files('http://host/file.txt')</run-js>
 ]
-  * 返回值：若使用string进行文件路径发送，可能抛出找不到文件或读取出错等错误。
+  * 返回值：返回值必须被await。若使用string进行文件或url发送，可能抛出文件或网络错误。
 `:''}
 执行代码后若没得到想要的结果，鼓励反思原因并给出不同的解决方案。
 已有成功运行结果时不要返回以上格式（如<run-js>...</run-js>），那会陷入死循环。

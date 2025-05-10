@@ -5,7 +5,10 @@ import { async_eval } from '../../scripts/async_eval.mjs'
 import { GetReply } from '../index.mjs'
 import path from 'node:path'
 import fs from 'node:fs'
-import { mimetypeFromBufferAndName } from '../../scripts/mimetype.mjs'
+import os from 'node:os'
+import { Buffer } from 'node:buffer'
+import { getFileExtFormMimetype, mimetypeFromBufferAndName } from '../../scripts/mimetype.mjs'
+import { getUrlFilename } from '../../scripts/web.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
@@ -48,6 +51,34 @@ function resolvePath(relativePath) {
 	return path.resolve(relativePath)
 }
 
+async function toFileObj(pathOrFileObj) {
+	if (Object(pathOrFileObj) instanceof String)
+		if (pathOrFileObj.startsWith('http://') || pathOrFileObj.startsWith('https://')) {
+			const response = await fetch(pathOrFileObj)
+			if (!response.ok) throw new Error('fetch failed.')
+			const contentDisposition = response.headers.get('Content-Disposition')
+			let name = getUrlFilename(pathOrFileObj, contentDisposition)
+			const buffer = Buffer.from(await response.arrayBuffer())
+			const mimeType = response.headers.get('content-type') || mimetypeFromBufferAndName(buffer, name || 'downloaded.bin')
+			name ||= 'downloaded.' + (getFileExtFormMimetype(mimeType) || 'bin')
+			pathOrFileObj = { name, buffer, mimeType }
+		}
+		else {
+			const filePath = resolvePath(pathOrFileObj)
+			const buffer = fs.readFileSync(filePath)
+			const name = path.basename(filePath)
+			pathOrFileObj = { name, buffer }
+		}
+
+	if (pathOrFileObj instanceof Object && 'name' in pathOrFileObj && 'buffer' in pathOrFileObj) {
+		const buffer = Buffer.isBuffer(pathOrFileObj.buffer) ? pathOrFileObj.buffer : Buffer.from(pathOrFileObj.buffer)
+		const mimeType = pathOrFileObj.mimeType || mimetypeFromBufferAndName(buffer, pathOrFileObj.name)
+		return { name: pathOrFileObj.name, buffer, mimeType }
+	}
+	else
+		throw new Error('无效的输入参数。期望为文件路径字符串、URL字符串或包含name和buffer属性的对象。')
+}
+
 /** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
 export async function coderunner(result, args) {
 	const { AddLongTimeLog } = args
@@ -62,18 +93,19 @@ export async function coderunner(result, args) {
 			js_eval_context.callback = (reason, promise) => {
 				const _ = _ => callback_handler(args, reason, code, _)
 				promise.then(_, _)
-				return "callback已注册"
+				return 'callback已注册'
 			}
 		if (args.supported_functions.files)
-			js_eval_context.add_files = (pathOrFileObj) => {
-				if (Object(pathOrFileObj) instanceof String) {
-					const path = resolvePath(pathOrFileObj)
-					const buffer = fs.readFileSync(path)
-					const name = path.basename(path)
-					pathOrFileObj = { name, buffer, mimeType: mimetypeFromBufferAndName(buffer, name) }
+			js_eval_context.add_files = async (...pathOrFileObjs) => {
+				const errors = []
+				for (const pathOrFileObj of pathOrFileObjs) try {
+					result.files.push(await toFileObj(pathOrFileObj))
+				} catch (e) {
+					errors.push(e)
 				}
-				result.files.push(pathOrFileObj)
-				return "文件添加成功"
+				if (errors.length == 1) throw errors[0]
+				if (errors.length) throw errors
+				return '文件已发送'
 			}
 		return js_eval_context
 	}
@@ -157,7 +189,7 @@ export async function coderunner(result, args) {
 					const coderesult = await async_eval(jsrunner, get_js_eval_context(jsrunner))
 					console.info('coderesult', coderesult)
 					if (coderesult.error) throw coderesult.error
-					return coderesult.result+''
+					return coderesult.result + ''
 				})
 		)
 		let i = 0
@@ -167,7 +199,7 @@ export async function coderunner(result, args) {
 			content: original,
 			files: result.files,
 			charVisibility: [args.char_id],
-		},{
+		}, {
 			name: 'system',
 			role: 'system',
 			content: '内联js代码执行和替换完毕\n',
@@ -187,7 +219,7 @@ export async function coderunner(result, args) {
 		AddLongTimeLog({
 			name: 'system',
 			role: 'system',
-			content: '内联js代码执行失败：\n'+ error.stack,
+			content: '内联js代码执行失败：\n' + error.stack,
 			files: []
 		})
 		return true
