@@ -3,6 +3,7 @@ import { chardir } from '../../charbase.mjs'
 import path from 'node:path'
 import { flatChatLog, match_keys, PreprocessChatLogEntry } from '../../scripts/match.mjs'
 import jieba from 'npm:nodejieba'
+import { findMostFrequentElement } from '../../scripts/tools.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
@@ -54,6 +55,24 @@ const MAX_RANDOM_FLASHBACK = 2 // 最多选几条随机
 /** @type {MemoryEntry[]} */
 let chat_memorys = loadJsonFileIfExists(path.join(chardir, 'memory/short-term-memory.json'), [])
 let lastCleanupTime = new Date().getTime()
+
+export function getMostFrequentChatName() {
+	return findMostFrequentElement(chat_memorys.map(x => x.chat_name)).element
+}
+
+export function getHighestScoreShortTermMemory() {
+	const currentTimeStamp = Date.now()
+	let max_relevance = 0, result
+	for (const mem of chat_memorys) {
+		const relevance = calculateRelevance(mem, [], currentTimeStamp)
+		if (relevance >= max_relevance) {
+			max_relevance = relevance
+			result = mem
+		}
+	}
+
+	return result
+}
 
 // (calculateRelevance, cleanupMemories 函数保持不变)
 /**

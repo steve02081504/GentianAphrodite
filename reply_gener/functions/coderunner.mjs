@@ -9,6 +9,7 @@ import os from 'node:os'
 import { Buffer } from 'node:buffer'
 import { getFileExtFormMimetype, mimetypeFromBufferAndName } from '../../scripts/mimetype.mjs'
 import { getUrlFilename } from '../../scripts/web.mjs'
+import { statisticDatas } from '../../scripts/statistics.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
@@ -112,6 +113,7 @@ export async function coderunner(result, args) {
 
 	const jsrunner = result.content.match(/<run-js>(?<code>[^]*?)<\/run-js>/)?.groups?.code?.split?.('<run-js>')?.pop?.()
 	if (jsrunner) {
+		statisticDatas.toolUsage.codeRuns++
 		AddLongTimeLog({
 			name: '龙胆',
 			role: 'char',
@@ -133,6 +135,7 @@ export async function coderunner(result, args) {
 	if (process.platform === 'win32') {
 		const pwshrunner = result.content.match(/<run-pwsh>(?<code>[^]*?)<\/run-pwsh>/)?.groups?.code
 		if (pwshrunner) {
+			statisticDatas.toolUsage.codeRuns++
 			AddLongTimeLog({
 				name: '龙胆',
 				role: 'char',
@@ -156,6 +159,7 @@ export async function coderunner(result, args) {
 	else {
 		const bashrunner = result.content.match(/<run-bash>(?<code>[^]*?)<\/run-bash>/)?.groups?.code
 		if (bashrunner) {
+			statisticDatas.toolUsage.codeRuns++
 			AddLongTimeLog({
 				name: '龙胆',
 				role: 'char',

@@ -64,13 +64,13 @@ return Array.from({ length: 201 }, (_, i) => toEnglishWord(i)).join(', ')
 js代码相关：
 - 复杂情况下，考虑有什么npm包可以满足你的需求，参照例子使用<run-js>+import。
   * 导入包需要符合deno的包名规范（追加\`npm|node|jsr:\`前缀），如\`npm:mathjs\`或\`node:fs\`。
-${args.supported_functions.add_message?`\
+${args.supported_functions.add_message ? `\
 - 对于会需要很长时间的任务，你可以使用\`callback\`函数来在异步完成后反馈内容。
   * 格式：callback(reason, promise)，reason为字符串，promise为promise对象。
   * 例子：<run-js>callback('unzip result', super_slow_async_function())</run-js>
   * 返回值：callback是异步的，你无法在<run-js>的当场看到callback结果。
-`:''}
-${args.supported_functions.files?`\
+`: ''}
+${args.supported_functions.files ? `\
 - 你可以通过在js中使用\`add_files\`函数来发送文件，其可以传递代表文件路径或url的string或自buffer构建带有附加信息的结构体。
   * 格式：add_files(file1: {
 		name: string;
@@ -99,7 +99,7 @@ ${args.UserCharname}: 帮我下载http://host/file.txt然后发来。
 龙胆: <run-js>await add_files('http://host/file.txt')</run-js>
 ]
   * 返回值：返回值必须被await。若使用string进行文件或url发送，可能抛出文件或网络错误。
-`:''}
+`: ''}
 执行代码后若没得到想要的结果，鼓励反思原因并给出不同的解决方案。
 已有成功运行结果时不要返回以上格式（如<run-js>...</run-js>），那会陷入死循环。
 **只是解释说明或举例时使用普通代码块（如\`\`\`js）而不是执行代码。**

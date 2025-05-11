@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import { async_eval } from './async_eval.mjs'
 
 export async function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms))
@@ -199,9 +200,27 @@ export function suffleArray(a, Rng = Math.random) {
  * @param {string} str
  * @param {Record<string, any>} formats
  */
-export function FormatStr(str, formats) {
-	const unpickscript = `let {${Object.keys(formats).join(', ')}} = formats;`
-	return str.replace(/\${([^}]+)}/g, (match, p1) => eval(unpickscript + p1))
+export async function FormatStr(str, formats) {
+	// 使用循环匹配所有 ${...} 表达式
+	let result = ''
+	while (str.indexOf('${') != -1) {
+		const length = str.indexOf('${')
+		result += str.slice(0, length)
+		str = str.slice(length + 2)
+		let end_index = 0
+		find: while (str.indexOf('}', end_index) != -1) { // 我们需要遍历所有的结束符直到表达式跑通
+			end_index = str.indexOf('}', end_index) + 1
+			const expression = str.slice(0, end_index - 1)
+			try {
+				const eval_result = await async_eval(expression, formats)
+				result += eval_result.result
+				str = str.slice(end_index)
+				break find
+			} catch (error) { }
+		}
+	}
+	result += str
+	return result
 }
 
 /**
@@ -300,8 +319,89 @@ export function parseDuration(durationString) {
 			durationString = durationString.replace(match[0], '')
 		}
 	}
-	if (durationString.trim()) 
+	if (durationString.trim())
 		throw new Error('Invalid duration input')
-	
+
 	return duration
+}
+
+export function escapeHTML(str) {
+	const htmlEntities = {
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;',
+		'"': '&quot;',
+		'\'': '&#39;'
+	}
+	return str.replace(/["&'<>]/g, match => htmlEntities[match])
+}
+
+const timeToStrSetting = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }
+export function timeToStr(date, locale, setting = timeToStrSetting) {
+	return new Date(date).toLocaleString(locale || undefined, setting)
+}
+const MS_PER_SECOND = 1000
+const MS_PER_MINUTE = MS_PER_SECOND * 60
+const MS_PER_HOUR = MS_PER_MINUTE * 60
+const MS_PER_DAY = MS_PER_HOUR * 24
+
+// 翻译和区域设置特定配置
+const translations = {
+	'zh-CN': {
+		day: '天', days: '天',
+		hour: '小时', hours: '小时',
+		minute: '分钟', minutes: '分钟',
+		second: '秒', seconds: '秒',
+		millisecond: '毫秒', milliseconds: '毫秒',
+		separator: '',        // 不同时间单位之间的分隔符 (例如 "1天2小时" 中间没有分隔符)
+		numberUnitSpace: false // 数字和单位之间是否需要空格 (例如 "1天" 中间没有空格)
+	},
+	'en-US': {
+		day: 'day', days: 'days',
+		hour: 'hour', hours: 'hours',
+		minute: 'minute', minutes: 'minutes',
+		second: 'second', seconds: 'seconds',
+		millisecond: 'millisecond', milliseconds: 'milliseconds',
+		separator: ' ',       // 不同时间单位之间的分隔符 (例如 "1 day 2 hours" 中间有空格)
+		numberUnitSpace: true // 数字和单位之间是否需要空格 (例如 "1 day" 中间有空格)
+	}
+}
+
+export function timeToTimeStr(diff, locale = 'en-US') {
+	const effectiveLocale = translations[locale] ? locale : 'en-US'
+	const unitConfig = translations[effectiveLocale]
+
+	const days = Math.floor(diff / MS_PER_DAY)
+	let remainder = diff % MS_PER_DAY
+
+	const hours = Math.floor(remainder / MS_PER_HOUR)
+	remainder %= MS_PER_HOUR
+
+	const minutes = Math.floor(remainder / MS_PER_MINUTE)
+	remainder %= MS_PER_MINUTE
+
+	const seconds = Math.floor(remainder / MS_PER_SECOND)
+	const milliseconds = remainder % MS_PER_SECOND
+
+	const timeComponents = [
+		{ value: days, singular: unitConfig.day, plural: unitConfig.days },
+		{ value: hours, singular: unitConfig.hour, plural: unitConfig.hours },
+		{ value: minutes, singular: unitConfig.minute, plural: unitConfig.minutes },
+		{ value: seconds, singular: unitConfig.second, plural: unitConfig.seconds },
+		{ value: milliseconds, singular: unitConfig.millisecond, plural: unitConfig.milliseconds },
+	]
+
+	const parts = []
+	for (const component of timeComponents)
+		if (component.value > 0) {
+			const unitName = component.value == 1 ? component.singular : component.plural
+			const valueStr = component.value
+
+			if (unitConfig.numberUnitSpace)
+				parts.push(`${valueStr} ${unitName}`)
+			else
+				parts.push(`${valueStr}${unitName}`)
+		}
+
+	return parts.join(unitConfig.separator)
 }

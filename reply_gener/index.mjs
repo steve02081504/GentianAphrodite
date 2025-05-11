@@ -14,6 +14,7 @@ import { LongTermMemoryHandler } from './functions/long-term-memory.mjs'
 import { ShortTermMemoryHandler } from './functions/short-term-memory.mjs'
 import { addNotifyAbleChannel } from '../scripts/notify.mjs'
 import { inspect } from 'node:util'
+import { newCharReplay, newUserMessage, saveStatisticDatas, statisticDatas } from '../scripts/statistics.mjs'
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReply_t} chatReply_t */
@@ -84,6 +85,9 @@ export async function GetReply(args) {
 		extension: {},
 	}
 	const AddLongTimeLog = getLongTimeLogAdder(result, prompt_struct)
+	const last_entry = args.chat_log.slice(-1)[0]
+	if (last_entry?.name == args.UserCharname && last_entry.role == 'user')
+		newUserMessage(last_entry.content, args.extension?.platform || 'chat')
 	regen: while (true) {
 		console.log('logical_results', logical_results)
 		console.log('prompt_struct', inspect(prompt_struct, { depth: 4, colors: true }))
@@ -119,6 +123,22 @@ export async function GetReply(args) {
 			if (await replyHandler(result, { ...args, AddLongTimeLog, prompt_struct }))
 				continue regen
 		break
+	}
+	if (last_entry?.name == args.UserCharname && last_entry.role == 'user') {
+		if (logical_results.in_nsfw)
+			statisticDatas.userActivity.NsfwMessagesSent++
+		if (logical_results.in_hypnosis && !logical_results.hypnosis_exit)
+			statisticDatas.userActivity.InHypnosisMessagesSent++
+		newCharReplay(result.content, args.extension?.platform || 'chat')
+		if (!statisticDatas.firstInteraction.time) {
+			statisticDatas.firstInteraction = {
+				time: Date.now(),
+				userMessageContent: last_entry.content,
+				characterReplyContent: result.content,
+				chat_name: args.chat_name
+			}
+			saveStatisticDatas()
+		}
 	}
 	return result
 }

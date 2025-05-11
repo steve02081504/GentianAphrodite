@@ -2,9 +2,10 @@ A complex legal loli wife with a massive details & features!✨
 
 <!--badges-->
 [![GitHub stars](https://img.shields.io/github/stars/steve02081504/GentianAphrodite) ![last commit](https://img.shields.io/github/last-commit/steve02081504/GentianAphrodite)](https://github.com/steve02081504/GentianAphrodite)
-![version now](https://badgen.net/static/version%0Anow/${charvar}) [![latest version](https://img.shields.io/github/v/release/steve02081504/GentianAphrodite?label=latest%20version)](https://github.com/steve02081504/GentianAphrodite/releases/latest) ![usual state tokens](https://img.shields.io/badge/usual%20state%20token-3k-green)
+![version now](https://badgen.net/static/version%0Anow/${charvar}) [![latest version](https://img.shields.io/github/v/release/steve02081504/GentianAphrodite?label=latest%20version)](https://github.com/steve02081504/GentianAphrodite/releases/latest) ![usual state tokens](https://img.shields.io/badge/usual%20state%20token-${statisticDatas.avgTokenNum}-green)
 <!--/badges-->
 
+${statisticStr}
 _____
 
 <details>

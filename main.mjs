@@ -1,16 +1,17 @@
 import { GetGreeting, GetGroupGreeting } from './greetings/index.mjs'
 import { GetPrompt, GetPromptForOther } from './prompt/index.mjs'
 import { GetReply } from './reply_gener/index.mjs'
-import { info } from './info/index.mjs'
+import { UpdateInfo } from './info/index.mjs'
 import { initCharBase } from './charbase.mjs'
 import { GetData, SetData } from './config.mjs'
 import { saveMemorys } from './prompt/memory/index.mjs'
 import { timerCallBack } from './reply_gener/functions/timer.mjs'
+import { saveVars } from './scripts/vars.mjs'
 /** @typedef {import('../../../../../src/decl/charAPI.ts').charAPI_t} charAPI_t */
 
 /** @type {charAPI_t} */
 export default {
-	info,
+	info: await UpdateInfo(),
 
 	Init: async (stat) => { },
 	Load: async (stat) => {
@@ -18,13 +19,17 @@ export default {
 	},
 	Unload: async (reason) => {
 		await saveMemorys()
+		await saveVars()
 	},
 	Uninstall: (reason, from) => { },
 
 	interfaces: {
+		info: {
+			UpdateInfo,
+		},
 		config: {
 			GetData,
-			SetData
+			SetData,
 		},
 		chat: {
 			GetGreeting,

@@ -47,7 +47,11 @@ output = await minify(output, {
 output = output.code
 output = confuser.obfuscate(output, {
 	target: 'node',
-	reservedNames: ['formats'],
+	reservedNames: [
+		'console', 'statisticStr', 'statisticDatas', 'charvar',
+		'callback', 'add_files', 'args', 'logical_results', 'prompt_struct',
+		'detail_level', 'match_keys', 'match_keys_all'
+	],
 	renameGlobals: true,
 	stringArrayEncoding: [
 		'none',
@@ -71,6 +75,6 @@ for (const path of copy_paths)
 	else // 若是文件
 		nicerWriteFileSync(`dist/${path}`, fs.readFileSync(path))
 // 创建的空文件夹
-const empty_dirs = ['memory']
+const empty_dirs = ['memory', 'vars']
 for (const path of empty_dirs)
 	fs.mkdirSync(`dist/${path}`, { recursive: true })

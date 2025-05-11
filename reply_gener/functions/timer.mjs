@@ -5,6 +5,7 @@ import { getTimers, removeTimer, setTimer } from '../../../../../../../src/serve
 import { charname } from '../../charbase.mjs'
 import { flatChatLog } from '../../scripts/match.mjs'
 import { UseNofityAbleChannel } from '../../scripts/notify.mjs'
+import { statisticDatas } from '../../scripts/statistics.mjs'
 import { parseDuration } from '../../scripts/tools.mjs'
 import { GetReply } from '../index.mjs'
 
@@ -25,6 +26,7 @@ export async function timer(result, args) {
 
 	const setTimerMatch = result.content.match(/<set-timer>(?<content>[\S\s]*?)<\/set-timer>/is)
 	if (setTimerMatch?.groups?.content) {
+		statisticDatas.toolUsage.timersSet++
 		processed = true
 		const timerContent = setTimerMatch.groups.content
 		const fullMatch = setTimerMatch[0]
@@ -186,6 +188,7 @@ export async function timer(result, args) {
 }
 export function timerCallBack(callbackdata) {
 	const { reason, chat_log_snip } = callbackdata
+	statisticDatas.toolUsage.timerCallbacks++
 	const logEntry = {
 		name: 'system',
 		role: 'system',

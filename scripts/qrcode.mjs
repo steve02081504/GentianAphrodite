@@ -57,9 +57,9 @@ export async function decodeQrCodeFromBuffer(buffer) {
 			try {
 				// 尝试解码当前区域
 				const decoded = decoder.decode(detect.matrix)
-				if (decoded.content) 
+				if (decoded.content)
 					decodedContents.push(decoded.content) // 收集解码成功的内容
-				
+
 				succeed = true // 标记成功，有助于优化探测器后续查找
 			} catch (decodeError) {
 				// 解码失败，忽略这个区域，继续查找下一个

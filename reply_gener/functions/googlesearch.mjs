@@ -1,5 +1,6 @@
 import { search, OrganicResult, ResultTypes } from 'npm:google-sr'
 import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
+import { statisticDatas } from '../../scripts/statistics.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
@@ -8,6 +9,7 @@ export async function googlesearch(result, { AddLongTimeLog }) {
 	// Match <google-search>...</google-search>
 	let searchQueryContent = result.content.match(/<google-search>(?<query>[^]*?)<\/google-search>/)?.groups?.query
 	if (searchQueryContent) {
+		statisticDatas.toolUsage.googleSearches++
 		searchQueryContent = searchQueryContent.trim()
 		if (!searchQueryContent) {
 			console.warn('Received <google-search> tag with empty content.')

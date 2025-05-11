@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import { homedir } from 'node:os'
 import { escapeRegExp, parseRegexFromString } from '../../scripts/tools.mjs'
 import { XMLParser, XMLValidator } from 'npm:fast-xml-parser'
+import { statisticDatas } from '../../scripts/statistics.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
@@ -58,6 +59,7 @@ export async function file_change(result, { AddLongTimeLog }) {
 				files: []
 			})
 		}
+		statisticDatas.toolUsage.fileOperations++
 		regen = true
 	}
 
@@ -203,6 +205,7 @@ export async function file_change(result, { AddLongTimeLog }) {
 				files: []
 			})
 		}
+		statisticDatas.toolUsage.fileOperations++
 		regen = true
 	}
 
@@ -233,6 +236,7 @@ export async function file_change(result, { AddLongTimeLog }) {
 				files: []
 			})
 		}
+		statisticDatas.toolUsage.fileOperations++
 		regen = true
 	}
 

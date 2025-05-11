@@ -6,6 +6,7 @@ import { getPartInfo } from '../../../../../../../src/scripts/locale.mjs'
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 import { Lunar } from 'npm:lunar-javascript'
+import { timeToStr, timeToTimeStr } from '../../scripts/tools.mjs'
 
 /**
  * @param {chatReplyRequest_t} args
@@ -23,31 +24,10 @@ export async function infoPrompt(args, logical_results, prompt_struct, detail_le
 		'距离', '现在', '过去', '多久', '还有', '还要', '啥时', '还差'
 	], 'any', 2) > 1) {
 		const timeNow = new Date()
-		const timeToStrSetting = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }
-		function timeToStr(date, setting = timeToStrSetting) {
-			return new Date(date).toLocaleString(args.locales[0] || undefined, setting)
-		}
-		function timeToTimeStr(diff) {
-			const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-			diff %= 1000 * 60 * 60 * 24
-			const hours = Math.floor(diff / (1000 * 60 * 60))
-			diff %= 1000 * 60 * 60
-			const minutes = Math.floor(diff / (1000 * 60))
-			diff %= 1000 * 60
-			const seconds = Math.floor(diff / 1000)
-			const milliseconds = diff % 1000
-			let result = ''
-			if (days > 0) result += `${days}天`
-			if (hours > 0) result += `${hours}小时`
-			if (minutes > 0) result += `${minutes}分钟`
-			if (seconds > 0) result += `${seconds}秒`
-			if (milliseconds > 0) result += `${milliseconds}毫秒`
-			return result
-		}
 		const lastMessage = args.chat_log.slice(-1)[0]
 		const lastMessageTime = lastMessage.timeStamp
 		result += `\
-当前时间：${timeToStr(timeNow)}
+当前时间：${timeToStr(timeNow, args.locales[0])}
 `
 		if (await match_keys(args, [
 			'什么日子', '什么节日', '什么时间',
@@ -66,7 +46,7 @@ export async function infoPrompt(args, logical_results, prompt_struct, detail_le
 			const lastUserMessageTime = lastUserMessage?.timeStamp
 			if (lastUserMessage?.timeStamp && timeNow - lastUserMessageTime > 3000)
 				result += `\
-距离上次主人发送消息已过去：${timeToTimeStr(timeNow - lastUserMessageTime, null)}
+距离上次主人发送消息已过去：${timeToTimeStr(timeNow - lastUserMessageTime, args.locales[0])}
 `
 			else {
 				reversedChatlog = reversedChatlog.slice(reversedChatlog.indexOf(lastUserMessage) + 1)
@@ -74,7 +54,7 @@ export async function infoPrompt(args, logical_results, prompt_struct, detail_le
 				const lastOtherMessageTime = lastOtherMessage?.timeStamp
 				if (lastOtherMessage?.timeStamp && timeNow - lastOtherMessageTime > 3000)
 					result += `\
-距离上次主人发送消息已过去：${timeToTimeStr(timeNow - lastOtherMessageTime, null)}
+距离上次主人发送消息已过去：${timeToTimeStr(timeNow - lastOtherMessageTime, args.locales[0])}
 `
 				else
 					result += `\
@@ -85,7 +65,7 @@ export async function infoPrompt(args, logical_results, prompt_struct, detail_le
 
 		if (lastMessage.name != args.UserCharname && timeNow - lastMessageTime > 3000)
 			result += `\
-距离上条消息已过去：${timeToTimeStr(timeNow - lastMessageTime, null)}
+距离上条消息已过去：${timeToTimeStr(timeNow - lastMessageTime, args.locales[0])}
 `
 	}
 	else if (await match_keys(args, [
@@ -105,7 +85,7 @@ export async function infoPrompt(args, logical_results, prompt_struct, detail_le
 		const modelMap = {}
 		for (const key in AIsources)
 			if (AIsources[key]) {
-				const info = getPartInfo(AIsources[key], args.locales)
+				const info = await getPartInfo(AIsources[key], args.locales)
 				const sign = `${info.name}（由${info.provider}提供）`;
 				(modelMap[sign] ??= []).push(key)
 			}
@@ -120,7 +100,7 @@ ${Object.entries(modelMap).map(([key, value]) => `\`${key}\`: ${value.join(', ')
 `
 			if (last_used_AIsource)
 				result += `\
-你上一次回复时使用的模型是\`${getPartInfo(last_used_AIsource, args.locales).name}\`
+你上一次回复时使用的模型是\`${(await getPartInfo(last_used_AIsource, args.locales)).name}\`
 `
 		}
 		result += `\

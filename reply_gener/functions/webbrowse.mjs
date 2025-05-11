@@ -1,5 +1,6 @@
 import { OrderedAISourceCalling } from '../../AISource/index.mjs'
 import { DetailThinkingMainPrompt } from '../../prompt/functions/detail-thinking.mjs'
+import { statisticDatas } from '../../scripts/statistics.mjs'
 import { MarkdownWebFetch } from '../../scripts/web.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
@@ -9,6 +10,7 @@ export async function webbrowse(result, { AddLongTimeLog, prompt_struct }) {
 	const match = result.content.match(/<web-browse>\s*<url>(?<url>.*?)<\/url>\s*<question>(?<question>[\S\s]*?)<\/question>\s*<\/web-browse>/)
 
 	if (match?.groups) {
+		statisticDatas.toolUsage.webBrowses++
 		const url = match.groups.url.trim()
 		const question = match.groups.question.trim()
 

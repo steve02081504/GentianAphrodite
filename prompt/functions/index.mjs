@@ -19,6 +19,7 @@ import { TimerPrompt } from './timer.mjs'
 import { FileChangePrompt } from './file-change.mjs'
 import { qrcodeParserPrompt } from './qrcodeParser.mjs'
 import { RudePrompt } from './rude.mjs'
+import { StatisticDatasPrompt } from './statistic_datas.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
@@ -31,6 +32,7 @@ import { RudePrompt } from './rude.mjs'
  */
 export async function FunctionPrompt(args, logical_results, prompt_struct, detail_level) {
 	const result = []
+	result.push(StatisticDatasPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(RockPaperScissorsPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(DicePrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(AutoCalcPrompt(args, logical_results, prompt_struct, detail_level))

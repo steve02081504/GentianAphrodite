@@ -2,6 +2,7 @@
 	"type": "chars",
 	"dirname": "GentianAphrodite",
 	"data_files": [
-		"memory"
+		"memory",
+		"vars"
 	]
 }

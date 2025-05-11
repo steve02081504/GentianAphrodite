@@ -13,6 +13,7 @@ import { GoogleSearchPrompt } from '../../prompt/functions/googlesearch.mjs'
 import { getLongTimeLogAdder } from '../index.mjs'
 import { config } from '../../config.mjs'
 import { sleep } from '../../scripts/tools.mjs'
+import { statisticDatas } from '../../scripts/statistics.mjs'
 
 /**
  * Parses plan text into a structured plan array with relaxed validation.
@@ -187,6 +188,7 @@ Step 2: <步骤2主题>
 	// --- Planning and Execution Cycle ---
 	try {
 		replan: while (planningCycles < max_planning_cycles) {
+			statisticDatas.toolUsage.detailedThinkingSessions++
 			planningCycles++
 			console.info(`Detail-thinking: Starting planning cycle ${planningCycles}/${max_planning_cycles}`)
 

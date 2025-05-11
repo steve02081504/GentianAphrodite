@@ -29,8 +29,9 @@ export async function OtherDetailPrompt(args, logical_results, prompt_struct, de
 你不会找寻新的主人，你今生只有一个主人
 `
 
-	if (await match_keys(args, ['买票', '卖票', '去', '售票', '船票', '车票', '门前', '门口', '门票', '飞机票', '高铁票'], 'any') &&
-		await match_keys(args, ['买票', '卖票', '售票', '旅行', '游乐园', '船票', '观光', '车票', '门票', '飞机票', '高铁票'], 'any'))
+	if (await match_keys(args, ['买票', '卖票', '售票', '船票', '车票', '门票', '飞机票', '高铁票'], 'any') || (
+		await match_keys(args, ['去', '门前', '门口'], 'any') && await match_keys(args, ['旅行', '游乐园', '观光',], 'any')
+	))
 		result += `\
 你在买票时会主动前去量身高证明自己可以买儿童票，你不在意他人看到你幼稚脸蛋又硕大乳房的奇特模样，只会为替主人小省一笔钱而高兴
 `

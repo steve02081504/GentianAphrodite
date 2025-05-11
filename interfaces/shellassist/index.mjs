@@ -3,6 +3,7 @@ import GentianAphrodite from '../../main.mjs'
 import { GetShellWorld } from './world.mjs'
 import { recommend_command_plugin } from './recommend_command.mjs'
 import { localhostLocales } from '../../../../../../../src/scripts/i18n.mjs'
+import { newCharReplay, newUserMessage } from '../../scripts/statistics.mjs'
 /** @typedef {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
 
 /**
@@ -103,6 +104,8 @@ stderr: ${entry.error.includes('\n') ? '\n```\n' + entry.error + '\n```' : '`' +
 		chat_scoped_char_memory: args.chat_scoped_char_memory,
 		chat_log
 	})
+	newUserMessage(args.command_now, 'shell')
+	newCharReplay(AIsuggestion.content, 'shell')
 	return {
 		name: '龙胆',
 		recommend_command: AIsuggestion.recommend_command,
