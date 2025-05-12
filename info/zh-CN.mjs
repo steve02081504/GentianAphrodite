@@ -9,6 +9,8 @@ import fs from 'node:fs'
 const file = fs.readFileSync(chardir + '/info/description/zh-CN.md', 'utf8')
 
 export async function update() {
+	const highestScoreShortTermMemory = getHighestScoreShortTermMemory()?.text
+	const mostFrequentChatName = getMostFrequentChatName()
 	return {
 		name: '龙胆',
 		avatar: `${charurl}/imgs/anime.avif`,
@@ -63,14 +65,20 @@ ${statisticDatas.longestDailyChat.end - statisticDatas.longestDailyChat.start > 
 				, 'zh-CN')}的时间中，你与她每日都保持对话。
 ` : ''}
 
-🧠 如今，她有${listLongTermMemory().length}条长期记忆 📜，有${getShortTermMemoryNum()}条短期记忆 ✨，其中近期最闪光的记忆是： ⭐
+🧠 如今，她有${listLongTermMemory().length}条长期记忆 📜，有${getShortTermMemoryNum()}条短期记忆 ✨
+
+${highestScoreShortTermMemory ? `\
+其中近期最闪光的记忆是： ⭐
 <pre><code>
-${escapeHTML(getHighestScoreShortTermMemory().text)}
+${escapeHTML(highestScoreShortTermMemory)}
 </code></pre>
+`: ''}
+${mostFrequentChatName ? `\
 📍 近期你和她最常交流的频道是：
 <pre><code>
-${escapeHTML(getMostFrequentChatName())}
+${escapeHTML(mostFrequentChatName)}
 </code></pre>
+`: ''}
 </details>
 ` : ''
 		}),

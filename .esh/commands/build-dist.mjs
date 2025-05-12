@@ -24,8 +24,9 @@ let output = await result.generate({
 output = output.output[0].code
 
 const charvar = await exec('git describe --tags --abbrev=0', { cwd: '.' }).then((result) => result.stdout)
-output = output.replace(/(export\s+)?(const|let)\s*charvar = .*?\n\)/, `$1const charvar = "${charvar.trim()}";`)
+output = output.replace(/(const|let)\s*charvar = [^]*?\n\);?\n/, `const charvar = "${charvar.trim()}";`)
 
+//*
 output = await minify(output, {
 	module: true,
 	compress: {
@@ -64,6 +65,7 @@ output = confuser.obfuscate(output, {
 	splitStrings: true,
 	seed: 81504
 }).getObfuscatedCode()
+//*/
 
 nicerWriteFileSync('dist/main.mjs', output)
 

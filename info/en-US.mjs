@@ -9,6 +9,8 @@ import fs from 'node:fs'
 const file = fs.readFileSync(chardir + '/info/description/en-US.md', 'utf8')
 
 export async function update() {
+	const highestScoreShortTermMemory = getHighestScoreShortTermMemory()?.text
+	const mostFrequentChatName = getMostFrequentChatName()
 	return {
 		name: 'Gentian',
 		avatar: `${charurl}/imgs/anime.avif`,
@@ -63,15 +65,21 @@ ${statisticDatas.longestDailyChat.end - statisticDatas.longestDailyChat.start > 
 				, 'en-US')} during which you maintained daily conversations.
 ` : ''}
 
-🧠 Currently, she has ${listLongTermMemory().length} long-term memories 📜, and ${getShortTermMemoryNum()} short-term memories ✨, the most brilliant recent memory is: ⭐
+🧠 Currently, she has ${listLongTermMemory().length} long-term memories 📜, and ${getShortTermMemoryNum()} short-term memories ✨
+
+${highestScoreShortTermMemory ? `\
+the most brilliant recent memory is: ⭐
 <pre><code>
-${escapeHTML(getHighestScoreShortTermMemory().text)}
+${escapeHTML(highestScoreShortTermMemory)}
 </code></pre>
+`: ''}
+${mostFrequentChatName ? `\
 📍 The channel you've interacted with her most frequently in recently is:
 <pre><code>
-${escapeHTML(getMostFrequentChatName())}
+${escapeHTML(mostFrequentChatName)}
 </code></pre>
 </details>
+`: ''}
 ` : ''
 		}),
 		version: charvar,
