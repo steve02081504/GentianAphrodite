@@ -374,7 +374,7 @@ export async function DiscordBotMain(client, config) {
 					if (members && reply.content.includes('@')) {
 						const nameToIdMap = new Map()
 						let sortedNames = []
-						members.map(member => {
+						members?.map?.(member => {
 							nameToIdMap.set(member.user.username, member.user.id)
 							sortedNames.push(member.user.username)
 							nameToIdMap.set(member.displayName, member.user.id)

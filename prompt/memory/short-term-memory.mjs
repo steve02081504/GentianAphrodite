@@ -2,7 +2,7 @@ import { loadJsonFileIfExists, saveJsonFile } from '../../../../../../../src/scr
 import { chardir } from '../../charbase.mjs'
 import path from 'node:path'
 import { flatChatLog, match_keys, PreprocessChatLogEntry } from '../../scripts/match.mjs'
-import jieba from 'npm:nodejieba'
+import jieba from '../../scripts/jieba.mjs'
 import { findMostFrequentElement } from '../../scripts/tools.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
@@ -22,7 +22,7 @@ const RANDOM_WEIGHT_RECENCY_FACTOR = 1.7 // 随机选择中近期性权重因子
 const RANDOM_WEIGHT_SCORE_FACTOR = 1.1   // 随机选择中分数权重因子 (可调整)
 const MAX_SCORE_FOR_RANDOM_WEIGHT = 50  // 用于计算随机权重的最高分数上限
 // -- 关键词提取 (优化) --
-const KEYWORD_MIN_WEIGHT = 4       // 提取关键词的最低权重阈值 (可调整)
+const KEYWORD_MIN_WEIGHT = 0.8       // 提取关键词的最低权重阈值 (可调整)
 // -- 清理 --
 const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000 // 清理间隔（1天）
 const MEMORY_TTL_MS = 365 * 24 * 60 * 60 * 1000 // 记忆最大存活时间（1年）
@@ -158,8 +158,6 @@ function selectOneWeightedRandom(items, weights) {
 		else
 			return null
 
-
-
 	const randomVal = Math.random() * totalWeight
 	let cumulativeWeight = 0
 
@@ -268,14 +266,11 @@ export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct
 			if (isFromSameChat && timeDiffSinceMemory < MIN_TIME_DIFFERENCE_SAME_CHAT_MS)
 				return false
 
-
 			// 过滤条件2: 不能与 *任何已选* (相关、次相关、已选随机) 的记忆时间过近 (10分钟内)
 			const allPreviouslySelected = [...allSelectedRelevantMemories, ...finalRandomFlashback] // 合并已选的相关/次相关 和 已选的随机
 			for (const selectedItem of allPreviouslySelected)
 				if (Math.abs(candidate.memory.timeStamp - selectedItem.memory.timeStamp) < MIN_TIME_DIFFERENCE_ANY_MS)
 					return false // 时间太近，过滤掉
-
-
 
 			return true // 通过所有过滤条件
 		})
