@@ -215,7 +215,7 @@ export async function DiscordBotMain(client, config) {
 				possible += 4
 				if (base_match_keys(content, [
 					/(再|多)(来|表演)(点|.*(次|个))/, '来个', '不够', '不如', '继续', '确认', '执行',
-					/^(那|所以你|可以再|你?再(讲|说|试试)|你(觉得|想|知道|确定)|但是)/, /^so/i,
+					/^(那|所以你|可以再|你?再(讲|说|试试)|你(觉得|想|知道|确定|试试)|但是)/, /^so/i,
 				]) && !(new_chat_logs.length > 3)) possible += 100
 			}
 			if (message.mentions.users.has(client.user.id)) possible += 100
@@ -534,7 +534,9 @@ export async function DiscordBotMain(client, config) {
 						chatlog.push(newlog)
 						while (chatlog.length > MAX_MESSAGE_DEPTH) chatlog.shift()
 					}
-				} while (myQueue[0]?.author.id == client.user.id)
+				} while (myQueue[0]?.author.id == message.author.id)
+
+				const recent_chat_log = chatlog.filter(message => ((Date.now() - message.timeStamp) < 5 * 60 * 1000))
 
 				if (message.author.username === config.OwnerUserName)
 					if (!in_hypnosis_channel_id && base_match_keys(message.content, [/^龙胆.*不敷衍点.{0,2}$/])) FuyanMode = false
@@ -567,7 +569,7 @@ export async function DiscordBotMain(client, config) {
 					}
 
 				const has_other_gentian_bot = (() => {
-					const text = chatlog.filter(message => ((Date.now() - message.timeStamp) < 5 * 60 * 1000) && message.extension.discord_messages[0]?.author.id != client.user.id).map(message => message.content).join('\n')
+					const text = recent_chat_log.filter(message => message.extension.discord_messages[0]?.author.id != client.user.id).map(message => message.content).join('\n')
 					return text.includes('龙胆') && text.match(/主人/g)?.length > 1
 				})()
 				// skip if message author is this bot
@@ -582,7 +584,7 @@ export async function DiscordBotMain(client, config) {
 				else if (!in_hypnosis_channel_id && message.author.id != client.user.id) {
 					// 若消息记录的后10条中有5条以上的消息内容相同
 					// 则直接使用相同内容的消息作为回复
-					const repet = findMostFrequentElement(chatlog.slice(-10), message => message.content + '\n\n' + message.files.map(file => file.buffer.toString('hex')).join('\n'))
+					const repet = findMostFrequentElement(recent_chat_log.slice(-10), message => message.content + '\n\n' + message.files.map(file => file.buffer.toString('hex')).join('\n'))
 					if (
 						repet.element.content &&
 						repet.count >= 4 &&
