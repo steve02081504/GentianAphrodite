@@ -370,11 +370,13 @@ export async function DiscordBotMain(client, config) {
 				else in_hypnosis_channel_id = null
 
 				if (reply?.content || reply?.files?.length) {
-					const members = message.channel?.members
-					if (members && reply.content.includes('@')) {
+					let members
+					if (reply.content.includes('@'))
+						members = await message.guild?.members?.fetch?.()
+					if (members) {
 						const nameToIdMap = new Map()
 						let sortedNames = []
-						members?.map?.(member => {
+						members.map(member => {
 							nameToIdMap.set(member.user.username, member.user.id)
 							sortedNames.push(member.user.username)
 							nameToIdMap.set(member.displayName, member.user.id)
