@@ -30,6 +30,8 @@ export function GetBotConfigTemplate() {
 	return {
 		OwnerUserName: 'your_discord_username',
 		OwnerNameKeywords: ['your_name_keyword1', 'your_name_keyword2'],
+		maxMessageDepth: 20,
+		maxFetchCount: Math.floor(20 * 3 / 2),
 	}
 }
 
@@ -39,7 +41,7 @@ export function GetBotConfigTemplate() {
  */
 export async function DiscordBotMain(client, config) {
 	const MAX_MESSAGE_DEPTH = config.maxMessageDepth || 20
-	const MAX_FEACH_COUNT = config.maxFetchCount || Math.floor(MAX_MESSAGE_DEPTH * 3 / 2) || MAX_MESSAGE_DEPTH
+	const MAX_FETCH_COUNT = config.maxFetchCount || Math.floor(MAX_MESSAGE_DEPTH * 3 / 2) || MAX_MESSAGE_DEPTH
 	const lastSendMessageTime = {}
 	const replayInfoCache = {}
 	const userinfoCache = {}
@@ -414,7 +416,7 @@ export async function DiscordBotMain(client, config) {
 			 *
 			 * @returns {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReplyRequest_t}
 			 */
-			const replayQuestGener = () => ({
+			const replyQuestGenerator = () => ({
 				supported_functions: {
 					markdown: true,
 					mathjax: true,
@@ -441,13 +443,13 @@ export async function DiscordBotMain(client, config) {
 				chat_summary: '',
 				chat_scoped_char_memory,
 				chat_log: ChannelChatLogs[message.channel.id],
-				Update: replayQuestGener,
+				Update: replyQuestGenerator,
 				AddChatLogEntry: replyHandler,
 				extension: {
 					platform: 'discord'
 				}
 			})
-			const reply = FuyanMode ? { content: '嗯嗯！' } : await GetReply(replayQuestGener())
+			const reply = FuyanMode ? { content: '嗯嗯！' } : await GetReply(replyQuestGenerator())
 
 			for (const BannedString of BannedStrings)
 				reply.content = reply.content.replaceAll(BannedString, '')
@@ -483,7 +485,7 @@ export async function DiscordBotMain(client, config) {
 			if (!ChannelChatLogs[channelid]) {
 				const chatlog = ChannelChatLogs[channelid] ??= MargeChatLog(
 					await Promise.all(
-						(await myQueue[0].channel.messages.fetch({ limit: MAX_FEACH_COUNT }))
+						(await myQueue[0].channel.messages.fetch({ limit: MAX_FETCH_COUNT }))
 							.map(DiscordMessageToFountChatLogEntry).reverse()
 					)
 				)
