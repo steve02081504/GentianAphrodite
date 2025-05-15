@@ -9,7 +9,7 @@ import os from 'node:os'
 import { Buffer } from 'node:buffer'
 import { getFileExtFormMimetype, mimetypeFromBufferAndName } from '../../scripts/mimetype.mjs'
 import { getUrlFilename } from '../../scripts/web.mjs'
-import { statisticDatas } from '../../scripts/statistics.mjs'
+import { newCharReplay, statisticDatas } from '../../scripts/statistics.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
@@ -37,7 +37,8 @@ ${code}
 		new_req.extension.from_callback = true
 		const reply = await GetReply(new_req)
 		reply.logContextBefore.push(feedback)
-		logger(reply)
+		await logger(reply)
+		newCharReplay(reply.content, args.extension?.platform || 'chat')
 	}
 	catch (error) {
 		console.error(`Error processing callback for "${reason}":`, error)
@@ -80,11 +81,11 @@ async function toFileObj(pathOrFileObj) {
 		throw new Error('无效的输入参数。期望为文件路径字符串、URL字符串或包含name和buffer属性的对象。')
 }
 
-/** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
+/** @type {import("../../../../../../../src/decl/pluginAPI.ts").ReplyHandler_t} */
 export async function coderunner(result, args) {
 	const { AddLongTimeLog } = args
 	result.extension.execed_codes ??= {}
-	function get_js_eval_context(code) {
+	async function get_js_eval_context(code) {
 		const js_eval_context = {}
 		if (args.supported_functions.add_message)
 			/**
@@ -108,7 +109,9 @@ export async function coderunner(result, args) {
 				if (errors.length) throw errors
 				return '文件已发送'
 			}
-		return js_eval_context
+		return Object.assign(js_eval_context, ...(await Promise.all(
+			Object.values(args.plugins).map(plugin => plugin.interfaces?.chat?.GetJSCodeContext?.(args, args.prompt_struct))
+		)).filter(Boolean))
 	}
 
 	const jsrunner = result.content.match(/<run-js>(?<code>[^]*?)<\/run-js>/)?.groups?.code?.split?.('<run-js>')?.pop?.()
@@ -121,7 +124,7 @@ export async function coderunner(result, args) {
 			files: []
 		})
 		console.info('AI运行的JS代码：', jsrunner)
-		const coderesult = await async_eval(jsrunner, get_js_eval_context(jsrunner))
+		const coderesult = await async_eval(jsrunner, await get_js_eval_context(jsrunner))
 		console.info('coderesult', coderesult)
 		AddLongTimeLog({
 			name: 'system',
@@ -190,7 +193,7 @@ export async function coderunner(result, args) {
 				.map(async match => {
 					const jsrunner = match.groups.code.split('<inline-js>').pop()
 					console.info('AI内联运行的JS代码：', jsrunner)
-					const coderesult = await async_eval(jsrunner, get_js_eval_context(jsrunner))
+					const coderesult = await async_eval(jsrunner, await get_js_eval_context(jsrunner))
 					console.info('coderesult', coderesult)
 					if (coderesult.error) throw coderesult.error
 					return coderesult.result + ''

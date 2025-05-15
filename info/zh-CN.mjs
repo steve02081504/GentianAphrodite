@@ -45,8 +45,9 @@ ${escapeHTML(statisticDatas.firstInteraction.characterReplyContent)}
 
 🗺️ 在这些消息中：
 
-- 🎮 ${statisticDatas.userActivity.byPlatform.discord.messagesSent}次消息是在混乱的discord上传达的
-- 💻 ${statisticDatas.userActivity.byPlatform.shell.messagesSent}次消息是在酷炫的终端里发送的
+- 🎮 ${statisticDatas.userActivity.byPlatform.discord?.messagesSent || 0}次消息是在混乱的discord上传达的
+- 🌐 ${statisticDatas.userActivity.byPlatform.telegram?.messagesSent || 0}次消息是在自由的telegram中送到的
+- 💻 ${statisticDatas.userActivity.byPlatform.shell?.messagesSent || 0}次消息是在酷炫的终端里发送的
 
 🩷 龙胆在各个平台上一共回复了你${statisticDatas.characterActivity.totalMessagesSent}次，一共${statisticDatas.characterActivity.totalStatementsSent}句
 

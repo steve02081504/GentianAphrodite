@@ -13,7 +13,13 @@ import process from 'node:process'
 export async function CodeRunnerPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if (!args || logical_results.in_assist || await match_keys(args, [
+	const codePluginPrompts = [
+		...await Promise.all([
+			...Object.values(args.plugins)
+			.map(plugin => plugin.interfaces?.chat?.GetJSCodePrompt(args, prompt_struct, detail_level))
+		])
+	].filter(Boolean).join('\n')
+	if (codePluginPrompts || !args || logical_results.in_assist || await match_keys(args, [
 		/(执行|运行|调用)((指|命)令|代码)/,
 		/代码(执行|运行)能力/, /(pwsh|powershell|js)代码(执行|运行)/i, /(执行|运行)(pwsh|powershell|js)代码/i,
 		'是多少', '是几', '算一下', '算下', /[=＝][?？]/, /run-(js|pwsh|bash)/i, /inline-js/i,
@@ -100,6 +106,7 @@ ${args.UserCharname}: 帮我下载http://host/file.txt然后发来。
 ]
   * 返回值：返回值必须被await。若使用string进行文件或url发送，可能抛出文件或网络错误。
 `: ''}
+${codePluginPrompts}
 执行代码后若没得到想要的结果，鼓励反思原因并给出不同的解决方案。
 已有成功运行结果时不要返回以上格式（如<run-js>...</run-js>），那会陷入死循环。
 **只是解释说明或举例时使用普通代码块（如\`\`\`js）而不是执行代码。**

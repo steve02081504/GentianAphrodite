@@ -5,7 +5,7 @@ import { getTimers, removeTimer, setTimer } from '../../../../../../../src/serve
 import { charname } from '../../charbase.mjs'
 import { flatChatLog } from '../../scripts/match.mjs'
 import { UseNofityAbleChannel } from '../../scripts/notify.mjs'
-import { statisticDatas } from '../../scripts/statistics.mjs'
+import { newCharReplay, statisticDatas } from '../../scripts/statistics.mjs'
 import { parseDuration } from '../../scripts/tools.mjs'
 import { GetReply } from '../index.mjs'
 
@@ -105,6 +105,7 @@ export async function timer(result, args) {
 							trigger: data.trigger,
 							reason: data.reason,
 							chat_log_snip: flatChatLog(args.chat_log.slice(-5)).map(e => e.name + ': ' + e.content).join('\n'),
+							platform: args.extension?.platform,
 						},
 						repeat: data.repeat,
 					})
@@ -187,7 +188,7 @@ export async function timer(result, args) {
 	return processed
 }
 export function timerCallBack(callbackdata) {
-	const { reason, chat_log_snip } = callbackdata
+	const { reason, chat_log_snip, platform } = callbackdata
 	statisticDatas.toolUsage.timerCallbacks++
 	const logEntry = {
 		name: 'system',
@@ -210,5 +211,6 @@ ${chat_log_snip}
 		})
 		result.logContextBefore.push(logEntry)
 		await channel.AddChatLogEntry(result)
+		newCharReplay(result.content, platform || 'chat')
 	})
 }

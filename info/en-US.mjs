@@ -45,8 +45,9 @@ ${escapeHTML(statisticDatas.firstInteraction.characterReplyContent)}
 
 🗺️ Among these messages:
 
-- 🎮 ${statisticDatas.userActivity.byPlatform.discord.messagesSent} messages were sent on the chaotic Discord
-- 💻 ${statisticDatas.userActivity.byPlatform.shell.messagesSent} messages were sent from the cool terminal
+- 🎮 ${statisticDatas.userActivity.byPlatform.discord?.messagesSent || 0} messages were sent on the chaotic Discord
+- 🌐 ${statisticDatas.userActivity.byPlatform.telegram?.messagesSent || 0} messages were sent on the free Telegram
+- 💻 ${statisticDatas.userActivity.byPlatform.shell?.messagesSent || 0} messages were sent from the cool terminal
 
 🩷 Gentian replied to you a total of ${statisticDatas.characterActivity.totalMessagesSent} times across all platforms, totaling ${statisticDatas.characterActivity.totalStatementsSent} statements.
 

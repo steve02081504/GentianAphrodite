@@ -24,6 +24,10 @@ export const statisticDatas = getVar('statistics', {
 				messagesSent: 0,
 				statementsSent: 0,
 			},
+			telegram: {
+				messagesSent: 0,
+				statementsSent: 0,
+			},
 			shell: {
 				messagesSent: 0,
 				statementsSent: 0,
@@ -36,6 +40,10 @@ export const statisticDatas = getVar('statistics', {
 		totalStatementsSent: 0,
 		byPlatform: {
 			discord: {
+				messagesSent: 0,
+				statementsSent: 0,
+			},
+			telegram: {
 				messagesSent: 0,
 				statementsSent: 0,
 			},
@@ -72,20 +80,24 @@ export function newUserMessage(str, platform) {
 	const sentenceNum = getStatementsNum(str)
 	statisticDatas.userActivity.totalMessagesSent++
 	statisticDatas.userActivity.totalStatementsSent += sentenceNum
-	if (statisticDatas.userActivity.byPlatform[platform]) {
-		statisticDatas.userActivity.byPlatform[platform].messagesSent++
-		statisticDatas.userActivity.byPlatform[platform].statementsSent += sentenceNum
+	statisticDatas.userActivity.byPlatform[platform] ??= {
+		messagesSent: 0,
+		statementsSent: 0,
 	}
+	statisticDatas.userActivity.byPlatform[platform].messagesSent++
+	statisticDatas.userActivity.byPlatform[platform].statementsSent += sentenceNum
 }
 const the25h = parseDuration('25h')
 export function newCharReplay(str, platform) {
 	const sentenceNum = getStatementsNum(str)
 	statisticDatas.characterActivity.totalMessagesSent++
 	statisticDatas.characterActivity.totalStatementsSent += sentenceNum
-	if (statisticDatas.characterActivity.byPlatform[platform]) {
-		statisticDatas.characterActivity.byPlatform[platform].messagesSent++
-		statisticDatas.characterActivity.byPlatform[platform].statementsSent += sentenceNum
+	statisticDatas.characterActivity.byPlatform[platform] ??= {
+		messagesSent: 0,
+		statementsSent: 0,
 	}
+	statisticDatas.characterActivity.byPlatform[platform].messagesSent++
+	statisticDatas.characterActivity.byPlatform[platform].statementsSent += sentenceNum
 	const now = Date.now()
 	statisticDatas.longestDailyChat.start ||= now
 	statisticDatas.longestDailyChat.end ||= now

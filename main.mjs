@@ -42,6 +42,10 @@ export default {
 			OnceClientReady: (client, config) => import('./interfaces/discord/index.mjs').then((mod) => mod.DiscordBotMain(client, config)),
 			GetBotConfigTemplate: () => import('./interfaces/discord/index.mjs').then((mod) => mod.GetBotConfigTemplate()),
 		},
+		telegram: {
+			BotSetup: (bot, config) => import('./interfaces/telegram/index.mjs').then((mod) => mod.TelegramBotMain(bot, config)),
+			GetBotConfigTemplate: () => import('./interfaces/telegram/index.mjs').then((mod) => mod.GetBotConfigTemplate()),
+		},
 		shellassist: {
 			Assist: async (args) => import('./interfaces/shellassist/index.mjs').then((mod) => mod.shellAssistMain(args))
 		},

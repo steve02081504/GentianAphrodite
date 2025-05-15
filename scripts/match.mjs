@@ -173,10 +173,12 @@ export async function match_keys(args, keys, from = 'any', depth = 4,
 		maxFetchCount = Math.max(maxFetchCount, base_match_keys(content, keys, matcher))
 	}
 
+	/*
 	if (maxFetchCount) {
 		console.log('args matching keys:', keys)
 		console.log('result:', maxFetchCount)
 	}
+	//*/
 
 	return maxFetchCount
 }

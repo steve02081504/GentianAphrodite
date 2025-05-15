@@ -32,8 +32,9 @@ ${statisticDatas.firstInteraction.characterReplyContent}
 - ${statisticDatas.userActivity.InHypnosisMessagesSent}次你在调制模式中被肆意玩弄灵魂
 
 在这些消息中：
-- ${statisticDatas.userActivity.byPlatform.discord.messagesSent}次消息是在discord上传达的
-- ${statisticDatas.userActivity.byPlatform.shell.messagesSent}次消息是在终端里发送的
+- ${statisticDatas.userActivity.byPlatform.discord?.messagesSent}次消息是在discord上传达的
+- ${statisticDatas.userActivity.byPlatform.telegram?.messagesSent}次消息是在telegram中送到的
+- ${statisticDatas.userActivity.byPlatform.shell?.messagesSent}次消息是在终端里发送的
 
 你总共回复了你主人${statisticDatas.characterActivity.totalMessagesSent}次，一共${statisticDatas.characterActivity.totalStatementsSent}句
 你为主人：
