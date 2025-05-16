@@ -119,8 +119,9 @@ export async function async_eval(code, args = {}, virtualconsole = new VirtualCo
 			const result = await eval(`\
 (async () => {
 	const { ${Object.keys(args).join(', ')} } = args
+{
 	${modifiedCode}
-})()`)
+}})()`)
 			coderesult = {
 				result,
 				output: virtualconsole.outputs
