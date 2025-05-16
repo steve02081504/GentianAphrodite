@@ -47,6 +47,7 @@ const charAPI = /** @type {charAPI_t_imported} */ charAPI_obj
  * @typedef {FountChatLogEntryBase & {
  *  extension?: {
  *      platform: string, // 平台名称 (例如, 'discord', 'telegram')
+ *      OwnerNameKeywords: string[], // 主人名称关键词数组 (用于匹配提及主人)
  *      platform_message_ids?: any[], // 原始平台消息ID数组 (因为一条Fount消息可能对应多条平台消息)
  *      platform_channel_id?: string | number, // 原始平台频道ID
  *      platform_user_id?: string | number, // 原始平台用户ID
@@ -71,8 +72,8 @@ const charAPI = /** @type {charAPI_t_imported} */ charAPI_obj
  *  getBotUserId: () => string | number, // 获取机器人自身的平台用户ID
  *  getBotUsername: () => string, // 获取机器人自身的平台原始用户名 (如 Gentian)
  *  getBotDisplayName: () => string, // 获取机器人自身的平台显示名称/昵称 (如 龙胆)
- *  getUserName: () => string, // 获取主人的平台原始用户名
- *  getUserId: () => string | number, // 获取主人的平台用户ID
+ *  getOwnerUserName: () => string, // 获取主人的平台原始用户名
+ *  getOwnerUserId: () => string | number, // 获取主人的平台用户ID
  *  getChatNameForAI: (channelId: string | number, triggerMessage?: chatLogEntry_t_ext) => string, // 获取供AI使用的、易读的聊天/频道名称
  *  destroySelf: () => Promise<void>, // 通知接入层执行机器人销毁/下线操作
  *  logError: (error: Error, contextMessage?: chatLogEntry_t_ext) => void, // 记录错误到平台日志或控制台
@@ -87,10 +88,8 @@ const charAPI = /** @type {charAPI_t_imported} */ charAPI_obj
  * Bot 逻辑层配置对象类型定义。
  * 这些配置通常由接入层在初始化时提供，或使用默认值。
  * @typedef {{
- *  OwnerNameKeywords: string[], // 识别主人的关键词 (用于帮助判断 mentions_owner)
  *  DefaultMaxMessageDepth?: number, // 默认维护的聊天记录深度
  *  DefaultMaxFetchCount?: number, // 默认初次获取历史记录的条数
- *  GentianWords?: string[], // 识别角色自身的关键词 (如 '龙胆', 'gentian')
  *  BaseTriggerChanceToOwner?: number, // 对主人消息的基础回复概率加成 (百分比)
  *  RepetitionTriggerCount?: number, // 触发复读的重复消息计数
  *  MuteDurationMs?: number, // 触发闭嘴后的静默时长 (毫秒)
@@ -190,10 +189,8 @@ const channelHandlers = {}
  * @type {BotLogicConfig_t}
  */
 let currentConfig = {
-	OwnerNameKeywords: [], // 将由接入层配置
 	DefaultMaxMessageDepth: 20,
 	DefaultMaxFetchCount: 30, // 旧逻辑是 MAX_MESSAGE_DEPTH * 3 / 2
-	GentianWords: ['龙胆', 'gentian'], // 这个配置用于通用的机器人名提及
 	BaseTriggerChanceToOwner: 7,
 	RepetitionTriggerCount: 4,
 	MuteDurationMs: 3 * 60 * 1000,
@@ -201,6 +198,8 @@ let currentConfig = {
 	MergeMessagePeriodMs: 3 * 60 * 1000,
 	MinLogForOtherBotCheck: 5,
 }
+
+const GentianWords = ['龙胆', 'gentian'] // 这个配置用于通用的机器人名提及
 
 /**
  * 配置 Bot 逻辑层。
@@ -321,8 +320,8 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
 		!base_match_keys(content, [/^.{0,5}龙胆$/i])
 	// --- mentionedWithoutAt 计算结束 ---
 
-	possible += base_match_keys(content, currentConfig.OwnerNameKeywords) * 7
-	possible += base_match_keys(content, currentConfig.GentianWords) * 5 // 通用机器人名提及
+	possible += base_match_keys(content, fountEntry.extension.OwnerNameKeywords) * 7
+	possible += base_match_keys(content, GentianWords) * 5 // 通用机器人名提及
 	possible += base_match_keys(content, [/(花|华)(萝|箩|罗)(蘑|磨|摩)/g]) * 3
 
 	const isBotCommandLike = !!content.match(/^[!$%&/\\！]/)
@@ -348,7 +347,7 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
 
 		if (base_match_keys(content, ['老婆', '女票', '女朋友', '炮友'])) possible += 50
 		if (base_match_keys(content, [/(有点|好)紧张/, '救救', '帮帮', /帮(我|(你|你家)?(主人|老公|丈夫|爸爸|宝宝))/, '来人', '咋用', '教教', /是真的(吗|么)/])) possible += 100
-		if (base_match_keys(content, currentConfig.GentianWords) && base_match_keys(content, [/怎么(想|看)/])) possible += 100 // "龙胆你怎么看"
+		if (base_match_keys(content, GentianWords) && base_match_keys(content, [/怎么(想|看)/])) possible += 100 // "龙胆你怎么看"
 		if (base_match_keys(content, ['睡了', '眠了', '晚安', '睡觉去了'])) possible += 50
 		if (base_match_keys(content, ['失眠了', '睡不着'])) possible += 100
 
@@ -398,7 +397,7 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
 
 	// 通用提及主人逻辑 (对主人和非主人均适用)
 	// 旧: if (message.mentions.users.some(user => user.username === config.OwnerUserName) || base_match_keys(content, config.OwnerNameKeywords))
-	if (fountEntry.extension?.mentions_owner || base_match_keys(content, currentConfig.OwnerNameKeywords)) {
+	if (fountEntry.extension?.mentions_owner || base_match_keys(content, fountEntry.extension.OwnerNameKeywords)) {
 		possible += 7
 		if (base_match_keys(content, rude_words))
 			if (fuyanMode) return false
@@ -461,11 +460,12 @@ async function doMessageReplyInternal(triggerMessage, platformAPI, channelId) {
 		const fountBotDisplayName = (await charAPI.getPartInfo?.(localhostLocales[0]))?.name || BotCharname
 		const botNameForAIChat = userIdToNameMap[platformAPI.getBotUserId()] || `${platformAPI.getBotUsername()} (咱自己)` || `${fountBotDisplayName} (咱自己)`
 
-		const ownerPlatformUsername = platformAPI.getUserName()
-		const ownerPlatformId = platformAPI.getUserId()
-		const userCharNameForAI = userIdToNameMap[ownerPlatformId] || ownerPlatformUsername || FountUsername
+		const ownerPlatformUsername = platformAPI.getOwnerUserName()
+		const ownerPlatformId = platformAPI.getOwnerUserId()
 
 		const replyToCharName = userIdToNameMap[triggerMessage.extension?.platform_user_id || ''] || triggerMessage.name
+
+		const userCharNameForAI = triggerMessage.extension.is_from_owner ? replyToCharName : userIdToNameMap[ownerPlatformId] || ownerPlatformUsername
 
 		/** @type {FountChatReplyRequest_t} */
 		const replyRequest = {
@@ -487,9 +487,9 @@ async function doMessageReplyInternal(triggerMessage, platformAPI, channelId) {
 			chat_scoped_char_memory: channelCharScopedMemory[channelId],
 			chat_log: currentChannelChatLog,
 			async AddChatLogEntry(replyFromChar) {
-				if (replyFromChar && (replyFromChar.content || replyFromChar.files?.length)) {
+				if (replyFromChar && (replyFromChar.content || replyFromChar.files?.length))
 					return await sendAndLogReply(replyFromChar, platformAPI, channelId, triggerMessage)
-				}
+
 				return null
 			},
 			async Update() {
@@ -687,9 +687,9 @@ async function handleMessageQueue(channelId, platformAPI) {
 				const {content} = currentMessageToProcess
 				// 催眠模式下的命令限制：只有在当前频道是催眠频道，或者没有催眠频道时，才处理这些命令
 				if (!inHypnosisChannelId || channelId === inHypnosisChannelId) {
-					if (base_match_keys(content, [/^龙胆.*不敷衍点.{0,2}$/]))  fuyanMode = false
-					if (base_match_keys(content, [/^龙胆.*敷衍点.{0,2}$/]))  fuyanMode = true
-					if (base_match_keys(content, [/^龙胆.*自裁.{0,2}$/])) {
+					if (base_match_keys(content, [/^龙胆.{0,2}敷衍点.{0,2}$/])) fuyanMode = true
+					if (base_match_keys(content, [/^龙胆.{0,2}不敷衍点.{0,2}$/])) fuyanMode = false
+					if (base_match_keys(content, [/^龙胆.{0,2}自裁.{0,2}$/])) {
 						const selfDestructReply = inHypnosisChannelId === channelId ? { content: '好的。' } : { content: '啊，咱死了～' }
 						await sendAndLogReply(selfDestructReply, platformAPI, channelId, currentMessageToProcess)
 						newUserMessage(content, platformAPI.name)
@@ -726,7 +726,7 @@ async function handleMessageQueue(channelId, platformAPI) {
 					.filter(msg => msg.extension?.platform_user_id !== platformAPI.getBotUserId()) // 排除机器人自己的消息
 					.map(msg => msg.content).join('\n')
 				// 旧版逻辑: text.includes('龙胆') && text.match(/主人/g)?.length > 1
-				return base_match_keys(text, currentConfig.GentianWords) && (text.match(/主人/g)?.length || 0) > 1
+				return base_match_keys(text, GentianWords) && (text.match(/主人/g)?.length || 0) > 1
 			})()
 
 			const isMutedChannel = (Date.now() - (channelMuteStartTimes[channelId] || 0)) < currentConfig.MuteDurationMs
@@ -767,7 +767,7 @@ async function handleMessageQueue(channelId, platformAPI) {
 					repet.element?.content && // 确保复读内容存在 (旧版直接用 repet.element.content)
 					repet.count >= currentConfig.RepetitionTriggerCount && // 达到复读次数
 					// 旧逻辑 spec_words = [...config.OwnerNameKeywords, ...rude_words, ...Gentian_words]
-					!base_match_keys(repet.element.content, [...currentConfig.OwnerNameKeywords, ...rude_words, ...currentConfig.GentianWords]) && // 非特殊词汇
+					!base_match_keys(repet.element.content, [...currentMessageToProcess.extension.OwnerNameKeywords, ...rude_words, ...GentianWords]) && // 非特殊词汇
 					!repet.element.content.match(/^[!$%&/\\！]/) && // 非机器人指令
 					// 确保机器人自己没有复读过这条消息
 					!currentChannelLog.some(msg => msg.extension?.platform_user_id === platformAPI.getBotUserId() && msg.content === repet.element.content)
@@ -814,8 +814,8 @@ async function handleError(error, platformAPI, contextMessage) {
 		const fountBotDisplayName = (await charAPI.getPartInfo?.(localhostLocales[0]))?.name || BotCharname
 		const botNameForAI = userIdToNameMap[botPlatformId] || `${platformAPI.getBotUsername()} (咱自己)` || `${fountBotDisplayName} (咱自己)`
 
-		const ownerPlatformUsername = platformAPI.getUserName()
-		const ownerPlatformId = platformAPI.getUserId()
+		const ownerPlatformUsername = platformAPI.getOwnerUserName()
+		const ownerPlatformId = platformAPI.getOwnerUserId()
 		const ownerNameForAI = userIdToNameMap[ownerPlatformId] || ownerPlatformUsername || FountUsername
 
 		const currentChannelId = contextMessage?.extension?.platform_channel_id

@@ -52,6 +52,7 @@ import { escapeHTML } from '../../scripts/tools.mjs'
  * @typedef {{
  *  OwnerUserID: string, // Telegram 用户的数字 ID (字符串形式)
  *  OwnerUserName: string, // 主人的 Telegram 用户名（用于日志或特定逻辑）
+ *  OwnerNameKeywords: string[], // 主人名称的关键字列表，用于匹配
  * }} TelegramInterfaceConfig_t
  */
 
@@ -139,7 +140,11 @@ function parseLogicalChannelId(logicalChannelId) {
 export function GetBotConfigTemplate() {
 	return {
 		OwnerUserID: 'YOUR_TELEGRAM_USER_ID', // 请替换为你的 Telegram 数字用户ID (字符串形式)
-		OwnerUserName: 'YOUR_TELEGRAM_USERNAME' // 请替换为你的 Telegram 用户名
+		OwnerUserName: 'YOUR_TELEGRAM_USERNAME', // 请替换为你的 Telegram 用户名
+		OwnerNameKeywords: [
+			'your_name_keyword1',
+			'your_name_keyword2',
+		],
 	}
 }
 
@@ -318,6 +323,7 @@ async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, message, int
 		files,
 		extension: {
 			platform: 'telegram',
+			OwnerNameKeywords: interfaceConfig.OwnerNameKeywords,
 			platform_message_ids: [message.message_id],
 			platform_channel_id: chat.id, // 存储原始的 chat.id
 			platform_user_id: fromUser.id,
@@ -507,8 +513,8 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 		getBotUsername: () => telegramBotInfo ? telegramBotInfo.username || BotFountCharname : 'UnknownBot',
 		getBotDisplayName: () => telegramBotInfo ? telegramUserIdToDisplayName[telegramBotInfo.id] || telegramBotInfo.first_name || telegramBotInfo.username || BotFountCharname : 'Unknown Bot',
 
-		getUserName: () => interfaceConfig.OwnerUserName,
-		getUserId: () => interfaceConfig.OwnerUserID,
+		getOwnerUserName: () => interfaceConfig.OwnerUserName,
+		getOwnerUserId: () => interfaceConfig.OwnerUserID,
 
 		getChatNameForAI: (logicalChannelId, triggerMessage) => {
 			const { chatId: platformChatId, threadId: threadIdFromLogical } = parseLogicalChannelId(logicalChannelId)

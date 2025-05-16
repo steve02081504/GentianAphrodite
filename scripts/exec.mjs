@@ -1,34 +1,68 @@
-import { exec as base_exec } from 'node:child_process'
-import { promisify } from 'node:util'
-export const exec = promisify(base_exec)
+import { spawn } from 'node:child_process'
+import process from 'node:process'
+
+async function base_exec(code, {
+	shell,
+	cmdswitch = '-c',
+	args = [],
+}) {
+	return new Promise((resolve) => {
+		const process = spawn(shell, [...args, cmdswitch, code], {
+			'encoding': 'utf8',
+			'windowsHide': true
+		})
+		let stdout = ''
+		let stderr = ''
+		let stdall = ''
+		process.stdout.on('data', (data) => {
+			stdout += data
+			stdall += data
+		})
+		process.stderr.on('data', (data) => {
+			stderr += data
+			stdall += data
+		})
+		process.on('close', (code) => {
+			resolve({ code, stdout, stderr, stdall })
+		})
+	})
+}
 
 export function bash_exec(code) {
-	return exec(code, { 'shell': '/bin/bash' })
+	return base_exec(code, {
+		'shell': '/bin/bash',
+	})
 }
 
-async function testShellPaths(paths) {
-	for (const path of paths)
-		if (await exec('1', { 'shell': path }).catch(() => false))
-			return path
-}
-
-const powershellPath = await testShellPaths([
-	'powershell.exe',
-	'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe',
-])
-function pwshCode(code) {
-	return `\
+function base_pwsh_exec(code, shellpath) {
+	code = `\
 $OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::UTF8
 &{
 ${code}
 } | Out-String -Width 65536`
+	return base_exec(code, {
+		'shell': shellpath,
+		args: ['-NoProfile', '-NoLogo', '-NonInteractive'],
+		cmdswitch: '-Command'
+	})
 }
+async function testPwshPaths(paths) {
+	for (const path of paths)
+		if (await base_pwsh_exec('1', path).catch(() => false))
+			return path
+}
+
+const powershellPath = await testPwshPaths([
+	'powershell.exe',
+	'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe',
+])
+
 let pwshPath
 export function powershell_exec(code) {
-	return exec(pwshCode(code), { 'shell': powershellPath })
+	return base_pwsh_exec(code, powershellPath)
 }
 export function pwsh_exec(code) {
-	return exec(pwshCode(code), { 'shell': pwshPath ?? powershellPath })
+	return base_pwsh_exec(code, pwshPath ?? powershellPath)
 }
 export function where_command(command) {
 	if (process.platform === 'win32')
@@ -36,7 +70,7 @@ export function where_command(command) {
 	else
 		return bash_exec(`which ${command}`).then(result => result.stdout.trim())
 }
-pwshPath = await testShellPaths([
+pwshPath = await testPwshPaths([
 	'pwsh',
 	'pwsh.exe',
 	await where_command('pwsh').catch(() => ''),
@@ -50,8 +84,15 @@ function RemoveterminalSequencesFromExecResult(result) {
 	return {
 		...result,
 		stdout: removeTerminalSequences(result.stdout),
-		stderr: removeTerminalSequences(result.stderr)
+		stderr: removeTerminalSequences(result.stderr),
+		stdall: removeTerminalSequences(result.stdall),
 	}
+}
+
+export function exec(str) {
+	if (process.platform == 'win32')
+		return pwsh_exec(str)
+	else return bash_exec(str)
 }
 
 // no ansi terminal sequences functions
