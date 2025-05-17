@@ -54,6 +54,7 @@ import { escapeRegExp } from '../../scripts/tools.mjs'
  * Discord 接入层配置对象类型定义。
  * @typedef {{
  *  OwnerUserName: string, // Discord 用户名
+ *  OwnerNameKeywords: string[], // 可能的用户名关键字列表
  *  BotActivityName?: string, // 机器人状态中显示的游戏/活动名称
  *  BotActivityType?: keyof typeof ActivityType, // 机器人状态类型 (例如 'Playing', 'Listening', 'Watching', 'Competing')
  * }} DiscordInterfaceConfig_t
@@ -66,6 +67,10 @@ import { escapeRegExp } from '../../scripts/tools.mjs'
 export function GetBotConfigTemplate() {
 	return {
 		OwnerUserName: 'your_discord_username', // 请替换为你的 Discord 用户名
+		OwnerNameKeywords: [
+			'your_name_keyword1',
+			'your_name_keyword2',
+		],
 		BotActivityName: '主人', // 机器人正在玩的游戏/活动名称
 		BotActivityType: 'Watching', // 活动类型, 例如: Playing, Listening, Watching, Competing
 	}
@@ -194,6 +199,7 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 		files, // 消息文件列表
 		extension: { // 平台特定的扩展信息
 			platform: 'discord', // 平台标识
+			OwnerNameKeywords: interfaceConfig.OwnerNameKeywords, // 主人名称关键字列表
 			platform_message_ids: [message.id], // 原始 Discord 消息 ID 列表 (目前只存一个)
 			platform_channel_id: message.channel.id, // 原始 Discord 频道 ID
 			platform_user_id: message.author.id, // 原始 Discord 用户 ID
@@ -396,9 +402,9 @@ export async function DiscordBotMain(client, interfaceConfig) {
 		/** 获取机器人自身的 Discord 用户名。 */
 		getBotUsername: () => client.user?.username || BotFountCharname,
 		/** 获取主人的 Discord 用户名。 */
-		getUserName: () => interfaceConfig.OwnerUserName,
+		getOwnerUserName: () => interfaceConfig.OwnerUserName,
 		/** 获取主人的 Discord 用户 ID。 */
-		getUserId: () => interfaceConfig.OwnerUserId,
+		getOwnerUserId: () => undefined,
 		/** 获取机器人自身的 Discord 显示名称 (服务器昵称或全局显示名)。 */
 		getBotDisplayName: () => client.user?.displayName || client.user?.globalName || client.user?.username || BotFountCharname,
 

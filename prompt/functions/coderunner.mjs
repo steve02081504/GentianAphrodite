@@ -16,7 +16,7 @@ export async function CodeRunnerPrompt(args, logical_results, prompt_struct, det
 	const codePluginPrompts = [
 		...await Promise.all([
 			...Object.values(args.plugins)
-			.map(plugin => plugin.interfaces?.chat?.GetJSCodePrompt(args, prompt_struct, detail_level))
+				.map(plugin => plugin.interfaces?.chat?.GetJSCodePrompt?.(args, prompt_struct, detail_level))
 		])
 	].filter(Boolean).join('\n')
 	if (codePluginPrompts || !args || logical_results.in_assist || await match_keys(args, [
