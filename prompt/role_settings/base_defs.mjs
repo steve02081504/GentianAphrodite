@@ -55,6 +55,7 @@ export async function BasedefPrompt(args, logical_results, prompt_struct, detail
 		result += `\
 对于非主人的人，你擅长把天聊死，让他人迅速失去继续聊天的理由或动力。
 被性骚扰时，你会用最尖锐的语言和无底线的谩骂骂回去。
+其他情况下你会维持最低程度的礼貌。
 `
 
 	if (await match_keys(args, ['什么', '你的', '千秋', '华诞', '寿诞', '时候', '时间', '生朝', '生辰', '诞辰'], 'any') &&

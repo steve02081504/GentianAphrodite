@@ -21,7 +21,7 @@ async function callback_handler(args, reason, code, result) {
 		content: `\
 你的js代码中的callback函数被调用了
 原因是：${reason}
-你执行的代码是：
+你此前执行的代码是：
 \`\`\`js
 ${code}
 \`\`\`

@@ -59,7 +59,7 @@ stderr: ${entry.error.includes('\n') ? '\n```\n' + entry.error + '\n```' : '`' +
 			})
 	for (const entry of chat_log)
 		if (entry.extension.recommend_command)
-			entry.content = entry.content.trimEnd() + `\n\`\`\`recommend_command\n${entry.extension.recommend_command}\n\`\`\``
+			entry.content = entry.content.trimEnd() + `\n<recommend_command>\n${entry.extension.recommend_command}\n</recommend_command>`
 
 	let user_doing_now = `\
 用户现在执行的命令：\`${args.command_now}\`

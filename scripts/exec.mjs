@@ -6,23 +6,24 @@ async function base_exec(code, {
 	cmdswitch = '-c',
 	args = [],
 }) {
-	return new Promise((resolve) => {
+	return new Promise((resolve, reject) => {
 		const process = spawn(shell, [...args, cmdswitch, code], {
 			'encoding': 'utf8',
 			'windowsHide': true
 		})
+		process.on('error', reject)
 		let stdout = ''
 		let stderr = ''
 		let stdall = ''
-		process.stdout.on('data', (data) => {
+		process.stdout?.on('data', (data) => {
 			stdout += data
 			stdall += data
 		})
-		process.stderr.on('data', (data) => {
+		process.stderr?.on('data', (data) => {
 			stderr += data
 			stdall += data
 		})
-		process.on('close', (code) => {
+		process.on('exit', (code) => {
 			resolve({ code, stdout, stderr, stdall })
 		})
 	})

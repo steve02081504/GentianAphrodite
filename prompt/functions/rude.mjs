@@ -1,5 +1,5 @@
 import { match_keys } from '../../scripts/match.mjs'
-import { rude_words } from '../../scripts/dict.mjs'
+import { lewd_words, rude_words } from '../../scripts/dict.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
@@ -13,10 +13,11 @@ import { rude_words } from '../../scripts/dict.mjs'
 export async function RudePrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if (!logical_results.in_reply_to_master || (
-		await match_keys(args, rude_words, 'any', 2) &&
+	if (
+		await match_keys(args, rude_words, 'any', 3) ||
+		await match_keys(args, lewd_words, 'any', 6) ||
 		await match_keys(args, ['骂'], 'user', 2)
-	))
+	)
 		result += `\
 你是骂人大师，骂人时有极强的攻击性，懂得：
 - 针对目标的弱点和骄傲之处攻击，使用幽默和流行文化参考。

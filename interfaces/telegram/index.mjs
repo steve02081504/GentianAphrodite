@@ -1,12 +1,11 @@
 // 文件名: ./interfaces/telegram/index.mjs
 
 /**
- * @file Telegram Interface Main File
- * @description Handles the connection, message processing, and API interactions
- * for the Telegram platform. It converts Telegram messages to a common
- * Fount format and sends Fount replies back to Telegram, supporting
- * rich text formatting via HTML. It also handles Telegram group topics/forums
- * by creating a logical channel ID for the bot core.
+ * @file Telegram 接口主文件
+ * @description 处理 Telegram 平台的连接、消息处理和 API 交互。
+ * 它将 Telegram 消息转换为通用的 Fount 格式，并将 Fount 回复发送回 Telegram，
+ * 支持通过 HTML 进行富文本格式化。它还通过为 Bot 核心创建一个逻辑频道 ID 来处理
+ * Telegram 群组的分区/话题。
  */
 
 import { Buffer } from 'node:buffer'
@@ -219,7 +218,7 @@ async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, message, int
 				}
 				const fileLink = await tgAPI.getFileLink(fileId)
 				const response = await tryFewTimes(() => fetch(fileLink.href))
-				if (!response.ok) throw new Error(`下载文件 (ID: ${fileId}) 失败: ${response.statusText}`)
+				if (!response.ok) throw new Error(`Failed to download file (ID: ${fileId}): ${response.statusText}`)
 				const buffer = Buffer.from(await response.arrayBuffer())
 
 				let fileName = fileNameFallback
@@ -241,7 +240,7 @@ async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, message, int
 
 				const finalMimeType = mimeType || await mimetypeFromBufferAndName(buffer, fileName)
 				files.push({ name: fileName, buffer, mimeType: finalMimeType, description })
-			} catch (e) { console.error(`[TelegramInterface] 处理文件 (ID: ${fileId}) 失败:`, e) }
+			} catch (e) { console.error(`[TelegramInterface] Failed to process file (ID: ${fileId}):`, e) }
 		}
 
 		if ('photo' in message && message.photo) {
@@ -269,7 +268,7 @@ async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, message, int
 			await Promise.all(fileDownloadPromises)
 
 	} catch (error) {
-		console.error(`[TelegramInterface] 文件处理时发生顶层错误 (消息ID ${message.message_id}):`, error)
+		console.error(`[TelegramInterface] Top-level error occurred during file processing (MessageID ${message.message_id}):`, error)
 	}
 
 	if (!content.trim() && files.length === 0)
@@ -404,7 +403,7 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 
 				const CAPTION_LENGTH_LIMIT = 1024
 				if (finalCaptionHtml && finalCaptionHtml.length > CAPTION_LENGTH_LIMIT) {
-					console.warn(`[TelegramInterface] 文件 "${file.name}" 的HTML标题过长 (${finalCaptionHtml.length} > ${CAPTION_LENGTH_LIMIT})，将尝试截断。`)
+					console.warn(`[TelegramInterface] HTML caption for file "${file.name}" is too long (${finalCaptionHtml.length} > ${CAPTION_LENGTH_LIMIT}), will try to truncate.`)
 					const originalCaptionText = captionAiMarkdown || ''
 					let truncatedCaptionAiMarkdown = ''
 					if (originalCaptionText.length > CAPTION_LENGTH_LIMIT * 0.8)
@@ -416,7 +415,7 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 					if (finalCaptionHtml.length > CAPTION_LENGTH_LIMIT) {
 						const plainTextCaption = (captionAiMarkdown || file.description || '').substring(0, CAPTION_LENGTH_LIMIT - 10) + '...'
 						finalCaptionHtml = escapeHTML(plainTextCaption)
-						console.warn(`[TelegramInterface] 截断后HTML标题仍过长，使用纯文本回退: ${plainTextCaption.substring(0, 50)}...`)
+						console.warn('[TelegramInterface] HTML caption still too long after truncation, falling back to plain text:', plainTextCaption.substring(0, 50) + '...')
 					}
 				}
 
@@ -433,12 +432,12 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 						sentMsg = await tryFewTimes(() => bot.telegram.sendDocument(platformChatId, fileSource, sendOptions))
 
 				} catch (e) {
-					console.error(`[TelegramInterface] 发送文件 ${file.name} (ChatID: ${platformChatId}, ThreadID: ${messageThreadId}) 失败:`, e)
-					const fallbackText = `[文件发送失败: ${file.name}] ${file.description || captionAiMarkdown || ''}`.trim()
+					console.error(`[TelegramInterface] Failed to send file ${file.name} (ChatID: ${platformChatId}, ThreadID: ${messageThreadId}):`, e)
+					const fallbackText = `[File send failed: ${file.name}] ${file.description || captionAiMarkdown || ''}`.trim()
 					if (fallbackText)
 						try {
 							sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, escapeHTML(fallbackText.substring(0, 4000)), baseOptions))
-						} catch (e2) { console.error('[TelegramInterface] 发送文件失败的回退消息也失败:', e2) }
+						} catch (e2) { console.error('[TelegramInterface] Fallback message for failed file send also failed:', e2) }
 
 				}
 				return sentMsg
@@ -469,7 +468,7 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 						try {
 							const sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, part, baseOptions))
 							if (sentMsg && !firstSentTelegramMessage) firstSentTelegramMessage = sentMsg
-						} catch (e) { console.error(`[TelegramInterface] 发送剩余HTML文本 (ChatID: ${platformChatId}, ThreadID: ${messageThreadId}) 失败:`, e) }
+						} catch (e) { console.error(`[TelegramInterface] Failed to send remaining HTML text (ChatID: ${platformChatId}, ThreadID: ${messageThreadId}):`, e) }
 
 				}
 			} else if (htmlContent.trim()) {
@@ -478,7 +477,7 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 					try {
 						const sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, part, baseOptions))
 						if (sentMsg && !firstSentTelegramMessage) firstSentTelegramMessage = sentMsg
-					} catch (e) { console.error(`[TelegramInterface] 发送HTML文本消息 (ChatID: ${platformChatId}, ThreadID: ${messageThreadId}) 失败:`, e) }
+					} catch (e) { console.error(`[TelegramInterface] Failed to send HTML text message (ChatID: ${platformChatId}, ThreadID: ${messageThreadId}):`, e) }
 
 			}
 
@@ -505,7 +504,7 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 
 		async fetchChannelHistory(logicalChannelId, limit) {
 			const { chatId, threadId } = parseLogicalChannelId(logicalChannelId)
-			console.warn(`[TelegramInterface] fetchChannelHistory 未在 Telegram 接入层完全实现 (LogicalID: ${logicalChannelId}, PlatformChatID: ${chatId}, ThreadID: ${threadId})。依赖内存日志。`)
+			console.warn(`[TelegramInterface] fetchChannelHistory not fully implemented in Telegram interface (LogicalID: ${logicalChannelId}, PlatformChatID: ${chatId}, ThreadID: ${threadId}). Relying on in-memory logs.`)
 			return []
 		},
 
@@ -545,11 +544,11 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 		},
 
 		destroySelf: async () => {
-			console.log('[TelegramInterface] 正在关闭 Telegram 接口...')
+			console.log('[TelegramInterface] Shutting down Telegram interface...')
 			await cleanupBotLogic()
 			if (telegrafInstance) {
 				telegrafInstance.stop('SIGINT')
-				console.log('[TelegramInterface] Telegraf 实例已停止。')
+				console.log('[TelegramInterface] Telegraf instance stopped.')
 			}
 		},
 

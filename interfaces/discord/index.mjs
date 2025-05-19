@@ -128,7 +128,7 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 			const fetchedUser = await message.author.fetch() // 强制从 API 获取最新用户信息
 			discordUserCache[message.author.id] = fetchedUser
 		} catch (fetchError) {
-			console.warn(`[DiscordInterface] 无法获取用户 ${message.author.id} 的信息:`, fetchError.message)
+			console.warn(`[DiscordInterface] Failed to fetch user info for ${message.author.id}:`, fetchError.message)
 		}
 
 	// 构建发送者名称：优先使用 displayName (服务器昵称)，其次 globalName (全局显示名)，最后 username
@@ -160,14 +160,14 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 				if (!url) return null
 				try {
 					const response = await tryFewTimes(() => fetch(url)) // 尝试多次获取文件
-					if (!response.ok) throw new Error(`获取文件失败 ${url}: ${response.statusText}`)
+					if (!response.ok) throw new Error(`Failed to fetch file ${url}: ${response.statusText}`)
 					const buffer = Buffer.from(await response.arrayBuffer()) // 将文件内容转为 Buffer
 					const name = attachmentOrEmbedImage.name || url.split('/').pop() || 'file' // 获取文件名
 					const mimeType = attachmentOrEmbedImage.contentType || await mimetypeFromBufferAndName(buffer, name) // 获取MIME类型
 					const description = attachmentOrEmbedImage.description || (attachmentOrEmbedImage.title || '') // 获取描述或标题
 					return { name, buffer, description, mimeType }
 				} catch (error) {
-					console.error(`[DiscordInterface] 处理附件/embed图片 ${url} 失败:`, error)
+					console.error(`[DiscordInterface] Failed to process attachment/embed image ${url}:`, error)
 					return null
 				}
 			})
@@ -283,7 +283,7 @@ export async function DiscordBotMain(client, interfaceConfig) {
 		async sendMessage(channelId, fountReplyPayload, originalMessageEntry) {
 			const channel = await client.channels.fetch(String(channelId)).catch(() => null)
 			if (!channel || !(channel.isTextBased() || channel.type === ChannelType.DM)) {
-				console.error(`[DiscordInterface] sendMessage: 无效频道或未找到频道: ${channelId}`)
+				console.error(`[DiscordInterface] sendMessage: Invalid channel or channel not found: ${channelId}`)
 				return null
 			}
 
@@ -315,7 +315,7 @@ export async function DiscordBotMain(client, interfaceConfig) {
 							guildMembersMap.set(member.displayName.toLowerCase(), member.id)
 						})
 					}
-				} catch (err) { console.warn('[DiscordInterface] 获取服务器成员列表以转换提及失败:', err.message) }
+				} catch (err) { console.warn('[DiscordInterface] Failed to fetch guild members for mention formatting:', err.message) }
 
 
 			// 情况1: 只有文件，没有文本
@@ -325,7 +325,7 @@ export async function DiscordBotMain(client, interfaceConfig) {
 						? await repliedToDiscordMessage.reply({ files: filesToSend, allowedMentions: { repliedUser: true } }) // repliedUser:true 会 ping 原作者
 						: await /** @type {DiscordTextChannel | DiscordDMChannel} */ channel.send({ files: filesToSend })
 					firstSentDiscordMessage = sentMsg
-				} catch (e) { console.error('[DiscordInterface] 发送仅文件消息失败:', e) }
+				} catch (e) { console.error('[DiscordInterface] Failed to send file-only message:', e) }
 			 else  // 情况2: 有文本 (可能也有文件)
 				for (let i = 0; i < splitTexts.length; i++) {
 					const textPart = formatEmbedMentions(splitTexts[i], guildMembersMap) // 转换文本中的 @用户名 提及
@@ -343,7 +343,7 @@ export async function DiscordBotMain(client, interfaceConfig) {
 
 						if (i === 0) firstSentDiscordMessage = sentMsg // 保存第一条发送成功的消息
 						if (repliedToDiscordMessage && i === 0) repliedToDiscordMessage = undefined // 后续分片不再是直接回复原始消息
-					} catch (e) { console.error(`[DiscordInterface] 发送消息片段 ${i + 1} 失败:`, e); break /* 中断发送后续片段 */ }
+					} catch (e) { console.error(`[DiscordInterface] Failed to send message segment ${i + 1}:`, e); break /* 中断发送后续片段 */ }
 				}
 
 
@@ -392,7 +392,7 @@ export async function DiscordBotMain(client, interfaceConfig) {
 				)).filter(Boolean).reverse() // Discord API 返回的是最新的在前，所以需要反转顺序
 				return fountEntries
 			} catch (e) {
-				console.error(`[DiscordInterface] 获取频道 ${channelId} 历史消息失败:`, e)
+				console.error(`[DiscordInterface] Failed to fetch channel ${channelId} history:`, e)
 				return []
 			}
 		},
@@ -491,7 +491,7 @@ export async function DiscordBotMain(client, interfaceConfig) {
 			// 将转换后的消息传递给 Bot 逻辑层进行处理
 			await processIncomingMessage(fountEntry, discordPlatformAPI, fetchedMessage.channel.id)
 		else {
-			console.warn(`[DiscordInterface] 收到无效消息，可能是系统消息或格式不支持: ${fetchedMessage.id}`)
+			console.warn(`[DiscordInterface] Received invalid message, possibly system message or unsupported format: ${fetchedMessage.id}`)
 			console.dir(fetchedMessage, { depth: null }) // 调试输出消息对象
 		}
 	})

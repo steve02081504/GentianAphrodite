@@ -211,7 +211,7 @@ export function configure(newConfig) {
 	if (currentConfig.DefaultMaxMessageDepth && (!newConfig.DefaultMaxFetchCount || newConfig.DefaultMaxFetchCount < currentConfig.DefaultMaxMessageDepth))
 		currentConfig.DefaultMaxFetchCount = Math.floor(currentConfig.DefaultMaxMessageDepth * 3 / 2) || currentConfig.DefaultMaxMessageDepth
 
-	console.log('[BotLogic] 已配置:', currentConfig)
+	console.log('[BotLogic] Configured:', currentConfig)
 }
 
 /**
@@ -305,7 +305,7 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
 	// --- 提前计算 mentionedWithoutAt，因为它同时影响主人和非主人的逻辑 ---
 	const EngWords = content.split(' ')
 	const oldLogicChineseCheck = base_match_keys(
-		content.substring(0, 5) + ' ' + content.substring(content.length - 3),
+		content.substring(0, 5) + ' ' + content.substring(content.length - 5),
 		['龙胆'] // 旧逻辑中硬编码的中文关键词
 	)
 	const oldLogicEnglishCheck = base_match_keys(
@@ -317,7 +317,7 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
 	const mentionedWithoutAt = !env.has_other_gentian_bot &&
 		nameMentionedByOldLogic &&
 		!base_match_keys(content, [/(龙胆(有|能|这边|目前|[^ 。你，]{0,3}的)|gentian('s|is|are|can|has))/i]) &&
-		!base_match_keys(content, [/^.{0,5}龙胆$/i])
+		!base_match_keys(content, [/^.{0,4}龙胆$/i])
 	// --- mentionedWithoutAt 计算结束 ---
 
 	possible += base_match_keys(content, fountEntry.extension.OwnerNameKeywords) * 7
@@ -408,7 +408,7 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
 	// 最终静默检查
 	if (isMutedChannel)
 		return false
-	 else
+	else
 		// 如果之前设置了静默，但现在不静默了（比如时间到了，或主人通过@机器人解除了）
 		// 且当前消息不是再次触发静默的指令
 		if (channelMuteStartTimes[channelId] && !base_match_keys(content, ['闭嘴', '安静', '肃静']))
@@ -513,9 +513,13 @@ async function doMessageReplyInternal(triggerMessage, platformAPI, channelId) {
 		// 更新催眠状态
 		if (channelCharScopedMemory[channelId]?.in_hypnosis === true)
 			inHypnosisChannelId = channelId
-		 else if (channelCharScopedMemory[channelId]?.in_hypnosis === false && inHypnosisChannelId === channelId)
+		else if (channelCharScopedMemory[channelId]?.in_hypnosis === false && inHypnosisChannelId === channelId)
 			inHypnosisChannelId = null
 
+		if (!aiFinalReply) {
+			console.log('[BotLogic] AI reply is empty, skipping sending.', triggerMessage)
+			return
+		}
 
 		// 过滤禁止词
 		for (const bannedStr of bannedStrings)
@@ -527,9 +531,7 @@ async function doMessageReplyInternal(triggerMessage, platformAPI, channelId) {
 		// 新版在这里通过 AddChatLogEntry 的包装函数来发送，但最终的回复需要单独处理
 		// 这里改为直接调用 sendAndLogReply 来发送最终回复
 		if (aiFinalReply && (aiFinalReply.content || aiFinalReply.files?.length))
-			await sendAndLogReply(aiFinalReply, platformAPI, channelId, triggerMessage)
-
-
+			await sendAndLogReply(aiFinalReply, platformAPI, channelId, aiFinalReply.extension?.replied_to_message_id ? undefined : triggerMessage) // 如果AI指定了回复对象，则使用AI指定的，否则回复触发消息
 	} catch (error) {
 		await handleError(error, platformAPI, triggerMessage)
 	} finally {
@@ -565,7 +567,7 @@ async function sendAndLogReply(replyToSend, platformAPI, channelId, repliedToMes
 	let firstSentMessageEntry = null
 
 	if (!textContent && (!files || files.length === 0)) {
-		console.warn('[BotLogic] sendAndLogReply: 尝试发送空消息，已跳过。', replyToSend)
+		console.warn('[BotLogic] sendAndLogReply: Attempted to send empty message, skipped.', replyToSend)
 		return null // 如果没有内容也没有文件，则不发送
 	}
 
@@ -684,7 +686,7 @@ async function handleMessageQueue(channelId, platformAPI) {
 
 			// 处理主人专属命令
 			if (currentMessageToProcess.extension?.is_from_owner) {
-				const {content} = currentMessageToProcess
+				const { content } = currentMessageToProcess
 				// 催眠模式下的命令限制：只有在当前频道是催眠频道，或者没有催眠频道时，才处理这些命令
 				if (!inHypnosisChannelId || channelId === inHypnosisChannelId) {
 					if (base_match_keys(content, [/^龙胆.{0,2}敷衍点.{0,2}$/])) fuyanMode = true
@@ -886,7 +888,7 @@ async function handleError(error, platformAPI, contextMessage) {
 
 		if (`${error.name}: ${error.message}` === `${anotherError.name}: ${anotherError.message}`)  // 如果是同样的错误循环
 			aiSuggestionReply = { content: isHypnosisContextForError ? '抱歉，洗脑母畜龙胆没有解决思路。' : '没什么解决思路呢？' }
-		 else
+		else
 			aiSuggestionReply = { content: '```\n' + anotherErrorStack + '\n```\n' + (isHypnosisContextForError ? '抱歉，洗脑母畜龙胆没有解决思路。' : '没什么解决思路呢？') }
 
 	}
@@ -900,18 +902,18 @@ async function handleError(error, platformAPI, contextMessage) {
 	try {
 		// 尝试在发生错误的频道回复错误信息
 		if (contextMessage?.extension?.platform_channel_id)
-			await sendAndLogReply({ content: fullReplyContent }, platformAPI, contextMessage.extension.platform_channel_id, contextMessage)
-		 else
+			await sendAndLogReply({ content: fullReplyContent }, platformAPI, contextMessage.extension.platform_channel_id, undefined)
+		else
 			// 如果没有上下文频道，则记录到平台日志
-			platformAPI.logError(new Error(`[BotLogic] 发生错误 (无上下文频道用于回复): ${fullReplyContent.substring(0, 1000)}...`), undefined)
+			platformAPI.logError(new Error('[BotLogic] Error occurred (no context channel to reply): ' + fullReplyContent.substring(0, 1000) + '...'), undefined)
 
 	} catch (sendError) { // 如果发送错误通知也失败了
 		platformAPI.logError(sendError, contextMessage) // 记录发送失败的错误
-		console.error('[BotLogic] 发送错误通知失败。原始错误:', error, '发送错误:', sendError)
+		console.error('[BotLogic] Failed to send error notification. Original error:', error, 'Send error:', sendError)
 	}
 	// 无论如何，都将原始错误记录到平台日志和控制台
 	platformAPI.logError(error, contextMessage)
-	console.error('[BotLogic] 原始错误已处理:', error, '上下文:', contextMessage)
+	console.error('[BotLogic] Original error handled:', error, 'Context:', contextMessage)
 }
 
 
@@ -1011,10 +1013,10 @@ export async function processMessageUpdate(updatedFountEntry, platformAPI, chann
  * @async
  */
 export async function cleanup() {
-	console.log('[BotLogic] 开始清理...')
+	console.log('[BotLogic] Starting cleanup...')
 	// 等待所有频道的当前消息处理句柄完成
 	// Object.values(channelHandlers) 可能包含 undefined 或 null (如果句柄已删除)
 	// filter(Boolean) 确保只等待有效的 Promise
 	await Promise.allSettled(Object.values(channelHandlers).filter(Boolean))
-	console.log('[BotLogic] 所有频道处理句柄已完成。清理完毕。')
+	console.log('[BotLogic] All channel handlers completed. Cleanup finished.')
 }
