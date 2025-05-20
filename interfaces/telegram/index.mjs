@@ -196,10 +196,56 @@ async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, message, int
 		senderName = telegramUserIdToDisplayName[fromUser.id]
 	}
 
-	// 内容提取与转换 (Telegram Entities -> AI 方言 Markdown)
+	let mentionsOwner = false
+	let isReplyToOwnerTopicCreationMessage = false
+
+	// 1. 检查显式提及 (@username 或 text_mention)
 	const rawText = message.text || message.caption
 	const entities = message.entities || message.caption_entities
-	const content = telegramEntitiesToAiMarkdown(rawText, entities, telegramBotInfo || undefined, message.reply_to_message)
+
+	if (entities && rawText)
+		for (const entity of entities)
+			if (entity.type === 'mention' || entity.type === 'text_mention') {
+				let mentionedUserId
+				if (entity.type === 'text_mention' && entity.user?.id)
+					mentionedUserId = entity.user.id
+				else if (entity.type === 'mention') {
+					const mentionText = rawText.substring(entity.offset, entity.offset + entity.length)
+					// 使用配置的 OwnerUserName 进行匹配
+					if (mentionText === `@${interfaceConfig.OwnerUserName}`)
+						mentionedUserId = interfaceConfig.OwnerUserID
+				}
+				if (String(mentionedUserId) === String(interfaceConfig.OwnerUserID)) {
+					mentionsOwner = true
+					// 如果已明确提及主人，则无需再检查回复，因为这是更强的意图
+					break
+				}
+			}
+
+
+
+	// 2. 检查回复主人的消息，但排除回复话题创建消息的情况
+	if (message.reply_to_message?.from?.id === Number(interfaceConfig.OwnerUserID))
+		// 判断是否是回复主人创建的话题的第一个消息 (即话题本身)
+		// message.message_thread_id 是话题的第一个消息的 message_id。
+		// 如果当前消息确实属于一个话题 (message.message_thread_id 存在)
+		// 并且被回复的消息的 message_id 等于当前消息所在的话题的 message_thread_id，
+		// 则认为它是对话题创建消息的回复。
+		if (message.message_thread_id !== undefined &&
+			message.reply_to_message.message_id === message.message_thread_id) {
+			isReplyToOwnerTopicCreationMessage = true
+			// 此时不设置 mentionsOwner = true，因为我们认为这不是对主人的直接“提及”意图
+			console.log(`[TelegramInterface] Identified a reply to owner's topic creation message. Message ID: ${message.message_id}, Replied To Message ID: ${message.reply_to_message.message_id}, Thread ID: ${message.message_thread_id}. This will NOT trigger 'mentions_owner' for AI context.`)
+		} else
+			// 如果不是回复话题创建消息，而是回复主人在话题内或话题外发送的其他消息，则视为提及主人
+			mentionsOwner = true
+
+
+
+	// 内容提取与转换 (Telegram Entities -> AI 方言 Markdown)
+	// 关键修改：如果当前消息是回复主人创建的话题的第一个消息，则不将 message.reply_to_message 传递给 AI Markdown 转换器
+	const replyToMessageForAiPrompt = isReplyToOwnerTopicCreationMessage ? undefined : message.reply_to_message
+	const content = telegramEntitiesToAiMarkdown(rawText, entities, telegramBotInfo || undefined, replyToMessageForAiPrompt)
 
 	// 文件处理
 	const files = []
@@ -288,30 +334,6 @@ async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, message, int
 		if (message.reply_to_message?.from?.id === telegramBotInfo.id)
 			mentionsBot = true
 	}
-
-	let mentionsOwner = false
-	if (message.entities && rawText)
-		for (const entity of message.entities)
-			if (entity.type === 'mention' || entity.type === 'text_mention') {
-				let mentionedUserId
-				if (entity.type === 'text_mention' && entity.user?.id)
-					mentionedUserId = entity.user.id
-				else if (entity.type === 'mention') {
-					const mentionText = rawText.substring(entity.offset, entity.offset + entity.length)
-					if (mentionText === `@${interfaceConfig.OwnerUserName}`)
-						mentionedUserId = interfaceConfig.OwnerUserID // 通过配置的用户名匹配
-
-				}
-				if (String(mentionedUserId) === String(interfaceConfig.OwnerUserID)) {
-					mentionsOwner = true
-					break
-				}
-			}
-
-
-	// 如果是回复给主人的消息，也算提及主人
-	if (message.reply_to_message?.from?.id === Number(interfaceConfig.OwnerUserID))
-		mentionsOwner = true
 
 	/** @type {chatLogEntry_t_ext} */
 	const fountEntry = {

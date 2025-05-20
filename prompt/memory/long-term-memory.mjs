@@ -1,6 +1,7 @@
 import { loadJsonFileIfExists, saveJsonFile } from '../../../../../../../src/scripts/json_loader.mjs'
 import { chardir } from '../../charbase.mjs'
 import path from 'node:path'
+import fs from 'node:fs'
 import { async_eval } from '../../scripts/async_eval.mjs'
 import { match_keys, match_keys_all } from '../../scripts/match.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
@@ -111,5 +112,6 @@ export function listLongTermMemory() {
 }
 
 export function saveLongTermMemory() {
+	fs.mkdirSync(path.join(chardir, 'memory'), { recursive: true })
 	saveJsonFile(path.join(chardir, 'memory/long-term-memory.json'), LongTermMemories)
 }

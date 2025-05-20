@@ -1,6 +1,7 @@
 import path from 'node:path'
 import { loadJsonFileIfExists, saveJsonFile } from '../../../../../../src/scripts/json_loader.mjs'
 import { chardir } from '../charbase.mjs'
+import fs from 'node:fs'
 
 const varsMap = {}
 /**
@@ -16,6 +17,7 @@ export function getVar(name, vdefault = {}) {
 	return varsMap[name] ??= loadJsonFileIfExists(path.join(chardir, 'vars', `${name}.json`), vdefault)
 }
 export function saveVar(name, data = varsMap[name]) {
+	fs.mkdirSync(path.join(chardir, 'vars'), { recursive: true })
 	saveJsonFile(path.join(chardir, 'vars', `${name}.json`), varsMap[name] = data)
 }
 export function saveVars() {

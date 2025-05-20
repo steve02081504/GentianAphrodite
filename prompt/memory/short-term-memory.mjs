@@ -1,6 +1,7 @@
 import { loadJsonFileIfExists, saveJsonFile } from '../../../../../../../src/scripts/json_loader.mjs'
 import { chardir } from '../../charbase.mjs'
 import path from 'node:path'
+import fs from 'node:fs'
 import { flatChatLog, match_keys, PreprocessChatLogEntry } from '../../scripts/match.mjs'
 import jieba from '../../scripts/jieba.mjs'
 import { findMostFrequentElement } from '../../scripts/tools.mjs'
@@ -398,6 +399,7 @@ ${args.UserCharname}: 给我把有关华为的记忆全忘掉。
 
 export function saveShortTermMemory() {
 	cleanupMemories(Date.now())
+	fs.mkdirSync(path.join(chardir, 'memory'), { recursive: true })
 	saveJsonFile(path.join(chardir, 'memory/short-term-memory.json'), chat_memorys)
 }
 

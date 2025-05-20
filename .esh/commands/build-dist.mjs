@@ -76,7 +76,3 @@ for (const path of copy_paths)
 		await exec(`robocopy ".\\${path}" ".\\dist\\${path}" /MIR /XD .git /XF .gitignore /XA:H /XA:S"`, { cwd: '.' }).catch(console.dir)
 	else // 若是文件
 		nicerWriteFileSync(`dist/${path}`, fs.readFileSync(path))
-// 创建的空文件夹
-const empty_dirs = ['memory', 'vars']
-for (const path of empty_dirs)
-	fs.mkdirSync(`dist/${path}`, { recursive: true })
