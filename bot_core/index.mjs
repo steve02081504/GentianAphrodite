@@ -9,6 +9,7 @@ import { findMostFrequentElement } from '../scripts/tools.mjs'
 import { rude_words } from '../scripts/dict.mjs'
 import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs' // Fount 核心库路径
 import { newCharReplay, newUserMessage } from '../scripts/statistics.mjs'
+import { reloadPart } from '../../../../../../src/server/managers/index.mjs'
 
 /**
  * Fount 角色 API 对象类型。
@@ -584,7 +585,6 @@ async function sendAndLogReply(replyToSend, platformAPI, channelId, repliedToMes
 			channelChatLogs[channelId] = [...channelChatLogs[channelId] || [], sentEntry]
 			while (channelChatLogs[channelId].length > currentConfig.DefaultMaxMessageDepth)
 				channelChatLogs[channelId].shift()
-
 		}
 	} else  // 有文本，可能有文件
 		for (let i = 0; i < splitTexts.length; i++) {
@@ -603,7 +603,6 @@ async function sendAndLogReply(replyToSend, platformAPI, channelId, repliedToMes
 				channelChatLogs[channelId] = [...channelChatLogs[channelId] || [], sentEntry]
 				while (channelChatLogs[channelId].length > currentConfig.DefaultMaxMessageDepth)
 					channelChatLogs[channelId].shift()
-
 			}
 			// 如果是分多条发送，后续消息不应再引用 repliedToMessageEntry，以避免平台行为异常
 			if (repliedToMessageEntry) repliedToMessageEntry = undefined
@@ -624,162 +623,164 @@ async function sendAndLogReply(replyToSend, platformAPI, channelId, repliedToMes
  * @param {PlatformAPI_t} platformAPI - 当前平台的 API 对象。
  */
 async function handleMessageQueue(channelId, platformAPI) {
-	const myQueue = channelMessageQueues[channelId]
-	if (!myQueue || myQueue.length === 0) {
-		delete channelHandlers[channelId] // 如果队列为空，删除处理句柄
-		return
+	if (!channelMessageQueues[channelId]?.length)
+		return delete channelHandlers[channelId] // 如果队列为空，删除处理句柄
+
+	// 初始化或获取历史聊天记录
+	if (!channelChatLogs[channelId] || channelChatLogs[channelId].length === 0) {
+		const historicalMessages = await platformAPI.fetchChannelHistory(channelId, currentConfig.DefaultMaxFetchCount)
+		const mergedHistoricalLog = mergeChatLogEntries(historicalMessages.sort((a, b) => a.timeStamp - b.timeStamp))
+		channelChatLogs[channelId] = mergedHistoricalLog
+		// 确保历史记录不超过最大深度
+		while (channelChatLogs[channelId].length > currentConfig.DefaultMaxMessageDepth)
+			channelChatLogs[channelId].shift()
+
+		channelChatLogs[channelId].pop()
+		channelMessageQueues[channelId] = channelMessageQueues[channelId].slice(-1)
 	}
+	const myQueue = channelMessageQueues[channelId]
+	const currentChannelLog = channelChatLogs[channelId]
 
-	try {
-		// 初始化或获取历史聊天记录
-		if (!channelChatLogs[channelId] || channelChatLogs[channelId].length === 0) {
-			const historicalMessages = await platformAPI.fetchChannelHistory(channelId, currentConfig.DefaultMaxFetchCount)
-			const mergedHistoricalLog = mergeChatLogEntries(historicalMessages.sort((a, b) => a.timeStamp - b.timeStamp))
-			channelChatLogs[channelId] = mergedHistoricalLog
-			// 确保历史记录不超过最大深度
-			while (channelChatLogs[channelId].length > currentConfig.DefaultMaxMessageDepth)
-				channelChatLogs[channelId].shift()
+	while (myQueue.length) try {
+		let currentMessageToProcess = myQueue[0] // 从队列头取出一个消息
+		if (!currentMessageToProcess) { myQueue.shift(); continue }
 
-		}
-
-		const currentChannelLog = channelChatLogs[channelId] ??= [] // 确保 currentChannelLog 已初始化
-
-		while (myQueue.length > 0) {
-			const currentMessageToProcess = myQueue.shift() // 从队列头取出一个消息
-			if (!currentMessageToProcess) continue
-
-			// 尝试合并连续消息 (行内合并逻辑，补充 mergeChatLogEntries 的不足)
-			const lastLogEntry = currentChannelLog.length > 0 ? currentChannelLog[currentChannelLog.length - 1] : null
-			if (
-				lastLogEntry &&
+		// 尝试合并连续消息 (行内合并逻辑，补充 mergeChatLogEntries 的不足)
+		const lastLogEntry = currentChannelLog.length > 0 ? currentChannelLog[currentChannelLog.length - 1] : null
+		function is_can_marge() {
+			return lastLogEntry && currentMessageToProcess &&
 				lastLogEntry.name === currentMessageToProcess.name &&
 				currentMessageToProcess.timeStamp - lastLogEntry.timeStamp < currentConfig.MergeMessagePeriodMs &&
 				(lastLogEntry.files || []).length === 0 &&
 				// lastLogEntry.role === currentMessageToProcess.role && // 根据用户要求移除，以匹配旧版逻辑
 				lastLogEntry.extension?.platform_message_ids && // 确保有平台ID可以合并
 				currentMessageToProcess.extension?.platform_message_ids
-			) {
-				lastLogEntry.content += '\n' + currentMessageToProcess.content
-				lastLogEntry.files = currentMessageToProcess.files // 合并文件 (通常后一条消息的文件会覆盖)
-				lastLogEntry.timeStamp = currentMessageToProcess.timeStamp // 更新时间戳
-				lastLogEntry.extension = { // 合并扩展信息
-					...lastLogEntry.extension,
-					...currentMessageToProcess.extension,
-					platform_message_ids: Array.from(new Set([ // 合并平台消息ID
-						...lastLogEntry.extension.platform_message_ids,
-						...currentMessageToProcess.extension.platform_message_ids
-					]))
+		}
+		if (!is_can_marge()) {
+			currentChannelLog.push(currentMessageToProcess) // 不合并，直接加入日志
+			myQueue.shift() // 移除已合并的消息
+		}
+		else do {
+			lastLogEntry.content += '\n' + currentMessageToProcess.content
+			lastLogEntry.files = currentMessageToProcess.files // 合并文件 (通常后一条消息的文件会覆盖)
+			lastLogEntry.timeStamp = currentMessageToProcess.timeStamp // 更新时间戳
+			lastLogEntry.extension = { // 合并扩展信息
+				...lastLogEntry.extension,
+				...currentMessageToProcess.extension,
+				platform_message_ids: Array.from(new Set([ // 合并平台消息ID
+					...lastLogEntry.extension.platform_message_ids,
+					...currentMessageToProcess.extension.platform_message_ids
+				]))
+			}
+			myQueue.shift() // 移除已合并的消息
+			currentMessageToProcess = myQueue[0]
+		} while (is_can_marge())
+
+		// 维护聊天记录深度
+		while (currentChannelLog.length > currentConfig.DefaultMaxMessageDepth)
+			currentChannelLog.shift()
+
+		currentMessageToProcess = currentChannelLog[currentChannelLog.length - 1] // 更新 currentMessageToProcess
+
+		// 如果消息是机器人自己发的，则跳过后续处理
+		if (currentMessageToProcess.extension?.platform_user_id === platformAPI.getBotUserId())
+			continue
+
+		// 处理主人专属命令
+		if (currentMessageToProcess.extension?.is_from_owner) {
+			const { content } = currentMessageToProcess
+			// 催眠模式下的命令限制：只有在当前频道是催眠频道，或者没有催眠频道时，才处理这些命令
+			if (!inHypnosisChannelId || channelId === inHypnosisChannelId) {
+				if (base_match_keys(content, [/^龙胆.{0,2}敷衍点.{0,2}$/])) fuyanMode = true
+				if (base_match_keys(content, [/^龙胆.{0,2}不敷衍点.{0,2}$/])) fuyanMode = false
+				if (base_match_keys(content, [/^龙胆.{0,2}自裁.{0,2}$/])) {
+					const selfDestructReply = inHypnosisChannelId === channelId ? { content: '好的。' } : { content: '啊，咱死了～' }
+					await sendAndLogReply(selfDestructReply, platformAPI, channelId, currentMessageToProcess)
+					newUserMessage(content, platformAPI.name)
+					newCharReplay(selfDestructReply.content, platformAPI.name)
+					await platformAPI.destroySelf()
+					return // 自裁后直接返回，停止后续处理
 				}
-			} else
-				currentChannelLog.push(currentMessageToProcess) // 不合并，直接加入日志
-
-
-			// 维护聊天记录深度
-			while (currentChannelLog.length > currentConfig.DefaultMaxMessageDepth)
-				currentChannelLog.shift()
-
-
-			// 如果消息是机器人自己发的，则跳过后续处理
-			if (currentMessageToProcess.extension?.platform_user_id === platformAPI.getBotUserId())
-				continue
-
-
-			// 处理主人专属命令
-			if (currentMessageToProcess.extension?.is_from_owner) {
-				const { content } = currentMessageToProcess
-				// 催眠模式下的命令限制：只有在当前频道是催眠频道，或者没有催眠频道时，才处理这些命令
-				if (!inHypnosisChannelId || channelId === inHypnosisChannelId) {
-					if (base_match_keys(content, [/^龙胆.{0,2}敷衍点.{0,2}$/])) fuyanMode = true
-					if (base_match_keys(content, [/^龙胆.{0,2}不敷衍点.{0,2}$/])) fuyanMode = false
-					if (base_match_keys(content, [/^龙胆.{0,2}自裁.{0,2}$/])) {
-						const selfDestructReply = inHypnosisChannelId === channelId ? { content: '好的。' } : { content: '啊，咱死了～' }
-						await sendAndLogReply(selfDestructReply, platformAPI, channelId, currentMessageToProcess)
-						newUserMessage(content, platformAPI.name)
-						newCharReplay(selfDestructReply.content, platformAPI.name)
-						await platformAPI.destroySelf()
-						return // 自裁后直接返回，停止后续处理
-					}
-					const repeatMatch = content.match(/^龙胆.{0,2}复诵.{0,2}`(?<repeat_content>[\S\s]*)`$/)
-					if (repeatMatch?.groups?.repeat_content) {
-						await sendAndLogReply({ content: repeatMatch.groups.repeat_content }, platformAPI, channelId, currentMessageToProcess)
-						newUserMessage(content, platformAPI.name)
-						newCharReplay(repeatMatch.groups.repeat_content, platformAPI.name)
-						continue
-					}
-					const banWordMatch = content.match(/^龙胆.{0,2}禁止.{0,2}`(?<banned_content>[\S\s]*)`$/)
-					if (banWordMatch?.groups?.banned_content)
-						bannedStrings.push(banWordMatch.groups.banned_content)
-					// 旧版龙胆龙胆逻辑，新版简化了正则
-					if (base_match_keys(content, [/^(龙胆|[\n,.~、。呵哦啊嗯噫欸，～])+$/, /^龙胆龙胆(龙胆|[\n!,.?~、。呵哦啊嗯噫欸！，？～])+$/])) {
-						const ownerCallReply = SimplifiyChinese(content).replaceAll('龙胆', '主人')
-						await sendAndLogReply({ content: ownerCallReply }, platformAPI, channelId, currentMessageToProcess)
-						newUserMessage(content, platformAPI.name)
-						newCharReplay(ownerCallReply, platformAPI.name)
-						continue
-					}
+				const repeatMatch = content.match(/^龙胆.{0,2}复诵.{0,2}`(?<repeat_content>[\S\s]*)`$/)
+				if (repeatMatch?.groups?.repeat_content) {
+					await sendAndLogReply({ content: repeatMatch.groups.repeat_content }, platformAPI, channelId, currentMessageToProcess)
+					newUserMessage(content, platformAPI.name)
+					newCharReplay(repeatMatch.groups.repeat_content, platformAPI.name)
+					continue
+				}
+				const banWordMatch = content.match(/^龙胆.{0,2}禁止.{0,2}`(?<banned_content>[\S\s]*)`$/)
+				if (banWordMatch?.groups?.banned_content)
+					bannedStrings.push(banWordMatch.groups.banned_content)
+				// 旧版龙胆龙胆逻辑，新版简化了正则
+				if (base_match_keys(content, [/^(龙胆|[\n,.~、。呵哦啊嗯噫欸，～])+$/, /^龙胆龙胆(龙胆|[\n!,.?~、。呵哦啊嗯噫欸！，？～])+$/])) {
+					const ownerCallReply = SimplifiyChinese(content).replaceAll('龙胆', '主人')
+					await sendAndLogReply({ content: ownerCallReply }, platformAPI, channelId, currentMessageToProcess)
+					newUserMessage(content, platformAPI.name)
+					newCharReplay(ownerCallReply, platformAPI.name)
+					continue
 				}
 			}
+		}
 
-			// 检查是否存在其他同名机器人 (基于近期日志)
-			const recentChatLogForOtherBotCheck = currentChannelLog.filter(msg => (Date.now() - msg.timeStamp) < 5 * 60 * 1000) // 近5分钟日志
-			const hasOtherGentianBot = (() => {
-				if (recentChatLogForOtherBotCheck.length < (currentConfig.MinLogForOtherBotCheck || 5)) return false
-				const text = recentChatLogForOtherBotCheck
-					.filter(msg => msg.extension?.platform_user_id !== platformAPI.getBotUserId()) // 排除机器人自己的消息
-					.map(msg => msg.content).join('\n')
-				// 旧版逻辑: text.includes('龙胆') && text.match(/主人/g)?.length > 1
-				return base_match_keys(text, GentianWords) && (text.match(/主人/g)?.length || 0) > 1
-			})()
+		// 检查是否存在其他同名机器人 (基于近期日志)
+		const recentChatLogForOtherBotCheck = currentChannelLog.filter(msg => (Date.now() - msg.timeStamp) < 5 * 60 * 1000) // 近5分钟日志
+		const hasOtherGentianBot = (() => {
+			if (recentChatLogForOtherBotCheck.length < (currentConfig.MinLogForOtherBotCheck || 5)) return false
+			const text = recentChatLogForOtherBotCheck
+				.filter(msg => msg.extension?.platform_user_id !== platformAPI.getBotUserId()) // 排除机器人自己的消息
+				.map(msg => msg.content).join('\n')
+			// 旧版逻辑: text.includes('龙胆') && text.match(/主人/g)?.length > 1
+			return base_match_keys(text, GentianWords) && (text.match(/主人/g)?.length || 0) > 1
+		})()
 
-			const isMutedChannel = (Date.now() - (channelMuteStartTimes[channelId] || 0)) < currentConfig.MuteDurationMs
+		const isMutedChannel = (Date.now() - (channelMuteStartTimes[channelId] || 0)) < currentConfig.MuteDurationMs
 
-			// --- 核心触发逻辑 ---
-			// 旧版逻辑: 若最近7条消息都是bot和owner的消息，且当前消息是owner发的，则直接回复
-			const lastFewMessages = currentChannelLog.slice(-7) // 获取最近最多7条消息
-			// --- 修复开始: 修正 ownerBotOnlyInteraction 的判断条件，不要求固定长度为7，以匹配旧版逻辑 ---
-			// 旧版: chatlog.slice(-7).every(message => message.role == 'user' || message.name == client.user.username)
-			// message.role == 'user' 对应 is_from_owner
-			// message.name == client.user.username 对应 platform_user_id === platformAPI.getBotUserId()
-			const ownerBotOnlyInteraction = lastFewMessages.every(
-				msg => msg.extension?.is_from_owner || msg.extension?.platform_user_id === platformAPI.getBotUserId()
+		// --- 核心触发逻辑 ---
+		// 旧版逻辑: 若最近7条消息都是bot和owner的消息，且当前消息是owner发的，则直接回复
+		const lastFewMessages = currentChannelLog.slice(-7) // 获取最近最多7条消息
+		// --- 修复开始: 修正 ownerBotOnlyInteraction 的判断条件，不要求固定长度为7，以匹配旧版逻辑 ---
+		// 旧版: chatlog.slice(-7).every(message => message.role == 'user' || message.name == client.user.username)
+		// message.role == 'user' 对应 is_from_owner
+		// message.name == client.user.username 对应 platform_user_id === platformAPI.getBotUserId()
+		const ownerBotOnlyInteraction = lastFewMessages.every(
+			msg => msg.extension?.is_from_owner || msg.extension?.platform_user_id === platformAPI.getBotUserId()
+		)
+		// --- 修复结束 ---
+
+		if (ownerBotOnlyInteraction && currentMessageToProcess.extension?.is_from_owner && !isMutedChannel)
+			// 如果是纯粹的主人-机器人对话，并且当前是主人发言，且频道未静默，则直接回复
+			await doMessageReplyInternal(currentMessageToProcess, platformAPI, channelId)
+
+		else if (await checkMessageTrigger(currentMessageToProcess, platformAPI, channelId, { has_other_gentian_bot: hasOtherGentianBot }))
+			// 否则，通过 checkMessageTrigger 判断是否回复
+			await doMessageReplyInternal(currentMessageToProcess, platformAPI, channelId)
+
+		else if ( // 如果不触发回复，且满足复读条件
+			(!inHypnosisChannelId || channelId !== inHypnosisChannelId) && // 非催眠状态或非催眠频道
+			!isMutedChannel && // 频道未静默
+			currentMessageToProcess.extension?.platform_user_id !== platformAPI.getBotUserId() // 不是机器人自己发的消息
+		) {
+			// 复读逻辑
+			const recentChatLogForRepetition = currentChannelLog.filter(msg => (Date.now() - msg.timeStamp) < 5 * 60 * 1000) // 近5分钟日志
+			const repet = findMostFrequentElement(
+				recentChatLogForRepetition.slice(-10), // 取最近10条进行复读判断
+				// 旧版复读元素是 content + files_hex_string
+				message => (message.content || '') + '\n\n' + (message.files || []).map(file => file.buffer instanceof Buffer ? file.buffer.toString('hex') : String(file.buffer)).join('\n')
 			)
-			// --- 修复结束 ---
-
-			if (ownerBotOnlyInteraction && currentMessageToProcess.extension?.is_from_owner && !isMutedChannel)
-				// 如果是纯粹的主人-机器人对话，并且当前是主人发言，且频道未静默，则直接回复
-				await doMessageReplyInternal(currentMessageToProcess, platformAPI, channelId)
-
-			else if (await checkMessageTrigger(currentMessageToProcess, platformAPI, channelId, { has_other_gentian_bot: hasOtherGentianBot }))
-				// 否则，通过 checkMessageTrigger 判断是否回复
-				await doMessageReplyInternal(currentMessageToProcess, platformAPI, channelId)
-
-			else if ( // 如果不触发回复，且满足复读条件
-				(!inHypnosisChannelId || channelId !== inHypnosisChannelId) && // 非催眠状态或非催眠频道
-				!isMutedChannel && // 频道未静默
-				currentMessageToProcess.extension?.platform_user_id !== platformAPI.getBotUserId() // 不是机器人自己发的消息
-			) {
-				// 复读逻辑
-				const recentChatLogForRepetition = currentChannelLog.filter(msg => (Date.now() - msg.timeStamp) < 5 * 60 * 1000) // 近5分钟日志
-				const repet = findMostFrequentElement(
-					recentChatLogForRepetition.slice(-10), // 取最近10条进行复读判断
-					// 旧版复读元素是 content + files_hex_string
-					message => (message.content || '') + '\n\n' + (message.files || []).map(file => file.buffer instanceof Buffer ? file.buffer.toString('hex') : String(file.buffer)).join('\n')
+			if (
+				repet.element?.content && // 确保复读内容存在 (旧版直接用 repet.element.content)
+				repet.count >= currentConfig.RepetitionTriggerCount && // 达到复读次数
+				// 旧逻辑 spec_words = [...config.OwnerNameKeywords, ...rude_words, ...Gentian_words]
+				!base_match_keys(repet.element.content, [...currentMessageToProcess.extension.OwnerNameKeywords, ...rude_words, ...GentianWords]) && // 非特殊词汇
+				!repet.element.content.match(/^[!$%&/\\！]/) && // 非机器人指令
+				// 确保机器人自己没有复读过这条消息
+				!currentChannelLog.some(msg => msg.extension?.platform_user_id === platformAPI.getBotUserId() && msg.content === repet.element.content)
+			)
+				await sendAndLogReply(
+					{ content: repet.element.content, files: repet.element.files },
+					platformAPI, channelId, currentMessageToProcess
 				)
-				if (
-					repet.element?.content && // 确保复读内容存在 (旧版直接用 repet.element.content)
-					repet.count >= currentConfig.RepetitionTriggerCount && // 达到复读次数
-					// 旧逻辑 spec_words = [...config.OwnerNameKeywords, ...rude_words, ...Gentian_words]
-					!base_match_keys(repet.element.content, [...currentMessageToProcess.extension.OwnerNameKeywords, ...rude_words, ...GentianWords]) && // 非特殊词汇
-					!repet.element.content.match(/^[!$%&/\\！]/) && // 非机器人指令
-					// 确保机器人自己没有复读过这条消息
-					!currentChannelLog.some(msg => msg.extension?.platform_user_id === platformAPI.getBotUserId() && msg.content === repet.element.content)
-				)
-					await sendAndLogReply(
-						{ content: repet.element.content, files: repet.element.files },
-						platformAPI, channelId, currentMessageToProcess
-					)
 
-			}
 		}
 	} catch (error) {
 		// 发生错误时，尝试使用队列中最后一条消息或日志中最后一条消息作为上下文
@@ -789,7 +790,6 @@ async function handleMessageQueue(channelId, platformAPI) {
 		// 如果处理完后队列仍为空，则清理句柄 (以防万一在循环中发生错误导致句柄未被清理)
 		if (channelMessageQueues[channelId] && channelMessageQueues[channelId].length === 0)
 			delete channelHandlers[channelId]
-
 	}
 }
 
@@ -906,7 +906,6 @@ async function handleError(error, platformAPI, contextMessage) {
 		else
 			// 如果没有上下文频道，则记录到平台日志
 			platformAPI.logError(new Error('[BotLogic] Error occurred (no context channel to reply): ' + fullReplyContent.substring(0, 1000) + '...'), undefined)
-
 	} catch (sendError) { // 如果发送错误通知也失败了
 		platformAPI.logError(sendError, contextMessage) // 记录发送失败的错误
 		console.error('[BotLogic] Failed to send error notification. Original error:', error, 'Send error:', sendError)
@@ -914,6 +913,7 @@ async function handleError(error, platformAPI, contextMessage) {
 	// 无论如何，都将原始错误记录到平台日志和控制台
 	platformAPI.logError(error, contextMessage)
 	console.error('[BotLogic] Original error handled:', error, 'Context:', contextMessage)
+	await reloadPart(FountUsername, 'chars', BotCharname)
 }
 
 

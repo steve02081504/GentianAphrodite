@@ -104,7 +104,7 @@ export async function buildLogicalResults(args, prompt_struct, detail_level) {
 		result.in_fight = true
 
 	if (result.in_assist &&
-		await match_keys(args, ['谢谢', '谢啦', '谢了', '感谢'], 'any', 1) &&
+		await match_keys(args, ['谢谢', '谢啦', '谢了', '感谢', 'ty'], 'any', 1) &&
 		await PreprocessChatLogEntry(args.chat_log[args.chat_log.length - 1]).then(x => x[0].length <= 16) &&
 		!await match_keys(args, ['还有', '接下来', '然后', '所以', '接着'], 'any', 1))
 		result.in_assist = false
