@@ -1,4 +1,4 @@
-import puppeteer from 'npm:puppeteer'
+import puppeteer from 'npm:puppeteer@^24.9.0'
 import TurndownService from 'npm:turndown'
 import { where_command } from './exec.mjs' // 假设这是一个查找命令路径的辅助函数
 
@@ -9,12 +9,12 @@ const DEFAULT_NAVIGATION_TIMEOUT = 4.5 * 1000 // 设置一个默认导航超时�
  * @param {string} path - 浏览器地址
  * @returns {Promise<Function>} - 返回一个接受配置并启动 Puppeteer 的函数，如果找不到浏览器则返回 null。
  */
-export async function NewBrowserGenerByPath(path) {
+export async function NewBrowserGener(path, name) {
 	// 返回一个函数，该函数接收配置并启动 Puppeteer
 	return (configs) => puppeteer.launch({
 		...configs, // 合并传入的配置
-		browser: path,
-		product: path,
+		browser: name,
+		product: name,
 		executablePath: path,
 	})
 }
@@ -28,7 +28,7 @@ export async function NewBrowserGenerByName(name) {
 	const path = await where_command(name) // 查找浏览器的可执行文件路径
 	if (!path) return null
 	// 返回一个函数，该函数接收配置并启动 Puppeteer
-	return NewBrowserGenerByPath(path)
+	return NewBrowserGener(path, name)
 }
 
 /**
