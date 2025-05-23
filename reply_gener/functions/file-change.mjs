@@ -3,6 +3,7 @@ import { homedir } from 'node:os'
 import { escapeRegExp, parseRegexFromString } from '../../scripts/tools.mjs'
 import { XMLParser, XMLValidator } from 'npm:fast-xml-parser'
 import { statisticDatas } from '../../scripts/statistics.mjs'
+import { getFileObjFormPathOrUrl } from '../../scripts/fileobj.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
@@ -43,11 +44,19 @@ export async function file_change(result, { AddLongTimeLog }) {
 				tool_calling_log.content += logContent // Append if already added
 
 			console.info('AI查看的文件：', paths)
+			const files = []
 			let file_content = ''
 			for (const path of paths)
 				try {
-					const content = await fs.promises.readFile(path.replace(/^~\//, homedir() + '/'), 'utf-8')
-					file_content += `文件：${path}\n\`\`\`\n${content}\n\`\`\`\n`
+					const fileObj = await getFileObjFormPathOrUrl(path)
+					if (fileObj.mimeType.startsWith('text/')) {
+						const content = await fs.promises.readFile(path.replace(/^~\//, homedir() + '/'), 'utf-8')
+						file_content += `文件：${path}\n\`\`\`\n${content}\n\`\`\`\n`
+					}
+					else {
+						files.push(fileObj)
+						file_content += `文件：${path}读取成功，放置于附件。\n`
+					}
 				} catch (err) {
 					file_content += `读取文件失败：${path}\n\`\`\`\n${err.stack}\n\`\`\`\n`
 				}
@@ -56,7 +65,7 @@ export async function file_change(result, { AddLongTimeLog }) {
 				name: 'system',
 				role: 'system',
 				content: file_content,
-				files: []
+				files
 			})
 		}
 		statisticDatas.toolUsage.fileOperations++

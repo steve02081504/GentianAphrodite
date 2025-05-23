@@ -405,3 +405,12 @@ export function timeToTimeStr(diff, locale = 'en-US') {
 
 	return parts.join(unitConfig.separator)
 }
+
+export async function captureScreen() {
+	const { Monitor } = await import('npm:node-screenshots')
+	const monitors = Monitor.all()
+	const mainMonitor = monitors[0]
+	const image = await mainMonitor.captureImage()
+
+	return await image.toPng()
+}

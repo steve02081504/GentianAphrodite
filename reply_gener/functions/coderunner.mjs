@@ -3,13 +3,9 @@ import util from 'node:util'
 import { bash_exec_NATS, pwsh_exec_NATS } from '../../scripts/exec.mjs'
 import { async_eval } from '../../scripts/async_eval.mjs'
 import { GetReply } from '../index.mjs'
-import path from 'node:path'
-import fs from 'node:fs'
-import os from 'node:os'
-import { Buffer } from 'node:buffer'
-import { getFileExtFormMimetype, mimetypeFromBufferAndName } from '../../scripts/mimetype.mjs'
-import { getUrlFilename } from '../../scripts/web.mjs'
 import { newCharReplay, statisticDatas } from '../../scripts/statistics.mjs'
+import { captureScreen } from '../../scripts/tools.mjs'
+import { toFileObj } from '../../scripts/fileobj.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
@@ -47,46 +43,19 @@ ${code}
 	}
 }
 
-function resolvePath(relativePath) {
-	if (relativePath.startsWith('~'))
-		return path.join(os.homedir(), relativePath.slice(1))
-	return path.resolve(relativePath)
-}
-
-async function toFileObj(pathOrFileObj) {
-	if (Object(pathOrFileObj) instanceof String)
-		if (pathOrFileObj.startsWith('http://') || pathOrFileObj.startsWith('https://')) {
-			const response = await fetch(pathOrFileObj)
-			if (!response.ok) throw new Error('fetch failed.')
-			const contentDisposition = response.headers.get('Content-Disposition')
-			let name = getUrlFilename(pathOrFileObj, contentDisposition)
-			const buffer = Buffer.from(await response.arrayBuffer())
-			const mimeType = response.headers.get('content-type') || mimetypeFromBufferAndName(buffer, name || 'downloaded.bin')
-			name ||= 'downloaded.' + (getFileExtFormMimetype(mimeType) || 'bin')
-			pathOrFileObj = { name, buffer, mimeType }
-		}
-		else {
-			const filePath = resolvePath(pathOrFileObj)
-			const buffer = fs.readFileSync(filePath)
-			const name = path.basename(filePath)
-			pathOrFileObj = { name, buffer }
-		}
-
-	if (pathOrFileObj instanceof Object && 'name' in pathOrFileObj && 'buffer' in pathOrFileObj) {
-		const buffer = Buffer.isBuffer(pathOrFileObj.buffer) ? pathOrFileObj.buffer : Buffer.from(pathOrFileObj.buffer)
-		const mimeType = pathOrFileObj.mimeType || mimetypeFromBufferAndName(buffer, pathOrFileObj.name)
-		return { name: pathOrFileObj.name, buffer, mimeType }
-	}
-	else
-		throw new Error('无效的输入参数。期望为文件路径字符串、URL字符串或包含name和buffer属性的对象。')
-}
-
 /** @type {import("../../../../../../../src/decl/pluginAPI.ts").ReplyHandler_t} */
 export async function coderunner(result, args) {
 	const { AddLongTimeLog } = args
 	result.extension.execed_codes ??= {}
 	async function get_js_eval_context(code) {
-		const js_eval_context = {}
+		const js_eval_context = {
+			workspace: args.chat_scoped_char_memory.coderunner_workspace ??= {},
+		}
+		function clear_workspace () {
+			js_eval_context.workspace = args.chat_scoped_char_memory.coderunner_workspace = {}
+			js_eval_context.workspace.clear = clear_workspace
+		}
+		js_eval_context.clear_workspace = clear_workspace
 		if (args.supported_functions.add_message)
 			/**
 			 * @param {string} reason
@@ -113,6 +82,19 @@ export async function coderunner(result, args) {
 			Object.values(args.plugins).map(plugin => plugin.interfaces?.chat?.GetJSCodeContext?.(args, args.prompt_struct))
 		)).filter(Boolean))
 	}
+	// 解析wait-screen
+	const wait_screen = Number(result.content.match(/<wait-screen>(?<timeout>\d*?)<\/wait-screen>/)?.groups?.timeout?.trim?.() || 0)
+	async function get_screen() {
+		if (!wait_screen) return
+		await new Promise(resolve => setTimeout(resolve, wait_screen*1000))
+		try{
+			return { name: 'screenshot.png', buffer: await captureScreen(), mimeType: 'image/png' }
+		}
+		catch (e) {
+			console.error(e)
+			return { name: 'error.log', buffer: Buffer.from(`Error: ${e.stack}`), mimeType: 'text/plain' }
+		}
+	}
 
 	const jsrunner = result.content.match(/<run-js>(?<code>[^]*?)<\/run-js>/)?.groups?.code?.split?.('<run-js>')?.pop?.()
 	if (jsrunner) {
@@ -120,7 +102,7 @@ export async function coderunner(result, args) {
 		AddLongTimeLog({
 			name: '龙胆',
 			role: 'char',
-			content: '<run-js>' + jsrunner + '</run-js>',
+			content: '<run-js>' + jsrunner + '</run-js>' + (wait_screen ? `\n<wait-screen>${wait_screen}</wait-screen>` : ''),
 			files: []
 		})
 		console.info('AI运行的JS代码：', jsrunner)
@@ -130,7 +112,7 @@ export async function coderunner(result, args) {
 			name: 'system',
 			role: 'system',
 			content: '执行结果：\n' + util.inspect(coderesult, { depth: 4 }),
-			files: []
+			files: [await get_screen()].filter(Boolean)
 		})
 		result.extension.execed_codes[jsrunner] = coderesult
 		return true
@@ -142,20 +124,21 @@ export async function coderunner(result, args) {
 			AddLongTimeLog({
 				name: '龙胆',
 				role: 'char',
-				content: '<run-pwsh>' + pwshrunner + '</run-pwsh>',
+				content: '<run-pwsh>' + pwshrunner + '</run-pwsh>' + (wait_screen ? `\n<wait-screen>${wait_screen}</wait-screen>` : ''),
 				files: []
 			})
 			console.info('AI运行的Powershell代码：', pwshrunner)
 			let pwshresult
 			try { pwshresult = await pwsh_exec_NATS(pwshrunner) } catch (err) { pwshresult = err }
+			result.extension.execed_codes[pwshrunner] = pwshresult
+			if (pwshresult.stdall) { pwshresult = { ...pwshresult }; delete pwshresult.stdout; delete pwshresult.stderr }
 			console.info('pwshresult', pwshresult)
 			AddLongTimeLog({
 				name: 'system',
 				role: 'system',
 				content: '执行结果：\n' + util.inspect(pwshresult),
-				files: []
+				files: [await get_screen()].filter(Boolean)
 			})
-			result.extension.execed_codes[pwshrunner] = pwshresult
 			return true
 		}
 	}
@@ -166,20 +149,21 @@ export async function coderunner(result, args) {
 			AddLongTimeLog({
 				name: '龙胆',
 				role: 'char',
-				content: '<run-bash>' + bashrunner + '</run-bash>',
+				content: '<run-bash>' + bashrunner + '</run-bash>' + (wait_screen ? `\n<wait-screen>${wait_screen}</wait-screen>` : ''),
 				files: []
 			})
 			console.info('AI运行的Bash代码：', bashrunner)
 			let bashresult
 			try { bashresult = await bash_exec_NATS(bashrunner) } catch (err) { bashresult = err }
+			result.extension.execed_codes[bashrunner] = bashresult
+			if (bashresult.stdall) { bashresult = { ...bashresult }; delete bashresult.stdout; delete bashresult.stderr }
 			console.info('bashresult', bashresult)
 			AddLongTimeLog({
 				name: 'system',
 				role: 'system',
 				content: '执行结果：\n' + util.inspect(bashresult),
-				files: []
+				files: [await get_screen()].filter(Boolean)
 			})
-			result.extension.execed_codes[bashrunner] = bashresult
 			return true
 		}
 	}

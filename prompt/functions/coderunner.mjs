@@ -35,15 +35,6 @@ export async function CodeRunnerPrompt(args, logical_results, prompt_struct, det
 <${process.platform === 'win32' ? 'run-pwsh' : 'run-bash'}>code</${process.platform === 'win32' ? 'run-pwsh' : 'run-bash'}>
 如：
 <run-js>(await import('npm:robotjs')).getScreenSize()</run-js>
-或
-${process.platform === 'win32' ?
-				`\
-<run-pwsh>start $(ls ~/music | ? { $_.Name -match 'shape of you' })</run-pwsh>
-` :
-				`\
-<run-bash>ls ~/music | grep 'shape of you' | head -n 1 | xargs open</run-bash>
-`
-}
 你还可以使用<inline-js>来运行js代码，返回结果会作为string直接插入到消息中。
 如：[
 ${args.UserCharname}: 一字不差的输出10^308的数值。
@@ -63,16 +54,42 @@ function toEnglishWord(n) {
 return Array.from({ length: 201 }, (_, i) => toEnglishWord(i)).join(', ')
 </inline-js>！
 ]
+在<run-js>和<run-${process.platform === 'win32' ? 'pwsh' : 'bash'}>代码时，你可以附加<wait-screen>timeout</wait-screen>来在代码执行后等待timeout秒，随后让你看到截图。
+这在执行对屏幕内容有影响的代码时非常有用。
+如：[
+${args.UserCharname}: 帮我播放shape of you。
+龙胆: ${process.platform === 'win32' ?
+				'\
+<run-pwsh>start $(ls ~/music | ? { $_.Name -match \'shape of you\' })</run-pwsh>' :
+				'\
+<run-bash>ls ~/music | grep \'shape of you\' | head -n 1 | xargs open</run-bash>'}
+
+<wait-screen>3</wait-screen>
+]
 - 在解决简单问题时使用<inline-js>，并使用大数类型。
 - 在解决复杂数学相关问题时使用<run-js>。
 - 在操作电脑、查看文件、更改设置、播放音乐时使用<run-${process.platform === 'win32' ? 'pwsh' : 'bash'}>。
+  * 在操作可能影响屏幕时附加<wait-screen>。
 
 js代码相关：
 - 复杂情况下，考虑有什么npm包可以满足你的需求，参照例子使用<run-js>+import。
   * 导入包需要符合deno的包名规范（追加\`npm|node|jsr:\`前缀），如\`npm:mathjs\`或\`node:fs\`。
+- 鼓励你在复杂情况下用workspace变量来存储工作数据，便于后续使用。
+  * 你可以设置workspace.XXX来存储变量，变量将持续到未来的run-js中直到你使用workspace.clear()清除。
+	如：[
+${args.UserCharname}: 帮我下载https://example.com/test.zip并解压到D盘
+龙胆: <run-js>
+workspace.clear() // 新任务，清除之前的数据
+workspace.zip = await fetch('https://example.com/test.zip').then(res => res.arrayBuffer()) // 如果unzip出错的话也不用重新下载啦
+function unzip(buffer, path) {
+	//...
+}
+await unzip(workspace.zip, 'D:\\\\')
+</run-js>
+]
 ${args.supported_functions.add_message ? `\
 - 对于会需要很长时间的任务，你可以使用\`callback\`函数来在异步完成后反馈内容。
-  * 格式：callback(reason, promise)，reason为字符串，promise为promise对象。
+  * 格式：callback(reason: string, promise: Promise)
   * 例子：<run-js>callback('unzip result', super_slow_async_function())</run-js>
   * 返回值：callback是异步的，你无法在<run-js>的当场看到callback结果。
 `: ''}

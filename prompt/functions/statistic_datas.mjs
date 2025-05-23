@@ -57,6 +57,11 @@ ${statisticDatas.firstInteraction.characterReplyContent}
 	, 'zh-CN')}的时间中，每日都有保持对话。
 `
 
+	if (await match_keys(args, ['token', 'tokens', '平均']))
+		result += `\
+你每次调用的token数平均为${statisticDatas.avgTokenNum}
+`
+
 	return {
 		text: [{
 			content: result,

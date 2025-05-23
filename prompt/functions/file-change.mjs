@@ -21,13 +21,15 @@ export async function FileChangePrompt(args, logical_results, prompt_struct, det
 无需shell命令，你可以进行更加原生的文件操作。通过返回以下格式来触发执行并获取结果：
 - 使用 <view-file> 查看文件内容:
 <view-file>
-path1
-path2
+pathOrUrl1
+pathOrUrl2
 etc
 </view-file>
 如：
 <view-file>
 D:/tmp.mjs
+https://example.com/file.txt
+~/Desktop/some.png
 </view-file>
 
 - 使用 <replace-file> 替换文件内容：

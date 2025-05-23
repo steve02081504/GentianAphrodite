@@ -2,7 +2,7 @@ import puppeteer from 'npm:puppeteer@^24.9.0'
 import TurndownService from 'npm:turndown'
 import { where_command } from './exec.mjs' // 假设这是一个查找命令路径的辅助函数
 
-const DEFAULT_NAVIGATION_TIMEOUT = 4.5 * 1000 // 设置一个默认导航超时时间 (毫秒)
+const DEFAULT_NAVIGATION_TIMEOUT = 13 * 1000 // 设置一个默认导航超时时间 (毫秒)
 
 /**
  * 根据浏览器地址创建一个 Puppeteer 启动器函数。

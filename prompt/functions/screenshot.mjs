@@ -1,18 +1,10 @@
 import { in_docker, in_termux } from '../../../../../../../src/scripts/env.mjs'
 import { match_keys } from '../../scripts/match.mjs'
 import { decodeQrCodeFromBuffer } from '../../scripts/qrcode.mjs'
+import { captureScreen } from '../../scripts/tools.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
-
-async function captureScreen() {
-	const { Monitor } = await import('npm:node-screenshots')
-	const monitors = Monitor.all()
-	const mainMonitor = monitors[0]
-	const image = await mainMonitor.captureImage()
-
-	return await image.toPng()
-}
 
 /**
  * @param {chatReplyRequest_t} args
