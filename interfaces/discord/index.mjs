@@ -1,5 +1,3 @@
-// 文件名: ./interfaces/discord/index.mjs (或根据你的项目结构调整路径)
-
 import { Events, ChannelType, ActivityType } from 'npm:discord.js'
 import { Buffer } from 'node:buffer'
 
@@ -151,27 +149,41 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 	// 使用工具函数获取完整的消息内容 (包括 embed、附件链接、回复等格式化文本)
 	const content = await getMessageFullContent(message, discordClientInstance)
 
-	// 处理消息附件和 embed 中的图片，转换为 Fount 文件格式
-	const files = (await Promise.all(
-		[...message.attachments.values(), ...message.embeds.filter(e => e.image).map(e => e.image)] // 合并附件和 embed 图片
-			.filter(Boolean) // 过滤掉空值
-			.map(async (attachmentOrEmbedImage) => {
-				const {url} = attachmentOrEmbedImage
-				if (!url) return null
-				try {
-					const response = await tryFewTimes(() => fetch(url)) // 尝试多次获取文件
-					if (!response.ok) throw new Error(`Failed to fetch file ${url}: ${response.statusText}`)
-					const buffer = Buffer.from(await response.arrayBuffer()) // 将文件内容转为 Buffer
-					const name = attachmentOrEmbedImage.name || url.split('/').pop() || 'file' // 获取文件名
-					const mimeType = attachmentOrEmbedImage.contentType || await mimetypeFromBufferAndName(buffer, name) // 获取MIME类型
-					const description = attachmentOrEmbedImage.description || (attachmentOrEmbedImage.title || '') // 获取描述或标题
-					return { name, buffer, description, mimeType }
-				} catch (error) {
-					console.error(`[DiscordInterface] Failed to process attachment/embed image ${url}:`, error)
-					return null
-				}
-			})
-	)).filter(Boolean) // 再次过滤处理失败的 null 值
+	// 处理消息附件
+	const files = (await Promise.all([...[
+		message.attachments,
+		...message.messageSnapshots.map(referencedMessage => referencedMessage.attachments)
+	].flatMap(x => x.map(x => x)).filter(Boolean).map(async (attachment) => {
+		if (!attachment.url) return console.error('attachment has no url:', attachment)
+		try {
+			const buffer = Buffer.from(await tryFewTimes(
+				() => fetch(attachment.url).then((response) => response.arrayBuffer())
+			))
+			return {
+				name: attachment.name,
+				buffer,
+				description: attachment.description,
+				mimeType: attachment.contentType || await mimetypeFromBufferAndName(buffer, attachment.name)
+			}
+		}
+		catch (error) {
+			console.error(error)
+		}
+	}), ...message.embeds.map(embed => embed.image?.url).filter(url => url).map(async url => {
+		try {
+			return {
+				name: url.split('/').pop(),
+				buffer: Buffer.from(await tryFewTimes(
+					() => fetch(url).then((response) => response.arrayBuffer())
+				)),
+				description: '',
+				mimeType: 'image/png'
+			}
+		}
+		catch (error) {
+			console.error(error)
+		}
+	})])).filter(Boolean)
 
 	// 如果消息既无文本内容也无有效文件，则忽略
 	if (!content && files.length === 0) return null
@@ -326,7 +338,7 @@ export async function DiscordBotMain(client, interfaceConfig) {
 						: await /** @type {DiscordTextChannel | DiscordDMChannel} */ channel.send({ files: filesToSend })
 					firstSentDiscordMessage = sentMsg
 				} catch (e) { console.error('[DiscordInterface] Failed to send file-only message:', e) }
-			 else  // 情况2: 有文本 (可能也有文件)
+			else  // 情况2: 有文本 (可能也有文件)
 				for (let i = 0; i < splitTexts.length; i++) {
 					const textPart = formatEmbedMentions(splitTexts[i], guildMembersMap) // 转换文本中的 @用户名 提及
 					const isLastPart = i === splitTexts.length - 1 // 是否为最后一条文本片段
@@ -512,7 +524,6 @@ export async function DiscordBotMain(client, interfaceConfig) {
 		if (fountEntry)
 			// 将更新后的消息传递给 Bot 逻辑层进行处理
 			await processMessageUpdate(fountEntry, discordPlatformAPI, fetchedNewMessage.channel.id)
-
 	})
 
 	/**

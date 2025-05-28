@@ -1,4 +1,4 @@
-import puppeteer from 'npm:puppeteer@^24.9.0'
+import puppeteer from 'npm:puppeteer-core@^24.9.0'
 import TurndownService from 'npm:turndown'
 import { where_command } from './exec.mjs' // 假设这是一个查找命令路径的辅助函数
 

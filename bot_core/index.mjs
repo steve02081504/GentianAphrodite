@@ -420,6 +420,7 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
 	console.dir({
 		name: fountEntry.name,
 		content,
+		files: fountEntry.files,
 		possible,
 		okey,
 		isFromOwner,
@@ -649,7 +650,6 @@ async function handleMessageQueue(channelId, platformAPI) {
 				lastLogEntry.name === currentMessageToProcess.name &&
 				currentMessageToProcess.timeStamp - lastLogEntry.timeStamp < currentConfig.MergeMessagePeriodMs &&
 				(lastLogEntry.files || []).length === 0 &&
-				// lastLogEntry.role === currentMessageToProcess.role && // 根据用户要求移除，以匹配旧版逻辑
 				lastLogEntry.extension?.platform_message_ids && // 确保有平台ID可以合并
 				currentMessageToProcess.extension?.platform_message_ids
 		}
@@ -733,9 +733,8 @@ async function handleMessageQueue(channelId, platformAPI) {
 				currentMessageToProcess.extension?.platform_user_id !== platformAPI.getBotUserId() // 不是机器人自己发的消息
 			) {
 				// 复读逻辑
-				const recentChatLogForRepetition = currentChannelLog.filter(msg => (Date.now() - msg.timeStamp) < 5 * 60 * 1000) // 近5分钟日志
 				const repet = findMostFrequentElement(
-					recentChatLogForRepetition.slice(-10), // 取最近10条进行复读判断
+					currentChannelLog.slice(-10), // 取最近10条进行复读判断
 					// 旧版复读元素是 content + files_hex_string
 					message => (message.content || '') + '\n\n' + (message.files || []).map(file => file.buffer instanceof Buffer ? file.buffer.toString('hex') : String(file.buffer)).join('\n')
 				)
