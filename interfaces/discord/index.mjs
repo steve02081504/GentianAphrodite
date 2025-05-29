@@ -2,7 +2,7 @@ import { Events, ChannelType, ActivityType } from 'npm:discord.js'
 import { Buffer } from 'node:buffer'
 
 // 从 Bot 逻辑层导入核心处理函数和配置函数
-import { processIncomingMessage, processMessageUpdate, cleanup as cleanupBotLogic } from '../../bot_core/index.mjs'
+import { processIncomingMessage, processMessageUpdate, cleanup as cleanupBotLogic, registerPlatformAPI } from '../../bot_core/index.mjs'
 // 假设你的角色基础信息可以通过以下路径导入
 import { charname as BotFountCharname } from '../../charbase.mjs'
 
@@ -51,10 +51,11 @@ import { escapeRegExp } from '../../scripts/tools.mjs'
 /**
  * Discord 接入层配置对象类型定义。
  * @typedef {{
- *  OwnerUserName: string, // Discord 用户名
+ *  OwnerUserName: string, // Discord 用户名 (用于查找和显示)
+ *  OwnerDiscordID?: string, // (推荐) Discord 用户的数字 ID (用于精确查找)
  *  OwnerNameKeywords: string[], // 可能的用户名关键字列表
  *  BotActivityName?: string, // 机器人状态中显示的游戏/活动名称
- *  BotActivityType?: keyof typeof ActivityType, // 机器人状态类型 (例如 'Playing', 'Listening', 'Watching', 'Competing')
+ *  BotActivityType?: keyof typeof ActivityType, // 机器人状态类型
  * }} DiscordInterfaceConfig_t
  */
 
@@ -64,7 +65,8 @@ import { escapeRegExp } from '../../scripts/tools.mjs'
  */
 export function GetBotConfigTemplate() {
 	return {
-		OwnerUserName: 'your_discord_username', // 请替换为你的 Discord 用户名
+		OwnerUserName: 'your_discord_username',
+		OwnerDiscordID: 'your_discord_user_id', // 新增，可选但推荐
 		OwnerNameKeywords: [
 			'your_name_keyword1',
 			'your_name_keyword2',
@@ -79,6 +81,12 @@ export function GetBotConfigTemplate() {
  * @type {Client}
  */
 let discordClientInstance
+
+/**
+ * 缓存的主人 Discord 用户 ID。
+ * @type {string | null}
+ */
+let resolvedOwnerId = null
 
 /**
  * Discord 用户对象缓存。
@@ -240,13 +248,13 @@ function formatEmbedMentions(text, guildMembersMap) {
 		return text // 如果没有文本、没有成员映射或映射为空，则直接返回原文
 
 
-	// 构建一个正则表达式，用于匹配所有可能的被提及的用户名或显示名
-	// 我们需要对映射中的键进行排序，使得较长的名字优先匹配 (避免 "steve" 匹配了 "steve0208")
+	// 构建一个正则表达式，用于匹配所有可能的被提及的用户名或显示名。
+	// 我们需要对映射中的键进行排序，使得较长的名字优先匹配 (避免 "steve" 匹配了 "steve0208")。
+	// 还需要确保名称中包含特殊字符时能够正确转义。
 	const sortedNames = Array.from(guildMembersMap.keys()).sort((a, b) => b.length - a.length)
 
 	if (sortedNames.length === 0)
-		return text // 如果排序后没有名字了（理论上不应发生，除非 guildMembersMap 都是空字符串键）
-
+		return text
 
 	// 正则表达式：匹配 @ 符号后紧跟着的、已知的用户名或显示名。
 	// (?!\\w) 是一个负向先行断言，确保匹配的名称后面不是字母、数字或下划线，
@@ -314,20 +322,21 @@ export async function DiscordBotMain(client, interfaceConfig) {
 
 			const splitTexts = splitDiscordReply(textContent, 2000) // 使用工具函数按 Discord 限制分割长文本
 			let firstSentDiscordMessage = null // 用于存储第一条成功发送的 Discord 消息对象
-			let guildMembersMap // 用于在服务器频道中转换 @用户名 提及
+			const guildMembersMap = new Map() // 用于在服务器频道中转换 @用户名 提及
 
 			// 如果在服务器频道且文本中包含 "@"，尝试获取服务器成员列表以进行提及转换
 			if (channel.type !== ChannelType.DM && textContent.includes('@'))
 				try {
-					const membersCollection = await client.guilds.cache.get(channel.guildId)?.members.fetch()
-					if (membersCollection) {
-						guildMembersMap = new Map() // 小写用户名/显示名 -> 用户ID
+					const guild = client.guilds.cache.get(channel.guildId)
+					if (guild) {
+						// 尽量获取缓存中的成员，如果需要，可以调用 fetch() 但对于实时消息不总是必要
+						const membersCollection = guild.members.cache
 						membersCollection.forEach(member => {
 							guildMembersMap.set(member.user.username.toLowerCase(), member.id)
-							guildMembersMap.set(member.displayName.toLowerCase(), member.id)
+							if (member.displayName) guildMembersMap.set(member.displayName.toLowerCase(), member.id)
 						})
 					}
-				} catch (err) { console.warn('[DiscordInterface] Failed to fetch guild members for mention formatting:', err.message) }
+				} catch (err) { console.warn('[DiscordInterface] Failed to get guild members cache for mention formatting:', err.message) }
 
 
 			// 情况1: 只有文件，没有文本
@@ -414,9 +423,9 @@ export async function DiscordBotMain(client, interfaceConfig) {
 		/** 获取机器人自身的 Discord 用户名。 */
 		getBotUsername: () => client.user?.username || BotFountCharname,
 		/** 获取主人的 Discord 用户名。 */
-		getOwnerUserName: () => interfaceConfig.OwnerUserName,
+		getOwnerUserName: () => interfaceConfig.OwnerUserName, // 返回配置中的主人用户名
 		/** 获取主人的 Discord 用户 ID。 */
-		getOwnerUserId: () => undefined,
+		getOwnerUserId: () => resolvedOwnerId,
 		/** 获取机器人自身的 Discord 显示名称 (服务器昵称或全局显示名)。 */
 		getBotDisplayName: () => client.user?.displayName || client.user?.globalName || client.user?.username || BotFountCharname,
 
@@ -458,6 +467,7 @@ export async function DiscordBotMain(client, interfaceConfig) {
 		 * @param {chatLogEntry_t_ext} [contextMessage] - (可选) 发生错误时的上下文消息条目。
 		 */
 		logError: (error, contextMessage) => {
+			console.error('[DiscordInterface-PlatformAPI-Error]', error, contextMessage ? `Context: ${JSON.stringify(contextMessage)}` : '')
 		},
 
 		/**
@@ -484,6 +494,296 @@ export async function DiscordBotMain(client, interfaceConfig) {
 		 * @returns {string[]} 分割后的消息片段数组。
 		 */
 		splitReplyText: (text) => splitDiscordReply(text, 2000),
+
+		/**
+		 * (可选) 设置当主人离开群组时调用的回调函数。
+		 * @param {(groupId: string | number, userId: string | number) => Promise<void>} onLeaveCallback - 回调函数。
+		 */
+		onOwnerLeaveGroup: (onLeaveCallback) => {
+			client.on(Events.GuildMemberRemove, async (member) => {
+				if (!member || !member.guild) {
+					console.warn('[DiscordInterface] GuildMemberRemove event triggered with invalid member or guild data.')
+					return
+				}
+				console.log(`[DiscordInterface] Member left/removed: User ${member.user.tag} (ID: ${member.id}) from guild ${member.guild.name} (ID: ${member.guild.id})`)
+				try {
+					// 确保 ID 比较的类型一致性
+					await onLeaveCallback(member.guild.id, String(member.id))
+				} catch (e) {
+					console.error(`[DiscordInterface] Error in onOwnerLeaveGroup callback for user ${member.id} in guild ${member.guild.id}:`, e)
+				}
+			})
+			console.log('[DiscordInterface] GuildMemberRemove event listener set up for onOwnerLeaveGroup.')
+		},
+
+		/**
+		 * (可选) 设置当机器人加入新群组/服务器时调用的回调函数。
+		 * @param {(group: import('../../bot_core/index.mjs').GroupObject) => Promise<void>} onJoinCallback - 回调函数。
+		 */
+		onGroupJoin: (onJoinCallback) => {
+			client.on(Events.GuildCreate, async (guild) => {
+				console.log(`[DiscordInterface] Joined new guild: ${guild.name} (ID: ${guild.id})`)
+				/** @type {import('../../bot_core/index.mjs').GroupObject} */
+				const groupObject = {
+					id: guild.id,
+					name: guild.name,
+					discordGuild: guild // Store the original guild object if needed later
+				}
+				try {
+					await onJoinCallback(groupObject)
+				} catch (e) {
+					console.error(`[DiscordInterface] Error in onGroupJoin callback for guild ${guild.id}:`, e)
+				}
+			})
+		},
+
+		/**
+		 * (可选) 获取机器人当前所在的所有群组/服务器列表。
+		 * @returns {Promise<import('../../bot_core/index.mjs').GroupObject[]>}
+		 */
+		getJoinedGroups: async () => {
+			if (!client.guilds) return []
+			try {
+				return Array.from(client.guilds.cache.values()).map(guild => ({
+					id: guild.id,
+					name: guild.name,
+					discordGuild: guild
+				}))
+			} catch (error) {
+				console.error('[DiscordInterface] Error fetching joined groups:', error)
+				return []
+			}
+		},
+
+		/**
+		 * (可选) 获取特定群组/服务器的成员列表。
+		 * @param {string | number} guildId - 服务器的 ID。
+		 * @returns {Promise<import('../../bot_core/index.mjs').UserObject[]>}
+		 */
+		getGroupMembers: async (guildId) => {
+			try {
+				const guild = client.guilds.cache.get(String(guildId))
+				if (!guild) {
+					console.warn(`[DiscordInterface] getGroupMembers: Guild not found: ${guildId}`)
+					return []
+				}
+				// 优化：仅在需要时fetch所有成员，或直接fetch特定成员
+				// 对于 owner presence check，bot_core 会直接尝试 fetch(ownerId)
+				// 所以这里返回缓存中的成员通常就足够，除非明确需要所有成员
+				const members = await guild.members.fetch() // 默认是会缓存的，这里会拉取所有成员
+				return members.map(member => ({
+					id: member.id,
+					username: member.user.username,
+					displayName: member.displayName, // Added displayName
+					isBot: member.user.bot,
+					discordMember: member // Store the original member object
+				}))
+			} catch (error) {
+				console.error(`[DiscordInterface] Error fetching group members for guild ${guildId}:`, error)
+				return []
+			}
+		},
+
+		/**
+		 * (可选) 为指定群组/服务器生成邀请链接。
+		 * @param {string | number} guildId - 服务器的 ID。
+		 * @param {string | number} [channelId] - (可选) 用于生成邀请的频道 ID。
+		 * @returns {Promise<string | null>} 邀请 URL 或 null。
+		 */
+		generateInviteLink: async (guildId, channelId) => {
+			try {
+				const guild = client.guilds.cache.get(String(guildId))
+				if (!guild) {
+					console.warn(`[DiscordInterface] generateInviteLink: Guild not found: ${guildId}`)
+					return null
+				}
+
+				let targetChannel
+				if (channelId) {
+					const fetchedChannel = guild.channels.cache.get(String(channelId))
+					if (fetchedChannel && fetchedChannel.type === ChannelType.GuildText && fetchedChannel.permissionsFor(client.user).has('CreateInstantInvite'))
+						targetChannel = fetchedChannel
+				}
+
+				if (!targetChannel && guild.systemChannel && guild.systemChannel.type === ChannelType.GuildText && guild.systemChannel.permissionsFor(client.user).has('CreateInstantInvite'))
+					targetChannel = guild.systemChannel
+
+				if (!targetChannel)
+					targetChannel = guild.channels.cache.find(ch =>
+						ch.type === ChannelType.GuildText &&
+						ch.permissionsFor(client.user).has('CreateInstantInvite')
+					)
+
+				if (targetChannel) {
+					const invite = await targetChannel.createInvite({ maxAge: 0, maxUses: 0 })
+					return invite.url
+				} else {
+					console.warn(`[DiscordInterface] generateInviteLink: No suitable text channel found to create invite for guild ${guildId} with CreateInstantInvite permission.`)
+					return null
+				}
+			} catch (error) {
+				console.error(`[DiscordInterface] Error generating invite link for guild ${guildId}:`, error)
+				return null
+			}
+		},
+
+		/**
+		 * (可选) 使机器人离开指定群组/服务器。
+		 * @param {string | number} guildId - 服务器的 ID。
+		 * @returns {Promise<void>}
+		 */
+		leaveGroup: async (guildId) => {
+			try {
+				const guild = client.guilds.cache.get(String(guildId))
+				if (guild) {
+					await guild.leave()
+					console.log(`[DiscordInterface] Left guild: ${guild.name} (ID: ${guildId})`)
+				} else
+					console.warn(`[DiscordInterface] leaveGroup: Guild not found: ${guildId}`)
+			} catch (error) {
+				console.error(`[DiscordInterface] Error leaving guild ${guildId}:`, error)
+			}
+		},
+
+		/**
+		 * (可选) 获取群组/服务器的默认或合适的首选频道。
+		 * @param {string | number} guildId - 服务器的 ID。
+		 * @returns {Promise<import('../../bot_core/index.mjs').ChannelObject | null>}
+		 */
+		getGroupDefaultChannel: async (guildId) => {
+			try {
+				const guild = client.guilds.cache.get(String(guildId))
+				if (!guild) {
+					console.warn(`[DiscordInterface] getGroupDefaultChannel: Guild not found: ${guildId}`)
+					return null
+				}
+
+				// 优先使用系统频道，如果它是文本频道
+				if (guild.systemChannel && guild.systemChannel.type === ChannelType.GuildText)
+					return {
+						id: guild.systemChannel.id,
+						name: guild.systemChannel.name,
+						type: 'text',
+						discordChannel: guild.systemChannel
+					}
+
+
+				// 查找第一个可用的文本频道
+				const firstTextChannel = guild.channels.cache.find(ch => ch.type === ChannelType.GuildText)
+				if (firstTextChannel)
+					return {
+						id: firstTextChannel.id,
+						name: firstTextChannel.name,
+						type: 'text',
+						discordChannel: firstTextChannel
+					}
+
+				console.warn(`[DiscordInterface] getGroupDefaultChannel: No suitable text channel found in guild ${guildId}`)
+				return null
+			} catch (error) {
+				console.error(`[DiscordInterface] Error getting default channel for guild ${guildId}:`, error)
+				return null
+			}
+		},
+
+		/**
+		 * (可选) 优化方法：一次性获取主人在哪些群组中、不在哪些群组中。
+		 * @returns {Promise<{groupsWithOwner: import('../../bot_core/index.mjs').GroupObject[], groupsWithoutOwner: import('../../bot_core/index.mjs').GroupObject[]} | null>}
+		 */
+		getOwnerPresenceInGroups: async () => {
+			if (!client.user) { // Bot 未就绪
+				console.error('[DiscordInterface] getOwnerPresenceInGroups: client.user is not available. Bot might not be ready.')
+				return null
+			}
+
+			const ownerIdToUse = resolvedOwnerId || interfaceConfig.OwnerDiscordID // 优先使用已解析的 ID
+
+			if (!ownerIdToUse) {
+				console.warn('[DiscordInterface] getOwnerPresenceInGroups: Owner ID not resolved or configured. Cannot perform check.')
+				return null
+			}
+
+			const groupsWithOwner = []
+			const groupsWithoutOwner = []
+
+			for (const guild of client.guilds.cache.values()) {
+				const groupObject = {
+					id: guild.id,
+					name: guild.name,
+					discordGuild: guild
+				}
+				try {
+					// 高效检查主人是否为成员
+					const ownerMember = await guild.members.fetch(ownerIdToUse).catch(() => null)
+					if (ownerMember)
+						groupsWithOwner.push(groupObject)
+					else
+						groupsWithoutOwner.push(groupObject)
+
+				} catch (e) {
+					console.warn(`[DiscordInterface] Error checking owner presence in guild ${guild.name} (ID: ${guild.id}): ${e.message}. Assuming owner not present.`)
+					// 如果因错误无法确定，最好假设主人不在场，以确保安全
+					groupsWithoutOwner.push(groupObject)
+				}
+			}
+			console.log(`[DiscordInterface] Owner presence check complete. With owner: ${groupsWithOwner.length}, Without owner: ${groupsWithoutOwner.length}`)
+			return { groupsWithOwner, groupsWithoutOwner }
+		},
+
+		/**
+		 * (可选) 向配置的机器人主人发送私信。
+		 * @param {string} messageText - 要发送的消息文本。
+		 * @returns {Promise<void>}
+		 */
+		sendDirectMessageToOwner: async (messageText) => {
+			try {
+				if (!interfaceConfig.OwnerUserName && !resolvedOwnerId) {
+					console.error('[DiscordInterface] sendDirectMessageToOwner: OwnerUserName or resolved OwnerDiscordID is not configured.')
+					return
+				}
+
+				let ownerUser = null
+				// 优先使用已解析的 ID 进行查找
+				if (resolvedOwnerId) {
+					ownerUser = await client.users.fetch(resolvedOwnerId).catch(() => null)
+					if (ownerUser)
+						console.log(`[DiscordInterface] Found owner by resolved ID: ${ownerUser.tag}`)
+				}
+
+				// 如果未通过 ID 找到，则尝试通过用户名在缓存中查找
+				if (!ownerUser && interfaceConfig.OwnerUserName) {
+					ownerUser = client.users.cache.find(user => user.username === interfaceConfig.OwnerUserName)
+					if (ownerUser)
+						console.log(`[DiscordInterface] Found owner by username in cache: ${ownerUser.tag}`)
+				}
+
+				// 如果仍未找到，最后尝试遍历所有服务器获取成员来查找 (效率最低，但作为备选)
+				if (!ownerUser && interfaceConfig.OwnerUserName) {
+					console.warn(`[DiscordInterface] Owner user "${interfaceConfig.OwnerUserName}" not in cache/by ID, attempting to fetch across all guilds...`)
+					for (const guild of client.guilds.cache.values())
+						try {
+							const members = await guild.members.fetch()
+							const ownerMember = members.find(member => member.user.username === interfaceConfig.OwnerUserName)
+							if (ownerMember) {
+								ownerUser = ownerMember.user
+								console.log(`[DiscordInterface] Found owner by username in guild ${guild.name}: ${ownerUser.tag}`)
+								break
+							}
+						} catch (guildFetchError) {
+							console.warn(`[DiscordInterface] Could not fetch members for guild ${guild.id} while searching for owner:`, guildFetchError.message)
+						}
+				}
+
+				if (ownerUser) {
+					await ownerUser.send(messageText)
+					console.log(`[DiscordInterface] Sent DM to owner ${ownerUser.username}`)
+				} else
+					console.error(`[DiscordInterface] sendDirectMessageToOwner: Owner user ${interfaceConfig.OwnerUserName || resolvedOwnerId} not found.`)
+
+			} catch (error) {
+				console.error('[DiscordInterface] Error sending DM to owner:', error)
+			}
+		}
 	}
 
 	/**
@@ -495,17 +795,22 @@ export async function DiscordBotMain(client, interfaceConfig) {
 			if (e.code === 10008) return null // DiscordAPIError.MessageNotFound (消息已被删除)
 			throw e // 其他错误则抛出
 		}))
-		if (!fetchedMessage) return // 如果消息已被删除，则不处理
+		if (!fetchedMessage) {
+			console.log(`[DiscordInterface] Message ${message.id} not found or deleted, skipping processing.`)
+			return // 如果消息已被删除，则不处理
+		}
 
 		// 将 Discord 消息转换为 Fount 格式
 		const fountEntry = await discordMessageToFountChatLogEntry(fetchedMessage, interfaceConfig)
-		if (fountEntry)
+		if (fountEntry) {
 			// 将转换后的消息传递给 Bot 逻辑层进行处理
+			console.log(`[DiscordInterface] Processing new message ${fetchedMessage.id} from ${fountEntry.name} in channel ${fetchedMessage.channel.id}.`)
 			await processIncomingMessage(fountEntry, discordPlatformAPI, fetchedMessage.channel.id)
-		else {
-			console.warn(`[DiscordInterface] Received invalid message, possibly system message or unsupported format: ${fetchedMessage.id}`)
-			console.dir(fetchedMessage, { depth: null }) // 调试输出消息对象
 		}
+		else
+			console.warn(`[DiscordInterface] Received invalid message, possibly system message or unsupported format: ${fetchedMessage.id}`)
+		// console.dir(fetchedMessage, { depth: null }) // 调试输出消息对象
+
 	})
 
 	/**
@@ -517,33 +822,78 @@ export async function DiscordBotMain(client, interfaceConfig) {
 			if (e.code === 10008) return null
 			throw e
 		}))
-		if (!fetchedNewMessage) return // 如果更新后的消息找不到了 (可能又被删了)
+		if (!fetchedNewMessage) {
+			console.log(`[DiscordInterface] Updated message ${newMessage.id} not found or deleted, skipping processing.`)
+			return // 如果更新后的消息找不到了 (可能又被删了)
+		}
 
 		// 将更新后的 Discord 消息转换为 Fount 格式
 		const fountEntry = await discordMessageToFountChatLogEntry(fetchedNewMessage, interfaceConfig)
-		if (fountEntry)
+		if (fountEntry) {
 			// 将更新后的消息传递给 Bot 逻辑层进行处理
+			console.log(`[DiscordInterface] Processing message update for ${fetchedNewMessage.id} from ${fountEntry.name} in channel ${fetchedNewMessage.channel.id}.`)
 			await processMessageUpdate(fountEntry, discordPlatformAPI, fetchedNewMessage.channel.id)
-	})
-
-	/**
-	 * 监听 'ready' 事件 (当客户端成功登录并准备好时)。
-	 */
-	client.once(Events.ClientReady, async (c) => {
-		// 设置机器人的活动状态 (例如 "正在玩 一个有趣的游戏")
-		if (interfaceConfig.BotActivityName && interfaceConfig.BotActivityType)
-			client.user?.setPresence({
-				activities: [{ name: interfaceConfig.BotActivityName, type: ActivityType[interfaceConfig.BotActivityType] }],
-				status: 'online', // 状态: online, idle, dnd, invisible
-			})
-
-		// 更新机器人自身的名称映射缓存
-		if (client.user) {
-			const botUserId = client.user.id
-			const botDisplayName = client.user.displayName || client.user.globalName || client.user.username || BotFountCharname
-			discordUserIdToDisplayName[botUserId] = `${botDisplayName} (咱自己)`
-			discordDisplayNameToId[botDisplayName] = botUserId
-			discordDisplayNameToId[BotFountCharname] = botUserId // 确保 Fount 角色名也映射到 ID
 		}
 	})
+
+	// 设置机器人的活动状态 (例如 "正在玩 一个有趣的游戏")
+	if (interfaceConfig.BotActivityName && interfaceConfig.BotActivityType) {
+		client.user?.setPresence({
+			activities: [{ name: interfaceConfig.BotActivityName, type: ActivityType[interfaceConfig.BotActivityType] }],
+			status: 'online', // 状态: online, idle, dnd, invisible
+		})
+		console.log(`[DiscordInterface] Bot activity set to: ${interfaceConfig.BotActivityType} ${interfaceConfig.BotActivityName}`)
+	}
+
+	// 更新机器人自身的名称映射缓存
+	if (client.user) {
+		const botUserId = client.user.id
+		const botDisplayName = client.user.displayName || client.user.globalName || client.user.username || BotFountCharname
+		discordUserIdToDisplayName[botUserId] = `${botDisplayName} (咱自己)`
+		discordDisplayNameToId[botDisplayName] = botUserId
+		discordDisplayNameToId[BotFountCharname] = botUserId // 确保 Fount 角色名也映射到 ID
+	}
+	console.log(`[DiscordInterface] Discord client ready. Bot: ${client.user.tag}`)
+
+	// 解析主人 ID
+	if (interfaceConfig.OwnerDiscordID) {
+		resolvedOwnerId = interfaceConfig.OwnerDiscordID
+		console.log(`[DiscordInterface] OwnerDiscordID configured: ${resolvedOwnerId}`)
+		try {
+			const ownerUser = await client.users.fetch(resolvedOwnerId)
+			console.log(`[DiscordInterface] Owner user "${ownerUser.tag}" confirmed via ID.`)
+			// interfaceConfig.OwnerUserName = ownerUser.username; // Example: To ensure consistency, if needed
+		} catch (e) {
+			console.error(`[DiscordInterface] Failed to fetch owner user by OwnerDiscordID ${resolvedOwnerId}. Ensure the ID is correct.`, e)
+			// 如果通过 ID 无法获取，则将 resolvedOwnerId 置空，可能回退到用户名查找或导致功能受限
+			resolvedOwnerId = null
+		}
+	} else if (interfaceConfig.OwnerUserName) {
+		console.log(`[DiscordInterface] OwnerDiscordID not set, attempting to find owner by UserName: ${interfaceConfig.OwnerUserName}`)
+		let found = false
+		// 遍历所有 Bot 所在的服务器来查找主人
+		for (const guild of client.guilds.cache.values())
+			try {
+				const members = await guild.members.fetch() // 拉取所有成员以确保能找到
+				const ownerMember = members.find(m => m.user.username === interfaceConfig.OwnerUserName)
+				if (ownerMember) {
+					resolvedOwnerId = ownerMember.id
+					found = true
+					console.log(`[DiscordInterface] Owner ID resolved via UserName in guild ${guild.name}: ${resolvedOwnerId}`)
+					break
+				}
+			} catch (e) {
+				console.warn(`[DiscordInterface] Error fetching members for guild ${guild.name} while resolving OwnerID: ${e.message}. This might be expected for some guilds due to permissions.`)
+			}
+
+		if (!found)
+			console.warn(`[DiscordInterface] Could not resolve OwnerID for UserName "${interfaceConfig.OwnerUserName}" from shared guilds. Owner-specific features might be limited.`)
+
+	} else
+		console.warn('[DiscordInterface] Neither OwnerDiscordID nor OwnerUserName are configured. Owner-specific features will not work.')
+
+	// 将平台 API 注册到 Bot 核心
+	await registerPlatformAPI(discordPlatformAPI)
+
+	return discordPlatformAPI // 返回平台 API 对象
 }

@@ -100,7 +100,6 @@ stderr: ${entry.error.includes('\n') ? '\n```\n' + entry.error + '\n```' : '`' +
 		plugins: {
 			recommend_command: recommend_command_plugin
 		},
-		chat_summary: '',
 		chat_scoped_char_memory: args.chat_scoped_char_memory,
 		chat_log
 	})

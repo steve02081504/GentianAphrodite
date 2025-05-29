@@ -2,7 +2,7 @@ import { Buffer } from 'node:buffer'
 // 假设你的角色基础信息和主API对象可以通过以下路径导入
 // 请根据你的实际项目结构调整这些import路径
 import { charname as BotCharname, username as FountUsername } from '../charbase.mjs'
-import charAPI_obj from '../main.mjs' // 假设默认导出 charAPI 对象
+import GentianAphrodite from '../main.mjs'
 
 import { base_match_keys, SimplifiyChinese } from '../scripts/match.mjs'
 import { findMostFrequentElement } from '../scripts/tools.mjs'
@@ -10,12 +10,6 @@ import { rude_words } from '../scripts/dict.mjs'
 import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs' // Fount 核心库路径
 import { newCharReplay, newUserMessage } from '../scripts/statistics.mjs'
 import { reloadPart } from '../../../../../../src/server/managers/index.mjs'
-
-/**
- * Fount 角色 API 对象类型。
- * @typedef {import('../../../../../src/decl/charAPI.ts').charAPI_t} charAPI_t_imported
- */
-const charAPI = /** @type {charAPI_t_imported} */ charAPI_obj
 
 
 /**
@@ -63,6 +57,35 @@ const charAPI = /** @type {charAPI_t_imported} */ charAPI_obj
  */
 
 /**
+ * 表示一个通用群组或服务器对象。
+ * @typedef {{
+ *  id: string | number; // 群组/服务器的唯一ID
+ *  name: string;        // 群组/服务器的名称
+ *  [key: string]: any;  // 允许平台特定的扩展字段
+ * }} GroupObject
+ */
+
+/**
+ * 表示一个通用用户对象。
+ * @typedef {{
+ *  id: string | number; // 用户的唯一ID
+ *  username: string;    // 用户的用户名
+ *  isBot?: boolean;     // 可选：指示用户是否为机器人
+ *  [key: string]: any;  // 允许平台特定的扩展字段
+ * }} UserObject
+ */
+
+/**
+ * 表示一个通用频道对象。
+ * @typedef {{
+ *  id: string | number; // 频道的唯一ID
+ *  name: string;        // 频道的名称
+ *  type?: string;       // 可选：频道的类型 (例如, 'text', 'voice')
+ *  [key: string]: any;  // 允许平台特定的扩展字段
+ * }} ChannelObject
+ */
+
+/**
  * 平台接口 API 对象类型定义。
  * 这是 Bot 逻辑层调用接入层功能的规范。
  * @typedef {{
@@ -81,7 +104,16 @@ const charAPI = /** @type {charAPI_t_imported} */ charAPI_obj
  *  getPlatformSpecificPlugins: (messageEntry: chatLogEntry_t_ext) => Record<string, pluginAPI_t>, // 获取特定于该平台和消息上下文的插件
  *  getPlatformWorld: () => WorldAPI_t, // 获取特定于该平台的世界观配置
  *  splitReplyText: (text: string) => string[], // 根据平台限制分割长文本回复
- *  config: Record<string, any> // 接入层自身的配置对象，例如包含 OwnerUserID, OwnerUserName 等
+ *  config: Record<string, any>, // 接入层自身的配置对象，例如包含 OwnerUserID, OwnerUserName 等
+ *  onGroupJoin?: (onJoinCallback: (group: GroupObject) => Promise<void>) => void, // (可选) 设置当机器人加入新群组/服务器时调用的回调函数。
+ *  getJoinedGroups?: () => Promise<GroupObject[]>, // (可选) 获取机器人当前所在的所有群组/服务器列表。
+ *  getGroupMembers?: (groupId: string | number) => Promise<UserObject[]>, // (可选) 获取特定群组/服务器的成员列表。
+ *  generateInviteLink?: (groupId: string | number, channelId?: string | number) => Promise<string | null>, // (可选) 为指定群组/服务器生成邀请链接。
+ *  leaveGroup?: (groupId: string | number) => Promise<void>, // (可选) 使机器人离开指定群组/服务器。
+ *  getGroupDefaultChannel?: (groupId: string | number) => Promise<ChannelObject | null>, // (Optional) 获取群组/服务器的默认或合适的首选频道。
+ *  sendDirectMessageToOwner?: (message: string) => Promise<void>, // (可选) 向配置的机器人主人发送私信。
+ *  getOwnerPresenceInGroups?: () => Promise<{groupsWithOwner: GroupObject[], groupsWithoutOwner: GroupObject[]} | null>, // (可选) 优化方法：一次性获取主人在哪些群组中、不在哪些群组中。
+ *  onOwnerLeaveGroup?: (onLeaveCallback: (groupId: string | number, userId: string | number) => Promise<void>) => void // (可选) 设置当主人离开群组时调用的回调函数。
  * }} PlatformAPI_t
  */
 
@@ -459,7 +491,7 @@ async function doMessageReplyInternal(triggerMessage, platformAPI, channelId) {
 
 		const chatNameForAI = platformAPI.getChatNameForAI(channelId, triggerMessage)
 
-		const fountBotDisplayName = (await charAPI.getPartInfo?.(localhostLocales[0]))?.name || BotCharname
+		const fountBotDisplayName = (await GentianAphrodite.getPartInfo?.(localhostLocales[0]))?.name || BotCharname
 		const botNameForAIChat = userIdToNameMap[platformAPI.getBotUserId()] || `${platformAPI.getBotUsername()} (咱自己)` || `${fountBotDisplayName} (咱自己)`
 
 		const ownerPlatformUsername = platformAPI.getOwnerUserName()
@@ -482,10 +514,9 @@ async function doMessageReplyInternal(triggerMessage, platformAPI, channelId) {
 			time: new Date(),
 			world: platformWorld,
 			user: null,
-			char: charAPI,
+			char: GentianAphrodite,
 			other_chars: [],
 			plugins: activePlugins,
-			chat_summary: '',
 			chat_scoped_char_memory: channelCharScopedMemory[channelId],
 			chat_log: currentChannelChatLog,
 			async AddChatLogEntry(replyFromChar) {
@@ -510,7 +541,7 @@ async function doMessageReplyInternal(triggerMessage, platformAPI, channelId) {
 			}
 		}
 
-		const aiFinalReply = fuyanMode ? { content: '嗯嗯！' } : await charAPI.interfaces.chat.GetReply(replyRequest)
+		const aiFinalReply = fuyanMode ? { content: '嗯嗯！' } : await GentianAphrodite.interfaces.chat.GetReply(replyRequest)
 
 		// 更新催眠状态
 		if (channelCharScopedMemory[channelId]?.in_hypnosis)
@@ -704,6 +735,7 @@ async function handleMessageQueue(channelId, platformAPI) {
 				// 旧版逻辑: text.includes('龙胆') && text.match(/主人/g)?.length > 1
 				return base_match_keys(text, GentianWords) && (text.match(/主人/g)?.length || 0) > 1
 			})()
+			console.log(`[BotLogic] Has other Gentian bot: ${hasOtherGentianBot} (Channel: ${channelId})`)
 
 			const isMutedChannel = (Date.now() - (channelMuteStartTimes[channelId] || 0)) < currentConfig.MuteDurationMs
 
@@ -722,11 +754,9 @@ async function handleMessageQueue(channelId, platformAPI) {
 			if (ownerBotOnlyInteraction && currentMessageToProcess.extension?.is_from_owner && !isMutedChannel)
 				// 如果是纯粹的主人-机器人对话，并且当前是主人发言，且频道未静默，则直接回复
 				return 1
-
 			else if (await checkMessageTrigger(currentMessageToProcess, platformAPI, channelId, { has_other_gentian_bot: hasOtherGentianBot }))
 				// 否则，通过 checkMessageTrigger 判断是否回复
 				return 1
-
 			else if ( // 如果不触发回复，且满足复读条件
 				(!inHypnosisChannelId || channelId !== inHypnosisChannelId) && // 非催眠状态或非催眠频道
 				!isMutedChannel && // 频道未静默
@@ -794,10 +824,10 @@ async function handleMessageQueue(channelId, platformAPI) {
 		const lastMessageInQueueOrLog = myQueue.length > 0 ? myQueue[myQueue.length - 1] : channelChatLogs[channelId]?.slice(-1)[0]
 		await handleError(error, platformAPI, lastMessageInQueueOrLog)
 	} finally {
-		// 如果处理完后队列仍为空，则清理句柄 (以防万一在循环中发生错误导致句柄未被清理)
-		if (channelMessageQueues[channelId] && channelMessageQueues[channelId].length === 0)
-			delete channelHandlers[channelId]
-	}
+			// 如果处理完后队列仍为空，则清理句柄 (以防万一在循环中发生错误导致句柄未被清理)
+			if (channelMessageQueues[channelId] && channelMessageQueues[channelId].length === 0)
+				delete channelHandlers[channelId]
+		}
 }
 
 /**
@@ -820,7 +850,7 @@ async function handleError(error, platformAPI, contextMessage) {
 	try {
 		// 准备AI自我修复请求的参数
 		const botPlatformId = platformAPI.getBotUserId()
-		const fountBotDisplayName = (await charAPI.getPartInfo?.(localhostLocales[0]))?.name || BotCharname
+		const fountBotDisplayName = (await GentianAphrodite.getPartInfo?.(localhostLocales[0]))?.name || BotCharname
 		const botNameForAI = userIdToNameMap[botPlatformId] || `${platformAPI.getBotUsername()} (咱自己)` || `${fountBotDisplayName} (咱自己)`
 
 		const ownerPlatformUsername = platformAPI.getOwnerUserName()
@@ -877,16 +907,15 @@ async function handleError(error, platformAPI, contextMessage) {
 			time: new Date(),
 			world: platformAPI.getPlatformWorld(), // 使用当前平台的世界观
 			user: null,
-			char: charAPI,
+			char: GentianAphrodite,
 			other_chars: [],
 			plugins: {}, // 自我修复时不加载常规插件
-			chat_summary: '',
 			chat_scoped_char_memory: {}, // 使用空的短期记忆，避免干扰
 			chat_log: selfRepairChatLog,
 			extension: { platform: contextMessage?.extension?.platform || 'unknown' }
 		}
 
-		aiSuggestionReply = await charAPI.interfaces.chat.GetReply(selfRepairRequest)
+		aiSuggestionReply = await GentianAphrodite.interfaces.chat.GetReply(selfRepairRequest)
 
 	} catch (anotherError) { // 如果AI自我修复也出错了
 		const anotherErrorStack = anotherError.stack || anotherError.message
@@ -964,9 +993,7 @@ export async function processIncomingMessage(fountEntry, platformAPI, channelId)
 					// (handleMessageQueue 内部也会清理，这里是双重保险)
 					if (channelMessageQueues[channelId]?.length === 0)
 						delete channelHandlers[channelId]
-
 				})
-
 	} catch (error) { // 捕获 processIncomingMessage 本身的同步错误
 		await handleError(error, platformAPI, fountEntry)
 	}
@@ -1011,6 +1038,7 @@ export async function processMessageUpdate(updatedFountEntry, platformAPI, chann
 			role: updatedFountEntry.role || oldEntry.role,
 			name: updatedFountEntry.name || oldEntry.name,
 		}
+		console.log(`[BotLogic] Message ${originalMsgIdToFind} in channel ${channelId} updated.`)
 	}
 }
 
@@ -1026,4 +1054,271 @@ export async function cleanup() {
 	// filter(Boolean) 确保只等待有效的 Promise
 	await Promise.allSettled(Object.values(channelHandlers).filter(Boolean))
 	console.log('[BotLogic] All channel handlers completed. Cleanup finished.')
+}
+
+/**
+ * 检查群组中是否存在主人，并在主人不在时执行相应操作。
+ * @param {import('./index.mjs').GroupObject} group - 要检查的群组。
+ * @param {import('./index.mjs').PlatformAPI_t} platformAPI - 平台 API 实例。
+ * @param {string | number | null} ownerOverride - (可选) 测试用的主人用户 ID 覆盖。
+ */
+async function handleGroupCheck(group, platformAPI, ownerOverride = null) {
+	if (!group || !platformAPI) {
+		console.error('[BotLogic] handleGroupCheck: Invalid group or platformAPI provided.')
+		return
+	}
+	console.log(`[BotLogic] Checking group: ${group.name} (ID: ${group.id}) on platform: ${platformAPI.name}`)
+
+	try {
+		const ownerIdToCompare = ownerOverride || platformAPI.getOwnerUserId?.()
+		const ownerUsernameToCompare = platformAPI.getOwnerUserName?.() // For platforms like Discord, Telegram might use ID
+
+		let ownerIsPresent = false
+		if (platformAPI.getGroupMembers) {
+			const members = await platformAPI.getGroupMembers(group.id)
+			if (members) {
+				ownerIsPresent = members.some(member =>
+					// 严格比较 ID
+					String(member.id) === String(ownerIdToCompare) ||
+					// 辅助比较用户名 (特别是对于Discord等，用户名可能改变)
+					(member.username && ownerUsernameToCompare && member.username.toLowerCase() === ownerUsernameToCompare.toLowerCase())
+				)
+				console.log(`[BotLogic] Owner presence check in group ${group.name} (ID: ${group.id}): ${ownerIsPresent}`)
+			} else
+				console.warn(`[BotLogic] Could not retrieve members for group ${group.id} on ${platformAPI.name}. Skipping owner check.`)
+
+		} else
+			console.warn(`[BotLogic] getGroupMembers not implemented for platform ${platformAPI.name}. Cannot check owner presence in group ${group.id}. Skipping.`)
+
+		if (ownerIsPresent) {
+			console.log(`[BotLogic] Owner found in group ${group.name} (ID: ${group.id}). No action needed.`)
+			return // 主人已在群组，直接返回
+		}
+
+		// Owner is NOT present (主人不在群中)
+		console.log(`[BotLogic] Owner NOT found in group ${group.name} (ID: ${group.id}). Taking action...`)
+
+		const defaultChannel = await platformAPI.getGroupDefaultChannel?.(group.id)
+		if (!defaultChannel) {
+			console.warn(`[BotLogic] Could not find a default channel for group ${group.id}. Cannot send invite or message.`)
+			await platformAPI.leaveGroup?.(group.id) // 如果找不到频道发消息，就直接退群
+			console.log(`[BotLogic] Left group ${group.id} due to no default channel.`)
+			return
+		}
+
+		let inviteLink = null
+		if (platformAPI.generateInviteLink)
+			inviteLink = await platformAPI.generateInviteLink(group.id, defaultChannel.id)
+				.catch(error => {
+					console.error(`[BotLogic] Error generating invite link for group ${group.id}:`, error.stack)
+					return error
+				})
+
+		if (inviteLink) {
+			// 在邀请消息中包含主人的平台用户名，以便接入层进行 @ 提及格式化
+			const inviteMessage = `咱被拉入了一个您不在的群组（已经退啦！）: \`${group.name}\` (ID: \`${group.id}\`)\n链接: ${inviteLink}`
+			if (platformAPI.sendDirectMessageToOwner) {
+				await platformAPI.sendDirectMessageToOwner(inviteMessage)
+				console.log(`[BotLogic] Sent DM to owner about group ${group.id}.`)
+			} else
+				console.warn(`[BotLogic] sendDirectMessageToOwner not implemented for ${platformAPI.name}.`)
+
+
+			// 通知其他主人所在的群组 (如果该平台支持)
+			const ownerPresenceResult = await platformAPI.getOwnerPresenceInGroups?.()
+			if (ownerPresenceResult?.groupsWithOwner?.length > 0) {
+				console.log(`[BotLogic] Notifying owner in ${ownerPresenceResult.groupsWithOwner.length} other groups.`)
+				for (const otherGroup of ownerPresenceResult.groupsWithOwner) {
+					if (otherGroup.id === group.id) continue // 跳过当前群组
+
+					const otherGroupDefaultChannel = await platformAPI.getGroupDefaultChannel?.(otherGroup.id)
+					if (otherGroupDefaultChannel && platformAPI.sendMessage)
+						try {
+							await platformAPI.sendMessage(otherGroupDefaultChannel.id, { content: `@${ownerUsernameToCompare} ` + inviteMessage })
+							console.log(`[BotLogic] Sent invite message to owner in group ${otherGroup.name} (Channel: ${otherGroupDefaultChannel.id}).`)
+						} catch (e) {
+							console.error(`[BotLogic] Failed to send invite message to owner in group ${otherGroup.name}:`, e)
+						}
+				}
+			} else
+				console.log('[BotLogic] No other groups with owner found to notify, or getOwnerPresenceInGroups not supported.')
+
+		} else
+			console.warn(`[BotLogic] Could not generate invite link for group ${group.id}.`)
+
+
+		// 生成并发送骂人消息 (侮辱)
+		const groupNameForAI = group.name || `Group ${group.id}`
+		let channelHistoryForAI = []
+		if (platformAPI.fetchChannelHistory) {
+			// 获取少量消息作为上下文，例如 5-10 条
+			channelHistoryForAI = await platformAPI.fetchChannelHistory(defaultChannel.id, 10)
+			console.log(`[BotLogic] Fetched ${channelHistoryForAI.length} history messages for insult context.`)
+		}
+
+		// 构建用于生成侮辱消息的聊天日志
+		const insultRequestContext = [
+			...channelHistoryForAI,
+			{
+				name: 'system',
+				role: 'system',
+				timeStamp: Date.now(),
+				content: `\
+你目前在${groupNameForAI}群组中，但这里没有找到你的主人，显然你是被某个傻逼拉进来的。
+现在发挥你的聪明才智随便骂几句，随后你会自动退出群组。
+` },
+		]
+
+		const fountBotDisplayName = (await GentianAphrodite.getPartInfo?.(localhostLocales[0]))?.name || BotCharname
+		const botUserId = platformAPI.getBotUserId?.()
+		const botUsername = platformAPI.getBotUsername?.()
+		const botDisplayName = platformAPI.getBotDisplayName?.()
+		const botNameForAIChat = userIdToNameMap[botUserId] || `${botUsername} (咱自己)` || `${botDisplayName} (咱自己)` || `${fountBotDisplayName} (咱自己)`
+
+		const ownerPlatformUsernameForAI = platformAPI.getOwnerUserName?.()
+		const ownerPlatformIdForAI = platformAPI.getOwnerUserId?.()
+		const userCharNameForAI = userIdToNameMap[ownerPlatformIdForAI] || ownerPlatformUsernameForAI // 这里的 UserCharname 是 AI 角色对主人的称呼
+
+		const insultRequest = {
+			supported_functions: { markdown: true, files: false, add_message: false, mathjax: false, html: false, unsafe_html: false },
+			username: FountUsername,
+			chat_name: `InsultContext: ${platformAPI.name}: ${group.id}`,
+			char_id: BotCharname,
+			Charname: botNameForAIChat,
+			UserCharname: userCharNameForAI,
+			ReplyToCharname: '', // 在这里我们不回复特定的人
+			locales: localhostLocales,
+			time: new Date(),
+			world: platformAPI.getPlatformWorld?.() || null,
+			user: null,
+			char: GentianAphrodite,
+			other_chars: [],
+			plugins: { ...platformAPI.getPlatformSpecificPlugins?.({ extension: { platform_guild_id: group.id, platform_channel_id: defaultChannel.id, platform: platformAPI.name } } || {}) },
+			chat_scoped_char_memory: {},
+			chat_log: insultRequestContext,
+			extension: { platform: platformAPI.name, chat_id: defaultChannel.id, is_direct_message: false }
+		}
+
+		let insultMessageContent = '？' // 默认骂人消息
+		try {
+			console.log(`[BotLogic] Requesting AI to generate insult for group ${group.id}.`)
+			const aiInsultReply = await GentianAphrodite.interfaces.chat.GetReply(insultRequest)
+			if (aiInsultReply && aiInsultReply.content) {
+				insultMessageContent = aiInsultReply.content
+				console.log(`[BotLogic] AI generated insult: "${insultMessageContent.substring(0, 50)}..."`)
+			} else
+				console.warn('[BotLogic] AI did not generate insult content, using default.')
+		} catch (e) {
+			console.error(`[BotLogic] AI insult generation failed for group ${group.id}:`, e)
+		}
+
+		if (platformAPI.sendMessage && insultMessageContent)
+			try {
+				await platformAPI.sendMessage(defaultChannel.id, { content: insultMessageContent })
+				console.log(`[BotLogic] Sent insult to group ${group.id}.`)
+			} catch (e) {
+				console.error(`[BotLogic] Failed to send insult to group ${group.id}:`, e)
+			}
+
+		// 离开群组
+		if (platformAPI.leaveGroup) {
+			await platformAPI.leaveGroup(group.id)
+			console.log(`[BotLogic] Left group ${group.id} after actions.`)
+		} else
+			console.warn(`[BotLogic] leaveGroup not implemented for ${platformAPI.name}. Cannot leave group ${group.id}.`)
+	} catch (error) {
+		console.error(`[BotLogic] Error in handleGroupCheck for group ${group.id} on ${platformAPI.name}:`, error)
+	}
+}
+
+/**
+ * 注册平台 API 实例。
+ * 应由每个平台接口在初始化时调用。
+ * @param {PlatformAPI_t} platformAPI - 要注册的平台 API 实例。
+ */
+export async function registerPlatformAPI(platformAPI) {
+	if (!platformAPI) {
+		console.error('[BotLogic] Attempted to register an invalid platform API.')
+		return
+	}
+
+	// 设置加入群组回调
+	if (platformAPI.onGroupJoin) {
+		platformAPI.onGroupJoin(async (group) => {
+			console.log(`[BotLogic] Platform ${platformAPI.name} detected group join: ${group.name} (ID: ${group.id}).`)
+			await handleGroupCheck(group, platformAPI)
+		})
+		console.log(`[BotLogic] Registered onGroupJoin handler for platform: ${platformAPI.name}`)
+	} else
+		console.warn(`[BotLogic] onGroupJoin not implemented for platform: ${platformAPI.name}`)
+
+
+	// 启动时检查现有群组
+	let usedOptimizedCheck = false
+	if (platformAPI.getOwnerPresenceInGroups)
+		try {
+			const presenceResult = await platformAPI.getOwnerPresenceInGroups()
+			if (presenceResult) {
+				const totalGroups = presenceResult.groupsWithOwner.length + presenceResult.groupsWithoutOwner.length
+				console.log(`[BotLogic] Used optimized owner presence check for ${platformAPI.name}. Found ${presenceResult.groupsWithoutOwner.length} groups without owner out of ${totalGroups} total.`)
+				if (presenceResult.groupsWithoutOwner.length > 0) {
+					console.log(`[BotLogic] Checking ${presenceResult.groupsWithoutOwner.length} groups where owner is not present on ${platformAPI.name} (optimized)...`)
+					for (const group of presenceResult.groupsWithoutOwner) {
+						await new Promise(resolve => setTimeout(resolve, 2000)) // 2 秒延迟
+						await handleGroupCheck(group, platformAPI)
+					}
+				}
+				usedOptimizedCheck = true
+			} else
+				console.warn(`[BotLogic] Optimized owner presence check returned null for ${platformAPI.name}. Falling back if alternative is available.`)
+
+		} catch (e) {
+			console.error(`[BotLogic] Error calling getOwnerPresenceInGroups for ${platformAPI.name}:`, e)
+		}
+
+
+	// 如果没有使用优化检查，并且平台支持获取所有已加入群组，则回退到逐个检查
+	if (!usedOptimizedCheck && platformAPI.getJoinedGroups) {
+		console.log(`[BotLogic] Falling back to iterating all joined groups for ${platformAPI.name} at startup.`)
+		try {
+			const allGroups = await platformAPI.getJoinedGroups()
+			if (allGroups && allGroups.length > 0) {
+				console.log(`[BotLogic] Found ${allGroups.length} groups to check for owner presence on ${platformAPI.name}.`)
+				for (const group of allGroups) {
+					// 仅在 Telegram 等不支持高效群成员列表的平台上才需要进行此延迟
+					// 且由于 getGroupMembers 的限制，这里的检查效率仍然不高
+					await new Promise(resolve => setTimeout(resolve, 2000)) // 2 秒延迟，避免API速率限制
+					await handleGroupCheck(group, platformAPI)
+				}
+			} else
+				console.log(`[BotLogic] No groups found or getJoinedGroups returned empty for ${platformAPI.name}.`)
+
+		} catch (e) {
+			console.error(`[BotLogic] Error fetching joined groups for ${platformAPI.name} fallback check:`, e)
+		}
+	} else if (!usedOptimizedCheck)
+		console.log(`[BotLogic] No group checking mechanism available for ${platformAPI.name} at startup (Neither getOwnerPresenceInGroups nor getJoinedGroups are fully supported/implemented).`)
+
+	// 设置主人离开群组回调
+	if (platformAPI.onOwnerLeaveGroup) {
+		platformAPI.onOwnerLeaveGroup(async (groupId, leftUserId) => {
+			const ownerIdForPlatform = platformAPI.getOwnerUserId?.()
+			// 将 ID 都转换为字符串进行比较，处理不同平台 ID 类型不一致问题
+			if (ownerIdForPlatform && String(leftUserId) === String(ownerIdForPlatform)) {
+				console.log(`[BotLogic] Owner (ID: ${leftUserId}) left group ${groupId} on platform ${platformAPI.name}. Bot will also leave.`)
+				try {
+					await platformAPI.leaveGroup?.(groupId)
+					console.log(`[BotLogic] Successfully left group ${groupId} after owner departure on ${platformAPI.name}.`)
+				} catch (e) {
+					console.error(`[BotLogic] Error leaving group ${groupId} after owner departure on ${platformAPI.name}: `, e)
+				}
+			} else if (ownerIdForPlatform) {
+				// console.log(`[BotLogic] User ${leftUserId} (not owner) left group ${groupId} on ${platformAPI.name}. Owner is ${ownerIdForPlatform}.`);
+			} else {
+				// console.warn(`[BotLogic] Could not determine owner ID for platform ${platformAPI.name}. Cannot process owner leave event for user ${leftUserId} in group ${groupId}.`);
+			}
+		})
+		console.log(`[BotLogic] Registered onOwnerLeaveGroup handler for platform: ${platformAPI.name}`)
+	} else
+		console.warn(`[BotLogic] onOwnerLeaveGroup not implemented for platform: ${platformAPI.name}.`)
 }

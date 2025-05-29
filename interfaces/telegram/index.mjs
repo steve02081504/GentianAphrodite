@@ -11,7 +11,7 @@
 import { Buffer } from 'node:buffer'
 
 // 从 Bot 逻辑层导入核心处理函数和配置函数
-import { processIncomingMessage, processMessageUpdate, cleanup as cleanupBotLogic } from '../../bot_core/index.mjs'
+import { processIncomingMessage, processMessageUpdate, cleanup as cleanupBotLogic, registerPlatformAPI } from '../../bot_core/index.mjs'
 // 假设你的角色基础信息可以通过以下路径导入
 import { charname as BotFountCharname } from '../../charbase.mjs'
 
@@ -213,7 +213,8 @@ async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, message, int
 					const mentionText = rawText.substring(entity.offset, entity.offset + entity.length)
 					// 使用配置的 OwnerUserName 进行匹配
 					if (mentionText === `@${interfaceConfig.OwnerUserName}`)
-						mentionedUserId = interfaceConfig.OwnerUserID
+						// 如果配置了 OwnerUserID，则使用它进行更准确的匹配
+						mentionedUserId = interfaceConfig.OwnerUserID ? Number(interfaceConfig.OwnerUserID) : undefined
 				}
 				if (String(mentionedUserId) === String(interfaceConfig.OwnerUserID)) {
 					mentionsOwner = true
@@ -374,6 +375,7 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 	telegrafInstance = bot
 	try {
 		telegramBotInfo = await tryFewTimes(() => bot.telegram.getMe())
+		console.log(`[TelegramInterface] Telegram bot connected: @${telegramBotInfo.username}`)
 	} catch (error) {
 		console.error('[TelegramInterface] 无法获取机器人自身信息 (getMe):', error)
 		throw new Error('机器人初始化失败: 无法连接到 Telegram 或获取机器人信息。')
@@ -428,16 +430,19 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 					console.warn(`[TelegramInterface] HTML caption for file "${file.name}" is too long (${finalCaptionHtml.length} > ${CAPTION_LENGTH_LIMIT}), will try to truncate.`)
 					const originalCaptionText = captionAiMarkdown || ''
 					let truncatedCaptionAiMarkdown = ''
+					// 尝试保留 markdown 格式进行截断
 					if (originalCaptionText.length > CAPTION_LENGTH_LIMIT * 0.8)
 						truncatedCaptionAiMarkdown = originalCaptionText.substring(0, Math.floor(CAPTION_LENGTH_LIMIT * 0.7)) + '...'
 					else
 						truncatedCaptionAiMarkdown = originalCaptionText
 
+
 					finalCaptionHtml = aiMarkdownToTelegramHtml(truncatedCaptionAiMarkdown)
 					if (finalCaptionHtml.length > CAPTION_LENGTH_LIMIT) {
+						// 如果 HTML 仍然过长，回退到纯文本截断
 						const plainTextCaption = (captionAiMarkdown || file.description || '').substring(0, CAPTION_LENGTH_LIMIT - 10) + '...'
-						finalCaptionHtml = escapeHTML(plainTextCaption)
-						console.warn('[TelegramInterface] HTML caption still too long after truncation, falling back to plain text:', plainTextCaption.substring(0, 50) + '...')
+						finalCaptionHtml = escapeHTML(plainTextCaption) // 确保纯文本也进行 HTML 转义
+						console.warn('[TelegramInterface] HTML caption still too long after markdown truncation, falling back to plain text:', plainTextCaption.substring(0, 50) + '...')
 					}
 				}
 
@@ -455,9 +460,11 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 
 				} catch (e) {
 					console.error(`[TelegramInterface] Failed to send file ${file.name} (ChatID: ${platformChatId}, ThreadID: ${messageThreadId}):`, e)
-					const fallbackText = `[File send failed: ${file.name}] ${file.description || captionAiMarkdown || ''}`.trim()
+					// 文件发送失败时，发送文本回退消息
+					const fallbackText = `[文件发送失败: ${file.name}] ${file.description || captionAiMarkdown || ''}`.trim()
 					if (fallbackText)
 						try {
+							// 确保 fallback text 也进行 HTML 转义，因为 parse_mode 是 HTML
 							sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, escapeHTML(fallbackText.substring(0, 4000)), baseOptions))
 						} catch (e2) { console.error('[TelegramInterface] Fallback message for failed file send also failed:', e2) }
 
@@ -476,6 +483,7 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 						captionForThisFileAiMarkdown = aiMarkdownContent
 						mainTextSentAsCaption = true
 					} else if (!captionForThisFileAiMarkdown && aiMarkdownContent.trim() && files.length === 1) {
+						// 如果只有一个文件，且文件本身没有描述，则将主文本作为其标题
 						captionForThisFileAiMarkdown = aiMarkdownContent
 						mainTextSentAsCaption = true
 					}
@@ -527,6 +535,8 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 		async fetchChannelHistory(logicalChannelId, limit) {
 			const { chatId, threadId } = parseLogicalChannelId(logicalChannelId)
 			console.warn(`[TelegramInterface] fetchChannelHistory not fully implemented in Telegram interface (LogicalID: ${logicalChannelId}, PlatformChatID: ${chatId}, ThreadID: ${threadId}). Relying on in-memory logs.`)
+			// Telegram Bot API 不直接提供拉取完整群组历史消息的功能
+			// 因此这里返回空数组是预期行为
 			return []
 		},
 
@@ -574,6 +584,32 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 			}
 		},
 
+		/**
+		 * (可选) 获取群组/服务器的默认或合适的首选频道。
+		 * @param {string | number} chatId - 群组的 ID。
+		 * @returns {Promise<import('../../bot_core/index.mjs').ChannelObject | null>}
+		 */
+		getGroupDefaultChannel: async (chatId) => {
+			if (!telegrafInstance) {
+				console.error('[TelegramInterface] getGroupDefaultChannel: Telegraf instance not available.')
+				return null
+			}
+			try {
+				const chat = await telegrafInstance.telegram.getChat(String(chatId))
+				/** @type {import('../../bot_core/index.mjs').ChannelObject} */
+				const channelObject = {
+					id: chat.id,
+					name: chat.title || `Group ${chat.id}`,
+					type: chat.type, // Telegram chat type (e.g., 'group', 'supergroup', 'private')
+					telegramChat: chat // Store original chat object
+				}
+				return channelObject
+			} catch (error) {
+				console.error(`[TelegramInterface] Error getting chat info for ${chatId}:`, error)
+				return null
+			}
+		},
+
 		logError: (error, contextMessage) => {
 			console.error('[TelegramInterface-PlatformAPI-Error]', error, contextMessage ? `Context: ${JSON.stringify(contextMessage)}` : '')
 		},
@@ -589,11 +625,233 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 
 		getPlatformWorld: () => telegramWorld,
 
-		splitReplyText: (text) => splitTelegramReply(text, 3800), // 3800 is a conservative estimate for HTML
+		splitReplyText: (text) => splitTelegramReply(text, 3800), // 3800 是 HTML 的保守估计，以适应 Telegram 的 4096 字符限制
+
+		/**
+		 * (可选) 设置当机器人加入新群组/服务器时调用的回调函数。
+		 * @param {(group: import('../../bot_core/index.mjs').GroupObject) => Promise<void>} onJoinCallback - 回调函数。
+		 */
+		onGroupJoin: (onJoinCallback) => {
+			if (telegrafInstance && typeof onJoinCallback === 'function')
+				// 监听 my_chat_member 更新，当机器人状态从 'left'/'kicked'/'restricted' 变为 'member'/'administrator' 时，表示加入群组
+				telegrafInstance.on('my_chat_member', async (ctx) => {
+					const oldStatus = ctx.myChatMember.old_chat_member.status
+					const newStatus = ctx.myChatMember.new_chat_member.status
+					const { chat } = ctx.myChatMember
+
+					// 检查 Bot 是否被添加到群组或超级群组
+					if ((oldStatus === 'left' || oldStatus === 'kicked' || oldStatus === 'restricted') &&
+						(newStatus === 'member' || newStatus === 'administrator') &&
+						(chat.type === 'group' || chat.type === 'supergroup')) {
+						console.log(`[TelegramInterface] Joined new group: ${chat.title} (ID: ${chat.id})`)
+						/** @type {import('../../bot_core/index.mjs').GroupObject} */
+						const groupObject = {
+							id: chat.id,
+							name: chat.title || `Group ${chat.id}`,
+							telegramChat: chat // 存储原始聊天对象
+						}
+						try {
+							await onJoinCallback(groupObject)
+						} catch (e) {
+							console.error(`[TelegramInterface] Error in onGroupJoin callback for chat ${chat.id}:`, e)
+						}
+					}
+				})
+			else
+				console.error('[TelegramInterface] Could not set onGroupJoin: bot instance or callback invalid.')
+
+		},
+
+		/**
+		 * (可选) 获取机器人当前所在的所有群组/服务器列表。
+		 * @returns {Promise<import('../../bot_core/index.mjs').GroupObject[]>}
+		 */
+		getJoinedGroups: async () => {
+			console.warn('[TelegramInterface] getJoinedGroups is not reliably supported by Telegram Bot API. It may return an empty list or only previously known chats.')
+			// Telegram Bot API 不支持直接获取所有已加入的群组列表
+			return Promise.resolve([])
+		},
+
+		/**
+		 * (可选) 获取特定群组/服务器的成员列表。
+		 * @param {string | number} chatId - 群组的 ID。
+		 * @returns {Promise<import('../../bot_core/index.mjs').UserObject[]>}
+		 */
+		getGroupMembers: async (chatId) => {
+			console.warn('[TelegramInterface] getGroupMembers on Telegram primarily returns administrators or a limited set of members due to API restrictions.')
+			if (!telegrafInstance) {
+				console.error('[TelegramInterface] getGroupMembers: Telegraf instance not available.')
+				return []
+			}
+			try {
+				// Telegram API 只能获取管理员列表，无法获取所有成员
+				const administrators = await telegrafInstance.telegram.getChatAdministrators(String(chatId))
+				return administrators.map(admin => ({
+					id: admin.user.id,
+					username: admin.user.username || `User${admin.user.id}`,
+					isBot: admin.user.is_bot,
+					telegramUser: admin.user
+				}))
+			} catch (error) {
+				console.error(`[TelegramInterface] Error fetching group administrators for chat ${chatId}:`, error)
+				return []
+			}
+		},
+
+		/**
+		 * (可选) 为指定群组/服务器生成邀请链接。
+		 * @param {string | number} chatId - 群组的 ID。
+		 * @param {string | number} [threadId] - (可选) 用于生成邀请链接的话题 ID。
+		 * @returns {Promise<string | null>} 邀请 URL 或 null。
+		 */
+		generateInviteLink: async (chatId, threadId) => {
+			if (!telegrafInstance) {
+				console.error('[TelegramInterface] generateInviteLink: Telegraf instance not available.')
+				return null
+			}
+			try {
+				// Telegram ExportChatInviteLink doesn't directly support threadId for link creation
+				// The link is for the chat itself, users can then choose a topic.
+				const link = await telegrafInstance.telegram.exportChatInviteLink(String(chatId))
+				console.log(`[TelegramInterface] Generated invite link for chat ${chatId}.`)
+				return link
+			} catch (e) {
+				console.error(`[TelegramInterface] Failed to generate invite link for ${chatId}:`, e)
+				return null
+			}
+		},
+
+		/**
+		 * (可选) 使机器人离开指定群组/服务器。
+		 * @param {string | number} chatId - 群组的 ID。
+		 * @returns {Promise<void>}
+		 */
+		leaveGroup: async (chatId) => {
+			if (!telegrafInstance) {
+				console.error('[TelegramInterface] leaveGroup: Telegraf instance not available.')
+				return
+			}
+			try {
+				await telegrafInstance.telegram.leaveChat(String(chatId))
+				console.log(`[TelegramInterface] Left group: ${chatId}`)
+			} catch (error) {
+				console.error(`[TelegramInterface] Error leaving group ${chatId}:`, error)
+			}
+		},
+
+		/**
+		 * (可选) 获取群组/服务器的默认或合适的首选频道。
+		 * @param {string | number} chatId - 群组的 ID。
+		 * @returns {Promise<import('../../bot_core/index.mjs').ChannelObject | null>}
+		 */
+		getGroupDefaultChannel: async (chatId) => {
+			// 该方法已在上方定义，此处重复，保持一致
+			if (!telegrafInstance) {
+				console.error('[TelegramInterface] getGroupDefaultChannel: Telegraf instance not available.')
+				return null
+			}
+			try {
+				const chat = await telegrafInstance.telegram.getChat(String(chatId))
+				/** @type {import('../../bot_core/index.mjs').ChannelObject} */
+				const channelObject = {
+					id: chat.id,
+					name: chat.title || `Group ${chat.id}`,
+					type: chat.type, // Telegram chat type
+					telegramChat: chat
+				}
+				return channelObject
+			} catch (error) {
+				console.error(`[TelegramInterface] Error getting chat info for ${chatId}:`, error)
+				return null
+			}
+		},
+
+		/**
+		 * (可选) 优化方法：一次性获取主人在哪些群组中、不在哪些群组中。
+		 * @returns {Promise<{groupsWithOwner: import('../../bot_core/index.mjs').GroupObject[], groupsWithoutOwner: import('../../bot_core/index.mjs').GroupObject[]} | null>}
+		 */
+		getOwnerPresenceInGroups: async () => {
+			console.warn('[TelegramInterface] getOwnerPresenceInGroups is not supported by the Telegram Bot API due to privacy restrictions and API limitations. This method will return null, and the system should fall back to other methods for startup checks if applicable.')
+			// Telegram Bot API 不支持直接获取所有 Bot 所在群组中特定用户的存在情况
+			return null
+		},
+
+		/**
+		 * (可选) 设置当主人离开群组时调用的回调函数。
+		 * @param {(groupId: string | number, userId: string | number) => Promise<void>} onLeaveCallback - 回调函数。
+		 */
+		onOwnerLeaveGroup: (onLeaveCallback) => {
+			if (!telegrafInstance) {
+				console.error('[TelegramInterface] onOwnerLeaveGroup: Telegraf instance not initialized.')
+				return
+			}
+			if (typeof onLeaveCallback !== 'function') {
+				console.error('[TelegramInterface] onOwnerLeaveGroup: Invalid callback provided.')
+				return
+			}
+
+			// 监听 chat_member 更新，判断用户状态变化
+			telegrafInstance.on('chat_member', async (ctx) => {
+				const chatMemberUpdate = ctx.update.chat_member
+				if (!chatMemberUpdate || !chatMemberUpdate.chat || !chatMemberUpdate.new_chat_member || !chatMemberUpdate.old_chat_member) {
+					console.warn('[TelegramInterface] chat_member event triggered with incomplete data.')
+					return
+				}
+
+				const oldStatus = chatMemberUpdate.old_chat_member.status
+				const newStatus = chatMemberUpdate.new_chat_member.status
+				const userId = chatMemberUpdate.new_chat_member.user.id
+				const chatId = chatMemberUpdate.chat.id
+				const chatTitle = chatMemberUpdate.chat.title || `Chat ${chatId}`
+				const userUsername = chatMemberUpdate.new_chat_member.user.username || `User ${userId}`
+
+				// 检查用户是否真正离开或被踢出 (之前是成员或管理员)
+				if ((oldStatus === 'member' || oldStatus === 'administrator' || oldStatus === 'creator') &&
+					(newStatus === 'left' || newStatus === 'kicked')) {
+					console.log(`[TelegramInterface] Member status changed: User ${userUsername} (ID: ${userId}) is now '${newStatus}' in chat ${chatTitle} (ID: ${chatId}). Old status: '${oldStatus}'.`)
+					try {
+						// 确保 ID 比较的类型一致性
+						await onLeaveCallback(String(chatId), String(userId))
+					} catch (e) {
+						console.error(`[TelegramInterface] Error in onOwnerLeaveGroup callback for user ${userId} in chat ${chatId}:`, e)
+					}
+				}
+			})
+			console.log('[TelegramInterface] chat_member event listener set up for onOwnerLeaveGroup.')
+		},
+
+		/**
+		 * (可选) 向配置的机器人主人发送私信。
+		 * @param {string} messageText - 要发送的消息文本。
+		 * @returns {Promise<void>}
+		 */
+		sendDirectMessageToOwner: async (messageText) => {
+			if (!telegrafInstance) {
+				console.error('[TelegramInterface] sendDirectMessageToOwner: Telegraf instance not available.')
+				return
+			}
+			if (!interfaceConfig.OwnerUserID) {
+				console.error('[TelegramInterface] sendDirectMessageToOwner: OwnerUserID is not configured.')
+				return
+			}
+			try {
+				// 确保 OwnerUserID 是数字类型，因为 Telegram API 需要
+				const ownerIdNumber = Number(interfaceConfig.OwnerUserID)
+				if (isNaN(ownerIdNumber)) {
+					console.error('[TelegramInterface] sendDirectMessageToOwner: OwnerUserID is not a valid number.')
+					return
+				}
+				// Telegram sendMessage supports HTML parse_mode
+				await telegrafInstance.telegram.sendMessage(ownerIdNumber, messageText, { parse_mode: 'HTML' })
+				console.log(`[TelegramInterface] Sent DM to owner (ID: ${ownerIdNumber})`)
+			} catch (error) {
+				console.error(`[TelegramInterface] Error sending DM to owner (ID: ${interfaceConfig.OwnerUserID}):`, error)
+			}
+		}
 	}
 
 	// --- Telegraf 事件监听 ---
-	bot.on('message', async (ctx) => {
+	telegrafInstance.on('message', async (ctx) => {
 		if ('message' in ctx.update) {
 			const { message } = ctx.update
 			const fountEntry = await telegramMessageToFountChatLogEntry(ctx, message, interfaceConfig)
@@ -605,7 +863,7 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 		}
 	})
 
-	bot.on('edited_message', async (ctx) => {
+	telegrafInstance.on('edited_message', async (ctx) => {
 		if ('edited_message' in ctx.update) {
 			const message = ctx.update.edited_message
 			const fountEntry = await telegramMessageToFountChatLogEntry(ctx, message, interfaceConfig)
@@ -615,4 +873,8 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 			}
 		}
 	})
+
+	// 将平台 API 注册到 Bot 核心
+	await registerPlatformAPI(telegramPlatformAPI)
+	return telegramPlatformAPI // 返回平台 API 对象
 }
