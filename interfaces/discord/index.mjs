@@ -1,18 +1,14 @@
 import { Events, ChannelType, ActivityType } from 'npm:discord.js'
 import { Buffer } from 'node:buffer'
 
-// 从 Bot 逻辑层导入核心处理函数和配置函数
 import { processIncomingMessage, processMessageUpdate, cleanup as cleanupBotLogic, registerPlatformAPI } from '../../bot_core/index.mjs'
-// 假设你的角色基础信息可以通过以下路径导入
 import { charname as BotFountCharname } from '../../charbase.mjs'
 
-
-// Discord 接口特定的工具、插件和世界观
 import { get_discord_api_plugin } from './api.mjs'
 import { discordWorld } from './world.mjs'
 import { getMessageFullContent, splitDiscordReply } from './tools.mjs'
-import { tryFewTimes } from '../../scripts/tryFewTimes.mjs' // 复用脚本
-import { mimetypeFromBufferAndName } from '../../scripts/mimetype.mjs' // 复用脚本
+import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
+import { mimetypeFromBufferAndName } from '../../scripts/mimetype.mjs'
 import { escapeRegExp } from '../../scripts/tools.mjs'
 
 /**
@@ -51,11 +47,11 @@ import { escapeRegExp } from '../../scripts/tools.mjs'
 /**
  * Discord 接入层配置对象类型定义。
  * @typedef {{
- *  OwnerUserName: string, // Discord 用户名 (用于查找和显示)
- *  OwnerDiscordID?: string, // (推荐) Discord 用户的数字 ID (用于精确查找)
- *  OwnerNameKeywords: string[], // 可能的用户名关键字列表
- *  BotActivityName?: string, // 机器人状态中显示的游戏/活动名称
- *  BotActivityType?: keyof typeof ActivityType, // 机器人状态类型
+ *  OwnerUserName: string,
+ *  OwnerDiscordID?: string,
+ *  OwnerNameKeywords: string[],
+ *  BotActivityName?: string,
+ *  BotActivityType?: keyof typeof ActivityType,
  * }} DiscordInterfaceConfig_t
  */
 
@@ -66,13 +62,13 @@ import { escapeRegExp } from '../../scripts/tools.mjs'
 export function GetBotConfigTemplate() {
 	return {
 		OwnerUserName: 'your_discord_username',
-		OwnerDiscordID: 'your_discord_user_id', // 新增，可选但推荐
+		OwnerDiscordID: 'your_discord_user_id',
 		OwnerNameKeywords: [
 			'your_name_keyword1',
 			'your_name_keyword2',
 		],
-		BotActivityName: '主人', // 机器人正在玩的游戏/活动名称
-		BotActivityType: 'Watching', // 活动类型, 例如: Playing, Listening, Watching, Competing
+		BotActivityName: '主人',
+		BotActivityType: 'Watching',
 	}
 }
 
@@ -104,7 +100,6 @@ const discordUserIdToDisplayName = {}
 
 /**
  * Discord 用户规范化显示名称到其用户 ID 的映射。
- * 主要用于机器人自身的名称和 Fount 角色名的映射。
  * 键为显示名称 (string)，值为用户 ID (string)。
  * @type {Record<string, string>}
  */
@@ -113,11 +108,9 @@ const discordDisplayNameToId = {}
 /**
  * 缓存由 AI 生成并已发送的 FountChatReply_t 对象。
  * 键为第一条成功发送的 Discord 消息的 ID (string)，值为原始的 {@link FountChatReply_t} 对象。
- * 用于在机器人自身消息被 BotLogic 层处理时，能够恢复 AI 可能附加在回复对象中的扩展信息。
  * @type {Record<string, FountChatReply_t>}
  */
 const aiReplyObjectCache = {}
-
 
 /**
  * 将 Discord 消息对象转换为 Bot 逻辑层可以理解的 Fount 聊天日志条目格式。
@@ -127,42 +120,39 @@ const aiReplyObjectCache = {}
  * @returns {Promise<chatLogEntry_t_ext | null>} 转换后的 Fount 聊天日志条目。如果消息无效或不应处理 (如系统消息)，则返回 null。
  */
 async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
-	// 尝试从缓存获取作者信息，或从 Discord API 拉取并缓存
 	const author = discordUserCache[message.author.id] || message.author
-	if (!discordUserCache[message.author.id] || Math.random() < 0.1)  // 10% 的几率或缓存未命中时更新
+	if (!discordUserCache[message.author.id] || Math.random() < 0.1)
 		try {
-			const fetchedUser = await message.author.fetch() // 强制从 API 获取最新用户信息
+			const fetchedUser = await message.author.fetch()
 			discordUserCache[message.author.id] = fetchedUser
 		} catch (fetchError) {
 			console.warn(`[DiscordInterface] Failed to fetch user info for ${message.author.id}:`, fetchError.message)
 		}
 
-	// 构建发送者名称：优先使用 displayName (服务器昵称)，其次 globalName (全局显示名)，最后 username
 	let senderName = author.displayName || author.globalName || author.username
-	// 如果 username 和最终确定的 senderName (通常是 displayName) 不同，则附加上 username 以便区分
 	if (author.username && author.username.toLowerCase() !== senderName.toLowerCase())
 		senderName += ` (${author.username})`
 
-	discordUserIdToDisplayName[author.id] = senderName // 更新 ID -> 显示名称的映射
+	discordUserIdToDisplayName[author.id] = senderName
 
-	// 特殊处理机器人自身发送的消息的名称
 	if (author.id === discordClientInstance.user?.id) {
 		const botDisplayName = discordClientInstance.user.displayName || discordClientInstance.user.globalName || BotFountCharname
-		discordDisplayNameToId[botDisplayName] = author.id // 映射：机器人显示名 -> ID
-		discordDisplayNameToId[BotFountCharname] = author.id // 映射：Fount角色核心名 -> ID
-		discordUserIdToDisplayName[author.id] = `${botDisplayName} (咱自己)` // 为机器人自身创建一个特殊的显示名
+		discordDisplayNameToId[botDisplayName] = author.id
+		discordDisplayNameToId[BotFountCharname] = author.id
+		discordUserIdToDisplayName[author.id] = `${botDisplayName} (咱自己)`
 		senderName = discordUserIdToDisplayName[author.id]
 	}
 
-	// 使用工具函数获取完整的消息内容 (包括 embed、附件链接、回复等格式化文本)
 	const content = await getMessageFullContent(message, discordClientInstance)
 
-	// 处理消息附件
 	const files = (await Promise.all([...[
 		message.attachments,
 		...message.messageSnapshots.map(referencedMessage => referencedMessage.attachments)
 	].flatMap(x => x.map(x => x)).filter(Boolean).map(async (attachment) => {
-		if (!attachment.url) return console.error('attachment has no url:', attachment)
+		if (!attachment.url) {
+			console.error('[DiscordInterface] attachment has no url:', attachment)
+			return null
+		}
 		try {
 			const buffer = Buffer.from(await tryFewTimes(
 				() => fetch(attachment.url).then((response) => response.arrayBuffer())
@@ -193,46 +183,38 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 		}
 	})])).filter(Boolean)
 
-	// 如果消息既无文本内容也无有效文件，则忽略
 	if (!content && files.length === 0) return null
 
-	// --- 构造 Fount 日志条目的扩展信息 (extension) ---
-	const isDirectMessage = message.channel.type === ChannelType.DM // 判断是否为私聊消息
-
-	// 判断消息是否来自配置的“主人”
+	const isDirectMessage = message.channel.type === ChannelType.DM
 	const isFromOwner = message.author.username === interfaceConfig.OwnerUserName
-
-	// 判断消息是否提及了机器人自身
-	// 通过 Discord 的 mentions集合检查，或简单地在消息内容中检查 Fount 角色名 (不区分大小写)
 	const mentionsBot = message.mentions.users.has(discordClientInstance.user?.id || '') ||
 		(BotFountCharname && content.toLowerCase().includes(BotFountCharname.toLowerCase()))
 
-	// 判断消息是否提及了配置的“主人”
 	const mentionsOwner = message.mentions.users.some(user => user.username === interfaceConfig.OwnerUserName)
 
 	/** @type {chatLogEntry_t_ext} */
 	const fountEntry = {
-		timeStamp: message.editedTimestamp || message.createdTimestamp, // 使用编辑时间戳 (如果存在)，否则使用创建时间戳
-		role: isFromOwner ? 'user' : 'char', // 'user'代表主人，'char'代表机器人或其他用户
-		name: senderName, // 发送者名称
-		content, // 消息文本内容
-		files, // 消息文件列表
-		extension: { // 平台特定的扩展信息
-			platform: 'discord', // 平台标识
-			OwnerNameKeywords: interfaceConfig.OwnerNameKeywords, // 主人名称关键字列表
-			platform_message_ids: [message.id], // 原始 Discord 消息 ID 列表 (目前只存一个)
-			platform_channel_id: message.channel.id, // 原始 Discord 频道 ID
-			platform_user_id: message.author.id, // 原始 Discord 用户 ID
-			platform_guild_id: message.guild?.id, // 原始 Discord 服务器 ID (如果不是私聊)
-			is_direct_message: isDirectMessage, // 是否为私聊
-			is_from_owner: isFromOwner, // 是否来自主人
-			mentions_bot: mentionsBot, // 是否提及机器人
-			mentions_owner: mentionsOwner, // 是否提及主人
-			discord_message_obj: message, // 可选: 传递原始 Discord Message 对象，供插件等高级用途
-			...aiReplyObjectCache[message.id]?.extension, // 合并从缓存中恢复的 AI 相关的扩展信息
+		timeStamp: message.editedTimestamp || message.createdTimestamp,
+		role: isFromOwner ? 'user' : 'char',
+		name: senderName,
+		content,
+		files,
+		extension: {
+			platform: 'discord',
+			OwnerNameKeywords: interfaceConfig.OwnerNameKeywords,
+			platform_message_ids: [message.id],
+			platform_channel_id: message.channel.id,
+			platform_user_id: message.author.id,
+			platform_guild_id: message.guild?.id,
+			is_direct_message: isDirectMessage,
+			is_from_owner: isFromOwner,
+			mentions_bot: mentionsBot,
+			mentions_owner: mentionsOwner,
+			discord_message_obj: message,
+			...aiReplyObjectCache[message.id]?.extension,
 		}
 	}
-	delete aiReplyObjectCache[message.id] // 清空缓存
+	delete aiReplyObjectCache[message.id]
 	return fountEntry
 }
 
@@ -240,57 +222,42 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
  * 格式化文本中的提及，将 @用户名 转换为 <@用户ID>。
  * @param {string} text - 原始文本。
  * @param {Map<string, string>} [guildMembersMap] - (可选) 一个 Map 对象，键为小写的用户名或显示名，值为用户ID。
- *                                                 如果提供，则会尝试转换文本中的 @提及。
  * @returns {string} 格式化后的文本。
  */
 function formatEmbedMentions(text, guildMembersMap) {
 	if (!text || !guildMembersMap || guildMembersMap.size === 0)
-		return text // 如果没有文本、没有成员映射或映射为空，则直接返回原文
+		return text
 
-
-	// 构建一个正则表达式，用于匹配所有可能的被提及的用户名或显示名。
-	// 我们需要对映射中的键进行排序，使得较长的名字优先匹配 (避免 "steve" 匹配了 "steve0208")。
-	// 还需要确保名称中包含特殊字符时能够正确转义。
 	const sortedNames = Array.from(guildMembersMap.keys()).sort((a, b) => b.length - a.length)
 
 	if (sortedNames.length === 0)
 		return text
 
-	// 正则表达式：匹配 @ 符号后紧跟着的、已知的用户名或显示名。
-	// (?!\\w) 是一个负向先行断言，确保匹配的名称后面不是字母、数字或下划线，
-	// 这样可以避免错误地匹配如 "@usernameABC" 中的 "@username"。
-	// 我们需要转义名称中的特殊正则字符。
 	const mentionRegex = new RegExp(`@(${sortedNames.map(name => escapeRegExp(name)).join('|')})(?!\\w)`, 'gi')
-	// 使用 'gi' flag: g for global (匹配所有出现), i for case-insensitive (忽略大小写)
 
 	return text.replace(mentionRegex, (match, matchedName) => {
-		// matchedName 是正则表达式中第一个捕获组的内容，即 @ 后面的名字部分。
-		// 在 guildMembersMap 中查找（不区分大小写，因为 map 的键已是小写）
 		const userId = guildMembersMap.get(matchedName.toLowerCase())
 		if (userId)
-			return `<@${userId}>` // 如果找到用户ID，则替换为 Discord 提及格式
+			return `<@${userId}>`
 
-		return match // 如果没找到（理论上不应发生，因为正则基于 map 的键构建），则保持原样
+		return match
 	})
 }
 
 /**
  * Discord Bot 的主设置和事件处理函数。
- * 此函数负责初始化 Discord 客户端，配置 Bot 逻辑层，并设置事件监听器。
  * @param {Client} client - 已初始化的 Discord.js 客户端实例。
  * @param {DiscordInterfaceConfig_t} interfaceConfig - 传递给此 Discord 接口的特定配置对象。
  */
 export async function DiscordBotMain(client, interfaceConfig) {
-	discordClientInstance = client // 保存客户端实例，供 PlatformAPI 等内部函数使用
+	discordClientInstance = client
 
 	/**
 	 * 构建并返回一个实现了 {@link PlatformAPI_t} 接口的对象。
-	 * 这个对象封装了所有与 Discord 平台交互的具体操作，供 Bot 逻辑层调用。
 	 * @type {PlatformAPI_t}
 	 */
 	const discordPlatformAPI = {
 		name: 'discord',
-		/** 接入层自身的配置对象 */
 		config: interfaceConfig,
 
 		/**
@@ -307,79 +274,66 @@ export async function DiscordBotMain(client, interfaceConfig) {
 				return null
 			}
 
-			// 尝试获取被回复的原始 Discord 消息对象 (如果提供了 originalMessageEntry)
 			let repliedToDiscordMessage
 			if (originalMessageEntry?.extension?.platform_message_ids?.[0])
 				try {
 					repliedToDiscordMessage = await /** @type {DiscordTextChannel | DiscordDMChannel} */ channel.messages.fetch(originalMessageEntry.extension.platform_message_ids[0])
 				} catch { /* 原始消息可能已被删除，静默处理，后续发送时不使用 .reply() */ }
 
-
-			const textContent = fountReplyPayload.content || '' // 获取文本内容
-			const filesToSend = (fountReplyPayload.files || []).map(f => ({ // 转换文件格式
+			const textContent = fountReplyPayload.content || ''
+			const filesToSend = (fountReplyPayload.files || []).map(f => ({
 				attachment: f.buffer, name: f.name || 'file.dat', description: f.description
 			}))
 
-			const splitTexts = splitDiscordReply(textContent, 2000) // 使用工具函数按 Discord 限制分割长文本
-			let firstSentDiscordMessage = null // 用于存储第一条成功发送的 Discord 消息对象
-			const guildMembersMap = new Map() // 用于在服务器频道中转换 @用户名 提及
+			const splitTexts = splitDiscordReply(textContent, 2000)
+			let firstSentDiscordMessage = null
+			const guildMembersMap = new Map()
 
-			// 如果在服务器频道且文本中包含 "@"，尝试获取服务器成员列表以进行提及转换
 			if (channel.type !== ChannelType.DM && textContent.includes('@'))
 				try {
 					const guild = client.guilds.cache.get(channel.guildId)
 					if (guild) {
-						// 尽量获取缓存中的成员，如果需要，可以调用 fetch() 但对于实时消息不总是必要
 						const membersCollection = guild.members.cache
 						membersCollection.forEach(member => {
 							guildMembersMap.set(member.user.username.toLowerCase(), member.id)
 							if (member.displayName) guildMembersMap.set(member.displayName.toLowerCase(), member.id)
 						})
 					}
-				} catch (err) { console.warn('[DiscordInterface] Failed to get guild members cache for mention formatting:', err.message) }
+				} catch (err) { /* 静默处理，获取成员缓存失败通常不关键 */ }
 
-
-			// 情况1: 只有文件，没有文本
 			if (splitTexts.length === 0 && filesToSend.length > 0)
 				try {
-					const sentMsg = repliedToDiscordMessage // 如果有原始消息，则作为回复发送
-						? await repliedToDiscordMessage.reply({ files: filesToSend, allowedMentions: { repliedUser: true } }) // repliedUser:true 会 ping 原作者
+					const sentMsg = repliedToDiscordMessage
+						? await repliedToDiscordMessage.reply({ files: filesToSend, allowedMentions: { repliedUser: true } })
 						: await /** @type {DiscordTextChannel | DiscordDMChannel} */ channel.send({ files: filesToSend })
 					firstSentDiscordMessage = sentMsg
 				} catch (e) { console.error('[DiscordInterface] Failed to send file-only message:', e) }
-			else  // 情况2: 有文本 (可能也有文件)
+			else
 				for (let i = 0; i < splitTexts.length; i++) {
-					const textPart = formatEmbedMentions(splitTexts[i], guildMembersMap) // 转换文本中的 @用户名 提及
-					const isLastPart = i === splitTexts.length - 1 // 是否为最后一条文本片段
+					const textPart = formatEmbedMentions(splitTexts[i], guildMembersMap)
+					const isLastPart = i === splitTexts.length - 1
 					try {
 						const messageOptions = {
 							content: textPart,
-							files: isLastPart ? filesToSend : [], // 只有最后一条文本消息附带所有文件
-							allowedMentions: { parse: ['users', 'roles'], repliedUser: !!repliedToDiscordMessage } // 允许提及用户和角色，控制是否 ping 回复用户
+							files: isLastPart ? filesToSend : [],
+							allowedMentions: { parse: ['users', 'roles'], repliedUser: !!repliedToDiscordMessage }
 						}
-						// 第一条消息尝试使用 .reply() (如果 repliedToDiscordMessage 存在)，后续消息使用 .send()
 						const sentMsg = repliedToDiscordMessage && i === 0
 							? await repliedToDiscordMessage.reply(messageOptions)
 							: await /** @type {DiscordTextChannel | DiscordDMChannel} */ channel.send(messageOptions)
 
-						if (i === 0) firstSentDiscordMessage = sentMsg // 保存第一条发送成功的消息
-						if (repliedToDiscordMessage && i === 0) repliedToDiscordMessage = undefined // 后续分片不再是直接回复原始消息
-					} catch (e) { console.error(`[DiscordInterface] Failed to send message segment ${i + 1}:`, e); break /* 中断发送后续片段 */ }
+						if (i === 0) firstSentDiscordMessage = sentMsg
+						if (repliedToDiscordMessage && i === 0) repliedToDiscordMessage = undefined
+					} catch (e) { console.error(`[DiscordInterface] Failed to send message segment ${i + 1}:`, e); break }
 				}
 
-
-			// 如果成功发送了至少一条消息
 			if (firstSentDiscordMessage) {
-				// 如果此回复是由 AI 生成的 (即 fountReplyPayload 包含实际内容)
-				// 并且 BotLogic 希望缓存此 fountReplyPayload (通常是 AI 的最终回复对象，可能包含扩展状态)
-				// 则将其存入 aiReplyObjectCache，以便后续机器人自身消息被处理时可以恢复这些状态。
 				if (fountReplyPayload && (fountReplyPayload.content || fountReplyPayload.files?.length))
 					aiReplyObjectCache[firstSentDiscordMessage.id] = fountReplyPayload
 
-				// 将发送成功的 Discord 消息转换为 FountEntry 并返回给 BotLogic
 				return await discordMessageToFountChatLogEntry(firstSentDiscordMessage, interfaceConfig)
 			}
-			return null // 发送失败或无内容发送
+			return null
 		},
 
 		/**
@@ -389,11 +343,10 @@ export async function DiscordBotMain(client, interfaceConfig) {
 		 */
 		async sendTyping(channelId) {
 			const channel = client.channels.cache.get(String(channelId))
-			if (channel?.isTextBased())  // 确保是文本型频道
+			if (channel?.isTextBased())
 				try {
 					await /** @type {DiscordTextChannel | DiscordDMChannel} */ channel.sendTyping()
 				} catch (e) { /* 发送 typing 状态失败通常不关键，静默处理 */ }
-
 		},
 
 		/**
@@ -404,13 +357,13 @@ export async function DiscordBotMain(client, interfaceConfig) {
 		 */
 		async fetchChannelHistory(channelId, limit) {
 			const channel = await client.channels.fetch(String(channelId)).catch(() => null)
-			if (!channel || !channel.isTextBased()) return [] // 无效频道或非文本频道
+			if (!channel || !channel.isTextBased()) return []
 
 			try {
 				const messages = await /** @type {DiscordTextChannel | DiscordDMChannel} */ channel.messages.fetch({ limit })
 				const fountEntries = (await Promise.all(
-					messages.map(msg => discordMessageToFountChatLogEntry(msg, interfaceConfig)) // 转换每条消息
-				)).filter(Boolean).reverse() // Discord API 返回的是最新的在前，所以需要反转顺序
+					messages.map(msg => discordMessageToFountChatLogEntry(msg, interfaceConfig))
+				)).filter(Boolean).reverse()
 				return fountEntries
 			} catch (e) {
 				console.error(`[DiscordInterface] Failed to fetch channel ${channelId} history:`, e)
@@ -423,7 +376,7 @@ export async function DiscordBotMain(client, interfaceConfig) {
 		/** 获取机器人自身的 Discord 用户名。 */
 		getBotUsername: () => client.user?.username || BotFountCharname,
 		/** 获取主人的 Discord 用户名。 */
-		getOwnerUserName: () => interfaceConfig.OwnerUserName, // 返回配置中的主人用户名
+		getOwnerUserName: () => interfaceConfig.OwnerUserName,
 		/** 获取主人的 Discord 用户 ID。 */
 		getOwnerUserId: () => resolvedOwnerId,
 		/** 获取机器人自身的 Discord 显示名称 (服务器昵称或全局显示名)。 */
@@ -438,18 +391,16 @@ export async function DiscordBotMain(client, interfaceConfig) {
 		getChatNameForAI: (channelId, triggerMessage) => {
 			const channel = client.channels.cache.get(String(channelId))
 			if (!channel) return `Discord: Unknown Channel ${channelId}`
-			if (channel.type === ChannelType.DM) { // 私聊
-				// 尝试从触发消息的上下文获取私聊对方的信息
+			if (channel.type === ChannelType.DM) {
 				const recipient = triggerMessage?.extension?.discord_message_obj?.channel?.recipient
 				return `Discord: DM with ${recipient?.tag || recipient?.username || 'User'}`
 			}
-			// 服务器文本频道或语音频道中的文本聊天
 			if (channel.type === ChannelType.GuildText || channel.type === ChannelType.GuildVoice) {
 				const guildName = /** @type {DiscordTextChannel} */ channel.guild.name
 				const channelName = /** @type {DiscordTextChannel} */ channel.name
 				return `Discord: Guild ${guildName}: #${channelName}`
 			}
-			return `Discord: Channel ${channelId}` // 其他未知类型的频道
+			return `Discord: Channel ${channelId}`
 		},
 
 		/**
@@ -457,8 +408,8 @@ export async function DiscordBotMain(client, interfaceConfig) {
 		 * @returns {Promise<void>}
 		 */
 		destroySelf: async () => {
-			await cleanupBotLogic() // 首先确保 BotLogic 层完成其清理工作
-			client.destroy() // 销毁 Discord 客户端连接
+			await cleanupBotLogic()
+			client.destroy()
 		},
 
 		/**
@@ -476,13 +427,12 @@ export async function DiscordBotMain(client, interfaceConfig) {
 		 * @returns {Record<string, import('../../../../../../../src/decl/pluginAPI.ts').pluginAPI_t>} 插件对象映射。
 		 */
 		getPlatformSpecificPlugins: (messageEntry) => {
-			// 确保 messageEntry 及其 discord_message_obj 存在，以便插件可以访问原始 Discord 消息
 			if (messageEntry?.extension?.discord_message_obj)
 				return {
 					discord_api: get_discord_api_plugin(messageEntry.extension.discord_message_obj),
 				}
 
-			return {} // 如果没有上下文消息，则不提供插件
+			return {}
 		},
 
 		/** 获取特定于 Discord 平台的世界观配置。 */
@@ -505,15 +455,12 @@ export async function DiscordBotMain(client, interfaceConfig) {
 					console.warn('[DiscordInterface] GuildMemberRemove event triggered with invalid member or guild data.')
 					return
 				}
-				console.log(`[DiscordInterface] Member left/removed: User ${member.user.tag} (ID: ${member.id}) from guild ${member.guild.name} (ID: ${member.guild.id})`)
 				try {
-					// 确保 ID 比较的类型一致性
 					await onLeaveCallback(member.guild.id, String(member.id))
 				} catch (e) {
 					console.error(`[DiscordInterface] Error in onOwnerLeaveGroup callback for user ${member.id} in guild ${member.guild.id}:`, e)
 				}
 			})
-			console.log('[DiscordInterface] GuildMemberRemove event listener set up for onOwnerLeaveGroup.')
 		},
 
 		/**
@@ -527,7 +474,7 @@ export async function DiscordBotMain(client, interfaceConfig) {
 				const groupObject = {
 					id: guild.id,
 					name: guild.name,
-					discordGuild: guild // Store the original guild object if needed later
+					discordGuild: guild
 				}
 				try {
 					await onJoinCallback(groupObject)
@@ -567,16 +514,13 @@ export async function DiscordBotMain(client, interfaceConfig) {
 					console.warn(`[DiscordInterface] getGroupMembers: Guild not found: ${guildId}`)
 					return []
 				}
-				// 优化：仅在需要时fetch所有成员，或直接fetch特定成员
-				// 对于 owner presence check，bot_core 会直接尝试 fetch(ownerId)
-				// 所以这里返回缓存中的成员通常就足够，除非明确需要所有成员
-				const members = await guild.members.fetch() // 默认是会缓存的，这里会拉取所有成员
+				const members = await guild.members.fetch()
 				return members.map(member => ({
 					id: member.id,
 					username: member.user.username,
-					displayName: member.displayName, // Added displayName
+					displayName: member.displayName,
 					isBot: member.user.bot,
-					discordMember: member // Store the original member object
+					discordMember: member
 				}))
 			} catch (error) {
 				console.error(`[DiscordInterface] Error fetching group members for guild ${guildId}:`, error)
@@ -635,10 +579,9 @@ export async function DiscordBotMain(client, interfaceConfig) {
 		leaveGroup: async (guildId) => {
 			try {
 				const guild = client.guilds.cache.get(String(guildId))
-				if (guild) {
+				if (guild)
 					await guild.leave()
-					console.log(`[DiscordInterface] Left guild: ${guild.name} (ID: ${guildId})`)
-				} else
+				else
 					console.warn(`[DiscordInterface] leaveGroup: Guild not found: ${guildId}`)
 			} catch (error) {
 				console.error(`[DiscordInterface] Error leaving guild ${guildId}:`, error)
@@ -658,7 +601,6 @@ export async function DiscordBotMain(client, interfaceConfig) {
 					return null
 				}
 
-				// 优先使用系统频道，如果它是文本频道
 				if (guild.systemChannel && guild.systemChannel.type === ChannelType.GuildText)
 					return {
 						id: guild.systemChannel.id,
@@ -667,8 +609,6 @@ export async function DiscordBotMain(client, interfaceConfig) {
 						discordChannel: guild.systemChannel
 					}
 
-
-				// 查找第一个可用的文本频道
 				const firstTextChannel = guild.channels.cache.find(ch => ch.type === ChannelType.GuildText)
 				if (firstTextChannel)
 					return {
@@ -691,12 +631,12 @@ export async function DiscordBotMain(client, interfaceConfig) {
 		 * @returns {Promise<{groupsWithOwner: import('../../bot_core/index.mjs').GroupObject[], groupsWithoutOwner: import('../../bot_core/index.mjs').GroupObject[]} | null>}
 		 */
 		getOwnerPresenceInGroups: async () => {
-			if (!client.user) { // Bot 未就绪
+			if (!client.user) {
 				console.error('[DiscordInterface] getOwnerPresenceInGroups: client.user is not available. Bot might not be ready.')
 				return null
 			}
 
-			const ownerIdToUse = resolvedOwnerId || interfaceConfig.OwnerDiscordID // 优先使用已解析的 ID
+			const ownerIdToUse = resolvedOwnerId || interfaceConfig.OwnerDiscordID
 
 			if (!ownerIdToUse) {
 				console.warn('[DiscordInterface] getOwnerPresenceInGroups: Owner ID not resolved or configured. Cannot perform check.')
@@ -713,7 +653,6 @@ export async function DiscordBotMain(client, interfaceConfig) {
 					discordGuild: guild
 				}
 				try {
-					// 高效检查主人是否为成员
 					const ownerMember = await guild.members.fetch(ownerIdToUse).catch(() => null)
 					if (ownerMember)
 						groupsWithOwner.push(groupObject)
@@ -722,11 +661,9 @@ export async function DiscordBotMain(client, interfaceConfig) {
 
 				} catch (e) {
 					console.warn(`[DiscordInterface] Error checking owner presence in guild ${guild.name} (ID: ${guild.id}): ${e.message}. Assuming owner not present.`)
-					// 如果因错误无法确定，最好假设主人不在场，以确保安全
 					groupsWithoutOwner.push(groupObject)
 				}
 			}
-			console.log(`[DiscordInterface] Owner presence check complete. With owner: ${groupsWithOwner.length}, Without owner: ${groupsWithoutOwner.length}`)
 			return { groupsWithOwner, groupsWithoutOwner }
 		},
 
@@ -743,21 +680,14 @@ export async function DiscordBotMain(client, interfaceConfig) {
 				}
 
 				let ownerUser = null
-				// 优先使用已解析的 ID 进行查找
-				if (resolvedOwnerId) {
+				if (resolvedOwnerId)
 					ownerUser = await client.users.fetch(resolvedOwnerId).catch(() => null)
-					if (ownerUser)
-						console.log(`[DiscordInterface] Found owner by resolved ID: ${ownerUser.tag}`)
-				}
 
-				// 如果未通过 ID 找到，则尝试通过用户名在缓存中查找
-				if (!ownerUser && interfaceConfig.OwnerUserName) {
+
+				if (!ownerUser && interfaceConfig.OwnerUserName)
 					ownerUser = client.users.cache.find(user => user.username === interfaceConfig.OwnerUserName)
-					if (ownerUser)
-						console.log(`[DiscordInterface] Found owner by username in cache: ${ownerUser.tag}`)
-				}
 
-				// 如果仍未找到，最后尝试遍历所有服务器获取成员来查找 (效率最低，但作为备选)
+
 				if (!ownerUser && interfaceConfig.OwnerUserName) {
 					console.warn(`[DiscordInterface] Owner user "${interfaceConfig.OwnerUserName}" not in cache/by ID, attempting to fetch across all guilds...`)
 					for (const guild of client.guilds.cache.values())
@@ -766,7 +696,6 @@ export async function DiscordBotMain(client, interfaceConfig) {
 							const ownerMember = members.find(member => member.user.username === interfaceConfig.OwnerUserName)
 							if (ownerMember) {
 								ownerUser = ownerMember.user
-								console.log(`[DiscordInterface] Found owner by username in guild ${guild.name}: ${ownerUser.tag}`)
 								break
 							}
 						} catch (guildFetchError) {
@@ -774,10 +703,9 @@ export async function DiscordBotMain(client, interfaceConfig) {
 						}
 				}
 
-				if (ownerUser) {
+				if (ownerUser)
 					await ownerUser.send(messageText)
-					console.log(`[DiscordInterface] Sent DM to owner ${ownerUser.username}`)
-				} else
+				else
 					console.error(`[DiscordInterface] sendDirectMessageToOwner: Owner user ${interfaceConfig.OwnerUserName || resolvedOwnerId} not found.`)
 
 			} catch (error) {
@@ -786,100 +714,68 @@ export async function DiscordBotMain(client, interfaceConfig) {
 		}
 	}
 
-	/**
-	 * 监听 'messageCreate' 事件 (当收到新消息时)。
-	 */
 	client.on(Events.MessageCreate, async (message) => {
-		// 尝试重新拉取消息以确保获取到完整数据，并处理消息可能已被删除的情况
 		const fetchedMessage = await tryFewTimes(() => message.fetch().catch(e => {
-			if (e.code === 10008) return null // DiscordAPIError.MessageNotFound (消息已被删除)
-			throw e // 其他错误则抛出
+			if (e.code === 10008) return null
+			throw e
 		}))
-		if (!fetchedMessage) {
-			console.log(`[DiscordInterface] Message ${message.id} not found or deleted, skipping processing.`)
-			return // 如果消息已被删除，则不处理
-		}
+		if (!fetchedMessage)
+			return console.log(`[DiscordInterface] Message ${message.id} not found or deleted, skipping processing.`)
 
-		// 将 Discord 消息转换为 Fount 格式
 		const fountEntry = await discordMessageToFountChatLogEntry(fetchedMessage, interfaceConfig)
-		if (fountEntry) {
-			// 将转换后的消息传递给 Bot 逻辑层进行处理
-			console.log(`[DiscordInterface] Processing new message ${fetchedMessage.id} from ${fountEntry.name} in channel ${fetchedMessage.channel.id}.`)
+		if (fountEntry)
 			await processIncomingMessage(fountEntry, discordPlatformAPI, fetchedMessage.channel.id)
-		}
-		else
+		else {
 			console.warn(`[DiscordInterface] Received invalid message, possibly system message or unsupported format: ${fetchedMessage.id}`)
-		// console.dir(fetchedMessage, { depth: null }) // 调试输出消息对象
-
+			console.dir(fetchedMessage, { depth: null })
+		}
 	})
 
-	/**
-	 * 监听 'messageUpdate' 事件 (当消息被编辑时)。
-	 */
 	client.on(Events.MessageUpdate, async (oldMessage, newMessage) => {
-		// 尝试拉取更新后的消息
 		const fetchedNewMessage = await tryFewTimes(() => newMessage.fetch().catch(e => {
 			if (e.code === 10008) return null
 			throw e
 		}))
-		if (!fetchedNewMessage) {
-			console.log(`[DiscordInterface] Updated message ${newMessage.id} not found or deleted, skipping processing.`)
-			return // 如果更新后的消息找不到了 (可能又被删了)
-		}
+		if (!fetchedNewMessage)
+			return console.log(`[DiscordInterface] Updated message ${newMessage.id} not found or deleted, skipping processing.`)
 
-		// 将更新后的 Discord 消息转换为 Fount 格式
 		const fountEntry = await discordMessageToFountChatLogEntry(fetchedNewMessage, interfaceConfig)
-		if (fountEntry) {
-			// 将更新后的消息传递给 Bot 逻辑层进行处理
-			console.log(`[DiscordInterface] Processing message update for ${fetchedNewMessage.id} from ${fountEntry.name} in channel ${fetchedNewMessage.channel.id}.`)
+		if (fountEntry)
 			await processMessageUpdate(fountEntry, discordPlatformAPI, fetchedNewMessage.channel.id)
-		}
 	})
 
-	// 设置机器人的活动状态 (例如 "正在玩 一个有趣的游戏")
-	if (interfaceConfig.BotActivityName && interfaceConfig.BotActivityType) {
+	if (interfaceConfig.BotActivityName && interfaceConfig.BotActivityType)
 		client.user?.setPresence({
 			activities: [{ name: interfaceConfig.BotActivityName, type: ActivityType[interfaceConfig.BotActivityType] }],
-			status: 'online', // 状态: online, idle, dnd, invisible
+			status: 'online',
 		})
-		console.log(`[DiscordInterface] Bot activity set to: ${interfaceConfig.BotActivityType} ${interfaceConfig.BotActivityName}`)
-	}
 
-	// 更新机器人自身的名称映射缓存
+
 	if (client.user) {
 		const botUserId = client.user.id
 		const botDisplayName = client.user.displayName || client.user.globalName || client.user.username || BotFountCharname
 		discordUserIdToDisplayName[botUserId] = `${botDisplayName} (咱自己)`
 		discordDisplayNameToId[botDisplayName] = botUserId
-		discordDisplayNameToId[BotFountCharname] = botUserId // 确保 Fount 角色名也映射到 ID
+		discordDisplayNameToId[BotFountCharname] = botUserId
 	}
-	console.log(`[DiscordInterface] Discord client ready. Bot: ${client.user.tag}`)
 
-	// 解析主人 ID
 	if (interfaceConfig.OwnerDiscordID) {
 		resolvedOwnerId = interfaceConfig.OwnerDiscordID
-		console.log(`[DiscordInterface] OwnerDiscordID configured: ${resolvedOwnerId}`)
 		try {
-			const ownerUser = await client.users.fetch(resolvedOwnerId)
-			console.log(`[DiscordInterface] Owner user "${ownerUser.tag}" confirmed via ID.`)
-			// interfaceConfig.OwnerUserName = ownerUser.username; // Example: To ensure consistency, if needed
+			await client.users.fetch(resolvedOwnerId)
 		} catch (e) {
 			console.error(`[DiscordInterface] Failed to fetch owner user by OwnerDiscordID ${resolvedOwnerId}. Ensure the ID is correct.`, e)
-			// 如果通过 ID 无法获取，则将 resolvedOwnerId 置空，可能回退到用户名查找或导致功能受限
 			resolvedOwnerId = null
 		}
 	} else if (interfaceConfig.OwnerUserName) {
-		console.log(`[DiscordInterface] OwnerDiscordID not set, attempting to find owner by UserName: ${interfaceConfig.OwnerUserName}`)
 		let found = false
-		// 遍历所有 Bot 所在的服务器来查找主人
 		for (const guild of client.guilds.cache.values())
 			try {
-				const members = await guild.members.fetch() // 拉取所有成员以确保能找到
+				const members = await guild.members.fetch()
 				const ownerMember = members.find(m => m.user.username === interfaceConfig.OwnerUserName)
 				if (ownerMember) {
 					resolvedOwnerId = ownerMember.id
 					found = true
-					console.log(`[DiscordInterface] Owner ID resolved via UserName in guild ${guild.name}: ${resolvedOwnerId}`)
 					break
 				}
 			} catch (e) {
@@ -892,8 +788,7 @@ export async function DiscordBotMain(client, interfaceConfig) {
 	} else
 		console.warn('[DiscordInterface] Neither OwnerDiscordID nor OwnerUserName are configured. Owner-specific features will not work.')
 
-	// 将平台 API 注册到 Bot 核心
 	await registerPlatformAPI(discordPlatformAPI)
 
-	return discordPlatformAPI // 返回平台 API 对象
+	return discordPlatformAPI
 }
