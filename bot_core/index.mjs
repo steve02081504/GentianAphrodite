@@ -751,7 +751,6 @@ async function handleMessageQueue(channelId, platformAPI) {
 						{ content: repet.element.content, files: repet.element.files },
 						platformAPI, channelId, currentMessageToProcess
 					)
-
 			}
 		}
 		let triggered = false
