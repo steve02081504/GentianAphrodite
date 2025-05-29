@@ -126,7 +126,14 @@ const charAPI = /** @type {charAPI_t_imported} */ charAPI_obj
  *   *          - groupsWithoutOwner: A list of groups where the owner is NOT present.
  *   *          Returns null if the platform cannot support this optimized check or if an error occurs.
  *   */
- *  getOwnerPresenceInGroups?: () => Promise<{groupsWithOwner: GroupObject[], groupsWithoutOwner: GroupObject[]} | null>
+ *  getOwnerPresenceInGroups?: () => Promise<{groupsWithOwner: GroupObject[], groupsWithoutOwner: GroupObject[]} | null>,
+ *  /**
+ *   * (Optional) Sets a callback function to be invoked when a member leaves a group,
+ *   * specifically for monitoring if the owner leaves.
+ *   * The callback will receive the group ID and the ID of the user who left.
+ *   * @param onLeaveCallback A function that takes groupId and userId and returns a Promise.
+ *   */
+ *  onOwnerLeaveGroup?: (onLeaveCallback: (groupId: string | number, userId: string | number) => Promise<void>) => void
  * }} PlatformAPI_t
  */
 
@@ -1345,6 +1352,30 @@ export async function finalizeCoreInitialization() {
             } else {
                 console.warn(`[BotLogic] getJoinedGroups not implemented for platform: ${platformAPI.name}. Skipping startup check (fallback).`);
             }
+        }
+
+        // Setup owner leave group handler
+        if (typeof platformAPI.onOwnerLeaveGroup === 'function') {
+            platformAPI.onOwnerLeaveGroup(async (groupId, leftUserId) => {
+                const ownerIdForPlatform = platformAPI.getOwnerUserId?.();
+
+                if (ownerIdForPlatform && String(leftUserId) === String(ownerIdForPlatform)) {
+                    console.log(`[BotLogic] Owner (ID: ${leftUserId}) left group ${groupId} on platform ${platformAPI.name}. Bot will also leave.`);
+                    try {
+                        await platformAPI.leaveGroup?.(groupId);
+                        console.log(`[BotLogic] Successfully left group ${groupId} after owner departure on ${platformAPI.name}.`);
+                    } catch (e) {
+                        console.error(`[BotLogic] Error leaving group ${groupId} after owner departure on ${platformAPI.name}: `, e);
+                    }
+                } else if (ownerIdForPlatform) {
+                    // console.log(`[BotLogic] User ${leftUserId} (not owner) left group ${groupId} on ${platformAPI.name}. Owner is ${ownerIdForPlatform}.`);
+                } else {
+                    // console.warn(`[BotLogic] Could not determine owner ID for platform ${platformAPI.name}. Cannot process owner leave event for user ${leftUserId} in group ${groupId}.`);
+                }
+            });
+            console.log(`[BotLogic] Registered onOwnerLeaveGroup handler for platform: ${platformAPI.name}`);
+        } else {
+            console.warn(`[BotLogic] onOwnerLeaveGroup not implemented for platform: ${platformAPI.name}.`);
         }
     }
     coreFeaturesInitialized = true;

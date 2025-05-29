@@ -720,6 +720,44 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 			return null;
 		},
 
+		onOwnerLeaveGroup: (onLeaveCallback) => {
+			if (!telegrafInstance) {
+				console.error('[TelegramInterface] onOwnerLeaveGroup: Telegraf instance not initialized.');
+				return;
+			}
+			if (typeof onLeaveCallback !== 'function') {
+				console.error('[TelegramInterface] onOwnerLeaveGroup: Invalid callback provided.');
+				return;
+			}
+	
+			telegrafInstance.on('chat_member', async (ctx) => {
+				const chatMemberUpdate = ctx.update.chat_member;
+				if (!chatMemberUpdate || !chatMemberUpdate.chat || !chatMemberUpdate.new_chat_member || !chatMemberUpdate.old_chat_member) {
+					console.warn('[TelegramInterface] chat_member event triggered with incomplete data.');
+					return;
+				}
+	
+				const oldStatus = chatMemberUpdate.old_chat_member.status;
+				const newStatus = chatMemberUpdate.new_chat_member.status;
+				const userId = chatMemberUpdate.new_chat_member.user.id;
+				const chatId = chatMemberUpdate.chat.id;
+				const chatTitle = chatMemberUpdate.chat.title || `Chat ${chatId}`;
+				const userUsername = chatMemberUpdate.new_chat_member.user.username || `User ${userId}`;
+	
+				// Check if a user genuinely left or was kicked (was previously a member or admin)
+				if ((oldStatus === 'member' || oldStatus === 'administrator' || oldStatus === 'creator') && 
+					(newStatus === 'left' || newStatus === 'kicked')) {
+					console.log(`[TelegramInterface] Member status changed: User ${userUsername} (ID: ${userId}) is now '${newStatus}' in chat ${chatTitle} (ID: ${chatId}). Old status: '${oldStatus}'.`);
+					try {
+						await onLeaveCallback(chatId, userId);
+					} catch (e) {
+						console.error(`[TelegramInterface] Error in onOwnerLeaveGroup callback for user ${userId} in chat ${chatId}:`, e);
+					}
+				}
+			});
+			console.log('[TelegramInterface] chat_member event listener set up for onOwnerLeaveGroup.');
+		},
+
 		sendDirectMessageToOwner: async (messageText) => {
 			if (!telegrafInstance) {
 				console.error('[TelegramInterface] sendDirectMessageToOwner: Telegraf instance not available.');

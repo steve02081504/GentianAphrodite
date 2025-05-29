@@ -493,6 +493,31 @@ export async function DiscordBotMain(client, interfaceConfig) {
 		 */
 		splitReplyText: (text) => splitDiscordReply(text, 2000),
 
+		onOwnerLeaveGroup: (onLeaveCallback) => {
+			if (!client) { // client here should be discordClientInstance
+				console.error('[DiscordInterface] onOwnerLeaveGroup: Discord client not initialized.');
+				return;
+			}
+			if (typeof onLeaveCallback !== 'function') {
+				console.error('[DiscordInterface] onOwnerLeaveGroup: Invalid callback provided.');
+				return;
+			}
+	
+			discordClientInstance.on(Events.GuildMemberRemove, async (member) => {
+				if (!member || !member.guild) {
+					console.warn('[DiscordInterface] GuildMemberRemove event triggered with invalid member or guild data.');
+					return;
+				}
+				console.log(`[DiscordInterface] Member left/removed: User ${member.user.tag} (ID: ${member.id}) from guild ${member.guild.name} (ID: ${member.guild.id})`);
+				try {
+					await onLeaveCallback(member.guild.id, member.id);
+				} catch (e) {
+					console.error(`[DiscordInterface] Error in onOwnerLeaveGroup callback for user ${member.id} in guild ${member.guild.id}:`, e);
+				}
+			});
+			console.log('[DiscordInterface] GuildMemberRemove event listener set up for onOwnerLeaveGroup.');
+		},
+
 		/**
 		 * (Optional) Sets a callback function to be invoked when the bot joins a new group/guild.
 		 * @param {(group: import('../../bot_core/index.mjs').GroupObject) => Promise<void>} onJoinCallback - The callback function.
