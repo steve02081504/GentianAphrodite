@@ -11,7 +11,7 @@
 import { Buffer } from 'node:buffer'
 
 // 从 Bot 逻辑层导入核心处理函数和配置函数
-import { processIncomingMessage, processMessageUpdate, cleanup as cleanupBotLogic } from '../../bot_core/index.mjs'
+import { processIncomingMessage, processMessageUpdate, cleanup as cleanupBotLogic, registerPlatformAPI } from '../../bot_core/index.mjs'
 // 假设你的角色基础信息可以通过以下路径导入
 import { charname as BotFountCharname } from '../../charbase.mjs'
 
@@ -590,10 +590,139 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 		getPlatformWorld: () => telegramWorld,
 
 		splitReplyText: (text) => splitTelegramReply(text, 3800), // 3800 is a conservative estimate for HTML
+
+		onGroupJoin: (onJoinCallback) => {
+			if (telegrafInstance && typeof onJoinCallback === 'function') {
+				telegrafInstance.on('my_chat_member', async (ctx) => {
+					const oldStatus = ctx.myChatMember.old_chat_member.status;
+					const newStatus = ctx.myChatMember.new_chat_member.status;
+					const chat = ctx.myChatMember.chat;
+
+					// Check if the bot was added to a group or supergroup
+					if ((oldStatus === 'left' || oldStatus === 'kicked' || oldStatus === 'restricted') &&
+						(newStatus === 'member' || newStatus === 'administrator') &&
+						(chat.type === 'group' || chat.type === 'supergroup')) {
+						console.log(`[TelegramInterface] Joined new group: ${chat.title} (ID: ${chat.id})`);
+						/** @type {import('../../bot_core/index.mjs').GroupObject} */
+						const groupObject = {
+							id: chat.id,
+							name: chat.title || `Group ${chat.id}`,
+							telegramChat: chat // Store original chat object
+						};
+						try {
+							await onJoinCallback(groupObject);
+						} catch (e) {
+							console.error(`[TelegramInterface] Error in onGroupJoin callback for chat ${chat.id}:`, e);
+						}
+					}
+				});
+			} else {
+				console.error('[TelegramInterface] Could not set onGroupJoin: bot instance or callback invalid.');
+			}
+		},
+
+		getJoinedGroups: async () => {
+			console.warn('[TelegramInterface] getJoinedGroups is not reliably supported by Telegram Bot API. It may return an empty list or only previously known chats.');
+			return Promise.resolve([]);
+		},
+
+		getGroupMembers: async (chatId) => {
+			console.warn('[TelegramInterface] getGroupMembers on Telegram primarily returns administrators or a limited set of members due to API restrictions.');
+			if (!telegrafInstance) {
+				console.error('[TelegramInterface] getGroupMembers: Telegraf instance not available.');
+				return [];
+			}
+			try {
+				const administrators = await telegrafInstance.telegram.getChatAdministrators(String(chatId));
+				return administrators.map(admin => ({
+					id: admin.user.id,
+					username: admin.user.username || `User${admin.user.id}`,
+					isBot: admin.user.is_bot,
+					telegramUser: admin.user
+				}));
+			} catch (error) {
+				console.error(`[TelegramInterface] Error fetching group administrators for chat ${chatId}:`, error);
+				return [];
+			}
+		},
+
+		generateInviteLink: async (chatId) => {
+			if (!telegrafInstance) {
+				console.error('[TelegramInterface] generateInviteLink: Telegraf instance not available.');
+				return null;
+			}
+			try {
+				const link = await telegrafInstance.telegram.exportChatInviteLink(String(chatId));
+				return link;
+			} catch (e) {
+				console.error(`[TelegramInterface] Failed to generate invite link for ${chatId}:`, e);
+				return null;
+			}
+		},
+
+		leaveGroup: async (chatId) => {
+			if (!telegrafInstance) {
+				console.error('[TelegramInterface] leaveGroup: Telegraf instance not available.');
+				return;
+			}
+			try {
+				await telegrafInstance.telegram.leaveChat(String(chatId));
+				console.log(`[TelegramInterface] Left group: ${chatId}`);
+			} catch (error) {
+				console.error(`[TelegramInterface] Error leaving group ${chatId}:`, error);
+			}
+		},
+
+		getGroupDefaultChannel: async (chatId) => {
+			if (!telegrafInstance) {
+				console.error('[TelegramInterface] getGroupDefaultChannel: Telegraf instance not available.');
+				return null;
+			}
+			try {
+				const chat = await telegrafInstance.telegram.getChat(String(chatId));
+				/** @type {import('../../bot_core/index.mjs').ChannelObject} */
+				const channelObject = {
+					id: chat.id,
+					name: chat.title || `Group ${chat.id}`,
+					type: chat.type,
+					telegramChat: chat
+				};
+				return channelObject;
+			} catch (error) {
+				console.error(`[TelegramInterface] Error getting chat info for ${chatId}:`, error);
+				return null;
+			}
+		},
+
+		sendDirectMessageToOwner: async (messageText) => {
+			if (!telegrafInstance) {
+				console.error('[TelegramInterface] sendDirectMessageToOwner: Telegraf instance not available.');
+				return;
+			}
+			if (!interfaceConfig.OwnerUserID) {
+				console.error('[TelegramInterface] sendDirectMessageToOwner: OwnerUserID is not configured.');
+				return;
+			}
+			try {
+				// Ensure OwnerUserID is a number for Telegram API
+				const ownerIdNumber = Number(interfaceConfig.OwnerUserID);
+				if (isNaN(ownerIdNumber)) {
+					console.error('[TelegramInterface] sendDirectMessageToOwner: OwnerUserID is not a valid number.');
+					return;
+				}
+				await telegrafInstance.telegram.sendMessage(ownerIdNumber, messageText, { parse_mode: 'HTML' });
+				console.log(`[TelegramInterface] Sent DM to owner (ID: ${ownerIdNumber})`);
+			} catch (error) {
+				console.error(`[TelegramInterface] Error sending DM to owner (ID: ${interfaceConfig.OwnerUserID}):`, error);
+			}
+		}
 	}
 
 	// --- Telegraf 事件监听 ---
-	bot.on('message', async (ctx) => {
+	// Note: 'bot.on' should be 'telegrafInstance.on' if 'bot' is the argument to TelegramBotMain
+	// and telegrafInstance is the module-level variable holding it.
+	// Assuming 'bot' refers to the 'telegrafInstance' after assignment.
+	telegrafInstance.on('message', async (ctx) => {
 		if ('message' in ctx.update) {
 			const { message } = ctx.update
 			const fountEntry = await telegramMessageToFountChatLogEntry(ctx, message, interfaceConfig)
@@ -605,7 +734,7 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 		}
 	})
 
-	bot.on('edited_message', async (ctx) => {
+	telegrafInstance.on('edited_message', async (ctx) => {
 		if ('edited_message' in ctx.update) {
 			const message = ctx.update.edited_message
 			const fountEntry = await telegramMessageToFountChatLogEntry(ctx, message, interfaceConfig)
@@ -615,4 +744,10 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 			}
 		}
 	})
+
+	// Register the platform API with the bot core
+	registerPlatformAPI(telegramPlatformAPI);
+
+	console.log('[TelegramInterface] Telegram bot setup complete. Event listeners are active.');
+	return telegramPlatformAPI; // Return the platform API object
 }

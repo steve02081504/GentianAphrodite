@@ -2,7 +2,7 @@ import { Events, ChannelType, ActivityType } from 'npm:discord.js'
 import { Buffer } from 'node:buffer'
 
 // 从 Bot 逻辑层导入核心处理函数和配置函数
-import { processIncomingMessage, processMessageUpdate, cleanup as cleanupBotLogic } from '../../bot_core/index.mjs'
+import { processIncomingMessage, processMessageUpdate, cleanup as cleanupBotLogic, registerPlatformAPI } from '../../bot_core/index.mjs'
 // 假设你的角色基础信息可以通过以下路径导入
 import { charname as BotFountCharname } from '../../charbase.mjs'
 
@@ -484,6 +484,227 @@ export async function DiscordBotMain(client, interfaceConfig) {
 		 * @returns {string[]} 分割后的消息片段数组。
 		 */
 		splitReplyText: (text) => splitDiscordReply(text, 2000),
+
+		/**
+		 * (Optional) Sets a callback function to be invoked when the bot joins a new group/guild.
+		 * @param {(group: import('../../bot_core/index.mjs').GroupObject) => Promise<void>} onJoinCallback - The callback function.
+		 */
+		onGroupJoin: (onJoinCallback) => {
+			if (client && typeof onJoinCallback === 'function') {
+				client.on(Events.GuildCreate, async (guild) => {
+					console.log(`[DiscordInterface] Joined new guild: ${guild.name} (ID: ${guild.id})`);
+					/** @type {import('../../bot_core/index.mjs').GroupObject} */
+					const groupObject = {
+						id: guild.id,
+						name: guild.name,
+						discordGuild: guild // Store the original guild object if needed later
+					};
+					try {
+						await onJoinCallback(groupObject);
+					} catch (e) {
+						console.error(`[DiscordInterface] Error in onGroupJoin callback for guild ${guild.id}:`, e);
+					}
+				});
+			} else {
+				console.error('[DiscordInterface] Could not set onGroupJoin: client or callback invalid.');
+			}
+		},
+
+		/**
+		 * (Optional) Fetches a list of all groups/guilds the bot is currently a member of.
+		 * @returns {Promise<import('../../bot_core/index.mjs').GroupObject[]>}
+		 */
+		getJoinedGroups: async () => {
+			if (!client.guilds) return [];
+			try {
+				return Array.from(client.guilds.cache.values()).map(guild => ({
+					id: guild.id,
+					name: guild.name,
+					discordGuild: guild
+				}));
+			} catch (error) {
+				console.error('[DiscordInterface] Error fetching joined groups:', error);
+				return [];
+			}
+		},
+
+		/**
+		 * (Optional) Fetches a list of members for a specific group/guild.
+		 * @param {string | number} guildId - The ID of the guild.
+		 * @returns {Promise<import('../../bot_core/index.mjs').UserObject[]>}
+		 */
+		getGroupMembers: async (guildId) => {
+			try {
+				const guild = client.guilds.cache.get(String(guildId));
+				if (!guild) {
+					console.warn(`[DiscordInterface] getGroupMembers: Guild not found: ${guildId}`);
+					return [];
+				}
+				const members = await guild.members.fetch();
+				return members.map(member => ({
+					id: member.id,
+					username: member.user.username,
+					displayName: member.displayName, // Added displayName
+					isBot: member.user.bot,
+					discordMember: member // Store the original member object
+				}));
+			} catch (error) {
+				console.error(`[DiscordInterface] Error fetching group members for guild ${guildId}:`, error);
+				return [];
+			}
+		},
+
+		/**
+		 * (Optional) Generates an invite link for the specified group/guild.
+		 * @param {string | number} guildId - The ID of the guild.
+		 * @param {string | number} [channelId] - (Optional) The ID of the channel for the invite.
+		 * @returns {Promise<string | null>} The invite URL or null.
+		 */
+		generateInviteLink: async (guildId, channelId) => {
+			try {
+				const guild = client.guilds.cache.get(String(guildId));
+				if (!guild) {
+					console.warn(`[DiscordInterface] generateInviteLink: Guild not found: ${guildId}`);
+					return null;
+				}
+
+				let targetChannel;
+				if (channelId) {
+					const fetchedChannel = guild.channels.cache.get(String(channelId));
+					if (fetchedChannel && fetchedChannel.type === ChannelType.GuildText && fetchedChannel.permissionsFor(client.user).has('CreateInstantInvite')) {
+						targetChannel = fetchedChannel;
+					}
+				}
+
+				if (!targetChannel && guild.systemChannel && guild.systemChannel.permissionsFor(client.user).has('CreateInstantInvite')) {
+					targetChannel = guild.systemChannel;
+				}
+
+				if (!targetChannel) {
+					targetChannel = guild.channels.cache.find(ch =>
+						ch.type === ChannelType.GuildText &&
+						ch.permissionsFor(client.user).has('CreateInstantInvite')
+					);
+				}
+
+				if (targetChannel) {
+					const invite = await targetChannel.createInvite({ maxAge: 0, maxUses: 0 });
+					return invite.url;
+				} else {
+					console.warn(`[DiscordInterface] generateInviteLink: No suitable channel found to create invite for guild ${guildId}`);
+					return null;
+				}
+			} catch (error) {
+				console.error(`[DiscordInterface] Error generating invite link for guild ${guildId}:`, error);
+				return null;
+			}
+		},
+
+		/**
+		 * (Optional) Makes the bot leave the specified group/guild.
+		 * @param {string | number} guildId - The ID of the guild.
+		 * @returns {Promise<void>}
+		 */
+		leaveGroup: async (guildId) => {
+			try {
+				const guild = client.guilds.cache.get(String(guildId));
+				if (guild) {
+					await guild.leave();
+					console.log(`[DiscordInterface] Left guild: ${guild.name} (ID: ${guildId})`);
+				} else {
+					console.warn(`[DiscordInterface] leaveGroup: Guild not found: ${guildId}`);
+				}
+			} catch (error) {
+				console.error(`[DiscordInterface] Error leaving guild ${guildId}:`, error);
+			}
+		},
+
+		/**
+		 * (Optional) Gets the default or a suitable primary channel for a group/guild.
+		 * @param {string | number} guildId - The ID of the guild.
+		 * @returns {Promise<import('../../bot_core/index.mjs').ChannelObject | null>}
+		 */
+		getGroupDefaultChannel: async (guildId) => {
+			try {
+				const guild = client.guilds.cache.get(String(guildId));
+				if (!guild) {
+					console.warn(`[DiscordInterface] getGroupDefaultChannel: Guild not found: ${guildId}`);
+					return null;
+				}
+
+				if (guild.systemChannel && guild.systemChannel.type === ChannelType.GuildText) {
+					return {
+						id: guild.systemChannel.id,
+						name: guild.systemChannel.name,
+						type: 'text',
+						discordChannel: guild.systemChannel
+					};
+				}
+
+				const firstTextChannel = guild.channels.cache.find(ch => ch.type === ChannelType.GuildText);
+				if (firstTextChannel) {
+					return {
+						id: firstTextChannel.id,
+						name: firstTextChannel.name,
+						type: 'text',
+						discordChannel: firstTextChannel
+					};
+				}
+				console.warn(`[DiscordInterface] getGroupDefaultChannel: No suitable text channel found in guild ${guildId}`);
+				return null;
+			} catch (error) {
+				console.error(`[DiscordInterface] Error getting default channel for guild ${guildId}:`, error);
+				return null;
+			}
+		},
+
+		/**
+		 * (Optional) Sends a direct message (DM) to the configured bot owner.
+		 * @param {string} messageText - The text of the message to send.
+		 * @returns {Promise<void>}
+		 */
+		sendDirectMessageToOwner: async (messageText) => {
+			try {
+				if (!interfaceConfig.OwnerUserName) {
+					console.error('[DiscordInterface] sendDirectMessageToOwner: OwnerUserName is not configured.');
+					return;
+				}
+				// Attempt to find the owner in the cache first.
+				let owner = client.users.cache.find(user => user.username === interfaceConfig.OwnerUserName);
+
+				// If not in cache, try to fetch across all guilds. This is more intensive.
+				// A better approach for multi-guild bots would be to store OwnerID if known.
+				if (!owner) {
+					console.warn(`[DiscordInterface] Owner user ${interfaceConfig.OwnerUserName} not in cache, attempting to fetch...`);
+					for (const guild of client.guilds.cache.values()) {
+						try {
+							const members = await guild.members.fetch();
+							const ownerMember = members.find(member => member.user.username === interfaceConfig.OwnerUserName);
+							if (ownerMember) {
+								owner = ownerMember.user;
+								break;
+							}
+						} catch (guildFetchError) {
+							console.warn(`[DiscordInterface] Could not fetch members for guild ${guild.id} while searching for owner:`, guildFetchError.message);
+						}
+					}
+				}
+				
+				// As a last resort, if an OwnerUserID is somehow available in config (future enhancement)
+				// const ownerId = interfaceConfig.OwnerUserID; // Assuming this might exist
+				// if (!owner && ownerId) owner = await client.users.fetch(String(ownerId)).catch(() => null);
+
+
+				if (owner) {
+					await owner.send(messageText);
+					console.log(`[DiscordInterface] Sent DM to owner ${owner.username}`);
+				} else {
+					console.error(`[DiscordInterface] sendDirectMessageToOwner: Owner user ${interfaceConfig.OwnerUserName} not found.`);
+				}
+			} catch (error) {
+				console.error(`[DiscordInterface] Error sending DM to owner:`, error);
+			}
+		}
 	}
 
 	/**
@@ -545,5 +766,11 @@ export async function DiscordBotMain(client, interfaceConfig) {
 			discordDisplayNameToId[botDisplayName] = botUserId
 			discordDisplayNameToId[BotFountCharname] = botUserId // 确保 Fount 角色名也映射到 ID
 		}
+		console.log(`[DiscordInterface] Discord client ready. Bot: ${c.user.tag}`);
 	})
+
+	// Register the platform API with the bot core
+	registerPlatformAPI(discordPlatformAPI);
+
+	return discordPlatformAPI; // Return the platform API object
 }

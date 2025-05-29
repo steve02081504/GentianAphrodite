@@ -5,6 +5,7 @@ import { UpdateInfo } from './info/index.mjs'
 import { initCharBase } from './charbase.mjs'
 import { GetData, SetData } from './config.mjs'
 import { saveMemorys } from './prompt/memory/index.mjs'
+import { finalizeCoreInitialization } from './bot_core/index.mjs';
 import { timerCallBack } from './reply_gener/functions/timer.mjs'
 import { saveVars } from './scripts/vars.mjs'
 /** @typedef {import('../../../../../src/decl/charAPI.ts').charAPI_t} charAPI_t */
@@ -15,7 +16,16 @@ export default {
 
 	Init: async (stat) => { },
 	Load: async (stat) => {
-		await initCharBase(stat)
+		await initCharBase(stat); // Existing call
+
+		// Finalize core features after basic loading and platform setups are expected to be done.
+		// Add a small delay to give platform interfaces time to register, especially if their setup is async.
+		await new Promise(resolve => setTimeout(resolve, 1000)); // 1-second delay, adjust if needed
+		try {
+			await finalizeCoreInitialization();
+		} catch (e) {
+			console.error('[Main] Error during finalizeCoreInitialization:', e);
+		}
 	},
 	Unload: async (reason) => {
 		await saveMemorys()

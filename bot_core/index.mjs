@@ -63,6 +63,35 @@ const charAPI = /** @type {charAPI_t_imported} */ charAPI_obj
  */
 
 /**
+ * Represents a generic group or guild object.
+ * @typedef {{
+ *  id: string | number; // Unique ID of the group/guild
+ *  name: string;        // Name of the group/guild
+ *  [key: string]: any;  // Allow platform-specific extensions
+ * }} GroupObject
+ */
+
+/**
+ * Represents a generic user object.
+ * @typedef {{
+ *  id: string | number; // Unique ID of the user
+ *  username: string;    // Username of the user
+ *  isBot?: boolean;     // Optional: flag if the user is a bot
+ *  [key: string]: any;  // Allow platform-specific extensions
+ * }} UserObject
+ */
+
+/**
+ * Represents a generic channel object.
+ * @typedef {{
+ *  id: string | number; // Unique ID of the channel
+ *  name: string;        // Name of the channel
+ *  type?: string;       // Optional: type of channel (e.g., 'text', 'voice')
+ *  [key: string]: any;  // Allow platform-specific extensions
+ * }} ChannelObject
+ */
+
+/**
  * 平台接口 API 对象类型定义。
  * 这是 Bot 逻辑层调用接入层功能的规范。
  * @typedef {{
@@ -81,7 +110,14 @@ const charAPI = /** @type {charAPI_t_imported} */ charAPI_obj
  *  getPlatformSpecificPlugins: (messageEntry: chatLogEntry_t_ext) => Record<string, pluginAPI_t>, // 获取特定于该平台和消息上下文的插件
  *  getPlatformWorld: () => WorldAPI_t, // 获取特定于该平台的世界观配置
  *  splitReplyText: (text: string) => string[], // 根据平台限制分割长文本回复
- *  config: Record<string, any> // 接入层自身的配置对象，例如包含 OwnerUserID, OwnerUserName 等
+ *  config: Record<string, any>, // 接入层自身的配置对象，例如包含 OwnerUserID, OwnerUserName 等
+ *  onGroupJoin?: (onJoinCallback: (group: GroupObject) => Promise<void>) => void, // (Optional) Sets a callback function to be invoked when the bot joins a new group/guild.
+ *  getJoinedGroups?: () => Promise<GroupObject[]>, // (Optional) Fetches a list of all groups/guilds the bot is currently a member of.
+ *  getGroupMembers?: (groupId: string | number) => Promise<UserObject[]>, // (Optional) Fetches a list of members for a specific group/guild.
+ *  generateInviteLink?: (groupId: string | number, channelId?: string | number) => Promise<string | null>, // (Optional) Generates an invite link for the specified group/guild.
+ *  leaveGroup?: (groupId: string | number) => Promise<void>, // (Optional) Makes the bot leave the specified group/guild.
+ *  getGroupDefaultChannel?: (groupId: string | number) => Promise<ChannelObject | null>, // (Optional) Gets the default or a suitable primary channel for a group/guild.
+ *  sendDirectMessageToOwner?: (message: string) => Promise<void> // (Optional) Sends a direct message (DM) to the configured bot owner.
  * }} PlatformAPI_t
  */
 
@@ -101,6 +137,11 @@ const charAPI = /** @type {charAPI_t_imported} */ charAPI_obj
  */
 
 // --- 模块级状态存储 ---
+
+/**
+ * @type {PlatformAPI_t[]}
+ */
+const registeredPlatformAPIs = [];
 
 /**
  * 记录机器人最后在各个频道发言的时间戳。
@@ -1027,4 +1068,247 @@ export async function cleanup() {
 	// filter(Boolean) 确保只等待有效的 Promise
 	await Promise.allSettled(Object.values(channelHandlers).filter(Boolean))
 	console.log('[BotLogic] All channel handlers completed. Cleanup finished.')
+}
+
+/**
+ * Checks a group for the presence of the owner and takes action if the owner is not found.
+ * @param {import('./index.mjs').GroupObject} group - The group to check.
+ * @param {import('./index.mjs').PlatformAPI_t} platformAPI - The platform API instance.
+ * @param {string | number | null} ownerOverride - (Optional) Override for owner user ID for testing.
+ */
+async function handleGroupCheck(group, platformAPI, ownerOverride = null) {
+    if (!group || !platformAPI) {
+        console.error('[BotLogic] handleGroupCheck: Invalid group or platformAPI provided.');
+        return;
+    }
+    console.log(`[BotLogic] Checking group: ${group.name} (ID: ${group.id}) on platform: ${platformAPI.name}`);
+
+    try {
+        const ownerIdToCompare = ownerOverride || platformAPI.getOwnerUserId?.();
+        const ownerUsernameToCompare = platformAPI.getOwnerUserName?.(); // For Discord
+
+        if (!ownerIdToCompare && platformAPI.name === 'telegram') {
+            console.error(`[BotLogic] No OwnerUserID configured for Telegram. Cannot perform owner check for group ${group.id}.`);
+            return;
+        }
+         if (!ownerUsernameToCompare && platformAPI.name === 'discord') {
+            console.error(`[BotLogic] No OwnerUserName configured for Discord. Cannot perform owner check for group ${group.id}.`);
+            return;
+        }
+
+        const members = await platformAPI.getGroupMembers?.(group.id);
+        if (!members) {
+            console.warn(`[BotLogic] Could not retrieve members for group ${group.id} on ${platformAPI.name}. Skipping owner check.`);
+            return;
+        }
+
+        const ownerIsPresent = members.some(member =>
+            (platformAPI.name === 'telegram' && String(member.id) === String(ownerIdToCompare)) ||
+            (platformAPI.name === 'discord' && member.username && ownerUsernameToCompare && member.username.toLowerCase() === ownerUsernameToCompare.toLowerCase())
+        );
+
+        if (ownerIsPresent) {
+            console.log(`[BotLogic] Owner found in group ${group.name} (ID: ${group.id}). No action needed.`);
+            return;
+        }
+
+        // Owner is NOT present
+        console.log(`[BotLogic] Owner NOT found in group ${group.name} (ID: ${group.id}). Taking action...`);
+
+        const defaultChannel = await platformAPI.getGroupDefaultChannel?.(group.id);
+        if (!defaultChannel) {
+            console.warn(`[BotLogic] Could not find a default channel for group ${group.id}. Cannot send invite or message.`);
+            await platformAPI.leaveGroup?.(group.id); // Leave group if no channel to message
+            console.log(`[BotLogic] Left group ${group.id} due to no default channel.`);
+            return;
+        }
+
+        let inviteLink = null;
+        if (platformAPI.generateInviteLink) {
+            inviteLink = await platformAPI.generateInviteLink(group.id, defaultChannel.id);
+        }
+
+        if (inviteLink) {
+            const inviteMessage = `咱加入了一个您不在的群组: "${group.name}" (ID: ${group.id}) on ${platformAPI.name}. 邀请链接: ${inviteLink}`;
+            if (platformAPI.sendDirectMessageToOwner) {
+                await platformAPI.sendDirectMessageToOwner(inviteMessage);
+                console.log(`[BotLogic] Sent DM to owner about group ${group.id}.`);
+            } else {
+                 console.warn(`[BotLogic] sendDirectMessageToOwner not implemented for ${platformAPI.name}.`);
+            }
+
+            // Notify other groups where owner is present
+            const allJoinedGroups = await platformAPI.getJoinedGroups?.();
+            if (allJoinedGroups) {
+                for (const otherGroup of allJoinedGroups) {
+                    if (otherGroup.id === group.id) continue; // Skip the current group
+
+                    const otherGroupMembers = await platformAPI.getGroupMembers?.(otherGroup.id);
+                    if (otherGroupMembers) {
+                        const ownerInOtherGroup = otherGroupMembers.some(member =>
+                            (platformAPI.name === 'telegram' && String(member.id) === String(ownerIdToCompare)) ||
+                            (platformAPI.name === 'discord' && member.username && ownerUsernameToCompare && member.username.toLowerCase() === ownerUsernameToCompare.toLowerCase())
+                        );
+                        if (ownerInOtherGroup) {
+                            const otherGroupDefaultChannel = await platformAPI.getGroupDefaultChannel?.(otherGroup.id);
+                            if (otherGroupDefaultChannel && platformAPI.sendMessage) {
+                                try {
+                                    await platformAPI.sendMessage(otherGroupDefaultChannel.id, { content: inviteMessage });
+                                    console.log(`[BotLogic] Sent invite to owner in group ${otherGroup.name} (Channel: ${otherGroupDefaultChannel.id}).`);
+                                } catch (e) {
+                                    console.error(`[BotLogic] Failed to send invite to owner in group ${otherGroup.name}:`, e);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            console.warn(`[BotLogic] Could not generate invite link for group ${group.id}.`);
+        }
+
+        // Generate and send insult
+        const groupNameForAI = group.name || `Group ${group.id}`;
+        let channelHistoryForAI = [];
+        if (platformAPI.fetchChannelHistory) {
+             // Fetch a small number of messages for context, e.g., 5-10
+             channelHistoryForAI = await platformAPI.fetchChannelHistory(defaultChannel.id, 10);
+        }
+
+        // Construct a basic chat log for the insult generation
+        const insultRequestContext = [
+            ...channelHistoryForAI, // Add some recent messages from the channel
+            { name: 'system', role: 'system', timeStamp: Date.now(), content: `Current group name: "${groupNameForAI}". Generate an insulting message directed at this group.` },
+            { name: 'system', role: 'system', timeStamp: Date.now(), content: 'You are now in rude mode. Be very insulting as per RudePrompt.'} // Try to trigger RudePrompt
+        ];
+        
+         const fountBotDisplayName = (await charAPI.getPartInfo?.(localhostLocales[0]))?.name || BotCharname;
+         const botUserId = platformAPI.getBotUserId?.();
+         const botUsername = platformAPI.getBotUsername?.();
+         const botDisplayName = platformAPI.getBotDisplayName?.();
+         const botNameForAIChat = userIdToNameMap[botUserId] || `${botUsername} (咱自己)` || `${botDisplayName} (咱自己)` || `${fountBotDisplayName} (咱自己)`;
+         
+         const ownerPlatformUsername = platformAPI.getOwnerUserName?.() || 'Owner';
+         const ownerPlatformId = platformAPI.getOwnerUserId?.();
+         const userCharNameForAI = userIdToNameMap[ownerPlatformId] || ownerPlatformUsername;
+
+        const insultRequest = {
+            supported_functions: { markdown: true, files: false, add_message: false, mathjax: false, html: false, unsafe_html: false },
+            username: FountUsername,
+            chat_name: `InsultContext:${platformAPI.name}:${group.id}`,
+            char_id: BotCharname, 
+            Charname: botNameForAIChat,
+            UserCharname: userCharNameForAI, 
+            ReplyToCharname: groupNameForAI, 
+            locales: localhostLocales, 
+            time: new Date(),
+            world: platformAPI.getPlatformWorld?.() || null,
+            user: null,
+            char: charAPI,
+            other_chars: [],
+            plugins: { ...platformAPI.getPlatformSpecificPlugins?.({ extension: { platform_guild_id: group.id, platform_channel_id: defaultChannel.id, platform: platformAPI.name } } || {}), rude: {} },
+            chat_summary: `Context for generating an insult for group "${groupNameForAI}".`,
+            chat_scoped_char_memory: {}, 
+            chat_log: insultRequestContext,
+            extension: { platform: platformAPI.name, chat_id: defaultChannel.id, is_direct_message: false }
+        };
+        
+        let insultMessageContent = "你群没主人，爷走了。"; // Default insult
+        try {
+            const aiInsultReply = await charAPI.interfaces.chat.GetReply(insultRequest);
+            if (aiInsultReply && aiInsultReply.content) {
+                insultMessageContent = aiInsultReply.content;
+            }
+        } catch (e) {
+            console.error(`[BotLogic] AI insult generation failed for group ${group.id}:`, e);
+        }
+
+        if (platformAPI.sendMessage) {
+            try {
+                await platformAPI.sendMessage(defaultChannel.id, { content: insultMessageContent });
+                console.log(`[BotLogic] Sent insult to group ${group.id}.`);
+            } catch (e) {
+                console.error(`[BotLogic] Failed to send insult to group ${group.id}:`, e);
+            }
+        }
+
+        // Leave group
+        if (platformAPI.leaveGroup) {
+            await platformAPI.leaveGroup(group.id);
+            console.log(`[BotLogic] Left group ${group.id} after actions.`);
+        }
+
+    } catch (error) {
+        console.error(`[BotLogic] Error in handleGroupCheck for group ${group.id} on ${platformAPI.name}:`, error);
+    }
+}
+
+/**
+ * Registers a platform API instance.
+ * Should be called by each platform interface upon its initialization.
+ * @param {PlatformAPI_t} platformAPI - The platform API instance to register.
+ */
+export function registerPlatformAPI(platformAPI) {
+    if (platformAPI && typeof platformAPI.name === 'string') {
+        if (!registeredPlatformAPIs.find(p => p.name === platformAPI.name)) {
+            registeredPlatformAPIs.push(platformAPI);
+            console.log(`[BotLogic] Platform API registered: ${platformAPI.name}`);
+        } else {
+            console.warn(`[BotLogic] Platform API ${platformAPI.name} already registered.`);
+        }
+    } else {
+        console.error('[BotLogic] Attempted to register an invalid platform API.');
+    }
+}
+
+/**
+ * Finalizes the initialization of core features after all platform APIs are expected to be registered.
+ * This will set up group join handlers and perform startup checks for existing groups.
+ * Should be called by the main application logic after initializing all platform interfaces.
+ */
+let coreFeaturesInitialized = false;
+export async function finalizeCoreInitialization() {
+    if (coreFeaturesInitialized) {
+        console.warn('[BotLogic] Core features already finalized. Skipping.');
+        return;
+    }
+    if (registeredPlatformAPIs.length === 0) {
+        console.warn('[BotLogic] No platform APIs registered. Skipping core feature finalization.');
+        return;
+    }
+
+    console.log('[BotLogic] Finalizing core features for all registered platforms...');
+    for (const platformAPI of registeredPlatformAPIs) {
+        if (platformAPI.onGroupJoin) {
+            platformAPI.onGroupJoin(async (group) => {
+                await new Promise(resolve => setTimeout(resolve, platformAPI.name === 'discord' ? 5000 : 1000));
+                await handleGroupCheck(group, platformAPI);
+            });
+            console.log(`[BotLogic] Registered onGroupJoin handler for platform: ${platformAPI.name}`);
+        } else {
+            console.warn(`[BotLogic] onGroupJoin not implemented for platform: ${platformAPI.name}`);
+        }
+
+        if (platformAPI.getJoinedGroups) {
+            try {
+                console.log(`[BotLogic] Performing startup check for existing groups on platform: ${platformAPI.name}`);
+                const joinedGroups = await platformAPI.getJoinedGroups();
+                if (joinedGroups && joinedGroups.length > 0) {
+                    console.log(`[BotLogic] Found ${joinedGroups.length} groups on ${platformAPI.name}. Checking each...`);
+                    for (const group of joinedGroups) {
+                        await new Promise(resolve => setTimeout(resolve, 2000)); // 2 second delay
+                        await handleGroupCheck(group, platformAPI);
+                    }
+                } else {
+                    console.log(`[BotLogic] No existing groups found to check on ${platformAPI.name}.`);
+                }
+            } catch (e) {
+                console.error(`[BotLogic] Error during startup group check for ${platformAPI.name}:`, e);
+            }
+        } else {
+            console.warn(`[BotLogic] getJoinedGroups not implemented for platform: ${platformAPI.name}. Skipping startup check.`);
+        }
+    }
+    coreFeaturesInitialized = true;
+    console.log('[BotLogic] Core features finalization complete.');
 }
