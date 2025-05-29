@@ -51,10 +51,11 @@ import { escapeRegExp } from '../../scripts/tools.mjs'
 /**
  * Discord 接入层配置对象类型定义。
  * @typedef {{
- *  OwnerUserName: string, // Discord 用户名
+ *  OwnerUserName: string, // Discord 用户名 (用于查找和显示)
+ *  OwnerDiscordID?: string, // (推荐) Discord 用户的数字 ID (用于精确查找)
  *  OwnerNameKeywords: string[], // 可能的用户名关键字列表
  *  BotActivityName?: string, // 机器人状态中显示的游戏/活动名称
- *  BotActivityType?: keyof typeof ActivityType, // 机器人状态类型 (例如 'Playing', 'Listening', 'Watching', 'Competing')
+ *  BotActivityType?: keyof typeof ActivityType, // 机器人状态类型
  * }} DiscordInterfaceConfig_t
  */
 
@@ -64,7 +65,8 @@ import { escapeRegExp } from '../../scripts/tools.mjs'
  */
 export function GetBotConfigTemplate() {
 	return {
-		OwnerUserName: 'your_discord_username', // 请替换为你的 Discord 用户名
+		OwnerUserName: 'your_discord_username', 
+		OwnerDiscordID: 'your_discord_user_id', // 新增，可选但推荐
 		OwnerNameKeywords: [
 			'your_name_keyword1',
 			'your_name_keyword2',
@@ -78,7 +80,13 @@ export function GetBotConfigTemplate() {
  * Discord.js 客户端实例的引用。
  * @type {Client}
  */
-let discordClientInstance
+let discordClientInstance;
+
+/**
+ * Cached Owner's Discord User ID.
+ * @type {string | null}
+ */
+let resolvedOwnerId = null;
 
 /**
  * Discord 用户对象缓存。
@@ -416,7 +424,7 @@ export async function DiscordBotMain(client, interfaceConfig) {
 		/** 获取主人的 Discord 用户名。 */
 		getOwnerUserName: () => interfaceConfig.OwnerUserName,
 		/** 获取主人的 Discord 用户 ID。 */
-		getOwnerUserId: () => undefined,
+		getOwnerUserId: () => resolvedOwnerId || interfaceConfig.OwnerDiscordID, // Prioritize resolved, then explicitly configured ID
 		/** 获取机器人自身的 Discord 显示名称 (服务器昵称或全局显示名)。 */
 		getBotDisplayName: () => client.user?.displayName || client.user?.globalName || client.user?.username || BotFountCharname,
 
@@ -658,6 +666,46 @@ export async function DiscordBotMain(client, interfaceConfig) {
 			}
 		},
 
+		getOwnerPresenceInGroups: async () => {
+			if (!client.user) { // Bot not ready
+				console.error('[DiscordInterface] getOwnerPresenceInGroups: client.user is not available. Bot might not be ready.');
+				return null;
+			}
+
+			const ownerIdToUse = resolvedOwnerId || interfaceConfig.OwnerDiscordID; // Use resolved first
+
+			if (!ownerIdToUse) {
+				console.warn('[DiscordInterface] getOwnerPresenceInGroups: Owner ID not resolved or configured. Cannot perform check.');
+				return null;
+			}
+			
+			const groupsWithOwner = [];
+			const groupsWithoutOwner = [];
+
+			for (const guild of client.guilds.cache.values()) {
+				const groupObject = { 
+					id: guild.id, 
+					name: guild.name, 
+					discordGuild: guild 
+				};
+				try {
+					// Efficiently check if owner is a member
+					const ownerMember = await guild.members.fetch(ownerIdToUse).catch(() => null);
+					if (ownerMember) {
+						groupsWithOwner.push(groupObject);
+					} else {
+						groupsWithoutOwner.push(groupObject);
+					}
+				} catch (e) {
+					console.warn(`[DiscordInterface] Error checking owner presence in guild ${guild.name} (ID: ${guild.id}): ${e.message}. Assuming owner not present.`);
+					// If unsure due to error, best to assume owner is not present for safety, or handle error differently
+					groupsWithoutOwner.push(groupObject);
+				}
+			}
+			console.log(`[DiscordInterface] Owner presence check complete. With owner: ${groupsWithOwner.length}, Without owner: ${groupsWithoutOwner.length}`);
+			return { groupsWithOwner, groupsWithoutOwner };
+		},
+
 		/**
 		 * (Optional) Sends a direct message (DM) to the configured bot owner.
 		 * @param {string} messageText - The text of the message to send.
@@ -767,6 +815,42 @@ export async function DiscordBotMain(client, interfaceConfig) {
 			discordDisplayNameToId[BotFountCharname] = botUserId // 确保 Fount 角色名也映射到 ID
 		}
 		console.log(`[DiscordInterface] Discord client ready. Bot: ${c.user.tag}`);
+
+		// Resolve Owner ID
+		if (interfaceConfig.OwnerDiscordID) {
+			resolvedOwnerId = interfaceConfig.OwnerDiscordID;
+			console.log(`[DiscordInterface] OwnerDiscordID configured: ${resolvedOwnerId}`);
+			try {
+				const ownerUser = await client.users.fetch(resolvedOwnerId);
+				console.log(`[DiscordInterface] Owner user "${ownerUser.tag}" confirmed via ID.`);
+				// interfaceConfig.OwnerUserName = ownerUser.username; // Example: To ensure consistency
+			} catch (e) {
+				console.error(`[DiscordInterface] Failed to fetch owner user by OwnerDiscordID ${resolvedOwnerId}. Ensure the ID is correct.`, e);
+				resolvedOwnerId = null; // Invalidate if ID fetch fails
+			}
+		} else if (interfaceConfig.OwnerUserName) {
+			console.log(`[DiscordInterface] OwnerDiscordID not set, attempting to find owner by UserName: ${interfaceConfig.OwnerUserName}`);
+			let found = false;
+			for (const guild of client.guilds.cache.values()) {
+				try {
+					const members = await guild.members.fetch();
+					const ownerMember = members.find(m => m.user.username === interfaceConfig.OwnerUserName);
+					if (ownerMember) {
+						resolvedOwnerId = ownerMember.id;
+						found = true;
+						console.log(`[DiscordInterface] Owner ID resolved via UserName in guild ${guild.name}: ${resolvedOwnerId}`);
+						break; 
+					}
+				} catch (e) {
+					console.warn(`[DiscordInterface] Error fetching members for guild ${guild.name} while resolving OwnerID: ${e.message}. This might be expected for some guilds due to permissions.`);
+				}
+			}
+			if (!found) {
+				console.warn(`[DiscordInterface] Could not resolve OwnerID for UserName "${interfaceConfig.OwnerUserName}" from shared guilds. Owner-specific features might be limited.`);
+			}
+		} else {
+			console.warn('[DiscordInterface] Neither OwnerDiscordID nor OwnerUserName are configured. Owner-specific features will not work.');
+		}
 	})
 
 	// Register the platform API with the bot core

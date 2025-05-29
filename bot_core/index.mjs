@@ -117,7 +117,16 @@ const charAPI = /** @type {charAPI_t_imported} */ charAPI_obj
  *  generateInviteLink?: (groupId: string | number, channelId?: string | number) => Promise<string | null>, // (Optional) Generates an invite link for the specified group/guild.
  *  leaveGroup?: (groupId: string | number) => Promise<void>, // (Optional) Makes the bot leave the specified group/guild.
  *  getGroupDefaultChannel?: (groupId: string | number) => Promise<ChannelObject | null>, // (Optional) Gets the default or a suitable primary channel for a group/guild.
- *  sendDirectMessageToOwner?: (message: string) => Promise<void> // (Optional) Sends a direct message (DM) to the configured bot owner.
+ *  sendDirectMessageToOwner?: (message: string) => Promise<void>, // (Optional) Sends a direct message (DM) to the configured bot owner.
+ *  /**
+ *   * (Optional) Efficiently determines owner presence across multiple groups.
+ *   * @returns {Promise<{groupsWithOwner: GroupObject[], groupsWithoutOwner: GroupObject[]} | null>} 
+ *   *          A promise that resolves to an object containing two arrays:
+ *   *          - groupsWithOwner: A list of groups where the owner is present.
+ *   *          - groupsWithoutOwner: A list of groups where the owner is NOT present.
+ *   *          Returns null if the platform cannot support this optimized check or if an error occurs.
+ *   */
+ *  getOwnerPresenceInGroups?: () => Promise<{groupsWithOwner: GroupObject[], groupsWithoutOwner: GroupObject[]} | null>
  * }} PlatformAPI_t
  */
 
@@ -1289,24 +1298,53 @@ export async function finalizeCoreInitialization() {
             console.warn(`[BotLogic] onGroupJoin not implemented for platform: ${platformAPI.name}`);
         }
 
-        if (platformAPI.getJoinedGroups) {
+        // Startup check for existing groups
+        let usedOptimizedCheck = false;
+        if (typeof platformAPI.getOwnerPresenceInGroups === 'function') {
             try {
-                console.log(`[BotLogic] Performing startup check for existing groups on platform: ${platformAPI.name}`);
-                const joinedGroups = await platformAPI.getJoinedGroups();
-                if (joinedGroups && joinedGroups.length > 0) {
-                    console.log(`[BotLogic] Found ${joinedGroups.length} groups on ${platformAPI.name}. Checking each...`);
-                    for (const group of joinedGroups) {
-                        await new Promise(resolve => setTimeout(resolve, 2000)); // 2 second delay
-                        await handleGroupCheck(group, platformAPI);
+                const presenceResult = await platformAPI.getOwnerPresenceInGroups();
+                if (presenceResult) {
+                    const totalGroups = presenceResult.groupsWithOwner.length + presenceResult.groupsWithoutOwner.length;
+                    console.log(`[BotLogic] Used optimized owner presence check for ${platformAPI.name}. Found ${presenceResult.groupsWithoutOwner.length} groups without owner out of ${totalGroups} total.`);
+                    if (presenceResult.groupsWithoutOwner.length > 0) {
+                        console.log(`[BotLogic] Checking ${presenceResult.groupsWithoutOwner.length} groups where owner is not present on ${platformAPI.name} (optimized)...`);
+                        for (const group of presenceResult.groupsWithoutOwner) {
+                            await new Promise(resolve => setTimeout(resolve, 2000)); // 2 second delay
+                            await handleGroupCheck(group, platformAPI);
+                        }
                     }
+                    // Optionally, process presenceResult.groupsWithOwner here if needed in the future.
+                    usedOptimizedCheck = true;
                 } else {
-                    console.log(`[BotLogic] No existing groups found to check on ${platformAPI.name}.`);
+                    console.log(`[BotLogic] Optimized owner presence check returned null for ${platformAPI.name}. Falling back to individual group checks if available.`);
                 }
             } catch (e) {
-                console.error(`[BotLogic] Error during startup group check for ${platformAPI.name}:`, e);
+                console.error(`[BotLogic] Error calling getOwnerPresenceInGroups for ${platformAPI.name}:`, e);
+                // Fall through to default behavior (usedOptimizedCheck remains false)
             }
-        } else {
-            console.warn(`[BotLogic] getJoinedGroups not implemented for platform: ${platformAPI.name}. Skipping startup check.`);
+        }
+
+        if (!usedOptimizedCheck) {
+            // Fallback to existing logic if optimized check wasn't used, wasn't available, or failed
+            if (platformAPI.getJoinedGroups) {
+                try {
+                    console.log(`[BotLogic] Performing startup check for existing groups on platform: ${platformAPI.name} (fallback method).`);
+                    const joinedGroups = await platformAPI.getJoinedGroups();
+                    if (joinedGroups && joinedGroups.length > 0) {
+                        console.log(`[BotLogic] Found ${joinedGroups.length} groups on ${platformAPI.name}. Checking each (fallback)...`);
+                        for (const group of joinedGroups) {
+                            await new Promise(resolve => setTimeout(resolve, 2000)); // 2 second delay
+                            await handleGroupCheck(group, platformAPI);
+                        }
+                    } else {
+                        console.log(`[BotLogic] No existing groups found to check on ${platformAPI.name} (fallback).`);
+                    }
+                } catch (e) {
+                    console.error(`[BotLogic] Error during startup group check for ${platformAPI.name} (fallback):`, e);
+                }
+            } else {
+                console.warn(`[BotLogic] getJoinedGroups not implemented for platform: ${platformAPI.name}. Skipping startup check (fallback).`);
+            }
         }
     }
     coreFeaturesInitialized = true;

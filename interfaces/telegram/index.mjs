@@ -574,6 +574,27 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 			}
 		},
 
+		getGroupDefaultChannel: async (chatId) => {
+			if (!telegrafInstance) {
+				console.error('[TelegramInterface] getGroupDefaultChannel: Telegraf instance not available.');
+				return null;
+			}
+			try {
+				const chat = await telegrafInstance.telegram.getChat(String(chatId));
+				/** @type {import('../../bot_core/index.mjs').ChannelObject} */
+				const channelObject = {
+					id: chat.id,
+					name: chat.title || `Group ${chat.id}`,
+					type: chat.type,
+					telegramChat: chat
+				};
+				return channelObject;
+			} catch (error) {
+				console.error(`[TelegramInterface] Error getting chat info for ${chatId}:`, error);
+				return null;
+			}
+		},
+
 		logError: (error, contextMessage) => {
 			console.error('[TelegramInterface-PlatformAPI-Error]', error, contextMessage ? `Context: ${JSON.stringify(contextMessage)}` : '')
 		},
@@ -692,6 +713,11 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 				console.error(`[TelegramInterface] Error getting chat info for ${chatId}:`, error);
 				return null;
 			}
+		},
+
+		getOwnerPresenceInGroups: async () => {
+			console.warn('[TelegramInterface] getOwnerPresenceInGroups is not supported by the Telegram Bot API due to privacy restrictions and API limitations. This method will return null, and the system should fall back to other methods for startup checks if applicable.');
+			return null;
 		},
 
 		sendDirectMessageToOwner: async (messageText) => {
