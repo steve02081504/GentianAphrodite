@@ -345,6 +345,10 @@ ${finalRandomFlashback.map(formatMemory).join('\n')}
 `
 	result += '</memories>'
 	if (result.trim() === '<memories>\n</memories>') result = ''
+	if (result)
+		result += `\
+这些是你的往期记忆，你不用回复记忆中的对话，它们是过去式的。
+`
 
 	if (
 		await match_keys(args, ['删了', '清除', '丢掉', '丢弃', '舍弃', '移除', '清空', '忘了', '忘掉'], 'user') &&

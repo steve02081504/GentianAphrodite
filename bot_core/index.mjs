@@ -372,7 +372,7 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
 		if (isInFavor) {
 			possible += 4
 			const currentChannelLog = channelChatLogs[channelId] || []
-			const lastBotMsgIndex = currentChannelLog.findLastIndex(log => log.extension?.platform_user_id === botUserId)
+			const lastBotMsgIndex = currentChannelLog.findLastIndex(log => log.extension?.platform_user_id == botUserId)
 
 			const messagesSinceLastBotReply = lastBotMsgIndex === -1
 				? currentChannelLog.length
@@ -635,7 +635,7 @@ async function handleMessageQueue(channelId, platformAPI) {
 				currentMessageToProcess.extension?.platform_message_ids
 		}
 		async function checkTrigger() {
-			if (currentMessageToProcess.extension?.platform_user_id === platformAPI.getBotUserId())
+			if (currentMessageToProcess.extension?.platform_user_id == platformAPI.getBotUserId())
 				return
 
 			if (currentMessageToProcess.extension?.is_from_owner) {
@@ -675,7 +675,7 @@ async function handleMessageQueue(channelId, platformAPI) {
 			const hasOtherGentianBot = (() => {
 				if (recentChatLogForOtherBotCheck.length < (currentConfig.MinLogForOtherBotCheck || 5)) return false
 				const text = recentChatLogForOtherBotCheck
-					.filter(msg => msg.extension?.platform_user_id !== platformAPI.getBotUserId())
+					.filter(msg => msg.extension?.platform_user_id != platformAPI.getBotUserId())
 					.map(msg => msg.content).join('\n')
 				return base_match_keys(text, GentianWords) && (text.match(/主人/g)?.length || 0) > 1
 			})()
@@ -684,7 +684,7 @@ async function handleMessageQueue(channelId, platformAPI) {
 
 			const lastFewMessages = currentChannelLog.slice(-7)
 			const ownerBotOnlyInteraction = lastFewMessages.every(
-				msg => msg.extension?.is_from_owner || msg.extension?.platform_user_id === platformAPI.getBotUserId()
+				msg => msg.extension?.is_from_owner || msg.extension?.platform_user_id == platformAPI.getBotUserId()
 			)
 
 			if (ownerBotOnlyInteraction && currentMessageToProcess.extension?.is_from_owner && !isMutedChannel)
@@ -694,7 +694,7 @@ async function handleMessageQueue(channelId, platformAPI) {
 			else if (
 				(!inHypnosisChannelId || channelId !== inHypnosisChannelId) &&
 				!isMutedChannel &&
-				currentMessageToProcess.extension?.platform_user_id !== platformAPI.getBotUserId()
+				currentMessageToProcess.extension?.platform_user_id != platformAPI.getBotUserId()
 			) {
 				const repet = findMostFrequentElement(
 					currentChannelLog.slice(-10),
@@ -705,7 +705,7 @@ async function handleMessageQueue(channelId, platformAPI) {
 					repet.count >= currentConfig.RepetitionTriggerCount &&
 					!base_match_keys(repet.element.content, [...currentMessageToProcess.extension.OwnerNameKeywords, ...rude_words, ...GentianWords]) &&
 					!repet.element.content.match(/^[!$%&/\\！]/) &&
-					!currentChannelLog.some(msg => msg.extension?.platform_user_id === platformAPI.getBotUserId() && msg.content === repet.element.content)
+					!currentChannelLog.some(msg => msg.extension?.platform_user_id == platformAPI.getBotUserId() && msg.content === repet.element.content)
 				)
 					await sendAndLogReply(
 						{ content: repet.element.content, files: repet.element.files },
@@ -752,9 +752,9 @@ async function handleMessageQueue(channelId, platformAPI) {
 		const lastMessageInQueueOrLog = myQueue.length > 0 ? myQueue[myQueue.length - 1] : currentChannelLog?.slice(-1)[0]
 		await handleError(error, platformAPI, lastMessageInQueueOrLog)
 	} finally {
-			if (channelMessageQueues[channelId] && channelMessageQueues[channelId].length === 0)
-				delete channelHandlers[channelId]
-		}
+		if (channelMessageQueues[channelId] && channelMessageQueues[channelId].length === 0)
+			delete channelHandlers[channelId]
+	}
 }
 
 /**
@@ -890,7 +890,6 @@ export async function processIncomingMessage(fountEntry, platformAPI, channelId)
 
 			if (!nameToUserIdMap[senderName] || nameToUserIdMap[senderName] !== senderId)
 				nameToUserIdMap[senderName] = senderId
-
 		}
 
 		channelMessageQueues[channelId] ??= []

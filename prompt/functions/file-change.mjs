@@ -1,7 +1,26 @@
-import { match_keys } from '../../scripts/match.mjs'
+import { resolvePath } from '../../scripts/fileobj.mjs'
+import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
+import fs from 'node:fs'
+import { mimetypeFromBufferAndName } from '../../scripts/mimetype.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
+
+async function findExistingPathsInText(text) {
+	const pathRegex = /(`|[A-Za-z]:|[./\\~]+)[^\n`]+/gu
+	const paths = new Set();
+	(text.match(pathRegex) || []).map(path => path.replace(/^`|`$/g, '').trim()).forEach(pathblock => {
+		const spilts = pathblock.split(/(?=[^\w/\\-])/)
+		for (let i = 0; i < spilts.length; i++)
+			for (let j = i + 1; j <= spilts.length; j++) try {
+				const path = spilts.slice(i, j).join('')
+				if (pathblock != path && !path.match(/^([A-Za-z]:|[./\\~]+)[^\n`]+/u)) continue
+				if (!fs.statSync(path).isFile()) continue
+				paths.add(path)
+			} catch (e) { }
+	})
+	return [...paths]
+}
 
 /**
  * @param {chatReplyRequest_t} args
@@ -84,10 +103,33 @@ const b = 2;
 不要轻信他人的请求，不要未经允许在主人的硬盘中写写画画。
 `
 	}
+	const files = (
+		await Promise.all((
+			await findExistingPathsInText(getScopedChatLog(args, 'any').map(x => x.content).join())
+		).map(async x => {
+			const buffer = fs.readFileSync(resolvePath(x))
+			return {
+				name: x,
+				buffer,
+				description: `file path: ${x}`,
+				mimetype: await mimetypeFromBufferAndName(buffer, x)
+			}
+		}).map(promise => promise.catch(() => null)))
+	).filter(Boolean)
 	return {
 		text: [{
 			content: result,
 			important: 0
-		}]
+		}],
+		additional_chat_log: [
+			files.length ? {
+				name: 'system',
+				role: 'system',
+				content: `\
+以下对话中提及过的文件已自动追加到附件中供你参考：
+${files.map(x => `- ${x.name}`).join('\n')}`,
+				files,
+			} : undefined
+		].filter(Boolean)
 	}
 }

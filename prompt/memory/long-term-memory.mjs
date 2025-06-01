@@ -26,12 +26,11 @@ const LongTermMemories = loadJsonFileIfExists(path.join(chardir, 'memory/long-te
 export async function LongTermMemoryPrompt(args, logical_results, prompt_struct, detail_level) {
 	const actived_memories = []
 	for (const memory of LongTermMemories)
-		if (await async_eval(memory.trigger, {
+		if ((await async_eval(memory.trigger, {
 			args, logical_results, prompt_struct, detail_level,
 			match_keys, match_keys_all
-		}))
+		})).result)
 			actived_memories.push(memory)
-
 
 	let result = ''
 	if (actived_memories.length > 0)
@@ -47,10 +46,10 @@ ${actived_memories.map(memory => `\
 	if (!logical_results.in_assist || await match_keys(args, ['记忆', '记住'], 'user'))
 		enable_memory_prompt = true
 	return {
-		text: [{
+		text: [result ? {
 			important: 0,
 			content: result
-		}],
+		} : undefined].filter(Boolean),
 		additional_chat_log: enable_memory_prompt ? [{
 			role: 'system',
 			name: 'system',
@@ -90,6 +89,7 @@ trigger的关键词应容易触发并涵盖大部分情况，鼓励使用或\`||
 <list-long-term-memory></list-long-term-memory>
 
 鼓励你对聊天记录中有关主人的事情追加和维护永久记忆，不要记录已经在prompt中的内容。
+鼓励你及时修正错误的永久记忆。
 `
 		}] : []
 	}

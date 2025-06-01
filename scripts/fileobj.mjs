@@ -5,9 +5,12 @@ import { Buffer } from 'node:buffer'
 import { getFileExtFormMimetype, mimetypeFromBufferAndName } from './mimetype.mjs'
 import { getUrlFilename } from './web.mjs'
 
+const msys_path = process.env.MSYS_ROOT_PATH
 export function resolvePath(relativePath) {
 	if (relativePath.startsWith('~'))
 		return path.join(os.homedir(), relativePath.slice(1))
+	if (msys_path && relativePath.startsWith('/'))
+		return path.join(msys_path, relativePath)
 	return path.resolve(relativePath)
 }
 
