@@ -13,7 +13,7 @@ import { mimetypeFromBufferAndName } from '../../scripts/mimetype.mjs'
 async function findExistingPathsInText(text) {
 	const pathRegex = /(`|[A-Za-z]:\\|(\.|\.\.|~)[/\\]|[/\\])[^\n`:]+/ud
 	const seekedpathlikes = []
-	const paths = new Set();
+	const paths = new Set()
 	let tmp
 	while (tmp = text.match(pathRegex)) {
 		seekedpathlikes.push(tmp[0])
@@ -24,7 +24,7 @@ async function findExistingPathsInText(text) {
 		for (let i = 0; i < spilts.length; i++)
 			for (let j = i + 1; j <= spilts.length; j++) try {
 				const path = spilts.slice(i, j).join('')
-				if (pathblock != path && !path.match(/^([A-Za-z]:\\|(\.|\.\.|~)[/\\]|[/\\])[^\n`:]+/u)) continue
+				if (pathblock != path && !path.match(/^([A-Za-z]:\\|(\.|\.\.|~)[/\\]|[/\\])[^\n:`]+/u)) continue
 				if (!fs.statSync(resolvePath(path)).isFile()) continue
 				paths.add(path)
 			} catch (e) { }
@@ -115,14 +115,14 @@ const b = 2;
 	}
 	const files = (
 		await Promise.all((
-			await findExistingPathsInText(getScopedChatLog(args, 'any').map(x => x.content).join())
+			await findExistingPathsInText(getScopedChatLog(args, 'both').map(x => x.content).join())
 		).map(async x => {
 			const buffer = fs.readFileSync(resolvePath(x))
 			return {
 				name: x,
 				buffer,
 				description: `file path: ${x}`,
-				mimetype: await mimetypeFromBufferAndName(buffer, x)
+				mimeType: await mimetypeFromBufferAndName(buffer, x)
 			}
 		}).map(promise => promise.catch(console.error)))
 	).filter(Boolean)

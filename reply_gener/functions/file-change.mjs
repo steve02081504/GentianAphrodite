@@ -1,5 +1,4 @@
 import fs from 'node:fs'
-import { homedir } from 'node:os'
 import { escapeRegExp, parseRegexFromString } from '../../scripts/tools.mjs'
 import { XMLParser, XMLValidator } from 'npm:fast-xml-parser'
 import { statisticDatas } from '../../scripts/statistics.mjs'
