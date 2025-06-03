@@ -6,16 +6,26 @@ import { mimetypeFromBufferAndName } from '../../scripts/mimetype.mjs'
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
+/**
+ * @param {string} text
+ * @returns {Promise<string[]>}
+ */
 async function findExistingPathsInText(text) {
-	const pathRegex = /(`|[A-Za-z]:|[./\\~]+)[^\n`]+/gu
+	const pathRegex = /(`|[A-Za-z]:\\|(\.|\.\.|~)[/\\]|[/\\])[^\n`:]+/ud
+	const seekedpathlikes = []
 	const paths = new Set();
-	(text.match(pathRegex) || []).map(path => path.replace(/^`|`$/g, '').trim()).forEach(pathblock => {
+	let tmp
+	while (tmp = text.match(pathRegex)) {
+		seekedpathlikes.push(tmp[0])
+		text = text.slice(tmp.index + 1)
+	}
+	seekedpathlikes.map(path => path.replace(/^`|`$/g, '').trim()).forEach(pathblock => {
 		const spilts = pathblock.split(/(?=[^\w/\\-])/)
 		for (let i = 0; i < spilts.length; i++)
 			for (let j = i + 1; j <= spilts.length; j++) try {
 				const path = spilts.slice(i, j).join('')
-				if (pathblock != path && !path.match(/^([A-Za-z]:|[./\\~]+)[^\n`]+/u)) continue
-				if (!fs.statSync(path).isFile()) continue
+				if (pathblock != path && !path.match(/^([A-Za-z]:\\|(\.|\.\.|~)[/\\]|[/\\])[^\n`:]+/u)) continue
+				if (!fs.statSync(resolvePath(path)).isFile()) continue
 				paths.add(path)
 			} catch (e) { }
 	})
@@ -114,7 +124,7 @@ const b = 2;
 				description: `file path: ${x}`,
 				mimetype: await mimetypeFromBufferAndName(buffer, x)
 			}
-		}).map(promise => promise.catch(() => null)))
+		}).map(promise => promise.catch(console.error)))
 	).filter(Boolean)
 	return {
 		text: [{

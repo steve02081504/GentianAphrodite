@@ -611,12 +611,10 @@ async function handleMessageQueue(channelId, platformAPI) {
 
 	if (!channelChatLogs[channelId] || channelChatLogs[channelId].length === 0) {
 		const historicalMessages = await platformAPI.fetchChannelHistory(channelId, currentConfig.DefaultMaxFetchCount)
-		const mergedHistoricalLog = mergeChatLogEntries(historicalMessages.sort((a, b) => a.timeStamp - b.timeStamp))
+		const mergedHistoricalLog = mergeChatLogEntries(historicalMessages.sort((a, b) => a.timeStamp - b.timeStamp).slice(0, -1))
 		channelChatLogs[channelId] = mergedHistoricalLog
 		while (channelChatLogs[channelId].length > currentConfig.DefaultMaxMessageDepth)
 			channelChatLogs[channelId].shift()
-
-		channelChatLogs[channelId].pop()
 	}
 	const myQueue = channelMessageQueues[channelId]
 	const currentChannelLog = channelChatLogs[channelId]

@@ -3,7 +3,7 @@ import { homedir } from 'node:os'
 import { escapeRegExp, parseRegexFromString } from '../../scripts/tools.mjs'
 import { XMLParser, XMLValidator } from 'npm:fast-xml-parser'
 import { statisticDatas } from '../../scripts/statistics.mjs'
-import { getFileObjFormPathOrUrl } from '../../scripts/fileobj.mjs'
+import { getFileObjFormPathOrUrl, resolvePath } from '../../scripts/fileobj.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
@@ -50,7 +50,7 @@ export async function file_change(result, { AddLongTimeLog }) {
 				try {
 					const fileObj = await getFileObjFormPathOrUrl(path)
 					if (fileObj.mimeType.startsWith('text/')) {
-						const content = await fs.promises.readFile(path.replace(/^~\//, homedir() + '/'), 'utf-8')
+						const content = await fs.promises.readFile(resolvePath(path), 'utf-8')
 						file_content += `文件：${path}\n\`\`\`\n${content}\n\`\`\`\n`
 					}
 					else {
@@ -154,7 +154,7 @@ export async function file_change(result, { AddLongTimeLog }) {
 			let replace_count = 0
 			let originalContent
 			try {
-				originalContent = await fs.promises.readFile(path.replace(/^~\//, homedir() + '/'), 'utf-8')
+				originalContent = await fs.promises.readFile(resolvePath(path), 'utf-8')
 			} catch (err) {
 				AddLongTimeLog({
 					name: 'system',
@@ -198,7 +198,7 @@ export async function file_change(result, { AddLongTimeLog }) {
 			if (originalContent !== modifiedContent) {
 				system_content += `\n最终文件内容：\n\`\`\`\n${modifiedContent}\n\`\`\`\n若和你的预期不一致，考虑重新替换或使用override-file覆写修正。`
 				try {
-					await fs.promises.writeFile(path.replace(/^~\//, homedir() + '/'), modifiedContent, 'utf-8')
+					await fs.promises.writeFile(resolvePath(path), modifiedContent, 'utf-8')
 				} catch (err) {
 					system_content = `写入文件失败：${path}\n\`\`\`\n${err.stack}\n\`\`\`\n`
 				}
@@ -230,7 +230,7 @@ export async function file_change(result, { AddLongTimeLog }) {
 
 		console.info('AI写入的文件：', path, content)
 		try {
-			await fs.promises.writeFile(path.replace(/^~\//, homedir() + '/'), content.trim() + '\n', 'utf-8')
+			await fs.promises.writeFile(resolvePath(path), content.trim() + '\n', 'utf-8')
 			AddLongTimeLog({
 				name: 'system',
 				role: 'system',

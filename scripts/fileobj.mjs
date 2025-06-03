@@ -6,11 +6,18 @@ import { getFileExtFormMimetype, mimetypeFromBufferAndName } from './mimetype.mj
 import { getUrlFilename } from './web.mjs'
 
 const msys_path = process.env.MSYS_ROOT_PATH
+/**
+ * @param {string} relativePath
+ * @returns {string}
+ */
 export function resolvePath(relativePath) {
 	if (relativePath.startsWith('~'))
 		return path.join(os.homedir(), relativePath.slice(1))
-	if (msys_path && relativePath.startsWith('/'))
+	if (msys_path && relativePath.startsWith('/')) {
+		if (relativePath.match(/^\/[A-Za-z]\//))
+			return path.join(relativePath.slice(1, 2).toUpperCase() + ':\\', relativePath.slice(3))
 		return path.join(msys_path, relativePath)
+	}
 	return path.resolve(relativePath)
 }
 
