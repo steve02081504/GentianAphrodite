@@ -5,7 +5,7 @@
  * @returns
  */
 export function noAIreply(args) {
-	const last_role = args.chat_log[args.chat_log.length - 1].role
+	const last_role = args.chat_log[args.chat_log.length - 1]?.role
 	switch (args.locales[0].split('-')[0]) {
 		case 'zh':
 			if (args.chat_log.length == 2 && last_role === 'user')
