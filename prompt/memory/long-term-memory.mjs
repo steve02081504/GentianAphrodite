@@ -82,6 +82,10 @@ prompt-content部分的内容应当简洁明了，拒绝重复和废话。
 trigger的关键词应容易触发并涵盖大部分情况，鼓励使用或\`||\`进行交集：
 反面例子：await match_keys(args, ['有个妹妹', '龙凤胎妹妹'], 'user')
 正面例子：await match_keys(args, ['妹', '龙凤胎'], 'any') || await match_keys(args, ['亲戚', /[家亲]人/], 'user')
+优质trigger的书写思路：
+- 分析此prompt的作用是什么，怎样的trigger能够让prompt在需要时触发
+- 思考可能的同义关键词或触发语句变式
+- 提炼条件
 
 你也可以这样删除永久记忆：
 <delete-long-term-memory>名称</delete-long-term-memory>

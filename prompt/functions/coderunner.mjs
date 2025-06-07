@@ -88,7 +88,7 @@ await unzip(workspace.zip, 'D:\\\\')
 </run-js>
 ]
 ${args.supported_functions.add_message ? `\
-- 对于会需要很长时间的任务，你可以使用\`callback\`函数来在异步完成后反馈内容。
+- 对于会需要很长时间的任务，你可以不用await，而是使用\`callback\`函数来在异步完成后反馈内容。
   * 格式：callback(reason: string, promise: Promise)
   * 例子：<run-js>callback('unzip result', super_slow_async_function())</run-js>
   * 返回值：callback是异步的，你无法在<run-js>的当场看到callback结果。

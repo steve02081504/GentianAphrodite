@@ -1,15 +1,23 @@
 import { spawn } from 'node:child_process'
 import process from 'node:process'
 
+export function removeTerminalSequences(str) {
+	// deno-lint-ignore no-control-regex
+	return str.replace(/\x1B\[[\d;]*[Km]/g, '')
+}
+
 async function base_exec(code, {
 	shell,
 	cmdswitch = '-c',
 	args = [],
+	cwd = undefined,
+	no_ansi_terminal_sequences = false
 }) {
 	return new Promise((resolve, reject) => {
 		const process = spawn(shell, [...args, cmdswitch, code], {
-			'encoding': 'utf8',
-			'windowsHide': true
+			encoding: 'utf8',
+			windowsHide: true,
+			cwd,
 		})
 		process.on('error', reject)
 		let stdout = ''
@@ -24,32 +32,39 @@ async function base_exec(code, {
 			stdall += data
 		})
 		process.on('exit', (code) => {
+			if (no_ansi_terminal_sequences) {
+				stdout = removeTerminalSequences(stdout)
+				stderr = removeTerminalSequences(stderr)
+				stdall = removeTerminalSequences(stdall)
+			}
 			resolve({ code, stdout, stderr, stdall })
 		})
 	})
 }
 
-export function bash_exec(code) {
+export function bash_exec(code, options) {
 	return base_exec(code, {
-		'shell': '/bin/bash',
+		shell: '/bin/bash',
+		...options
 	})
 }
 
-function base_pwsh_exec(code, shellpath) {
+function base_pwsh_exec(shellpath, code, options) {
 	code = `\
 $OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::UTF8
 &{
 ${code}
 } | Out-String -Width 65536`
 	return base_exec(code, {
-		'shell': shellpath,
+		shell: shellpath,
 		args: ['-NoProfile', '-NoLogo', '-NonInteractive'],
-		cmdswitch: '-Command'
+		cmdswitch: '-Command',
+		...options
 	})
 }
 async function testPwshPaths(paths) {
 	for (const path of paths)
-		if (await base_pwsh_exec('1', path).catch(() => false))
+		if (await base_pwsh_exec(path, '1').catch(() => false))
 			return path
 }
 
@@ -59,11 +74,11 @@ const powershellPath = await testPwshPaths([
 ])
 
 let pwshPath
-export function powershell_exec(code) {
-	return base_pwsh_exec(code, powershellPath)
+export function powershell_exec(code, options) {
+	return base_pwsh_exec(powershellPath, code, options)
 }
-export function pwsh_exec(code) {
-	return base_pwsh_exec(code, pwshPath ?? powershellPath)
+export function pwsh_exec(code, options) {
+	return base_pwsh_exec(pwshPath ?? powershellPath, code, options)
 }
 export function where_command(command) {
 	if (process.platform === 'win32')
@@ -77,39 +92,8 @@ pwshPath = await testPwshPaths([
 	await where_command('pwsh').catch(() => ''),
 ].filter(x => x))
 
-export function removeTerminalSequences(str) {
-	// deno-lint-ignore no-control-regex
-	return str.replace(/\x1B\[[\d;]*[Km]/g, '')
-}
-function RemoveterminalSequencesFromExecResult(result) {
-	return {
-		...result,
-		stdout: removeTerminalSequences(result.stdout),
-		stderr: removeTerminalSequences(result.stderr),
-		stdall: removeTerminalSequences(result.stdall),
-	}
-}
-
-export function exec(str) {
+export function exec(str, options) {
 	if (process.platform == 'win32')
-		return pwsh_exec(str)
-	else return bash_exec(str)
-}
-
-// no ansi terminal sequences functions
-
-export function exec_NATS(str) {
-	return exec(str).then(RemoveterminalSequencesFromExecResult)
-}
-
-export function bash_exec_NATS(str) {
-	return bash_exec(str).then(RemoveterminalSequencesFromExecResult)
-}
-
-export function pwsh_exec_NATS(str) {
-	return pwsh_exec(str).then(RemoveterminalSequencesFromExecResult)
-}
-
-export function powershell_exec_NATS(str) {
-	return powershell_exec(str).then(RemoveterminalSequencesFromExecResult)
+		return pwsh_exec(str, options)
+	else return bash_exec(str, options)
 }

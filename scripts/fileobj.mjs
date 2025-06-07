@@ -12,11 +12,11 @@ const msys_path = process.env.MSYS_ROOT_PATH
  */
 export function resolvePath(relativePath) {
 	if (relativePath.startsWith('~'))
-		return path.join(os.homedir(), relativePath.slice(1))
+		return path.resolve(path.join(os.homedir(), relativePath.slice(1)))
 	if (msys_path && relativePath.startsWith('/')) {
 		if (relativePath.match(/^\/[A-Za-z]\//))
-			return path.join(relativePath.slice(1, 2).toUpperCase() + ':\\', relativePath.slice(3))
-		return path.join(msys_path, relativePath)
+			return path.resolve(path.join(relativePath.slice(1, 2).toUpperCase() + ':\\', relativePath.slice(3)))
+		return path.resolve(path.join(msys_path, relativePath))
 	}
 	return path.resolve(relativePath)
 }

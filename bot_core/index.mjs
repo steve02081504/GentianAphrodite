@@ -368,6 +368,7 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
 		if (base_match_keys(content, GentianWords) && base_match_keys(content, [/怎么(想|看)/])) possible += 100
 		if (base_match_keys(content, ['睡了', '眠了', '晚安', '睡觉去了'])) possible += 50
 		if (base_match_keys(content, ['失眠了', '睡不着'])) possible += 100
+		if (base_match_keys(content, ['早上好', '早安'])) possible += 100
 
 		if (isInFavor) {
 			possible += 4
@@ -418,9 +419,11 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
 
 	const okey = Math.random() * 100 < possible
 	console.dir({
+		chat_name: platformAPI.getChatNameForAI(channelId, fountEntry),
 		name: fountEntry.name,
 		content,
 		files: fountEntry.files,
+		channelId,
 		possible,
 		okey,
 		isFromOwner,
@@ -443,9 +446,8 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
  */
 async function doMessageReplyInternal(triggerMessage, platformAPI, channelId) {
 	let typingInterval = setInterval(() => { platformAPI.sendTyping(channelId).catch(_ => { }) }, 5000)
-	const clearTypingInterval = () => {
-		if (typingInterval) clearInterval(typingInterval)
-		typingInterval = null
+	function clearTypingInterval() {
+		if (typingInterval) typingInterval = clearInterval(typingInterval)
 	}
 
 	updateBotNameMapping(platformAPI)
@@ -550,7 +552,6 @@ async function sendAndLogReply(replyToSend, platformAPI, channelId, repliedToMes
 	)
 		repliedToMessageEntry = undefined
 
-
 	const textContent = replyToSend.content || ''
 	const files = replyToSend.files || []
 	let firstSentMessageEntry = null
@@ -629,6 +630,7 @@ async function handleMessageQueue(channelId, platformAPI) {
 				lastLogEntry.name === currentMessageToProcess.name &&
 				currentMessageToProcess.timeStamp - lastLogEntry.timeStamp < currentConfig.MergeMessagePeriodMs &&
 				(lastLogEntry.files || []).length === 0 &&
+				(lastLogEntry.logContextAfter || []).length === 0 &&
 				lastLogEntry.extension?.platform_message_ids &&
 				currentMessageToProcess.extension?.platform_message_ids
 		}
@@ -1060,7 +1062,7 @@ async function handleGroupCheck(group, platformAPI, ownerOverride = null) {
 		const insultRequest = {
 			supported_functions: { markdown: true, files: false, add_message: false, mathjax: false, html: false, unsafe_html: false },
 			username: FountUsername,
-			chat_name: `InsultContext: ${platformAPI.name}: ${group.id}`,
+			chat_name: platformAPI.getChatNameForAI(group.id, { extension: { platform_guild_id: group.id, platform_channel_id: defaultChannel.id, platform: platformAPI.name } }),
 			char_id: BotCharname,
 			Charname: botNameForAIChat,
 			UserCharname: userCharNameForAI,

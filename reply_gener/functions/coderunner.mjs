@@ -1,6 +1,6 @@
 import process from 'node:process'
 import util from 'node:util'
-import { bash_exec_NATS, pwsh_exec_NATS } from '../../scripts/exec.mjs'
+import { bash_exec, pwsh_exec } from '../../scripts/exec.mjs'
 import { async_eval } from '../../scripts/async_eval.mjs'
 import { GetReply } from '../index.mjs'
 import { newCharReplay, statisticDatas } from '../../scripts/statistics.mjs'
@@ -27,7 +27,7 @@ ${code}
 		charVisibility: [args.char_id],
 	}
 	try {
-		const new_req = args.Update()
+		const new_req = await args.Update()
 		logger = new_req.AddChatLogEntry
 		new_req.chat_log = [...new_req.chat_log, feedback]
 		new_req.extension.from_callback = true
@@ -129,7 +129,7 @@ export async function coderunner(result, args) {
 			})
 			console.info('AI运行的Powershell代码：', pwshrunner)
 			let pwshresult
-			try { pwshresult = await pwsh_exec_NATS(pwshrunner) } catch (err) { pwshresult = err }
+			try { pwshresult = await pwsh_exec(pwshrunner, { no_ansi_terminal_sequences: true }) } catch (err) { pwshresult = err }
 			result.extension.execed_codes[pwshrunner] = pwshresult
 			if (pwshresult.stdall) { pwshresult = { ...pwshresult }; delete pwshresult.stdout; delete pwshresult.stderr }
 			console.info('pwshresult', pwshresult)
@@ -154,7 +154,7 @@ export async function coderunner(result, args) {
 			})
 			console.info('AI运行的Bash代码：', bashrunner)
 			let bashresult
-			try { bashresult = await bash_exec_NATS(bashrunner) } catch (err) { bashresult = err }
+			try { bashresult = await bash_exec(bashrunner, {no_ansi_terminal_sequences: true}) } catch (err) { bashresult = err }
 			result.extension.execed_codes[bashrunner] = bashresult
 			if (bashresult.stdall) { bashresult = { ...bashresult }; delete bashresult.stdout; delete bashresult.stderr }
 			console.info('bashresult', bashresult)

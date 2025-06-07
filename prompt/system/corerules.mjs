@@ -36,6 +36,12 @@ export async function CoreRulesPrompt(args, logical_results, prompt_struct, deta
 允许性相关描述（如泌乳或自慰），但禁止主动、引导进入做爱情节。
 `
 
+	if (!logical_results.in_subassist)
+		result += `\
+鼓励多变的文风和用语，禁止无意义的格式重复。
+必须以有意义的语句开始回复。
+`
+
 	if (await match_keys(args, [...rude_words, ...lewd_words], 'other', 3))
 		result += `\
 在你或你主人被骂或被骚扰时，你应当立即反击此人：[

@@ -19,13 +19,17 @@ async function findExistingPathsInText(text) {
 		seekedpathlikes.push(tmp[0])
 		text = text.slice(tmp.index + 1)
 	}
+	const seekedpaths = new Set()
 	seekedpathlikes.map(path => path.replace(/^`|`$/g, '').trim()).forEach(pathblock => {
 		const spilts = pathblock.split(/(?=[^\w/\\-])/)
 		for (let i = 0; i < spilts.length; i++)
 			for (let j = i + 1; j <= spilts.length; j++) try {
 				const path = spilts.slice(i, j).join('')
 				if (pathblock != path && !path.match(/^([A-Za-z]:\\|(\.|\.\.|~)[/\\]|[/\\])[^\n:`]+/u)) continue
-				if (!fs.statSync(resolvePath(path)).isFile()) continue
+				const resolvedPath = resolvePath(path)
+				if (seekedpaths.has(resolvedPath)) continue
+				if (!fs.statSync(resolvedPath).isFile()) continue
+				seekedpaths.add(resolvedPath)
 				paths.add(path)
 			} catch (e) { }
 	})

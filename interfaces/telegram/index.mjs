@@ -483,7 +483,7 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 		getOwnerUserId: () => interfaceConfig.OwnerUserID,
 
 		getChatNameForAI: (logicalChannelId, triggerMessage) => {
-			const { chatId: platformChatId, threadId: threadIdFromLogical } = parseLogicalChannelId(logicalChannelId)
+			const { threadId } = parseLogicalChannelId(logicalChannelId)
 
 			const chatType = triggerMessage?.extension?.platform_chat_type
 			const chatTitle = triggerMessage?.extension?.platform_chat_title
@@ -500,7 +500,7 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 				return `Telegram DM with ${userName || 'Some User'}`
 			} else if (chatTitle) {
 				let baseName = `Telegram: Group ${chatTitle.replace(/\s/g, '_')}`
-				const actualThreadId = triggerMessage?.extension?.telegram_message_thread_id || threadIdFromLogical
+				const actualThreadId = triggerMessage?.extension?.telegram_message_thread_id || threadId
 				if (actualThreadId)
 					baseName += `: Thread ${actualThreadId}`
 
