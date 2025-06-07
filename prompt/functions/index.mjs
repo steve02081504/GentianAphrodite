@@ -1,4 +1,4 @@
-import { margePrompt } from '../build.mjs'
+import { mergePrompt } from '../build.mjs'
 import { PromptWriterPrompt } from './promptWriter.mjs'
 import { ChineseGrammarCorrectionPrompt } from './ChineseGrammarCorrection.mjs'
 import { CodeRunnerPrompt } from './coderunner.mjs'
@@ -54,5 +54,5 @@ export async function FunctionPrompt(args, logical_results, prompt_struct, detai
 	result.push(PromptReviewerPrompt(args, logical_results, prompt_struct, detail_level))
 	if (args.supported_functions.add_message)
 		result.push(TimerPrompt(args, logical_results, prompt_struct, detail_level))
-	return margePrompt(...await Promise.all(result))
+	return mergePrompt(...await Promise.all(result))
 }

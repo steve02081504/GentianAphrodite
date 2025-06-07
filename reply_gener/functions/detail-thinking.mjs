@@ -2,7 +2,7 @@
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 import { OrderedAISourceCalling } from '../../AISource/index.mjs'
-import { margePrompt } from '../../prompt/build.mjs'
+import { mergePrompt } from '../../prompt/build.mjs'
 import { WebBrowsePrompt } from '../../prompt/functions/webbrowse.mjs'
 import { CodeRunnerPrompt } from '../../prompt/functions/coderunner.mjs'
 import { DetailThinkingMainPrompt } from '../../prompt/functions/detail-thinking.mjs'
@@ -192,7 +192,7 @@ Step 2: <步骤2主题>
 			planningCycles++
 			console.info(`Detail-thinking: Starting planning cycle ${planningCycles}/${max_planning_cycles}`)
 
-			thinkingContext.char_prompt = margePrompt(
+			thinkingContext.char_prompt = mergePrompt(
 				await DetailThinkingMainPrompt(),
 				await GoogleSearchPrompt(),
 				await WebBrowsePrompt(),

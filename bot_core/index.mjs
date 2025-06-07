@@ -2,7 +2,7 @@ import { Buffer } from 'node:buffer'
 import { charname as BotCharname, username as FountUsername } from '../charbase.mjs'
 import GentianAphrodite from '../main.mjs'
 
-import { base_match_keys, SimplifiyChinese } from '../scripts/match.mjs'
+import { base_match_keys, SimplifyChinese } from '../scripts/match.mjs'
 import { findMostFrequentElement } from '../scripts/tools.mjs'
 import { rude_words } from '../scripts/dict.mjs'
 import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
@@ -662,7 +662,7 @@ async function handleMessageQueue(channelId, platformAPI) {
 					if (banWordMatch?.groups?.banned_content)
 						bannedStrings.push(banWordMatch.groups.banned_content)
 					if (base_match_keys(content, [/^(龙胆|[\n,.~、。呵哦啊嗯噫欸，～])+$/, /^龙胆龙胆(龙胆|[\n!,.?~、。呵哦啊嗯噫欸！，？～])+$/])) {
-						const ownerCallReply = SimplifiyChinese(content).replaceAll('龙胆', '主人')
+						const ownerCallReply = SimplifyChinese(content).replaceAll('龙胆', '主人')
 						await sendAndLogReply({ content: ownerCallReply }, platformAPI, channelId, currentMessageToProcess)
 						newUserMessage(content, platformAPI.name)
 						newCharReplay(ownerCallReply, platformAPI.name)

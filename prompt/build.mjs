@@ -4,7 +4,7 @@ import { MemorysPrompt } from './memory/index.mjs'
 import { RoleSettingsPrompt } from './role_settings/index.mjs'
 import { SystemPrompt } from './system/index.mjs'
 
-export function margePrompt(...prompts) {
+export function mergePrompt(...prompts) {
 	const result = {
 		text: [],
 		additional_chat_log: [],
@@ -21,7 +21,7 @@ export function margePrompt(...prompts) {
 }
 
 export async function buildPrompt(args, logical_results, prompt_struct, detail_level) {
-	return margePrompt(
+	return mergePrompt(
 		await MemorysPrompt(args, logical_results, prompt_struct, detail_level),
 		await RoleSettingsPrompt(args, logical_results, prompt_struct, detail_level),
 		await FunctionPrompt(args, logical_results, prompt_struct, detail_level),

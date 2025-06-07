@@ -1,4 +1,4 @@
-import { margePrompt } from '../build.mjs'
+import { mergePrompt } from '../build.mjs'
 import { CoreRulesPrompt } from './corerules.mjs'
 import { MasterRecognizePrompt } from './master-recognize.mjs'
 import { NullReplayPrompt } from './nullreplay.mjs'
@@ -34,5 +34,5 @@ export async function SystemPrompt(args, logical_results, prompt_struct, detail_
 
 	result.push(NullReplayPrompt(args, logical_results, prompt_struct, detail_level))
 
-	return margePrompt(...await Promise.all(result))
+	return mergePrompt(...await Promise.all(result))
 }

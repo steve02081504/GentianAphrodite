@@ -10,7 +10,7 @@ import { normalizeFancyText } from './fancytext.mjs'
 import { charname } from '../charbase.mjs'
 
 const chT2S = OpenCC.Converter({ from: 'twp', to: 'cn' })
-export function SimplifiyChinese(content) {
+export function SimplifyChinese(content) {
 	return chT2S(content)
 }
 /**
@@ -19,7 +19,7 @@ export function SimplifiyChinese(content) {
  * @returns {[string, string, string]} The input, its simplified chinese version, and its normalized fancy text version
  */
 function SimpleSimplify(content) {
-	const base_content = SimplifiyChinese(content)
+	const base_content = SimplifyChinese(content)
 	return [content, base_content, normalizeFancyText(base_content)]
 }
 
