@@ -89,8 +89,10 @@ export async function GetReply(args) {
 	if (last_entry?.name == args.UserCharname && last_entry.role == 'user')
 		newUserMessage(last_entry.content, args.extension?.platform || 'chat')
 	regen: while (true) {
-		console.log('logical_results', logical_results)
-		console.log('prompt_struct', inspect(prompt_struct, { depth: 4, colors: true }))
+		if (globalThis.fountCharCI?.echo_prompt_struct || process.env.EdenOS) {
+			console.log('logical_results', logical_results)
+			console.log('prompt_struct', inspect(prompt_struct, { depth: 4, colors: true }))
+		}
 		const AItype = logical_results.in_nsfw ? 'nsfw' : logical_results.in_assist ? 'expert' : 'sfw'
 		const requestresult = await OrderedAISourceCalling(AItype, async AI => {
 			const result = await AI.StructCall(prompt_struct)

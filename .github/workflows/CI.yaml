@@ -1,0 +1,23 @@
+name: Test Running
+
+permissions:
+  contents: read
+  actions: write
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '**.mjs'
+    tags-ignore:
+      - '*'
+    branches:
+      - '*'
+
+jobs:
+  test-running:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: steve02081504/fount-charCI@master
+        with:
+          CI-filepath: .github/workflows/CI.mjs

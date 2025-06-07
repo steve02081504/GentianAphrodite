@@ -54,8 +54,9 @@ function parsePlan(text) {
 
 
 /** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
-export async function detailThinking(result, { AddLongTimeLog, prompt_struct }) {
+export async function detailThinking(result, args) {
 	const { max_planning_cycles, thinking_interval, initial_plan_max_retries, summary_max_retries } = config.detail_thinking
+	const { AddLongTimeLog, prompt_struct } = args
 
 	result.extension.execed_codes ??= {}
 
@@ -241,7 +242,19 @@ Step 2: <步骤2主题>
 
 					let functionCalled = false
 					for (const replyHandler of [coderunner, googlesearch, webbrowse])
-						if (await replyHandler(stepOutput, { AddLongTimeLog: addThinkingLongTimeLog, prompt_struct: thinkingContext })) {
+						if (await replyHandler(stepOutput, {
+							AddLongTimeLog: addThinkingLongTimeLog,
+							prompt_struct: thinkingContext,
+							chat_scoped_char_memory: args.chat_scoped_char_memory,
+							supported_functions: {
+								markdown: true,
+								files: true,
+								add_message: true,
+								mathjax: true,
+								html: true,
+								unsafe_html: false
+							}
+						})) {
 							functionCalled = true
 							console.info(`Detail-thinking: Cycle ${planningCycles}, Step ${step.step} - Function triggered by handler: ${replyHandler.name}. Waiting for result...`)
 							// The replyHandler is expected to add the function call result to thinkingContext.chat_log
