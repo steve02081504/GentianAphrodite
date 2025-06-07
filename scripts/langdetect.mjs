@@ -1,4 +1,4 @@
-import { base_match_keys } from './match.mjs'
+import { base_match_keys } from './match_utils.mjs'
 import { francAll } from 'npm:franc'
 
 function is_Franc_threshold(text, lang, threshold = 0.9) {

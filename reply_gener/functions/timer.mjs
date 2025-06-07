@@ -7,7 +7,7 @@ import { flatChatLog } from '../../scripts/match.mjs'
 import { UseNofityAbleChannel } from '../../scripts/notify.mjs'
 import { newCharReplay, statisticDatas } from '../../scripts/statistics.mjs'
 import { parseDuration } from '../../scripts/tools.mjs'
-import { GetReply } from '../index.mjs'
+import { GetReply } from '../core.mjs'
 
 /** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
 export async function timer(result, args) {

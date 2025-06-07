@@ -3,22 +3,7 @@ import { FunctionPrompt } from './functions/index.mjs'
 import { MemorysPrompt } from './memory/index.mjs'
 import { RoleSettingsPrompt } from './role_settings/index.mjs'
 import { SystemPrompt } from './system/index.mjs'
-
-export function margePrompt(...prompts) {
-	const result = {
-		text: [],
-		additional_chat_log: [],
-		extension: {}
-	}
-	for (const prompt of prompts) {
-		result.text = result.text.concat(prompt.text || [])
-		result.additional_chat_log = result.additional_chat_log.concat(prompt.additional_chat_log || [])
-		result.extension = Object.assign(result.extension, prompt.extension)
-	}
-	result.text = result.text.filter(text => text.content)
-	result.additional_chat_log = result.additional_chat_log.filter(chat_log => chat_log.content)
-	return result
-}
+import { margePrompt } from './utils.mjs'
 
 export async function buildPrompt(args, logical_results, prompt_struct, detail_level) {
 	return margePrompt(

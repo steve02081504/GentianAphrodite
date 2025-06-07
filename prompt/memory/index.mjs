@@ -1,4 +1,4 @@
-import { margePrompt } from '../build.mjs'
+import { margePrompt } from '../utils.mjs'
 import { saveShortTermMemory, ShortTermMemoryPrompt } from './short-term-memory.mjs'
 import { LongTermMemoryPrompt, saveLongTermMemory } from './long-term-memory.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */

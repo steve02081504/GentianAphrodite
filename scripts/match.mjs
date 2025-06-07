@@ -1,27 +1,28 @@
 /** @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
 import { escapeRegExp } from './tools.mjs'
-import * as OpenCC from 'npm:opencc-js'
+// import * as OpenCC from 'npm:opencc-js' // No longer needed directly
 import { translate } from 'npm:@vitalets/google-translate-api'
 import { is_PureChinese } from './langdetect.mjs'
 import { remove_kaomoji } from './dict.mjs'
 import { francAll } from 'npm:franc'
-import { normalizeFancyText } from './fancytext.mjs'
+// import { normalizeFancyText } from './fancytext.mjs' // No longer needed directly
 import { charname } from '../charbase.mjs'
+import { base_match_keys, SimplifiyChinese, SimpleSimplify } from './match_utils.mjs'
 
-const chT2S = OpenCC.Converter({ from: 'twp', to: 'cn' })
-export function SimplifiyChinese(content) {
-	return chT2S(content)
-}
-/**
- * A simpler version of SimplifiyContent that does not do any translation.
- * @param {string} content
- * @returns {[string, string, string]} The input, its simplified chinese version, and its normalized fancy text version
- */
-function SimpleSimplify(content) {
-	const base_content = SimplifiyChinese(content)
-	return [content, base_content, normalizeFancyText(base_content)]
-}
+// const chT2S = OpenCC.Converter({ from: 'twp', to: 'cn' }) // Now in match_utils.mjs
+// export function SimplifiyChinese(content) { // Now in match_utils.mjs
+// 	return chT2S(content)
+// }
+// /**
+//  * A simpler version of SimplifiyContent that does not do any translation.
+//  * @param {string} content
+//  * @returns {[string, string, string]} The input, its simplified chinese version, and its normalized fancy text version
+//  */
+// function SimpleSimplify(content) { // Now in match_utils.mjs
+// 	const base_content = SimplifiyChinese(content)
+// 	return [content, base_content, normalizeFancyText(base_content)]
+// }
 
 /**
  * Simplify the given content so that it can be used in prompts.
@@ -57,7 +58,7 @@ export async function SimplifiyContent(content) {
 				}
 			}
 	}
-	return SimpleSimplify(content)
+	return SimpleSimplify(content) // This will now use the imported SimpleSimplify
 }
 
 /**
@@ -88,26 +89,9 @@ export async function PreprocessChatLogEntry(entry) {
 	return [entry.content, ...entry.extension.SimplifiedContents]
 }
 
-export function base_match_keys(content, keys,
-	matcher = (content, reg_keys) => {
-		const contents = SimpleSimplify(content)
-		return Math.max(...contents.map(content => reg_keys.filter(key => content.match(key)).length))
-	}
-) {
-	// convert all keys to regexp, if it's have chinese like character, no match hole word
-	keys.forEach(key => {
-		if (key instanceof RegExp) key.lastIndex = 0
-	})
-	keys = keys.map(key =>
-		key instanceof RegExp ? key :
-			new RegExp(/\p{Unified_Ideograph}/u.test(key) ? escapeRegExp(key) : `\\b${escapeRegExp(key)}\\b`, 'ugi'))
-
-	return matcher(content, keys)
-}
-
 export function base_match_keys_all(content, keys) {
 	return base_match_keys(content, keys, (content, reg_keys) => {
-		const contents = SimpleSimplify(content)
+		const contents = SimpleSimplify(content) // This will now use the imported SimpleSimplify
 		return contents.some(content => reg_keys.every(key => content.match(key)))
 	})
 }

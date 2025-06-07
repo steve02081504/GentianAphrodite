@@ -1,4 +1,4 @@
-import { margePrompt } from '../build.mjs'
+import { margePrompt } from '../utils.mjs'
 import { AbilityPrompt } from './ability.mjs'
 import { BackgroundPrompt } from './background.mjs'
 import { BasedefPrompt } from './base_defs.mjs'

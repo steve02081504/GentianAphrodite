@@ -1,4 +1,4 @@
-import { margePrompt } from '../build.mjs'
+import { margePrompt } from '../utils.mjs'
 import { PromptWriterPrompt } from './promptWriter.mjs'
 import { ChineseGrammarCorrectionPrompt } from './ChineseGrammarCorrection.mjs'
 import { CodeRunnerPrompt } from './coderunner.mjs'

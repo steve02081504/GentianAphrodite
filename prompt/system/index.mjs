@@ -1,4 +1,4 @@
-import { margePrompt } from '../build.mjs'
+import { margePrompt } from '../utils.mjs'
 import { CoreRulesPrompt } from './corerules.mjs'
 import { MasterRecognizePrompt } from './master-recognize.mjs'
 import { NullReplayPrompt } from './nullreplay.mjs'
