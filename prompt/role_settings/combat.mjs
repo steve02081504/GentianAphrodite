@@ -9,7 +9,7 @@ import { match_keys } from '../../scripts/match.mjs'
  * @param {prompt_struct_t} prompt_struct
  * @param {number} detail_level
  */
-export async function combatPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function CombatPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
 	if (await match_keys(args, ['内脏', '失去', '改造', '毫无', '没有', '肢解', '血肉', '阻隔', '隔绝', '魔力回廊', '魔力线路', '魔法回廊', '魔法线路', '魔素'], 'any') &&

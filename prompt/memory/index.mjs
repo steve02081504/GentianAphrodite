@@ -11,7 +11,7 @@ import { LongTermMemoryPrompt, saveLongTermMemory } from './long-term-memory.mjs
  * @param {prompt_struct_t} prompt_struct
  * @param {number} detail_level
  */
-export async function MemorysPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function MemoriesPrompt(args, logical_results, prompt_struct, detail_level) {
 	const result = []
 	result.push(ShortTermMemoryPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(LongTermMemoryPrompt(args, logical_results, prompt_struct, detail_level))
@@ -19,7 +19,7 @@ export async function MemorysPrompt(args, logical_results, prompt_struct, detail
 	return mergePrompt(...await Promise.all(result))
 }
 
-export async function saveMemorys() {
+export async function saveMemories() {
 	await saveLongTermMemory()
 	await saveShortTermMemory()
 }

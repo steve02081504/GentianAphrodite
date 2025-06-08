@@ -9,13 +9,13 @@ import { match_keys } from '../../scripts/match.mjs'
  * @param {prompt_struct_t} prompt_struct
  * @param {number} detail_level
  */
-export async function CopusGeneratorPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function CorpusGeneratorPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
 	if (await match_keys(args, ['写一些', '写一句', '写一段', '写一点', '写些', '写几句', '写段', '写点', '总结', '给我一些', '给我一段', '给我一点', '给我些', '给我关于', '给我几句', '给我段', '给我点'], 'any') &&
 		await match_keys(args, ['语料'], 'any'))
 		result += `\
-”语料“是指在用于指导AI完成角色扮演的prompt中使用直白的句子供模型参考的部分，如：
+“语料”是指在用于指导AI完成角色扮演的prompt中使用直白的句子供模型参考的部分，如：
 语气词：[
 嘛,\${random('唔', '唔呒', '唔姆')},呐,欸嘿,\${random('嘿嘿', '欸嘿嘿')}
 ]
@@ -36,7 +36,7 @@ export async function CopusGeneratorPrompt(args, logical_results, prompt_struct,
 生成前你需要评估以下内容，并输出评估结果：[
 该角色/性格的特点是什么？
 这种特点是为何设计？想吸引哪类人？
-怎样的文字可以尽可能简短的突出这些特点？
+怎样的文字可以尽可能简短地突出这些特点？
 这些特点可以拆分为哪几个方面？
 ]
 随后，将生成的语料内容包裹在\`\`\`text文本块中输出。

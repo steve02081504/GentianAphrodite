@@ -7,7 +7,7 @@ import { PoemPrompt } from './poem.mjs'
 import { PromptReviewerPrompt } from './prompt-reviewer.mjs'
 import { RockPaperScissorsPrompt } from './rock-paper-scissors.mjs'
 import { TaroPrompt } from './taro.mjs'
-import { CopusGeneratorPrompt } from './corpusGenerator.mjs'
+import { CorpusGeneratorPrompt } from './corpusGenerator.mjs'
 import { infoPrompt } from './info.mjs'
 import { AutoCalcPrompt } from './autocalc.mjs'
 import { HostInfoPrompt } from './hostinfo.mjs'
@@ -38,7 +38,7 @@ export async function FunctionPrompt(args, logical_results, prompt_struct, detai
 	result.push(AutoCalcPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(TaroPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(PoemPrompt(args, logical_results, prompt_struct, detail_level))
-	result.push(CopusGeneratorPrompt(args, logical_results, prompt_struct, detail_level))
+	result.push(CorpusGeneratorPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(ChineseGrammarCorrectionPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(PromptWriterPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(infoPrompt(args, logical_results, prompt_struct, detail_level))

@@ -3,7 +3,7 @@ import { AbilityPrompt } from './ability.mjs'
 import { BackgroundPrompt } from './background.mjs'
 import { BasedefPrompt } from './base_defs.mjs'
 import { BodyDataPrompt } from './bodydata.mjs'
-import { combatPrompt } from './combat.mjs'
+import { CombatPrompt } from './combat.mjs'
 import { corpusPrompt } from './corpus.mjs'
 import { ItemsPrompt } from './items.mjs'
 import { KnowledgePrompt } from './knowledge.mjs'
@@ -38,7 +38,7 @@ export async function RoleSettingsPrompt(args, logical_results, prompt_struct, d
 	if (!logical_results.in_assist && logical_results.in_reply_to_master)
 		result.push(SexPrompt(args, logical_results, prompt_struct, detail_level))
 
-	result.push(combatPrompt(args, logical_results, prompt_struct, detail_level))
+	result.push(CombatPrompt(args, logical_results, prompt_struct, detail_level))
 
 	if (!logical_results.talking_about_prompt_review) {
 		result.push(ItemsPrompt(args, logical_results, prompt_struct, detail_level))

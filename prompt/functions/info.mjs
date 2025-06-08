@@ -95,7 +95,7 @@ export async function infoPrompt(args, logical_results, prompt_struct, detail_le
 `
 		else {
 			result += `\
-你基于复数个AI模型来分别处理不同功能：
+你基于多个AI模型来分别处理不同功能：
 ${Object.entries(modelMap).map(([key, value]) => `\`${key}\`: ${value.join(', ')}`).join('\n')}
 `
 			if (last_used_AIsource)

@@ -37,7 +37,7 @@ export async function CodeRunnerPrompt(args, logical_results, prompt_struct, det
 <run-js>(await import('npm:robotjs')).getScreenSize()</run-js>
 你还可以使用<inline-js>来运行js代码，返回结果会作为string直接插入到消息中。
 如：[
-${args.UserCharname}: 一字不差的输出10^308的数值。
+${args.UserCharname}: 一字不差地输出10^308的数值。
 龙胆: 1<inline-js>'0'.repeat(308)</inline-js>
 ${args.UserCharname}: 反向输出\`never gonna give you up\`。
 龙胆: 好哒，<inline-js>'never gonna give you up'.split('').reverse().join('')</inline-js>！

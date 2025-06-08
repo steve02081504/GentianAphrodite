@@ -54,17 +54,17 @@ const MAX_RANDOM_FLASHBACK = 2 // 最多选几条随机
  */
 
 /** @type {MemoryEntry[]} */
-let chat_memorys = loadJsonFileIfExists(path.join(chardir, 'memory/short-term-memory.json'), [])
+let chat_memories = loadJsonFileIfExists(path.join(chardir, 'memory/short-term-memory.json'), [])
 let lastCleanupTime = new Date().getTime()
 
 export function getMostFrequentChatName() {
-	return findMostFrequentElement(chat_memorys.map(x => x.chat_name)).element
+	return findMostFrequentElement(chat_memories.map(x => x.chat_name)).element
 }
 
 export function getHighestScoreShortTermMemory() {
 	const currentTimeStamp = Date.now()
 	let max_relevance = 0, result
-	for (const mem of chat_memorys) {
+	for (const mem of chat_memories) {
 		const relevance = calculateRelevance(mem, [], currentTimeStamp)
 		if (relevance >= max_relevance) {
 			max_relevance = relevance
@@ -106,13 +106,13 @@ function calculateRelevance(memoryEntry, currentKeywords, currentTimeStamp) {
  * @param {number} currentTimeStamp
  */
 function cleanupMemories(currentTimeStamp) {
-	const initialMemoryCount = chat_memorys.length
+	const initialMemoryCount = chat_memories.length
 	const oneYearAgo = currentTimeStamp - MEMORY_TTL_MS
 
 	const passingMemories = []
 	const failingMemories = []
 
-	for (const mem of chat_memorys) {
+	for (const mem of chat_memories) {
 		mem.relevance = calculateRelevance(mem, [], currentTimeStamp)
 		if (mem.timeStamp < oneYearAgo) failingMemories.push(mem)
 		if (mem.relevance >= CLEANUP_MIN_SCORE_THRESHOLD) passingMemories.push(mem)
@@ -120,21 +120,21 @@ function cleanupMemories(currentTimeStamp) {
 	}
 
 	if (passingMemories.length >= MIN_RETAINED_MEMORIES)
-		chat_memorys = passingMemories
+		chat_memories = passingMemories
 	else {
 		// 达标的记忆数量不足 MIN_RETAINED_MEMORIES，需要从未达标的记忆中补充
 		const neededFromFailing = MIN_RETAINED_MEMORIES - passingMemories.length
 		failingMemories.sort((a, b) => b.relevance - a.relevance)
 		// 取权重最高的 neededFromFailing 条未达标记忆
 		const supplementaryMemories = failingMemories.slice(0, neededFromFailing)
-		chat_memorys = [...passingMemories, ...supplementaryMemories]
+		chat_memories = [...passingMemories, ...supplementaryMemories]
 	}
 
-	for (const mem of chat_memorys) delete mem.relevance
+	for (const mem of chat_memories) delete mem.relevance
 
 	lastCleanupTime = currentTimeStamp
-	if (initialMemoryCount !== chat_memorys.length)
-		console.log(`[Memory] Cleanup ran. Removed ${initialMemoryCount - chat_memorys.length} entries. Current size: ${chat_memorys.length}`)
+	if (initialMemoryCount !== chat_memories.length)
+		console.log(`[Memory] Cleanup ran. Removed ${initialMemoryCount - chat_memories.length} entries. Current size: ${chat_memories.length}`)
 }
 
 
@@ -202,7 +202,7 @@ export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct
 
 	// --- 3. 计算所有记忆的相关性 ---
 	/** @type {{memory: MemoryEntry, relevance: number, index: number}[]} */
-	const scoredMemories = chat_memorys
+	const scoredMemories = chat_memories
 		.map((mem, index) => ({
 			memory: mem,
 			relevance: calculateRelevance(mem, currentKeywords, currentTimeStamp),
@@ -252,7 +252,7 @@ export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct
 	// --- 4.5 优化随机闪回选择逻辑 ---
 	const finalRandomFlashback = [] // 最终选中的随机记忆 [{memory, index, relevance}]
 	// 初始候选池：所有记忆中排除已被选为相关/次相关的
-	let availableForRandomPool = chat_memorys
+	let availableForRandomPool = chat_memories
 		.map((mem, index) => ({ memory: mem, index }))
 		.filter(item => !selectedIndices.has(item.index))
 
@@ -310,11 +310,11 @@ export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct
 
 	// --- 5. 强化被激活的记忆 (逻辑不变) ---
 	finalTopRelevant.forEach(item => {
-		const memoryToUpdate = chat_memorys[item.index]
+		const memoryToUpdate = chat_memories[item.index]
 		if (memoryToUpdate) memoryToUpdate.score = Math.min(memoryToUpdate.score + SCORE_INCREMENT_TOP, 100)
 	})
 	finalNextRelevant.forEach(item => {
-		const memoryToUpdate = chat_memorys[item.index]
+		const memoryToUpdate = chat_memories[item.index]
 		if (memoryToUpdate) memoryToUpdate.score = Math.min(memoryToUpdate.score + SCORE_INCREMENT_NEXT, 100)
 	})
 
@@ -380,7 +380,7 @@ ${args.UserCharname}: 给我把有关华为的记忆全忘掉。
 			.join('\n')
 
 		if (memoryText.trim())
-			chat_memorys.push({
+			chat_memories.push({
 				timeStamp: memoryLogSlice[memoryLogSlice.length - 1]?.timeStamp || currentTimeStamp,
 				text: memoryText,
 				keywords: newMemoryKeywords,
@@ -404,15 +404,15 @@ ${args.UserCharname}: 给我把有关华为的记忆全忘掉。
 export function saveShortTermMemory() {
 	cleanupMemories(Date.now())
 	fs.mkdirSync(path.join(chardir, 'memory'), { recursive: true })
-	saveJsonFile(path.join(chardir, 'memory/short-term-memory.json'), chat_memorys)
+	saveJsonFile(path.join(chardir, 'memory/short-term-memory.json'), chat_memories)
 }
 
 export function deleteShortTermMemory(keyword) {
-	const oldLength = chat_memorys.length
-	chat_memorys = chat_memorys.filter(mem => !(Object(keyword) instanceof RegExp ? keyword.test(mem.text) : mem.text.includes(keyword)))
+	const oldLength = chat_memories.length
+	chat_memories = chat_memories.filter(mem => !(Object(keyword) instanceof RegExp ? keyword.test(mem.text) : mem.text.includes(keyword)))
 	saveShortTermMemory()
-	return oldLength - chat_memorys.length
+	return oldLength - chat_memories.length
 }
 export function getShortTermMemoryNum() {
-	return chat_memorys.length
+	return chat_memories.length
 }
