@@ -275,9 +275,9 @@ export async function DiscordBotMain(client, interfaceConfig) {
 			}
 
 			let repliedToDiscordMessage
-			if (originalMessageEntry?.extension?.platform_message_ids?.[0])
+			if (originalMessageEntry?.extension?.platform_message_ids?.length)
 				try {
-					repliedToDiscordMessage = await /** @type {DiscordTextChannel | DiscordDMChannel} */ channel.messages.fetch(originalMessageEntry.extension.platform_message_ids[0])
+					repliedToDiscordMessage = await /** @type {DiscordTextChannel | DiscordDMChannel} */ channel.messages.fetch(originalMessageEntry.extension.platform_message_ids.slice(-1)[0])
 				} catch { /* 原始消息可能已被删除，静默处理，后续发送时不使用 .reply() */ }
 
 			const textContent = fountReplyPayload.content || ''

@@ -351,7 +351,7 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 			const files = fountReplyPayload.files || []
 			const parseMode = 'HTML'
 
-			const replyToMessageId = originalMessageEntry?.extension?.platform_message_ids?.[0]
+			const replyToMessageId = originalMessageEntry?.extension?.platform_message_ids?.slice?.(-1)?.[0]
 			const messageThreadId = originalMessageEntry?.extension?.telegram_message_thread_id || threadIdFromLogicalId
 
 			const htmlContent = aiMarkdownToTelegramHtml(aiMarkdownContent)

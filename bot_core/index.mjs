@@ -413,9 +413,8 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
 
 	if (isMutedChannel)
 		return false
-	else
-		if (channelMuteStartTimes[channelId] && !base_match_keys(content, ['闭嘴', '安静', '肃静']))
-			delete channelMuteStartTimes[channelId]
+	else if (channelMuteStartTimes[channelId] && !base_match_keys(content, ['闭嘴', '安静', '肃静']))
+		delete channelMuteStartTimes[channelId]
 
 	const okey = Math.random() * 100 < possible
 	console.dir({
@@ -687,9 +686,9 @@ async function handleMessageQueue(channelId, platformAPI) {
 				msg => msg.extension?.is_from_owner || msg.extension?.platform_user_id == platformAPI.getBotUserId()
 			)
 
-			if (ownerBotOnlyInteraction && currentMessageToProcess.extension?.is_from_owner && !isMutedChannel)
+			if (await checkMessageTrigger(currentMessageToProcess, platformAPI, channelId, { has_other_gentian_bot: hasOtherGentianBot }))
 				return 1
-			else if (await checkMessageTrigger(currentMessageToProcess, platformAPI, channelId, { has_other_gentian_bot: hasOtherGentianBot }))
+			else if (ownerBotOnlyInteraction && currentMessageToProcess.extension?.is_from_owner && !isMutedChannel)
 				return 1
 			else if (
 				(!inHypnosisChannelId || channelId !== inHypnosisChannelId) &&
