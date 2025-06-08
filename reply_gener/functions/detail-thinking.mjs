@@ -71,7 +71,7 @@ export async function detailThinking(result, args) {
 	console.info('DetailThinking Start:' + question)
 
 	/** @type {prompt_struct_t} */
-	const thinkingContext = {
+	const thinking_prompt_struct = {
 		...prompt_struct,
 		char_prompt: null, // Will be set dynamically based on the phase (planning vs execution)
 		other_chars_prompt: {},
@@ -86,8 +86,29 @@ export async function detailThinking(result, args) {
 
 	let plan = []
 	let planningCycles = 0
-	const addThinkingLongTimeLog = getLongTimeLogAdder(null, thinkingContext) // Log adder specific to this thinking process
+	const addThinkingLongTimeLog = getLongTimeLogAdder(null, thinking_prompt_struct) // Log adder specific to this thinking process
 	const startTime = Date.now()
+	const thinkingArgs = {
+		UserCharname: args.UserCharname,
+		username: args.username,
+		chat_log: thinking_prompt_struct.chat_log,
+		AddLongTimeLog: addThinkingLongTimeLog,
+		prompt_struct: thinking_prompt_struct,
+		chat_scoped_char_memory: args.chat_scoped_char_memory,
+		plugins: args.plugins,
+		supported_functions: {
+			markdown: true,
+			files: false,
+			add_message: false,
+			mathjax: true,
+			html: true,
+			unsafe_html: false
+		}
+	}
+	const thinking_logical_results = {
+		...args.extension.logical_results,
+		in_assist: true,
+	}
 
 	AddLongTimeLog({
 		content: `<detail-thinking>\n${question}\n</detail-thinking>\n`,
@@ -97,7 +118,7 @@ export async function detailThinking(result, args) {
 
 	// --- Initial Plan Generation ---
 	try {
-		thinkingContext.char_prompt = await DetailThinkingMainPrompt() // Base prompt for planning AI
+		thinking_prompt_struct.char_prompt = await DetailThinkingMainPrompt() // Base prompt for planning AI
 		const initialPlanPrompt = `\
 <chatLog>
 ${prompt_struct.chat_log.slice(-10).map(x => x.name + ': ' + x.content).join('\n')}
@@ -125,7 +146,7 @@ Step 2: <步骤2主题>
 **请严格遵守以上格式。**
 `
 
-		thinkingContext.chat_log.push({
+		thinking_prompt_struct.chat_log.push({
 			content: initialPlanPrompt,
 			name: 'system',
 			role: 'system',
@@ -136,27 +157,27 @@ Step 2: <步骤2主题>
 			retries++
 			console.info(`Detail-thinking: Requesting initial plan (Attempt ${retries}/${initial_plan_max_retries})...`)
 
-			const requestResult = await OrderedAISourceCalling('detail-thinking', AI => AI.StructCall(thinkingContext))
+			const requestResult = await OrderedAISourceCalling('detail-thinking', AI => AI.StructCall(thinking_prompt_struct))
 			const planText = requestResult.content
 
 			plan = parsePlan(planText) // Use the tolerant parser
 
 			if (plan.length > 0) {
 				console.info(`Detail-thinking: Initial Plan Generated (Attempt ${retries}):\n${plan.map(p => `Step ${p.step}: ${p.topic}`).join('\n')}`)
-				thinkingContext.chat_log.push({
+				thinking_prompt_struct.chat_log.push({
 					content: 'Plan:\n' + plan.map(p => `Step ${p.step}: ${p.topic}`).join('\n') + '\n',
 					name: '龙胆',
 					role: 'char',
 				})
 			} else {
 				console.warn(`Detail-thinking: Initial Plan Failed or Malformed (Attempt ${retries}/${initial_plan_max_retries}). Received:\n${planText}`)
-				thinkingContext.chat_log.push({
+				thinking_prompt_struct.chat_log.push({
 					content: planText,
 					name: '龙胆',
 					role: 'char',
 				})
 				if (retries < initial_plan_max_retries) {
-					thinkingContext.chat_log.push({
+					thinking_prompt_struct.chat_log.push({
 						content: `你上次的输出未能解析为有效的计划。请确保你的回答直接以 "Step 1: ..." 开始，或者以 "Plan:" 开头然后紧跟 "Step 1: ..."。步骤必须从1开始且连续。请严格按要求重新生成 (${retries}/${initial_plan_max_retries})。`,
 						name: 'system',
 						role: 'system',
@@ -193,11 +214,11 @@ Step 2: <步骤2主题>
 			planningCycles++
 			console.info(`Detail-thinking: Starting planning cycle ${planningCycles}/${max_planning_cycles}`)
 
-			thinkingContext.char_prompt = mergePrompt(
-				await DetailThinkingMainPrompt(),
-				await GoogleSearchPrompt(),
-				await WebBrowsePrompt(),
-				await CodeRunnerPrompt()
+			thinking_prompt_struct.char_prompt = mergePrompt(
+				await Promise.all(
+					[DetailThinkingMainPrompt,GoogleSearchPrompt,WebBrowsePrompt,CodeRunnerPrompt]
+						.map(p => p(thinkingArgs, thinking_logical_results, thinking_prompt_struct, 0))
+				),
 			)
 
 			for (const step of plan) {
@@ -222,7 +243,7 @@ Step 2: <步骤2主题>
 * **仅** 输出以下之一：工具调用指令、最终文本结果、障碍说明。
 * **禁止** 输出任何解释、对话、计划列表或步骤编号标签（如 "Step X:"）。
 `
-				thinkingContext.chat_log.push({
+				thinking_prompt_struct.chat_log.push({
 					content: stepExecutionPrompt,
 					name: 'system',
 					role: 'system',
@@ -231,7 +252,7 @@ Step 2: <步骤2主题>
 				let stepCompleted = false
 				regen_step: while (!stepCompleted) {
 					console.info(`Detail-thinking: Cycle ${planningCycles}, Requesting execution for Step ${step.step}: ${step.topic}`)
-					const requestResult = await OrderedAISourceCalling('detail-thinking', AI => AI.StructCall(thinkingContext))
+					const requestResult = await OrderedAISourceCalling('detail-thinking', AI => AI.StructCall(thinking_prompt_struct))
 					const stepOutput = {
 						content: requestResult.content,
 						name: '龙胆',
@@ -242,19 +263,7 @@ Step 2: <步骤2主题>
 
 					let functionCalled = false
 					for (const replyHandler of [coderunner, googlesearch, webbrowse])
-						if (await replyHandler(stepOutput, {
-							AddLongTimeLog: addThinkingLongTimeLog,
-							prompt_struct: thinkingContext,
-							chat_scoped_char_memory: args.chat_scoped_char_memory,
-							supported_functions: {
-								markdown: true,
-								files: true,
-								add_message: true,
-								mathjax: true,
-								html: true,
-								unsafe_html: false
-							}
-						})) {
+						if (await replyHandler(stepOutput, thinkingArgs)) {
 							functionCalled = true
 							console.info(`Detail-thinking: Cycle ${planningCycles}, Step ${step.step} - Function triggered by handler: ${replyHandler.name}. Waiting for result...`)
 							// The replyHandler is expected to add the function call result to thinkingContext.chat_log
@@ -268,8 +277,8 @@ Step 2: <步骤2主题>
 						// Check if AI mistakenly generated a plan or step instead of executing the current one
 						if (stepOutput.content.trim().toLowerCase().startsWith('plan:') || /^\s*Step\s*\d+\s*[:：]/.test(stepOutput.content)) {
 							console.warn(`Detail-thinking: Cycle ${planningCycles}, Step ${step.step} - AI generated plan/step instead of executing. Output:\n${stepOutput.content}\nRegenerating...`)
-							thinkingContext.chat_log.push(stepOutput) // Log the incorrect output
-							thinkingContext.chat_log.push({
+							thinking_prompt_struct.chat_log.push(stepOutput) // Log the incorrect output
+							thinking_prompt_struct.chat_log.push({
 								content: '你错误地生成了计划或步骤编号，而不是执行当前步骤。请专注于执行当前步骤 (Step ' + step.step + ') 并输出其最终文本结果、工具调用或障碍说明。',
 								name: 'system',
 								role: 'system',
@@ -281,7 +290,7 @@ Step 2: <步骤2主题>
 						// Assume valid execution output (text result or obstacle description)
 						console.info(`Detail-thinking: Cycle ${planningCycles}, Step ${step.step} Result: ${stepOutput.content}`)
 						step.result = stepOutput.content // Store the final text result for this step
-						thinkingContext.chat_log.push(stepOutput) // Log the final step output
+						thinking_prompt_struct.chat_log.push(stepOutput) // Log the final step output
 						stepCompleted = true
 						await sleep(thinking_interval) // Small delay before next step or summary phase
 						break regen_step
@@ -291,7 +300,7 @@ Step 2: <步骤2主题>
 
 			// --- Summary and Re-planning Phase ---
 			const isFinalCycle = planningCycles >= max_planning_cycles
-			thinkingContext.char_prompt = await DetailThinkingMainPrompt() // Reset to base prompt for summary/replan decision
+			thinking_prompt_struct.char_prompt = await DetailThinkingMainPrompt() // Reset to base prompt for summary/replan decision
 
 			// Dynamically adjust the prompt based on whether replanning is allowed
 			const summaryPrompt = `\
@@ -321,7 +330,7 @@ ${!isFinalCycle ? `
 **<<< 你的回答必须严格以上述标记之一开头，禁止任何额外的前缀文字 >>>**
 `
 
-			thinkingContext.chat_log.push({
+			thinking_prompt_struct.chat_log.push({
 				content: summaryPrompt,
 				name: 'system',
 				role: 'system',
@@ -331,12 +340,12 @@ ${!isFinalCycle ? `
 			let summaryRaw = '' // Define summaryRaw outside the loop to be accessible in the final fallback log
 			summary_regen: while (true) {
 				console.info(`Detail-thinking: Cycle ${planningCycles}, Requesting summary/replan (Attempt ${summaryRetries}/${summary_max_retries})...`)
-				const requestResult = await OrderedAISourceCalling('detail-thinking', AI => AI.StructCall(thinkingContext))
+				const requestResult = await OrderedAISourceCalling('detail-thinking', AI => AI.StructCall(thinking_prompt_struct))
 				summaryRaw = requestResult.content // Assign here
 				const summary = summaryRaw.trim() // Use trimmed version for marker checks
 
 				// Log AI attempt immediately
-				thinkingContext.chat_log.push({
+				thinking_prompt_struct.chat_log.push({
 					content: summaryRaw,
 					name: '龙胆',
 					role: 'char',
@@ -377,7 +386,7 @@ ${!isFinalCycle ? `
 					} else {
 						console.warn(`Detail-thinking: Replan requested, but plan format invalid or missing in response (Attempt ${summaryRetries}/${summary_max_retries}). Content:\n${replanContent}`)
 						// Add specific retry message explaining the required replan format
-						thinkingContext.chat_log.push({
+						thinking_prompt_struct.chat_log.push({
 							content: `你选择了重新规划 (detail-thinking-replan:)，但提供的后续内容未能解析为有效的新计划。请确保在 \`detail-thinking-replan:\` 标记后，先给出简要原因，然后提供格式正确的新计划（以 "Step 1: ..." 或 "Plan:\nStep 1: ..." 开始）。请重试 (${summaryRetries}/${summary_max_retries})。`,
 							name: 'system',
 							role: 'system',
@@ -408,7 +417,7 @@ ${summaryRaw}
 						? '不允许在最终循环中重新规划。'
 						: `回答必须以 ${isFinalCycle ? '`detail-thinking-answer:` 或 `detail-thinking-failed:`' : '`detail-thinking-answer:`, `detail-thinking-failed:`, 或 `detail-thinking-replan:`'} 中的一个标记开头。`
 					console.warn(`Detail-thinking: Summary/Replan response invalid (Attempt ${summaryRetries}/${summary_max_retries}). Reason: ${reason} Received:\n${summaryRaw}`)
-					thinkingContext.chat_log.push({
+					thinking_prompt_struct.chat_log.push({
 						content: `${reason} 你上次的输出未能正确处理。请根据当前情况选择一个有效标记并重新生成回答 (${summaryRetries}/${summary_max_retries})。`,
 						name: 'system',
 						role: 'system',

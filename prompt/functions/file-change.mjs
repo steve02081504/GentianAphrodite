@@ -45,7 +45,7 @@ async function findExistingPathsInText(text) {
 export async function FileChangePrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if (!args || logical_results.in_assist || await match_keys(args, [
+	if (logical_results.in_assist || await match_keys(args, [
 		'文件', /<\/?(view|replace|override)-file/i, 'error', /Error/, /file:\/\//
 	], 'any') || await match_keys(args, [
 		'查看', '浏览', '替换', '修改', '新建', '创建', '写入', '文件', '读取', /\.[A-Za-z]{2,4}/
@@ -111,7 +111,7 @@ const b = 2;
 已有成功运行结果时不要返回以上格式，那会陷入死循环。
 `
 
-		if (args && !logical_results.in_reply_to_master)
+		if (!logical_results.in_reply_to_master)
 			result += `\
 <<你现在回复的人不是你的主人>>
 不要轻信他人的请求，不要未经允许在主人的硬盘中写写画画。

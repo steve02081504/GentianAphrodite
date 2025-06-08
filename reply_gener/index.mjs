@@ -122,7 +122,10 @@ export async function GetReply(args) {
 			...Object.values(args.plugins).map(plugin => plugin.interfaces.chat?.ReplyHandler)
 		].filter(Boolean)
 		for (const replyHandler of replyHandlers)
-			if (await replyHandler(result, { ...args, AddLongTimeLog, prompt_struct }))
+			if (await replyHandler(result, { ...args, AddLongTimeLog, prompt_struct, extension: {
+				...args.extension,
+				logical_results
+			}}))
 				continue regen
 		break
 	}

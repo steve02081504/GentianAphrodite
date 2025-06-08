@@ -12,7 +12,7 @@ import { match_keys } from '../../scripts/match.mjs'
 export async function GoogleSearchPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if (!args || logical_results.in_assist || await match_keys(args, ['搜索', '查找', '查询', /(查|搜|搜索).{0,3}下/, /有(哪些|什么|没有)/, '怎样', '如何', '帮我搜'], 'any'))
+	if (logical_results.in_assist || await match_keys(args, ['搜索', '查找', '查询', /(查|搜|搜索).{0,3}下/, /有(哪些|什么|没有)/, '怎样', '如何', '帮我搜'], 'any'))
 		result += `\
 你可以用以下语法进行谷歌搜索（如果需要同时搜索多个主题，请每个主题占一行）：
 <google-search>

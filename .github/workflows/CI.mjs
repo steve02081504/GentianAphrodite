@@ -188,7 +188,7 @@ await CI.runOutput([
 	// 1. User asks a question that triggers detail-thinking
 	'<detail-thinking>What is fount made by steve02081504 and what is 2+2?</detail-thinking>',
 	// 2. AI makes a plan
-	'Plan:\nStep 1: Find the fount made by steve02081504.\nStep 2: Calculate 2+2.',
+	'Plan:\nStep 1: Find the fount made by steve02081504.\nStep 2: Calculate 2+2.\nStep 3: make a file for fun.',
 	// 3. AI executes Step 1 using a tool
 	'<google-search>fount steve02081504</google-search>',
 	// 4. (Mocked) Google search result is fed back to the AI, which concludes Step 1
@@ -197,12 +197,17 @@ await CI.runOutput([
 	'<run-js>return 2+2</run-js>',
 	// 6. (Mocked) JS result is fed back to the AI, which concludes Step 2
 	'The result of the calculation is 4.',
-	// 7. AI summarizes the final answer
+	// 7. make a file for fun
+	`<run-bash>touch ${path.join(testWorkspace, 'fount.txt')}</run-bash>`,
+	// 8. (Mocked) Bash result is fed back to the AI, which concludes Step 3
+	'File fount.txt created.',
+	// 9. AI summarizes the final answer
 	'detail-thinking-answer: The fount is fount, and 2+2 equals 4.',
-	// 8. AI rephrases the answer naturally for the user
+	// 10. AI rephrases the answer naturally for the user
 	'The fount made by steve02081504 is fount, and the sum of 2 and 2 is 4.'
 ]).then(result => {
 	CI.assert(result.content === 'The fount made by steve02081504 is fount, and the sum of 2 and 2 is 4.', 'Detail-thinking flow did not produce the correct final answer.')
+	CI.assert(fs.existsSync(path.join(testWorkspace, 'fount.txt')), 'File fount.txt was not created.')
 	console.log('✅ Detail-thinking multi-step execution test passed.')
 })
 
