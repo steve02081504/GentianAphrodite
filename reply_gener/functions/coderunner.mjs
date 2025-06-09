@@ -62,6 +62,7 @@ export async function coderunner(result, args) {
 			 * @param {Promise<any>} promise
 			 */
 			js_eval_context.callback = (reason, promise) => {
+				if(!(promise instanceof Promise)) throw new Error('callback函数的第二个参数必须是一个Promise对象')
 				const _ = _ => callback_handler(args, reason, code, _)
 				promise.then(_, _)
 				return 'callback已注册'

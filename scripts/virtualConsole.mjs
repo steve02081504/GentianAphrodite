@@ -87,7 +87,6 @@ export class VirtualConsole {
 		this.log(formattedData)
 		if (this.options.realConsoleOutput)
 			console.dirxml(...data)
-
 	}
 
 	group(...args) {

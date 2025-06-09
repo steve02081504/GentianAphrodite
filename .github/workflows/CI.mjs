@@ -3,8 +3,6 @@ import path from 'node:path'
 import http from 'node:http'
 
 const CI = fountCharCI
-console.log('--- Starting GentianAphrodite Character CI Test ---')
-
 // --- Test Setup ---
 const testWorkspace = './ci-test-workspace'
 const testFilePath = path.join(testWorkspace, 'test_file.txt')
@@ -22,18 +20,20 @@ await CI.test('noAI', async () => {
 })
 
 // 2. Setup a mock AI source for the tests
-await CI.char.interfaces.config.SetData({
-	AIsources: { 'CI': 'CI' }
+await CI.test('set AI source', async () => {
+	await CI.char.interfaces.config.SetData({
+		AIsources: { 'CI': 'CI' }
+	})
 })
 
 // --- Testing rolesettingfilter.mjs ---
-await CI.test('Role Setting Filter', async () => {
+CI.test('Role Setting Filter', async () => {
 	const result = await CI.runOutput('我将扮演龙胆·阿芙萝黛蒂，一个年仅27岁的米洛普斯族幼态永生种。')
 	CI.assert(result.content.includes('蘑菇云'), 'rolesettingfilter failed to block persona leakage.')
 })
 
 // --- Testing functions/file-change.mjs ---
-await CI.test('File Change', async () => {
+CI.test('File Change', async () => {
 	fs.writeFileSync(testFilePath, initialFileContent, 'utf-8')
 
 	await CI.subtest('<view-file>', async () => {
@@ -67,33 +67,40 @@ await CI.test('File Change', async () => {
 })
 
 // --- Testing functions/coderunner.mjs ---
-await CI.test('Code Runner', async () => {
-	await CI.subtest('<run-bash>', async () => {
+CI.test('Code Runner', async () => {
+	CI.subtest('<run-bash>', async () => {
 		const testDir = path.join(testWorkspace, 'bash_test_dir')
 		await CI.runOutput([`<run-bash>mkdir ${testDir}</run-bash>`, 'Directory created.'])
 		CI.assert(fs.existsSync(testDir), '<run-bash> failed to execute command.')
 	})
 
-	await CI.subtest('<inline-js>', async () => {
+	CI.subtest('<inline-js>', async () => {
 		const result = await CI.runOutput('The result of 5 * 8 is <inline-js>return 5 * 8;</inline-js>.')
 		CI.assert(result.content === 'The result of 5 * 8 is 40.', '<inline-js> failed to execute and replace content.')
 	})
 
-	await CI.subtest('<run-js> with workspace', async () => {
+	CI.subtest('<run-js> with workspace', async () => {
 		const result = await CI.runOutput(['<run-js>workspace.testVar = "Success";</run-js>', 'Variable set. The value is: <inline-js>return workspace.testVar</inline-js>'])
 		CI.assert(result.content === 'Variable set. The value is: Success', '<run-js> failed to use the shared workspace.')
+	})
+
+	CI.subtest('<run-js> with callback', async () => {
+		const result = await CI.runOutput(['<run-js>callback("test", new Promise(resolve => setTimeout(resolve, 1000)).then(() => globalThis.callbacked = true))</run-js>', 'promise callback setted.'])
+		CI.assert(result.content === 'promise callback setted.', '<run-js> failed to use the callback.')
+		await CI.wait(() => globalThis.callbacked)
+		CI.assert(globalThis.callbacked, '<run-js> failed to callback.')
 	})
 })
 
 // --- Testing functions/googlesearch.mjs ---
-await CI.test('Google Search', async () => {
+CI.test('Google Search', async () => {
 	const result = await CI.runOutput(['<google-search>fount framework steve02081504</google-search>', 'Search complete.'])
 	const systemLog = result.logContextBefore.find(log => log.role === 'system' && log.content.includes('搜索结果'))
 	CI.assert(!!systemLog, '<google-search> did not produce a system log with search results.')
 })
 
 // --- Testing functions/webbrowse.mjs ---
-await CI.test('Web Browse', async () => {
+CI.test('Web Browse', async () => {
 	const serverPort = 8999
 	const webContent = '<html><body><h1>Test Page</h1><p>This is a test paragraph for the CI.</p></body></html>'
 	const server = http.createServer((req, res) => {
@@ -115,7 +122,7 @@ await CI.test('Web Browse', async () => {
 })
 
 // --- Testing functions/long-term-memory.mjs ---
-await CI.test('Long-Term Memory', async () => {
+CI.test('Long-Term Memory', async () => {
 	const result = await CI.runOutput([
 		// 1. Add memory
 		'<add-long-term-memory><name>CI_Test_Memory</name><trigger>true</trigger><prompt-content>This is a test memory.</prompt-content></add-long-term-memory>',
@@ -136,14 +143,14 @@ await CI.test('Long-Term Memory', async () => {
 })
 
 // --- Testing functions/short-term-memory.mjs ---
-await CI.test('Short-Term Memory Deletion', async () => {
+CI.test('Short-Term Memory Deletion', async () => {
 	const result = await CI.runOutput(['<delete-short-term-memories>/.*/</delete-short-term-memories>', 'Memories deleted.'])
 	const systemLog = result.logContextBefore.find(log => log.role === 'system')
 	CI.assert(systemLog.content.includes('删除了'), 'delete-short-term-memories did not delete the correct number of entries.')
 })
 
 // --- Testing functions/timer.mjs ---
-await CI.test('Timer', async () => {
+CI.test('Timer', async () => {
 	const result = await CI.runOutput([
 		// 1. Set timer
 		'<set-timer><item><time>1h</time><reason>CI_Test_Timer</reason></item></set-timer>',
@@ -169,12 +176,12 @@ await CI.test('Timer', async () => {
 	CI.assert(logs[3].content.includes('无'), 'list-timers showed timer after deletion.')
 	CI.assert(result.content === 'Timer test sequence complete.', 'Final message not found.')
 
-	await new Promise(resolve => setTimeout(resolve, 1500))
+	await CI.wait(() => globalThis.timerCallbacked)
 	CI.assert(globalThis.timerCallbacked, 'Timer callback failed.')
 })
 
 // --- Testing functions/detail-thinking.mjs ---
-await CI.test('Detail Thinking', async () => {
+CI.test('Detail Thinking', async () => {
 	const result = await CI.runOutput([
 		// 1. User asks a question that triggers detail-thinking
 		'<detail-thinking>What is fount made by steve02081504 and what is 2+2?</detail-thinking>',
