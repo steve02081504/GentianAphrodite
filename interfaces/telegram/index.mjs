@@ -557,8 +557,6 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 
 		getPlatformWorld: () => telegramWorld,
 
-		splitReplyText: (text) => splitTelegramReply(text, 3800),
-
 		/**
 		 * (可选) 设置当机器人加入新群组/服务器时调用的回调函数。
 		 * @param {(group: import('../../bot_core/index.mjs').GroupObject) => Promise<void>} onJoinCallback - 回调函数。

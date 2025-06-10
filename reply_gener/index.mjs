@@ -113,7 +113,7 @@ export async function GetReply(args) {
 			return null
 		}
 		result.content = result.content.replace(/\s*<-<null>->\s*$/, '')
-		result.content = result.content.replace(/^(.|啊啦|唔姆|\.{3}){0,5}主人大人(！|\.{3}|…|💖|✨|🥺|🥰|🎶)*/, '') // 啊啊啊啊我受不了了
+		result.content = result.content.replace(/^(.|啊啦|唔姆|\.{3}){0,5}主人(大人)?(\.{3}|…|💖|✨|🥰|🎶|🥺|，|！|)*/, '') // 啊啊啊啊我受不了了
 		if (args.supported_functions.add_message) addNotifyAbleChannel(args)
 		if (!result.content) return null
 		/** @type {(import('../../../../../../src/decl/PluginAPI.ts').ReplyHandler_t)[]} */
@@ -124,10 +124,12 @@ export async function GetReply(args) {
 			...Object.values(args.plugins).map(plugin => plugin.interfaces.chat?.ReplyHandler)
 		].filter(Boolean)
 		for (const replyHandler of replyHandlers)
-			if (await replyHandler(result, { ...args, AddLongTimeLog, prompt_struct, extension: {
-				...args.extension,
-				logical_results
-			}}))
+			if (await replyHandler(result, {
+				...args, AddLongTimeLog, prompt_struct, extension: {
+					...args.extension,
+					logical_results
+				}
+			}))
 				continue regen
 		break
 	}

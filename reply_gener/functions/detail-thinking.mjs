@@ -216,7 +216,7 @@ Step 2: <步骤2主题>
 
 			thinking_prompt_struct.char_prompt = mergePrompt(
 				await Promise.all(
-					[DetailThinkingMainPrompt,GoogleSearchPrompt,WebBrowsePrompt,CodeRunnerPrompt]
+					[DetailThinkingMainPrompt, GoogleSearchPrompt, WebBrowsePrompt, CodeRunnerPrompt]
 						.map(p => p(thinkingArgs, thinking_logical_results, thinking_prompt_struct, 0))
 				),
 			)

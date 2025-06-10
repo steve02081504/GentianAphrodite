@@ -51,7 +51,7 @@ export async function coderunner(result, args) {
 		const js_eval_context = {
 			workspace: args.chat_scoped_char_memory.coderunner_workspace ??= {},
 		}
-		function clear_workspace () {
+		function clear_workspace() {
 			js_eval_context.workspace = args.chat_scoped_char_memory.coderunner_workspace = {}
 			js_eval_context.workspace.clear = clear_workspace
 		}
@@ -62,7 +62,7 @@ export async function coderunner(result, args) {
 			 * @param {Promise<any>} promise
 			 */
 			js_eval_context.callback = (reason, promise) => {
-				if(!(promise instanceof Promise)) throw new Error('callback函数的第二个参数必须是一个Promise对象')
+				if (!(promise instanceof Promise)) throw new Error('callback函数的第二个参数必须是一个Promise对象')
 				const _ = _ => callback_handler(args, reason, code, _)
 				promise.then(_, _)
 				return 'callback已注册'
@@ -87,8 +87,8 @@ export async function coderunner(result, args) {
 	const wait_screen = Number(result.content.match(/<wait-screen>(?<timeout>\d*?)<\/wait-screen>/)?.groups?.timeout?.trim?.() || 0)
 	async function get_screen() {
 		if (!wait_screen) return
-		await new Promise(resolve => setTimeout(resolve, wait_screen*1000))
-		try{
+		await new Promise(resolve => setTimeout(resolve, wait_screen * 1000))
+		try {
 			return { name: 'screenshot.png', buffer: await captureScreen(), mimeType: 'image/png' }
 		}
 		catch (e) {
@@ -155,7 +155,7 @@ export async function coderunner(result, args) {
 			})
 			console.info('AI运行的Bash代码：', bashrunner)
 			let bashresult
-			try { bashresult = await bash_exec(bashrunner, {no_ansi_terminal_sequences: true}) } catch (err) { bashresult = err }
+			try { bashresult = await bash_exec(bashrunner, { no_ansi_terminal_sequences: true }) } catch (err) { bashresult = err }
 			result.extension.execed_codes[bashrunner] = bashresult
 			if (bashresult.stdall) { bashresult = { ...bashresult }; delete bashresult.stdout; delete bashresult.stderr }
 			console.info('bashresult', bashresult)

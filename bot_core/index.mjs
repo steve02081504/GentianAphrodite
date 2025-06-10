@@ -2,7 +2,7 @@ import { Buffer } from 'node:buffer'
 import { charname as BotCharname, username as FountUsername } from '../charbase.mjs'
 import GentianAphrodite from '../main.mjs'
 
-import { base_match_keys, SimplifyChinese } from '../scripts/match.mjs'
+import { base_match_keys, base_match_keys_count, SimplifyChinese } from '../scripts/match.mjs'
 import { findMostFrequentElement } from '../scripts/tools.mjs'
 import { rude_words } from '../scripts/dict.mjs'
 import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
@@ -123,7 +123,6 @@ import { reloadPart } from '../../../../../../src/server/managers/index.mjs'
  *  MuteDurationMs?: number,
  *  InteractionFavorPeriodMs?: number,
  *  MergeMessagePeriodMs?: number,
- *  MinLogForOtherBotCheck?: number,
  * }} BotLogicConfig_t
  */
 
@@ -221,7 +220,6 @@ let currentConfig = {
 	MuteDurationMs: 3 * 60 * 1000,
 	InteractionFavorPeriodMs: 3 * 60 * 1000,
 	MergeMessagePeriodMs: 3 * 60 * 1000,
-	MinLogForOtherBotCheck: 5,
 }
 
 const GentianWords = ['龙胆', 'gentian']
@@ -300,6 +298,10 @@ function mergeChatLogEntries(logEntries) {
 	return newLog
 }
 
+function isBotCommand(str) {
+	return Boolean(str.match(/^[!$%&/\\！]/))
+}
+
 /**
  * 检查传入的消息是否应该触发机器人回复。
  * @async
@@ -344,7 +346,7 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
 	possible += base_match_keys(content, GentianWords) * 5
 	possible += base_match_keys(content, [/(花|华)(萝|箩|罗)(蘑|磨|摩)/g]) * 3
 
-	const isBotCommandLike = !!content.match(/^[!$%&/\\！]/)
+	const isABotCommand = isBotCommand(content)
 
 	const timeSinceLastBotMessageInChannel = fountEntry.timeStamp - (channelLastSendMessageTime[channelId] || 0)
 	const isInFavor = timeSinceLastBotMessageInChannel < currentConfig.InteractionFavorPeriodMs
@@ -386,7 +388,7 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
 				possible += 100
 
 		}
-		if (!isBotCommandLike) possible += currentConfig.BaseTriggerChanceToOwner
+		if (!isABotCommand) possible += currentConfig.BaseTriggerChanceToOwner
 	}
 	else
 		if (mentionedWithoutAt) {
@@ -551,52 +553,12 @@ async function sendAndLogReply(replyToSend, platformAPI, channelId, repliedToMes
 	)
 		repliedToMessageEntry = undefined
 
-	const textContent = replyToSend.content || ''
-	const files = replyToSend.files || []
-	let firstSentMessageEntry = null
-
-	if (!textContent && (!files || files.length === 0)) {
+	if (!replyToSend.content && !replyToSend.files?.length) {
 		console.warn('[BotLogic] sendAndLogReply: Attempted to send empty message, skipped.', replyToSend)
 		return null
 	}
 
-	const splitTexts = platformAPI.splitReplyText(textContent)
-	const payloadForPlatform = { ...replyToSend }
-
-	if (splitTexts.length === 0 && files.length > 0) {
-		payloadForPlatform.content = undefined
-		payloadForPlatform.files = files
-		const sentEntry = await platformAPI.sendMessage(channelId, payloadForPlatform, repliedToMessageEntry)
-		if (sentEntry) {
-			firstSentMessageEntry = sentEntry
-			channelChatLogs[channelId] = [...channelChatLogs[channelId] || [], sentEntry]
-			while (channelChatLogs[channelId].length > currentConfig.DefaultMaxMessageDepth)
-				channelChatLogs[channelId].shift()
-		}
-	} else
-		for (let i = 0; i < splitTexts.length; i++) {
-			const currentTextPart = splitTexts[i]
-			const isLastTextPart = i === splitTexts.length - 1
-
-			payloadForPlatform.content = currentTextPart
-			payloadForPlatform.files = isLastTextPart ? files : []
-
-			const sentEntry = await platformAPI.sendMessage(channelId, payloadForPlatform, repliedToMessageEntry)
-			if (sentEntry) {
-				if (i === 0)
-					firstSentMessageEntry = sentEntry
-
-				channelChatLogs[channelId] = [...channelChatLogs[channelId] || [], sentEntry]
-				while (channelChatLogs[channelId].length > currentConfig.DefaultMaxMessageDepth)
-					channelChatLogs[channelId].shift()
-			}
-			if (repliedToMessageEntry) repliedToMessageEntry = undefined
-		}
-
-	if (firstSentMessageEntry)
-		channelLastSendMessageTime[channelId] = Date.now()
-
-	return firstSentMessageEntry
+	return await platformAPI.sendMessage(channelId, replyToSend, repliedToMessageEntry)
 }
 
 /**
@@ -672,17 +634,15 @@ async function handleMessageQueue(channelId, platformAPI) {
 
 			const recentChatLogForOtherBotCheck = currentChannelLog.filter(msg => (Date.now() - msg.timeStamp) < 5 * 60 * 1000)
 			const hasOtherGentianBot = (() => {
-				if (recentChatLogForOtherBotCheck.length < (currentConfig.MinLogForOtherBotCheck || 5)) return false
 				const text = recentChatLogForOtherBotCheck
 					.filter(msg => msg.extension?.platform_user_id != platformAPI.getBotUserId())
 					.map(msg => msg.content).join('\n')
-				return base_match_keys(text, GentianWords) && (text.match(/主人/g)?.length || 0) > 1
+				return base_match_keys_count(text, GentianWords) && base_match_keys_count(text, ['主人', 'master']) > 1
 			})()
 
 			const isMutedChannel = (Date.now() - (channelMuteStartTimes[channelId] || 0)) < currentConfig.MuteDurationMs
 
-			const lastFewMessages = currentChannelLog.slice(-7)
-			const ownerBotOnlyInteraction = lastFewMessages.every(
+			const ownerBotOnlyInteraction = currentChannelLog.slice(-7).every(
 				msg => msg.extension?.is_from_owner || msg.extension?.platform_user_id == platformAPI.getBotUserId()
 			)
 
@@ -703,8 +663,8 @@ async function handleMessageQueue(channelId, platformAPI) {
 					repet.element?.content &&
 					repet.count >= currentConfig.RepetitionTriggerCount &&
 					!base_match_keys(repet.element.content, [...currentMessageToProcess.extension.OwnerNameKeywords, ...rude_words, ...GentianWords]) &&
-					!repet.element.content.match(/^[!$%&/\\！]/) &&
-					!currentChannelLog.some(msg => msg.extension?.platform_user_id == platformAPI.getBotUserId() && msg.content === repet.element.content)
+					!isBotCommand(repet.element.content) &&
+					!currentChannelLog.slice(-10).some(msg => msg.extension?.platform_user_id == platformAPI.getBotUserId() && msg.content === repet.element.content)
 				)
 					await sendAndLogReply(
 						{ content: repet.element.content, files: repet.element.files },

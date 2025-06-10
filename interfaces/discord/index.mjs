@@ -439,13 +439,6 @@ export async function DiscordBotMain(client, interfaceConfig) {
 		getPlatformWorld: () => discordWorld,
 
 		/**
-		 * 根据 Discord 的消息长度限制 (通常为2000字符) 分割长文本回复。
-		 * @param {string} text - 原始回复文本。
-		 * @returns {string[]} 分割后的消息片段数组。
-		 */
-		splitReplyText: (text) => splitDiscordReply(text, 2000),
-
-		/**
 		 * (可选) 设置当主人离开群组时调用的回调函数。
 		 * @param {(groupId: string | number, userId: string | number) => Promise<void>} onLeaveCallback - 回调函数。
 		 */

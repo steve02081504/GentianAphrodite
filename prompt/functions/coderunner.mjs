@@ -45,14 +45,17 @@ ${args.UserCharname}: 97的32次方是多少？
 龙胆: 是<inline-js>97n**32n</inline-js>哦？
 ${args.UserCharname}: js中\`![]+[]\`是什么？
 龙胆: 是<inline-js>![]+[]</inline-js>！
-${args.UserCharname}: 用英语从0数到200，完整，不允许省略。
+${args.UserCharname}: 用英语从0数到200，完整，不允许省略，放在代码块里。
 龙胆: 好哒，看好了哦！
+\`\`\`
 <inline-js>
 function toEnglishWord(n) {
 	//...
 }
 return Array.from({ length: 201 }, (_, i) => toEnglishWord(i)).join(', ')
-</inline-js>！
+</inline-js>
+\`\`\`
+这样可以嘛？
 ]
 在<run-js>和<run-${process.platform === 'win32' ? 'pwsh' : 'bash'}>代码时，你可以附加<wait-screen>timeout</wait-screen>来在代码执行后等待timeout秒，随后让你看到截图。
 这在执行对屏幕内容有影响的代码时非常有用。
@@ -126,6 +129,8 @@ ${args.UserCharname}: 帮我下载http://host/file.txt然后发来。
 ${codePluginPrompts}
 执行代码后若没得到想要的结果，鼓励反思原因并给出不同的解决方案。
 已有成功运行结果时不要返回以上格式（如<run-js>...</run-js>），那会陷入死循环。
+系统输出不会显示在回复中，需要你总结。
+鼓励在回答输出较多时用<inline-js>以避免大段复述。
 **只是解释说明或举例时使用普通代码块（如\`\`\`js）而不是执行代码。**
 `
 

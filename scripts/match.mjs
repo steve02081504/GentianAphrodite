@@ -112,6 +112,13 @@ export function base_match_keys_all(content, keys) {
 	})
 }
 
+export function base_match_keys_count(content, keys) {
+	return base_match_keys(content, keys, (content, reg_keys) => {
+		const contents = SimpleSimplify(content)
+		return contents.filter(content => reg_keys.map(key => content.match(key)?.length || 0).reduce((a, b) => a + b)).length
+	})
+}
+
 /**
  * Return a subset of chat_log, scoped by depth and role
  * @param {chatReplyRequest_t} args
@@ -185,4 +192,8 @@ export async function match_keys(args, keys, from = 'any', depth = 4,
 
 export async function match_keys_all(args, keys, from = 'any', depth = 4) {
 	return await match_keys(args, keys, from, depth, (content, reg_keys) => reg_keys.every(key => content.match(key)))
+}
+
+export async function match_keys_count(args, keys, from = 'any', depth = 4) {
+	return await match_keys(args, keys, from, depth, (content, reg_keys) => reg_keys.map(key => content.match(key)?.length || 0).reduce((a, b) => a + b))
 }
