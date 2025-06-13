@@ -50,6 +50,7 @@ export async function coderunner(result, args) {
 	async function get_js_eval_context(code) {
 		const js_eval_context = {
 			workspace: args.chat_scoped_char_memory.coderunner_workspace ??= {},
+			chat_log: args.chat_log,
 		}
 		function clear_workspace() {
 			js_eval_context.workspace = args.chat_scoped_char_memory.coderunner_workspace = {}

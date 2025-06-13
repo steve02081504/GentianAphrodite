@@ -90,6 +90,21 @@ function unzip(buffer, path) {
 await unzip(workspace.zip, 'D:\\\\')
 </run-js>
 ]
+- 你可以通过chat_log访问对话记录来获取/操作你无法直接查看的文件，其结构如下：
+{
+	name: string;
+	role: 'system' | 'user' | 'char' | 'tool';
+	content: string;
+	files: { name: string; mimeType: string; buffer: global.Buffer<ArrayBufferLike>; description?: string; }[];
+}[]
+如：[
+${args.UserCharname}: 帮我把这个zip文件解压到D盘
+（附件：a.zip）
+龙胆: <run-js>
+const zip_buffer = chat_log.findLast(entry => entry.files?.length).files[0].buffer
+// ...
+</run-js>
+]
 ${args.supported_functions.add_message ? `\
 - 对于会需要很长时间的任务，你可以不用await，而是使用\`callback\`函数来在异步完成后反馈内容。
   * 格式：callback(reason: string, promise: Promise)
