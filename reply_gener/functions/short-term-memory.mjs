@@ -27,15 +27,15 @@ export async function ShortTermMemoryHandler(result, { AddLongTimeLog }) {
 			const all = getShortTermMemoryNum()
 			const num = deleteShortTermMemory(keyword)
 			AddLongTimeLog({
-				name: 'system',
-				role: 'system',
+				name: 'short-term-memory',
+				role: 'tool',
 				content: `短期记忆删除成功，删除了${num}条有关${keyword}的短期记忆，占比${num}/${all}=${(num / all * 100).toFixed(2)}%`,
 				files: []
 			})
 		} catch (e) {
 			AddLongTimeLog({
-				name: 'system',
-				role: 'system',
+				name: 'short-term-memory',
+				role: 'tool',
 				content: `短期记忆删除失败，错误信息：${e.stack}`,
 				files: []
 			})

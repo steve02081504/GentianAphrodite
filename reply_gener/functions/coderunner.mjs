@@ -111,8 +111,8 @@ export async function coderunner(result, args) {
 		const coderesult = await async_eval(jsrunner, await get_js_eval_context(jsrunner))
 		console.info('coderesult', coderesult)
 		AddLongTimeLog({
-			name: 'system',
-			role: 'system',
+			name: 'coderunner',
+			role: 'tool',
 			content: '执行结果：\n' + util.inspect(coderesult, { depth: 4 }),
 			files: [await get_screen()].filter(Boolean)
 		})
@@ -136,8 +136,8 @@ export async function coderunner(result, args) {
 			if (pwshresult.stdall) { pwshresult = { ...pwshresult }; delete pwshresult.stdout; delete pwshresult.stderr }
 			console.info('pwshresult', pwshresult)
 			AddLongTimeLog({
-				name: 'system',
-				role: 'system',
+				name: 'coderunner',
+				role: 'tool',
 				content: '执行结果：\n' + util.inspect(pwshresult),
 				files: [await get_screen()].filter(Boolean)
 			})
@@ -161,8 +161,8 @@ export async function coderunner(result, args) {
 			if (bashresult.stdall) { bashresult = { ...bashresult }; delete bashresult.stdout; delete bashresult.stderr }
 			console.info('bashresult', bashresult)
 			AddLongTimeLog({
-				name: 'system',
-				role: 'system',
+				name: 'coderunner',
+				role: 'tool',
 				content: '执行结果：\n' + util.inspect(bashresult),
 				files: [await get_screen()].filter(Boolean)
 			})
@@ -193,8 +193,8 @@ export async function coderunner(result, args) {
 			files: result.files,
 			charVisibility: [args.char_id],
 		}, {
-			name: 'system',
-			role: 'system',
+			name: 'coderunner',
+			role: 'tool',
 			content: '内联js代码执行和替换完毕\n',
 			files: [],
 			charVisibility: [args.char_id],
@@ -210,8 +210,8 @@ export async function coderunner(result, args) {
 			files: result.files,
 		})
 		AddLongTimeLog({
-			name: 'system',
-			role: 'system',
+			name: 'coderunner',
+			role: 'tool',
 			content: '内联js代码执行失败：\n' + error.stack,
 			files: []
 		})

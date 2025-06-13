@@ -67,8 +67,8 @@ export async function LongTermMemoryHandler(result, { AddLongTimeLog }) {
 				}
 				addLongTermMemory(newMemory) // Use the helper function
 				AddLongTimeLog({
-					name: 'system',
-					role: 'system',
+					name: 'long-term-memory',
+					role: 'tool',
 					content: `已成功添加永久记忆："${memoryName}"`,
 					files: []
 				})
@@ -76,8 +76,8 @@ export async function LongTermMemoryHandler(result, { AddLongTimeLog }) {
 			} catch (err) {
 				console.error(`Error adding long-term memory "${memoryName}":`, err)
 				AddLongTimeLog({
-					name: 'system',
-					role: 'system',
+					name: 'long-term-memory',
+					role: 'tool',
 					content: `添加永久记忆 "${memoryName}" 时出错：\n${err.message || err}`,
 					files: []
 				})
@@ -86,8 +86,8 @@ export async function LongTermMemoryHandler(result, { AddLongTimeLog }) {
 		else {
 			// Updated error message to reflect the required tags
 			AddLongTimeLog({
-				name: 'system',
-				role: 'system',
+				name: 'long-term-memory',
+				role: 'tool',
 				content: `添加永久记忆失败：缺少 <trigger>, <name>, 或 <prompt-content> 标签。\n收到的内容:\n${content}`,
 				files: []
 			})
@@ -110,8 +110,8 @@ export async function LongTermMemoryHandler(result, { AddLongTimeLog }) {
 			try {
 				deleteLongTermMemory(memoryName)
 				AddLongTimeLog({
-					name: 'system',
-					role: 'system',
+					name: 'long-term-memory',
+					role: 'tool',
 					content: `已成功删除永久记忆："${memoryName}"`,
 					files: []
 				})
@@ -120,8 +120,8 @@ export async function LongTermMemoryHandler(result, { AddLongTimeLog }) {
 			} catch (err) {
 				console.error(`Error deleting long-term memory "${memoryName}":`, err)
 				AddLongTimeLog({
-					name: 'system',
-					role: 'system',
+					name: 'long-term-memory',
+					role: 'tool',
 					content: `删除永久记忆 "${memoryName}" 时出错：\n${err.message || err}`,
 					files: []
 				})
@@ -129,8 +129,8 @@ export async function LongTermMemoryHandler(result, { AddLongTimeLog }) {
 			}
 		else {
 			AddLongTimeLog({
-				name: 'system',
-				role: 'system',
+				name: 'long-term-memory',
+				role: 'tool',
 				content: '删除永久记忆失败：<delete-long-term-memory> 标签内容为空。',
 				files: []
 			})
@@ -155,8 +155,8 @@ export async function LongTermMemoryHandler(result, { AddLongTimeLog }) {
 				listContent += '(无)'
 
 			AddLongTimeLog({
-				name: 'system',
-				role: 'system',
+				name: 'long-term-memory',
+				role: 'tool',
 				content: listContent,
 				files: []
 			})
@@ -164,8 +164,8 @@ export async function LongTermMemoryHandler(result, { AddLongTimeLog }) {
 		} catch (err) {
 			console.error('Error listing long-term memories:', err)
 			AddLongTimeLog({
-				name: 'system',
-				role: 'system',
+				name: 'long-term-memory',
+				role: 'tool',
 				content: `列出永久记忆时出错：\n${err.message || err}`,
 				files: []
 			})

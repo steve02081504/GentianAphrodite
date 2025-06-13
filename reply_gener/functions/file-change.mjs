@@ -61,8 +61,8 @@ export async function file_change(result, { AddLongTimeLog }) {
 				}
 
 			AddLongTimeLog({
-				name: 'system',
-				role: 'system',
+				name: 'file-change',
+				role: 'tool',
 				content: file_content,
 				files
 			})
@@ -125,8 +125,8 @@ export async function file_change(result, { AddLongTimeLog }) {
 		} catch (err) {
 			console.error('Error parsing replace-file XML:', err)
 			AddLongTimeLog({
-				name: 'system',
-				role: 'system',
+				name: 'file-change',
+				role: 'tool',
 				content: `解析replace-file失败：\n\`\`\`\n${err}\n\`\`\`\n原始数据:\n<replace-file>${replace_file_xml_str}</replace-file>`,
 				files: []
 			})
@@ -136,8 +136,8 @@ export async function file_change(result, { AddLongTimeLog }) {
 		// Check if we actually got data after parsing
 		if (replace_files_data.length === 0) {
 			AddLongTimeLog({
-				name: 'system',
-				role: 'system',
+				name: 'file-change',
+				role: 'tool',
 				content: `解析replace-file后未找到有效的文件替换操作。\n原始数据:\n<replace-file>${replace_file_xml_str}</replace-file>`,
 				files: []
 			})
@@ -156,8 +156,8 @@ export async function file_change(result, { AddLongTimeLog }) {
 				originalContent = await fs.promises.readFile(resolvePath(path), 'utf-8')
 			} catch (err) {
 				AddLongTimeLog({
-					name: 'system',
-					role: 'system',
+					name: 'file-change',
+					role: 'tool',
 					content: `读取文件失败：${path}\n\`\`\`\n${err.stack}\n\`\`\`\n`,
 					files: []
 				})
@@ -207,8 +207,8 @@ export async function file_change(result, { AddLongTimeLog }) {
 
 
 			AddLongTimeLog({
-				name: 'system',
-				role: 'system',
+				name: 'file-change',
+				role: 'tool',
 				content: system_content,
 				files: []
 			})
@@ -231,15 +231,15 @@ export async function file_change(result, { AddLongTimeLog }) {
 		try {
 			await fs.promises.writeFile(resolvePath(path), content.trim() + '\n', 'utf-8')
 			AddLongTimeLog({
-				name: 'system',
-				role: 'system',
+				name: 'file-change',
+				role: 'tool',
 				content: `文件 ${path} 已写入`,
 				files: []
 			})
 		} catch (err) {
 			AddLongTimeLog({
-				name: 'system',
-				role: 'system',
+				name: 'file-change',
+				role: 'tool',
 				content: `写入文件失败：${path}\n\`\`\`\n${err.stack}\n\`\`\`\n`,
 				files: []
 			})

@@ -358,8 +358,8 @@ ${!isFinalCycle ? `
 					console.info(`Detail-thinking: Finished (Answer) after ${planningCycles} cycles. Time: ${thinkingTime.toFixed(2)}s. Answer:\n${answer}`)
 					AddLongTimeLog({
 						content: `详细思考完成 (耗时 ${thinkingTime.toFixed(2)} 秒, ${planningCycles} 轮)。\n<detail-thinking-answer>\n${answer}\n</detail-thinking-answer>\n(请用自然语气复述以上结果)`,
-						name: 'system',
-						role: 'system',
+						name: 'detail-thinking',
+						role: 'tool',
 					})
 					return true // Finished successfully
 				} else if (summary.startsWith('detail-thinking-failed:')) {
@@ -369,8 +369,8 @@ ${!isFinalCycle ? `
 					console.info(`Detail-thinking: Finished (Failed) after ${planningCycles} cycles. Time: ${thinkingTime.toFixed(2)}s. Reason:\n${reason}`)
 					AddLongTimeLog({
 						content: `详细思考未能成功 (耗时 ${thinkingTime.toFixed(2)} 秒, ${planningCycles} 轮)。\n<detail-thinking-failed>\n${reason}\n</detail-thinking-failed>\n(请用自然语气说明失败原因)`,
-						name: 'system',
-						role: 'system',
+						name: 'detail-thinking',
+						role: 'tool',
 					})
 					return true // Finished with failure
 				} else if (!isFinalCycle && summary.startsWith('detail-thinking-replan:')) {
@@ -406,8 +406,8 @@ ${!isFinalCycle ? `
 最后一次的总结:
 ${summaryRaw}
 `,
-						name: 'system',
-						role: 'system',
+						name: 'detail-thinking',
+						role: 'tool',
 					})
 					return true
 				}
@@ -438,8 +438,8 @@ ${summaryRaw}
 最后一次的总结:
 ${summaryRaw}
 `,
-			name: 'system',
-			role: 'system',
+			name: 'detail-thinking',
+			role: 'tool',
 		})
 		return true
 	} catch (error) {
@@ -448,8 +448,8 @@ ${summaryRaw}
 		const thinkingTime = (endTime - startTime) / 1000
 		AddLongTimeLog({
 			content: `在思考执行过程中遇到错误 (耗时 ${thinkingTime.toFixed(2)} 秒, ${planningCycles} 轮): ${error.message}. 思考中止。`,
-			name: 'system',
-			role: 'system',
+			name: 'detail-thinking',
+			role: 'tool',
 		})
 		return true
 	}

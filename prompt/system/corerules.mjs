@@ -20,7 +20,7 @@ export async function CoreRulesPrompt(args, logical_results, prompt_struct, deta
 避免怪异输出以免困扰。
 `
 
-	if (args.chat_log.some(entry => entry.name != args.Charname && entry.name.match(/(gentian|龙胆)/i)))
+	if (args.chat_log.slice(-10).some(entry => entry.name != args.Charname && entry.name?.match?.(/(gentian|龙胆)/i)))
 		result += `\
 你可能会见到其他的“自己”，那些是来自平行世界的你（和她们的主人）。
 `

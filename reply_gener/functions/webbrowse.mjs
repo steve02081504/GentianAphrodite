@@ -38,36 +38,35 @@ export async function webbrowse(result, { AddLongTimeLog, prompt_struct }) {
 					extension: {}
 				},
 				plugin_prompts: {},
-				chat_log: []
-			}
-			browseing.char_prompt.additional_chat_log = [
-				{
-					content: `\
+				chat_log: [
+					{
+						content: `\
 网页内容：
 ${markdown}
 `,
-					name: 'system',
-					role: 'system'
-				},
-				{
-					content: `\
+						name: 'system',
+						role: 'system'
+					},
+					{
+						content: `\
 请仔细阅读网页内容，并回答以下问题：
 ${question}
 `,
-					name: 'system',
-					role: 'system'
-				}
-			]
+						name: 'system',
+						role: 'system'
+					}
+				]
+			}
 			const browseResult = await OrderedAISourceCalling('web-browse', AI => AI.StructCall(browseing)) // Renamed result variable to avoid shadowing
 			AddLongTimeLog({
 				content: '浏览结果：\n' + browseResult.content,
-				name: 'system',
-				role: 'system'
+				name: 'web-browse',
+				role: 'tool'
 			})
 		} catch (err) {
 			AddLongTimeLog({
-				name: 'system',
-				role: 'system',
+				name: 'web-browse',
+				role: 'tool',
 				content: '访问网页时出现错误：\n' + err,
 				files: []
 			})

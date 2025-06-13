@@ -137,8 +137,8 @@ const b = 2;
 		}],
 		additional_chat_log: [
 			files.length ? {
-				name: 'system',
-				role: 'system',
+				name: 'file-change',
+				role: 'tool',
 				content: `\
 以下对话中提及过的文件已自动追加到附件中供你参考：
 ${files.map(x => `- ${x.name}`).join('\n')}`,

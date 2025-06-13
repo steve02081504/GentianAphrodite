@@ -122,8 +122,8 @@ export async function timer(result, args) {
 
 
 		AddLongTimeLog({
-			name: 'system',
-			role: 'system',
+			name: 'timer',
+			role: 'tool',
 			content: systemLogContent,
 			files: []
 		})
@@ -140,8 +140,8 @@ export async function timer(result, args) {
 		console.info('AI请求列出定时器')
 
 		AddLongTimeLog({
-			name: 'system',
-			role: 'system',
+			name: 'timer',
+			role: 'tool',
 			content: '当前的定时器列表：\n' + (Object.values(timers).map(({ callbackdata }) => `- “${callbackdata.reason}”：${callbackdata.trigger}`).join('\n') || '无'),
 			files: []
 		})
@@ -176,8 +176,8 @@ export async function timer(result, args) {
 		}
 
 		AddLongTimeLog({
-			name: 'system',
-			role: 'system',
+			name: 'timer',
+			role: 'tool',
 			content: systemLogContent,
 			files: []
 		})

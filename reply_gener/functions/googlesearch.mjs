@@ -31,8 +31,8 @@ export async function googlesearch(result, { AddLongTimeLog }) {
 			if (searchQueries.length === 0) {
 				console.warn('<google-search> content resulted in no valid queries after splitting and filtering.')
 				AddLongTimeLog({
-					name: 'system',
-					role: 'system',
+					name: 'google-search',
+					role: 'tool',
 					content: '搜索指令 <google-search> 内未找到有效的搜索关键词。',
 					files: []
 				})
@@ -67,8 +67,8 @@ export async function googlesearch(result, { AddLongTimeLog }) {
 
 
 				AddLongTimeLog({
-					name: 'system',
-					role: 'system',
+					name: 'google-search',
+					role: 'tool',
 					content: searchResults.trim(), // Trim trailing newlines
 					files: []
 				})
@@ -78,8 +78,8 @@ export async function googlesearch(result, { AddLongTimeLog }) {
 		} catch (err) {
 			console.error('Google search failed:', err)
 			AddLongTimeLog({
-				name: 'system',
-				role: 'system',
+				name: 'google-search',
+				role: 'tool',
 				content: '搜索时出现错误：\n' + (err.stack || err.message || err),
 				files: []
 			})
