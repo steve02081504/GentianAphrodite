@@ -75,7 +75,6 @@ export function getHighestScoreShortTermMemory() {
 	return result
 }
 
-// (calculateRelevance, cleanupMemories 函数保持不变)
 /**
  * 计算单个记忆条目的相关性分数 (优化时间衰减)
  * @param {MemoryEntry} memoryEntry - 历史记忆条目
@@ -139,8 +138,7 @@ function cleanupMemories(currentTimeStamp) {
 
 
 /**
- * (weightedRandomSample 函数保持不变, 但在随机选择逻辑中不再直接使用)
- * 加权随机选择 - 这个函数现在主要用于 *单次* 加权随机选择一个项
+ * 加权随机选择 - 主要用于 *单次* 加权随机选择一个项
  * @template T
  * @param {T[]} items - 待选择项数组
  * @param {number[]} weights - 对应各项的权重
@@ -187,7 +185,6 @@ export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct
 	const currentChatLog = args.chat_log
 	const currentChatName = args.chat_name // 缓存当前聊天名称
 
-	// (getKeyWords 函数保持不变)
 	async function getKeyWords(chat_log) {
 		const texts = chat_log.map(entry => entry.extension?.SimplifiedContents?.[0] || entry.content).filter(text => text.trim())
 		const combinedText = texts.join('\n')

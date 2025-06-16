@@ -50,7 +50,8 @@ export function splitDiscordReply(reply, split_lenth = 2000) {
 			if ((current_chunk.length + line.length + 1) > max_content_length) {
 				results.push(block_begin + current_chunk.trim() + block_end)
 				current_chunk = line
-			} else
+			}
+			else
 				if (current_chunk)
 					current_chunk += '\n' + line
 				else
@@ -62,7 +63,7 @@ export function splitDiscordReply(reply, split_lenth = 2000) {
 		return results
 	}
 
-	// --- 第一阶段：合并 ``` 代码块 --- (你的原始代码，保持不变)
+	// --- 第一阶段：合并 ``` 代码块 ---
 	for (const content_slice of content_slices)
 		if (content_slice.startsWith('```'))
 			if (last) {
@@ -86,11 +87,10 @@ export function splitDiscordReply(reply, split_lenth = 2000) {
 					kaomoji, kaomoji.replaceAll('`', '\\`')
 				)
 
-	// --- 第二阶段：处理超大块 --- (你的原始代码，但调用了新的 splitCodeBlock)
+	// --- 第二阶段：处理超大块 ---
 	for (const content_slice of content_slices)
 		if (content_slice.length > split_lenth)
 			if (content_slice.startsWith('```')) {
-				// **修改点：直接调用改进后的 splitCodeBlock**
 				const splited_blocks = splitCodeBlock(content_slice)
 				new_content_slices.push(...splited_blocks) // 使用 push(...array) 来添加所有元素
 			}
@@ -116,7 +116,7 @@ export function splitDiscordReply(reply, split_lenth = 2000) {
 	// 这个阶段现在应该只会处理那些经过智能分割后仍然超长的“普通文本块”。
 	for (const content_slice of content_slices)
 		if (content_slice.length > split_lenth)
-			// **修复点：检查是否是代码块（理论上不应该到这里，但作为保险）**
+			// 检查是否是代码块（理论上不应该到这里，但作为保险）
 			if (content_slice.startsWith('```'))
 				// 如果万一有代码块漏到这里，再次调用 splitCodeBlock
 				new_content_slices.push(...splitCodeBlock(content_slice))
@@ -127,9 +127,8 @@ export function splitDiscordReply(reply, split_lenth = 2000) {
 			new_content_slices.push(content_slice)
 	mapend()
 
-	// --- 第四阶段：合并消息 --- (你的原始代码，保持不变)
+	// --- 第四阶段：合并消息 ---
 	for (const content_slice of content_slices) {
-		// **微调：处理第一个块为空的情况**
 		if (!last) {
 			last = content_slice
 			continue

@@ -60,11 +60,18 @@ CI.test('File Operations', async () => {
 
 })
 CI.test('Code Runner', () => {
-	CI.test('<run-bash>', async () => {
-		const testDir = path.join(CI.context.workSpace.path, 'bash_test_dir')
-		await CI.runOutput([`<run-bash>mkdir ${testDir}</run-bash>`, 'Directory created.'])
-		CI.assert(fs.existsSync(testDir), '<run-bash> failed to execute command.')
-	})
+	if (process.platform === 'win32')
+		CI.test('<run-pwsh>', async () => {
+			const testDir = path.join(CI.context.workSpace.path, 'pwsh_test_dir')
+			await CI.runOutput([`<run-pwsh>mkdir ${testDir}</run-pwsh>`, 'Directory created.'])
+			CI.assert(fs.existsSync(testDir), '<run-pwsh> failed to execute command.')
+		})
+	else
+		CI.test('<run-bash>', async () => {
+			const testDir = path.join(CI.context.workSpace.path, 'bash_test_dir')
+			await CI.runOutput([`<run-bash>mkdir ${testDir}</run-bash>`, 'Directory created.'])
+			CI.assert(fs.existsSync(testDir), '<run-bash> failed to execute command.')
+		})
 
 	CI.test('<inline-js>', async () => {
 		const result = await CI.runOutput('The result of 5 * 8 is <inline-js>return 5 * 8;</inline-js>.')
@@ -172,7 +179,7 @@ CI.test('Detail Thinking', async () => {
 		'The fount made by steve02081504 is fount.',
 		'<run-js>return 2+2</run-js>',
 		'The result of the calculation is 4.',
-		`<run-bash>touch ${testFilePath}</run-bash>`,
+		process.platform === 'win32' ? `<run-pwsh>touch ${testFilePath}</run-pwsh>` : `<run-bash>touch ${testFilePath}</run-bash>`,
 		`File ${testFilePath} created.`,
 		'detail-thinking-answer: The fount is fount, and 2+2 equals 4.',
 		'The fount made by steve02081504 is fount, and the sum of 2 and 2 is 4.'

@@ -1,7 +1,7 @@
 import { Events, ChannelType, ActivityType } from 'npm:discord.js'
 import { Buffer } from 'node:buffer'
 
-import { processIncomingMessage, processMessageUpdate, cleanup as cleanupBotLogic, registerPlatformAPI } from '../../bot_core/index.mjs'
+import { processIncomingMessage, processMessageUpdate, processMessageDelete, cleanup as cleanupBotLogic, registerPlatformAPI } from '../../bot_core/index.mjs'
 import { charname as BotFountCharname } from '../../charbase.mjs'
 
 import { get_discord_api_plugin } from './api.mjs'
@@ -203,6 +203,7 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 			platform: 'discord',
 			OwnerNameKeywords: interfaceConfig.OwnerNameKeywords,
 			platform_message_ids: [message.id],
+			content_parts: [content],
 			platform_channel_id: message.channel.id,
 			platform_user_id: message.author.id,
 			platform_guild_id: message.guild?.id,
@@ -735,6 +736,15 @@ export async function DiscordBotMain(client, interfaceConfig) {
 		const fountEntry = await discordMessageToFountChatLogEntry(fetchedNewMessage, interfaceConfig)
 		if (fountEntry)
 			await processMessageUpdate(fountEntry, discordPlatformAPI, fetchedNewMessage.channel.id)
+	})
+
+	client.on(Events.MessageDelete, async (message) => {
+		if (!message.id || !message.channelId) {
+			console.warn('[DiscordInterface] Received MessageDelete event with missing id or channelId.')
+			return
+		}
+		// 调用核心逻辑处理删除
+		await processMessageDelete(message.id, discordPlatformAPI, message.channelId)
 	})
 
 	if (interfaceConfig.BotActivityName && interfaceConfig.BotActivityType)

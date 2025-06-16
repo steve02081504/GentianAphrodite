@@ -41,6 +41,7 @@ import { reloadPart } from '../../../../../../src/server/managers/index.mjs'
  *      platform: string,
  *      OwnerNameKeywords: string[],
  *      platform_message_ids?: any[],
+ *      content_parts?: string[],
  *      platform_channel_id?: string | number,
  *      platform_user_id?: string | number,
  *      platform_guild_id?: string,
@@ -319,10 +320,8 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
 	if (fountEntry.extension?.is_direct_message)
 		return isFromOwner
 
-
 	if (inHypnosisChannelId && inHypnosisChannelId === channelId && !isFromOwner)
 		return false
-
 
 	let possible = 0
 
@@ -622,8 +621,8 @@ async function handleMessageQueue(channelId, platformAPI) {
 					const banWordMatch = content.match(/^龙胆.{0,2}禁止.{0,2}`(?<banned_content>[\S\s]*)`$/)
 					if (banWordMatch?.groups?.banned_content)
 						bannedStrings.push(banWordMatch.groups.banned_content)
-					if (base_match_keys(content, [/^(龙胆|[\n,.~、。呵哦啊嗯噫欸，～])+$/, /^龙胆龙胆(龙胆|[\n!,.?~、。呵哦啊嗯噫欸！，？～])+$/])) {
-						const ownerCallReply = SimplifyChinese(content).replaceAll('龙胆', '主人')
+					if (base_match_keys(content, [/^[\n,.~、。呵哦啊嗯噫欸胆龙，～]+$/, /^[\n,.~、。呵哦啊嗯噫欸胆龙，～]{4}[\n!,.?~、。呵哦啊嗯噫欸胆龙！，？～]+$/])) {
+						const ownerCallReply = SimplifyChinese(content).replaceAll('龙', '主').replaceAll('胆', '人')
 						await sendAndLogReply({ content: ownerCallReply }, platformAPI, channelId, currentMessageToProcess)
 						newUserMessage(content, platformAPI.name)
 						newCharReplay(ownerCallReply, platformAPI.name)
@@ -655,16 +654,24 @@ async function handleMessageQueue(channelId, platformAPI) {
 				!isMutedChannel &&
 				currentMessageToProcess.extension?.platform_user_id != platformAPI.getBotUserId()
 			) {
-				const repet = findMostFrequentElement(
-					currentChannelLog.slice(-10),
-					message => (message.content || '') + '\n\n' + (message.files || []).map(file => file.buffer instanceof Buffer ? file.buffer.toString('hex') : String(file.buffer)).join('\n')
-				)
+				const nameMap = {}
+				function summary(message, name_diff = true) {
+					let result = ''
+					if (name_diff) {
+						nameMap[message.name] ??= 0
+						result += nameMap[message.name]++ + '\n'
+					}
+					result += (message.content ?? '') + '\n\n'
+					result += (message.files || []).map(file => file.buffer instanceof Buffer ? file.buffer.toString('hex') : String(file.buffer)).join('\n')
+					return result
+				}
+				const repet = findMostFrequentElement(currentChannelLog.slice(-10), summary)
 				if (
-					repet.element?.content &&
+					(repet.element?.content || repet.element?.files?.length) &&
 					repet.count >= currentConfig.RepetitionTriggerCount &&
-					!base_match_keys(repet.element.content, [...currentMessageToProcess.extension.OwnerNameKeywords, ...rude_words, ...GentianWords]) &&
+					!base_match_keys(repet.element.content + '\n' + (repet.element.files || []).map(file => file.name).join('\n'), [...currentMessageToProcess.extension.OwnerNameKeywords, ...rude_words, ...GentianWords]) &&
 					!isBotCommand(repet.element.content) &&
-					!currentChannelLog.slice(-10).some(msg => msg.extension?.platform_user_id == platformAPI.getBotUserId() && msg.content === repet.element.content)
+					!currentChannelLog.slice(-10).some(msg => msg.extension?.platform_user_id == platformAPI.getBotUserId() && summary(msg, false) === summary(repet.element, false))
 				)
 					await sendAndLogReply(
 						{ content: repet.element.content, files: repet.element.files },
@@ -682,17 +689,24 @@ async function handleMessageQueue(channelId, platformAPI) {
 			}
 		}
 		else do {
-			lastLogEntry.content += '\n' + currentMessageToProcess.content
+			lastLogEntry.content = (lastLogEntry.extension.content_parts || [lastLogEntry.content])
+				.concat(currentMessageToProcess.extension.content_parts || [currentMessageToProcess.content])
+				.join('\n')
+
 			lastLogEntry.files = currentMessageToProcess.files
 			lastLogEntry.timeStamp = currentMessageToProcess.timeStamp
 			lastLogEntry.extension = {
 				...lastLogEntry.extension,
 				...currentMessageToProcess.extension,
-				platform_message_ids: Array.from(new Set([
-					...lastLogEntry.extension.platform_message_ids,
-					...currentMessageToProcess.extension.platform_message_ids
-				]))
+				platform_message_ids: [
+					...lastLogEntry.extension.platform_message_ids || [],
+					...currentMessageToProcess.extension.platform_message_ids || []
+				],
+				// 合并 content_parts 数组
+				content_parts: (lastLogEntry.extension.content_parts || [])
+					.concat(currentMessageToProcess.extension.content_parts || [currentMessageToProcess.content])
 			}
+
 			myQueue.shift()
 			switch (await checkTrigger()) {
 				case 'exit': return
@@ -877,31 +891,59 @@ export async function processIncomingMessage(fountEntry, platformAPI, channelId)
  */
 export async function processMessageUpdate(updatedFountEntry, platformAPI, channelId) {
 	const log = channelChatLogs[channelId]
-	if (!log || !updatedFountEntry.extension?.platform_message_ids || updatedFountEntry.extension.platform_message_ids.length === 0) return
+	if (!log || !updatedFountEntry.extension?.platform_message_ids?.length) return
 
-	const originalMsgIdToFind = updatedFountEntry.extension.platform_message_ids[0]
+	const updatedMsgId = updatedFountEntry.extension.platform_message_ids[0]
 
 	const entryIndex = log.findIndex(entry =>
-		entry.extension?.platform_message_ids?.includes(originalMsgIdToFind)
+		entry.extension?.platform_message_ids?.includes(updatedMsgId)
 	)
 
 	if (entryIndex > -1) {
-		const oldEntry = log[entryIndex]
-		const newExtension = {
-			...oldEntry.extension,
-			...updatedFountEntry.extension,
-			platform_message_ids: Array.from(new Set([
-				...oldEntry.extension?.platform_message_ids || [],
-				...updatedFountEntry.extension?.platform_message_ids || []
-			]))
-		}
+		const entryToUpdate = log[entryIndex]
+		const partIndex = entryToUpdate.extension.platform_message_ids.indexOf(updatedMsgId)
 
-		log[entryIndex] = {
-			...updatedFountEntry,
-			content: `${updatedFountEntry.content}\n（已编辑）`,
-			extension: newExtension,
-			role: updatedFountEntry.role || oldEntry.role,
-			name: updatedFountEntry.name || oldEntry.name,
+		if (partIndex > -1) {
+			// 更新特定部分的内容
+			const newContentPart = ((updatedFountEntry.extension.content_parts?.[0] || updatedFountEntry.content)).replace(/（已编辑）$/, '') + '（已编辑）'
+			entryToUpdate.extension.content_parts[partIndex] = newContentPart
+
+			// 更新时间戳和文件（如果编辑时添加了文件）
+			entryToUpdate.timeStamp = updatedFountEntry.timeStamp
+			if (updatedFountEntry.files?.length)
+				entryToUpdate.files = [...entryToUpdate.files || [], ...updatedFountEntry.files]
+
+			// 重新生成完整的 content 字符串
+			entryToUpdate.content = entryToUpdate.extension.content_parts.join('\n')
+		}
+	}
+}
+
+/**
+ * 处理从接入层传入的消息删除事件。
+ * @async
+ * @param {any} deletedMessageId - 被删除消息的平台特定 ID。
+ * @param {PlatformAPI_t} platformAPI - 当前平台的 API 对象。
+ * @param {string | number} channelId - 消息所在的频道 ID。
+ */
+export async function processMessageDelete(deletedMessageId, platformAPI, channelId) {
+	const log = channelChatLogs[channelId]
+	if (!log) return
+
+	const entryIndex = log.findIndex(entry =>
+		entry.extension?.platform_message_ids?.includes(deletedMessageId)
+	)
+
+	if (entryIndex > -1) {
+		const entryToUpdate = log[entryIndex]
+		const partIndex = entryToUpdate.extension.platform_message_ids.indexOf(deletedMessageId)
+
+		if (partIndex > -1 && entryToUpdate.extension.content_parts?.[partIndex]) {
+			// 在特定部分内容后追加（已删除）
+			entryToUpdate.extension.content_parts[partIndex] += '（已删除）'
+
+			// 重新生成完整的 content 字符串
+			entryToUpdate.content = entryToUpdate.extension.content_parts.join('\n')
 		}
 	}
 }
@@ -945,9 +987,7 @@ async function handleGroupCheck(group, platformAPI, ownerOverride = null) {
 		} else
 			console.warn(`[BotLogic] getGroupMembers not implemented for platform ${platformAPI.name}. Cannot check owner presence in group ${group.id}. Skipping.`)
 
-		if (ownerIsPresent)
-			return
-
+		if (ownerIsPresent) return
 
 		console.log(`[BotLogic] Owner NOT found in group ${group.name} (ID: ${group.id}). Taking action...`)
 
@@ -994,7 +1034,6 @@ async function handleGroupCheck(group, platformAPI, ownerOverride = null) {
 		let channelHistoryForAI = []
 		if (platformAPI.fetchChannelHistory)
 			channelHistoryForAI = await platformAPI.fetchChannelHistory(defaultChannel.id, 10)
-
 
 		const insultRequestContext = [
 			...channelHistoryForAI,
@@ -1081,7 +1120,6 @@ export async function registerPlatformAPI(platformAPI) {
 		})
 	else
 		console.warn(`[BotLogic] onGroupJoin not implemented for platform: ${platformAPI.name}`)
-
 
 	let usedOptimizedCheck = false
 	if (platformAPI.getOwnerPresenceInGroups)

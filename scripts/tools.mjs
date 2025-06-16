@@ -236,7 +236,7 @@ export function findMostFrequentElement(arr, summarier = x => x) {
 	let mostFrequentElement
 
 	arr.forEach(element => {
-		const summary = summarier(element)
+		const summary = String(summarier(element))
 		countMap[summary] = (countMap[summary] || 0) + 1
 		if (countMap[summary] > maxCount) {
 			maxCount = countMap[summary]

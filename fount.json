@@ -4,5 +4,6 @@
 	"data_files": [
 		"memory",
 		"vars"
-	]
+	],
+	"CI-file": "./.github/workflows/CI.mjs"
 }

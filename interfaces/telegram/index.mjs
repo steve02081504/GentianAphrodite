@@ -295,6 +295,7 @@ async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, message, int
 			platform: 'telegram',
 			OwnerNameKeywords: interfaceConfig.OwnerNameKeywords,
 			platform_message_ids: [message.message_id],
+			content_parts: [content],
 			platform_channel_id: chat.id,
 			platform_user_id: fromUser.id,
 			platform_chat_type: chat.type,
@@ -309,6 +310,7 @@ async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, message, int
 			...aiReplyObjectCacheTg[message.message_id]?.extension,
 		}
 	}
+	delete aiReplyObjectCacheTg[message.message_id]
 	return fountEntry
 }
 

@@ -61,7 +61,7 @@ ${escapeHTML(statisticDatas.firstInteraction.characterReplyContent)}
 - ⏰ 定时过${statisticDatas.toolUsage.timersSet}次定时器，累计呼唤你${statisticDatas.toolUsage.timerCallbacks}次 🔔
 
 ${statisticDatas.longestDailyChat.end - statisticDatas.longestDailyChat.start > parseDuration('48h') ? `\
-❤️ 🗓️ 你和她最长的眷恋留存于${timeToStr(statisticDatas.longestDailyChat.start)}至${statisticDatas.longestDailyChat.end}，共${timeToTimeStr(
+❤️ 🗓️ 你和她最长的眷恋留存于${timeToStr(statisticDatas.longestDailyChat.start)}至${timeToStr(statisticDatas.longestDailyChat.end)}，共${timeToTimeStr(
 				statisticDatas.longestDailyChat.end - statisticDatas.longestDailyChat.start
 				, 'zh-CN')}的时间中，你与她每日都保持对话。
 ` : ''}
