@@ -2,8 +2,7 @@ import { chardir, charurl, charvar } from '../charbase.mjs'
 import { listLongTermMemory } from '../prompt/memory/long-term-memory.mjs'
 import { getHighestScoreShortTermMemory, getMostFrequentChatName, getShortTermMemoryNum } from '../prompt/memory/short-term-memory.mjs'
 import { statisticDatas } from '../scripts/statistics.mjs'
-import { escapeHTML, parseDuration, timeToStr, timeToTimeStr } from '../scripts/tools.mjs'
-import { FormatStr } from '../scripts/tools.mjs'
+import { escapeHTML, parseDuration, timeToStr, timeToTimeStr, FormatStr } from '../scripts/tools.mjs'
 import fs from 'node:fs'
 
 const file = fs.readFileSync(chardir + '/info/description/zh-CN.md', 'utf8')
