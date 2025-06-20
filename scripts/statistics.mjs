@@ -56,7 +56,7 @@ export const statisticDatas = getVar('statistics', {
 
 	toolUsage: {
 		codeRuns: 0,
-		detailedThinkingSessions: 0,
+		deepResearchSessions: 0,
 		fileOperations: 0,
 		googleSearches: 0,
 		webBrowses: 0,
@@ -75,6 +75,10 @@ export const statisticDatas = getVar('statistics', {
 
 	avgTokenNum: 7400,
 })
+
+if (statisticDatas.toolUsage.detailedThinkingSessions)
+	statisticDatas.toolUsage.deepResearchSessions = statisticDatas.toolUsage.detailedThinkingSessions
+delete statisticDatas.toolUsage.detailedThinkingSessions
 
 export function newUserMessage(str, platform) {
 	const sentenceNum = getStatementsNum(str)

@@ -11,7 +11,7 @@ import { CorpusGeneratorPrompt } from './corpusGenerator.mjs'
 import { infoPrompt } from './info.mjs'
 import { AutoCalcPrompt } from './autocalc.mjs'
 import { HostInfoPrompt } from './hostinfo.mjs'
-import { DetailThinkingPrompt } from './detail-thinking.mjs'
+import { DeepResearchPrompt } from './deep-research.mjs'
 import { GoogleSearchPrompt } from './googlesearch.mjs'
 import { WebBrowsePrompt } from './webbrowse.mjs'
 import { ScreenshotPrompt } from './screenshot.mjs'
@@ -42,7 +42,7 @@ export async function FunctionPrompt(args, logical_results, prompt_struct, detai
 	result.push(ChineseGrammarCorrectionPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(PromptWriterPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(infoPrompt(args, logical_results, prompt_struct, detail_level))
-	result.push(DetailThinkingPrompt(args, logical_results, prompt_struct, detail_level))
+	result.push(DeepResearchPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(GoogleSearchPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(WebBrowsePrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(CodeRunnerPrompt(args, logical_results, prompt_struct, detail_level))

@@ -39,7 +39,7 @@ ${statisticDatas.firstInteraction.characterReplyContent}
 你总共回复了你主人${statisticDatas.characterActivity.totalMessagesSent}次，一共${statisticDatas.characterActivity.totalStatementsSent}句
 你为主人：
 - 运行过${statisticDatas.toolUsage.codeRuns}次代码
-- 详细思考过${statisticDatas.toolUsage.detailedThinkingSessions}轮次
+- 深入研究过${statisticDatas.toolUsage.deepResearchSessions}轮次
 - 操作过${statisticDatas.toolUsage.fileOperations}次文件
 - 谷歌搜索过${statisticDatas.toolUsage.googleSearches}次
 - 浏览过${statisticDatas.toolUsage.webBrowses}次网页

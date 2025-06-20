@@ -1,5 +1,5 @@
 import { OrderedAISourceCalling } from '../../AISource/index.mjs'
-import { DetailThinkingMainPrompt } from '../../prompt/functions/detail-thinking.mjs'
+import { DeepResearchMainPrompt } from '../../prompt/functions/deep-research.mjs'
 import { statisticDatas } from '../../scripts/statistics.mjs'
 import { MarkdownWebFetch } from '../../scripts/web.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
@@ -30,7 +30,7 @@ export async function webbrowse(result, { AddLongTimeLog, prompt_struct }) {
 
 			const browseing = {
 				...prompt_struct,
-				char_prompt: await DetailThinkingMainPrompt(),
+				char_prompt: await DeepResearchMainPrompt(),
 				other_chars_prompt: {},
 				world_prompt: {
 					text: [],

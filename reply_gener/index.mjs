@@ -2,7 +2,7 @@ import { buildPromptStruct } from '../../../../../../src/public/shells/chat/src/
 import { noAISourceAvailable, OrderedAISourceCalling } from '../AISource/index.mjs'
 import { buildLogicalResults } from '../prompt/logical_results/index.mjs'
 import { coderunner } from './functions/coderunner.mjs'
-import { detailThinking } from './functions/detail-thinking.mjs'
+import { deepResearch } from './functions/deep-research.mjs'
 import { googlesearch } from './functions/googlesearch.mjs'
 import { rolesettingfilter } from './functions/rolesettingfilter.mjs'
 import { webbrowse } from './functions/webbrowse.mjs'
@@ -93,7 +93,7 @@ export async function GetReply(args) {
 			console.log('logical_results', logical_results)
 			console.log('prompt_struct', inspect(prompt_struct, { depth: 4, colors: true }))
 		}
-		const AItype = logical_results.in_reply_to_master ? 
+		const AItype = logical_results.in_reply_to_master ?
 			logical_results.in_nsfw ? 'nsfw' : logical_results.in_assist ? 'expert' : 'sfw'
 		 : 'from-other'
 		const requestresult = await OrderedAISourceCalling(AItype, async AI => {
@@ -121,7 +121,7 @@ export async function GetReply(args) {
 		/** @type {(import('../../../../../../src/decl/PluginAPI.ts').ReplyHandler_t)[]} */
 		const replyHandlers = [
 			coderunner, LongTermMemoryHandler, ShortTermMemoryHandler,
-			detailThinking, googlesearch, webbrowse, rolesettingfilter, file_change,
+			deepResearch, googlesearch, webbrowse, rolesettingfilter, file_change,
 			args.supported_functions.add_message ? timer : null,
 			...Object.values(args.plugins).map(plugin => plugin.interfaces.chat?.ReplyHandler)
 		].filter(Boolean)

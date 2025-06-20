@@ -9,21 +9,21 @@ import { match_keys } from '../../scripts/match.mjs'
  * @param {prompt_struct_t} prompt_struct
  * @param {number} detail_level
  */
-export async function DetailThinkingPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function DeepResearchPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
 	if (logical_results.in_assist || await match_keys(args, [/(仔细|认真|详细)思考/], 'any'))
 		result += `\
-在你遇见你难以当场得出结论的过于复杂的问题时，你可以通过输出以下格式来进入详细思考模式。
-<detail-thinking>问题和相关信息，无需回答或解释</detail-thinking>
+在你遇见你难以当场得出结论的过于复杂的问题时，你可以通过输出以下格式来进入深入研究模式。
+<deep-research>问题和相关信息，无需回答或解释</deep-research>
 该模式下你可以反复思考问题直到得到满意回答。
 如：[
 ${args.UserCharname}: 如果昨天是明天的话就好了，那么今天就是周五了。请问：句中的今天可能是周几？
 龙胆:${' '}
-<detail-thinking>如果昨天是明天的话就好了，那么今天就是周五了。句中的今天可能是周几？</detail-thinking>
+<deep-research>如果昨天是明天的话就好了，那么今天就是周五了。句中的今天可能是周几？</deep-research>
 ]
 标签中只需要附上问题和有助于问题解决的信息，不需要回答或解释。
-详细思考模式下你仍然可以使用网络浏览，代码运行（格式如 <run-js>code</run-js>），谷歌搜索功能。
+深入研究模式下你仍然可以使用网络浏览，代码运行（格式如 <run-js>code</run-js>），谷歌搜索功能。
 `
 	return {
 		text: [{
@@ -33,7 +33,7 @@ ${args.UserCharname}: 如果昨天是明天的话就好了，那么今天就是�
 	}
 }
 
-export async function DetailThinkingMainPrompt() {
+export async function DeepResearchMainPrompt() {
 	return {
 		text: [{
 			content: `\

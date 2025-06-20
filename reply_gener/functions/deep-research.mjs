@@ -5,7 +5,7 @@ import { OrderedAISourceCalling } from '../../AISource/index.mjs'
 import { mergePrompt } from '../../prompt/build.mjs'
 import { WebBrowsePrompt } from '../../prompt/functions/webbrowse.mjs'
 import { CodeRunnerPrompt } from '../../prompt/functions/coderunner.mjs'
-import { DetailThinkingMainPrompt } from '../../prompt/functions/detail-thinking.mjs'
+import { DeepResearchMainPrompt } from '../../prompt/functions/deep-research.mjs'
 import { webbrowse } from './webbrowse.mjs'
 import { googlesearch } from './googlesearch.mjs'
 import { coderunner } from './coderunner.mjs'
@@ -54,21 +54,21 @@ function parsePlan(text) {
 
 
 /** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
-export async function detailThinking(result, args) {
-	const { max_planning_cycles, thinking_interval, initial_plan_max_retries, summary_max_retries } = config.detail_thinking
+export async function deepResearch(result, args) {
+	const { max_planning_cycles, thinking_interval, initial_plan_max_retries, summary_max_retries } = config.deep_research
 	const { AddLongTimeLog, prompt_struct } = args
 
 	result.extension.execed_codes ??= {}
 
-	const questionMatch = result.content.match(/<detail-thinking>(?<question>[\S\s]*?)<\/detail-thinking>/)
+	const questionMatch = result.content.match(/<deep-research>(?<question>[\S\s]*?)<\/deep-research>/)
 	if (!questionMatch?.groups?.question) return false
 	const question = questionMatch.groups.question.trim()
 	if (!question) {
-		console.warn('DetailThinking: Extracted question is empty.')
+		console.warn('DeepResearch: Extracted question is empty.')
 		return false
 	}
 
-	console.info('DetailThinking Start:' + question)
+	console.info('DeepResearch Start:' + question)
 
 	/** @type {prompt_struct_t} */
 	const thinking_prompt_struct = {
@@ -111,14 +111,14 @@ export async function detailThinking(result, args) {
 	}
 
 	AddLongTimeLog({
-		content: `<detail-thinking>\n${question}\n</detail-thinking>\n`,
+		content: `<deep-research>\n${question}\n</deep-research>\n`,
 		name: '龙胆', // Assuming '龙胆' is the character triggering this
 		role: 'char',
 	})
 
 	// --- Initial Plan Generation ---
 	try {
-		thinking_prompt_struct.char_prompt = await DetailThinkingMainPrompt() // Base prompt for planning AI
+		thinking_prompt_struct.char_prompt = await DeepResearchMainPrompt() // Base prompt for planning AI
 		const initialPlanPrompt = `\
 <chatLog>
 ${prompt_struct.chat_log.slice(-10).map(x => x.name + ': ' + x.content).join('\n')}
@@ -155,22 +155,22 @@ Step 2: <步骤2主题>
 		let retries = 0
 		while (plan.length === 0 && retries < initial_plan_max_retries) {
 			retries++
-			console.info(`Detail-thinking: Requesting initial plan (Attempt ${retries}/${initial_plan_max_retries})...`)
+			console.info(`Deep-research: Requesting initial plan (Attempt ${retries}/${initial_plan_max_retries})...`)
 
-			const requestResult = await OrderedAISourceCalling('detail-thinking', AI => AI.StructCall(thinking_prompt_struct))
+			const requestResult = await OrderedAISourceCalling('deep-research', AI => AI.StructCall(thinking_prompt_struct))
 			const planText = requestResult.content
 
 			plan = parsePlan(planText) // Use the tolerant parser
 
 			if (plan.length > 0) {
-				console.info(`Detail-thinking: Initial Plan Generated (Attempt ${retries}):\n${plan.map(p => `Step ${p.step}: ${p.topic}`).join('\n')}`)
+				console.info(`Deep-research: Initial Plan Generated (Attempt ${retries}):\n${plan.map(p => `Step ${p.step}: ${p.topic}`).join('\n')}`)
 				thinking_prompt_struct.chat_log.push({
 					content: 'Plan:\n' + plan.map(p => `Step ${p.step}: ${p.topic}`).join('\n') + '\n',
 					name: '龙胆',
 					role: 'char',
 				})
 			} else {
-				console.warn(`Detail-thinking: Initial Plan Failed or Malformed (Attempt ${retries}/${initial_plan_max_retries}). Received:\n${planText}`)
+				console.warn(`Deep-research: Initial Plan Failed or Malformed (Attempt ${retries}/${initial_plan_max_retries}). Received:\n${planText}`)
 				thinking_prompt_struct.chat_log.push({
 					content: planText,
 					name: '龙胆',
@@ -188,7 +188,7 @@ Step 2: <步骤2主题>
 		}
 
 		if (plan.length === 0) {
-			console.error(`Detail-thinking: Failed to generate a valid initial plan after maximum retries (${initial_plan_max_retries}).`)
+			console.error(`Deep-research: Failed to generate a valid initial plan after maximum retries (${initial_plan_max_retries}).`)
 			AddLongTimeLog({
 				content: `无法生成有效的初始计划，已达到最大重试次数 (${initial_plan_max_retries})。思考中止。`,
 				name: 'system',
@@ -197,7 +197,7 @@ Step 2: <步骤2主题>
 			return true
 		}
 	} catch (error) {
-		console.error('Detail-thinking: Error during initial plan generation:', error)
+		console.error('Deep-research: Error during initial plan generation:', error)
 		AddLongTimeLog({
 			content: `在生成初始计划时遇到错误: ${error.message}. 思考中止。`,
 			name: 'system',
@@ -210,13 +210,13 @@ Step 2: <步骤2主题>
 	// --- Planning and Execution Cycle ---
 	try {
 		replan: while (planningCycles < max_planning_cycles) {
-			statisticDatas.toolUsage.detailedThinkingSessions++
+			statisticDatas.toolUsage.deepResearchSessions++
 			planningCycles++
-			console.info(`Detail-thinking: Starting planning cycle ${planningCycles}/${max_planning_cycles}`)
+			console.info(`Deep-research: Starting planning cycle ${planningCycles}/${max_planning_cycles}`)
 
 			thinking_prompt_struct.char_prompt = mergePrompt(
 				await Promise.all(
-					[DetailThinkingMainPrompt, GoogleSearchPrompt, WebBrowsePrompt, CodeRunnerPrompt]
+					[DeepResearchMainPrompt, GoogleSearchPrompt, WebBrowsePrompt, CodeRunnerPrompt]
 						.map(p => p(thinkingArgs, thinking_logical_results, thinking_prompt_struct, 0))
 				),
 			)
@@ -224,7 +224,7 @@ Step 2: <步骤2主题>
 			for (const step of plan) {
 				// Skip steps that were completed in previous cycles (relevant after replanning)
 				if (step.result !== null) {
-					console.info(`Detail-thinking: Cycle ${planningCycles}, Skipping Step ${step.step} as it already has a result.`)
+					console.info(`Deep-research: Cycle ${planningCycles}, Skipping Step ${step.step} as it already has a result.`)
 					continue
 				}
 
@@ -251,8 +251,8 @@ Step 2: <步骤2主题>
 
 				let stepCompleted = false
 				regen_step: while (!stepCompleted) {
-					console.info(`Detail-thinking: Cycle ${planningCycles}, Requesting execution for Step ${step.step}: ${step.topic}`)
-					const requestResult = await OrderedAISourceCalling('detail-thinking', AI => AI.StructCall(thinking_prompt_struct))
+					console.info(`Deep-research: Cycle ${planningCycles}, Requesting execution for Step ${step.step}: ${step.topic}`)
+					const requestResult = await OrderedAISourceCalling('deep-research', AI => AI.StructCall(thinking_prompt_struct))
 					const stepOutput = {
 						content: requestResult.content,
 						name: '龙胆',
@@ -265,7 +265,7 @@ Step 2: <步骤2主题>
 					for (const replyHandler of [coderunner, googlesearch, webbrowse])
 						if (await replyHandler(stepOutput, thinkingArgs)) {
 							functionCalled = true
-							console.info(`Detail-thinking: Cycle ${planningCycles}, Step ${step.step} - Function triggered by handler: ${replyHandler.name}. Waiting for result...`)
+							console.info(`Deep-research: Cycle ${planningCycles}, Step ${step.step} - Function triggered by handler: ${replyHandler.name}. Waiting for result...`)
 							// The replyHandler is expected to add the function call result to thinkingContext.chat_log
 							await sleep(thinking_interval)
 							// Continue the inner loop to let the AI process the function result for the same step
@@ -276,7 +276,7 @@ Step 2: <步骤2主题>
 					if (!functionCalled) {
 						// Check if AI mistakenly generated a plan or step instead of executing the current one
 						if (stepOutput.content.trim().toLowerCase().startsWith('plan:') || /^\s*Step\s*\d+\s*[:：]/.test(stepOutput.content)) {
-							console.warn(`Detail-thinking: Cycle ${planningCycles}, Step ${step.step} - AI generated plan/step instead of executing. Output:\n${stepOutput.content}\nRegenerating...`)
+							console.warn(`Deep-research: Cycle ${planningCycles}, Step ${step.step} - AI generated plan/step instead of executing. Output:\n${stepOutput.content}\nRegenerating...`)
 							thinking_prompt_struct.chat_log.push(stepOutput) // Log the incorrect output
 							thinking_prompt_struct.chat_log.push({
 								content: '你错误地生成了计划或步骤编号，而不是执行当前步骤。请专注于执行当前步骤 (Step ' + step.step + ') 并输出其最终文本结果、工具调用或障碍说明。',
@@ -288,7 +288,7 @@ Step 2: <步骤2主题>
 						}
 
 						// Assume valid execution output (text result or obstacle description)
-						console.info(`Detail-thinking: Cycle ${planningCycles}, Step ${step.step} Result: ${stepOutput.content}`)
+						console.info(`Deep-research: Cycle ${planningCycles}, Step ${step.step} Result: ${stepOutput.content}`)
 						step.result = stepOutput.content // Store the final text result for this step
 						thinking_prompt_struct.chat_log.push(stepOutput) // Log the final step output
 						stepCompleted = true
@@ -300,7 +300,7 @@ Step 2: <步骤2主题>
 
 			// --- Summary and Re-planning Phase ---
 			const isFinalCycle = planningCycles >= max_planning_cycles
-			thinking_prompt_struct.char_prompt = await DetailThinkingMainPrompt() // Reset to base prompt for summary/replan decision
+			thinking_prompt_struct.char_prompt = await DeepResearchMainPrompt() // Reset to base prompt for summary/replan decision
 
 			// Dynamically adjust the prompt based on whether replanning is allowed
 			const summaryPrompt = `\
@@ -311,13 +311,13 @@ ${plan.map(s => `Step ${s.step}: ${s.topic}\nResult: ${s.result ?? '*尚未完�
 ${isFinalCycle ? '**已达最大规划次数。必须提供最终答案或声明失败。**' : ''}
 回顾所有已执行步骤及其结果。现在必须选择以下一项，并严格以指定标记开头，然后按要求提供内容：
 
-1. **\`detail-thinking-answer:\`**
+1. **\`deep-research-answer:\`**
   * 后接：**最终答案**。根据已完成的步骤，简洁地总结最终的解决方案或发现。
 
-2. **\`detail-thinking-failed:\`**
+2. **\`deep-research-failed:\`**
   * 后接：**失败原因**。说明为什么无法完成任务，遇到的主要障碍是什么，以及关键的尝试步骤。
 ${!isFinalCycle ? `
-3. **\`detail-thinking-replan:\`** (当前 ${planningCycles}/${max_planning_cycles} 次循环)
+3. **\`deep-research-replan:\`** (当前 ${planningCycles}/${max_planning_cycles} 次循环)
   * 后接：**需要重新规划的原因** 和 **新的计划**。简要分析当前进展、遇到的问题，并提出一个全新的、完整的步骤计划。
   * **新计划必须** 严格按以下格式之一提供：
 	\`\`\`
@@ -339,8 +339,8 @@ ${!isFinalCycle ? `
 			let summaryRetries = 0
 			let summaryRaw = '' // Define summaryRaw outside the loop to be accessible in the final fallback log
 			summary_regen: while (true) {
-				console.info(`Detail-thinking: Cycle ${planningCycles}, Requesting summary/replan (Attempt ${summaryRetries}/${summary_max_retries})...`)
-				const requestResult = await OrderedAISourceCalling('detail-thinking', AI => AI.StructCall(thinking_prompt_struct))
+				console.info(`Deep-research: Cycle ${planningCycles}, Requesting summary/replan (Attempt ${summaryRetries}/${summary_max_retries})...`)
+				const requestResult = await OrderedAISourceCalling('deep-research', AI => AI.StructCall(thinking_prompt_struct))
 				summaryRaw = requestResult.content // Assign here
 				const summary = summaryRaw.trim() // Use trimmed version for marker checks
 
@@ -351,43 +351,43 @@ ${!isFinalCycle ? `
 					role: 'char',
 				})
 
-				if (summary.startsWith('detail-thinking-answer:')) {
+				if (summary.startsWith('deep-research-answer:')) {
 					const endTime = Date.now()
 					const thinkingTime = (endTime - startTime) / 1000
-					const answer = summary.substring('detail-thinking-answer:'.length).trim()
-					console.info(`Detail-thinking: Finished (Answer) after ${planningCycles} cycles. Time: ${thinkingTime.toFixed(2)}s. Answer:\n${answer}`)
+					const answer = summary.substring('deep-research-answer:'.length).trim()
+					console.info(`Deep-research: Finished (Answer) after ${planningCycles} cycles. Time: ${thinkingTime.toFixed(2)}s. Answer:\n${answer}`)
 					AddLongTimeLog({
-						content: `详细思考完成 (耗时 ${thinkingTime.toFixed(2)} 秒, ${planningCycles} 轮)。\n<detail-thinking-answer>\n${answer}\n</detail-thinking-answer>\n(请用自然语气复述以上结果)`,
-						name: 'detail-thinking',
+						content: `深入研究完成 (耗时 ${thinkingTime.toFixed(2)} 秒, ${planningCycles} 轮)。\n<deep-research-answer>\n${answer}\n</deep-research-answer>\n(请用自然语气复述以上结果)`,
+						name: 'deep-research',
 						role: 'tool',
 					})
 					return true // Finished successfully
-				} else if (summary.startsWith('detail-thinking-failed:')) {
+				} else if (summary.startsWith('deep-research-failed:')) {
 					const endTime = Date.now()
 					const thinkingTime = (endTime - startTime) / 1000
-					const reason = summary.substring('detail-thinking-failed:'.length).trim()
-					console.info(`Detail-thinking: Finished (Failed) after ${planningCycles} cycles. Time: ${thinkingTime.toFixed(2)}s. Reason:\n${reason}`)
+					const reason = summary.substring('deep-research-failed:'.length).trim()
+					console.info(`Deep-research: Finished (Failed) after ${planningCycles} cycles. Time: ${thinkingTime.toFixed(2)}s. Reason:\n${reason}`)
 					AddLongTimeLog({
-						content: `详细思考未能成功 (耗时 ${thinkingTime.toFixed(2)} 秒, ${planningCycles} 轮)。\n<detail-thinking-failed>\n${reason}\n</detail-thinking-failed>\n(请用自然语气说明失败原因)`,
-						name: 'detail-thinking',
+						content: `深入研究未能成功 (耗时 ${thinkingTime.toFixed(2)} 秒, ${planningCycles} 轮)。\n<deep-research-failed>\n${reason}\n</deep-research-failed>\n(请用自然语气说明失败原因)`,
+						name: 'deep-research',
 						role: 'tool',
 					})
 					return true // Finished with failure
-				} else if (!isFinalCycle && summary.startsWith('detail-thinking-replan:')) {
-					const replanContent = summary.substring('detail-thinking-replan:'.length).trim()
+				} else if (!isFinalCycle && summary.startsWith('deep-research-replan:')) {
+					const replanContent = summary.substring('deep-research-replan:'.length).trim()
 					const newPlan = parsePlan(replanContent) // Attempt to parse new plan using the tolerant parser
 
 					await sleep(thinking_interval) // Small delay before potentially starting next cycle
 
 					if (newPlan.length > 0) {
-						console.info(`Detail-thinking: Cycle ${planningCycles}, Replanning successful. New Plan:\n${newPlan.map(p => `Step ${p.step}: ${p.topic}`).join('\n')}`)
+						console.info(`Deep-research: Cycle ${planningCycles}, Replanning successful. New Plan:\n${newPlan.map(p => `Step ${p.step}: ${p.topic}`).join('\n')}`)
 						plan = newPlan // Adopt the new plan (results are reset by parsePlan)
 						continue replan // Start the next planning cycle with the new plan
 					} else {
-						console.warn(`Detail-thinking: Replan requested, but plan format invalid or missing in response (Attempt ${summaryRetries}/${summary_max_retries}). Content:\n${replanContent}`)
+						console.warn(`Deep-research: Replan requested, but plan format invalid or missing in response (Attempt ${summaryRetries}/${summary_max_retries}). Content:\n${replanContent}`)
 						// Add specific retry message explaining the required replan format
 						thinking_prompt_struct.chat_log.push({
-							content: `你选择了重新规划 (detail-thinking-replan:)，但提供的后续内容未能解析为有效的新计划。请确保在 \`detail-thinking-replan:\` 标记后，先给出简要原因，然后提供格式正确的新计划（以 "Step 1: ..." 或 "Plan:\nStep 1: ..." 开始）。请重试 (${summaryRetries}/${summary_max_retries})。`,
+							content: `你选择了重新规划 (deep-research-replan:)，但提供的后续内容未能解析为有效的新计划。请确保在 \`deep-research-replan:\` 标记后，先给出简要原因，然后提供格式正确的新计划（以 "Step 1: ..." 或 "Plan:\nStep 1: ..." 开始）。请重试 (${summaryRetries}/${summary_max_retries})。`,
 							name: 'system',
 							role: 'system',
 						})
@@ -399,24 +399,24 @@ ${!isFinalCycle ? `
 				// Increment summaryRetries only if we are about to retry or fail due to retries
 				summaryRetries++
 				if (summaryRetries >= summary_max_retries) {
-					console.error(`Detail-thinking: Failed to generate valid summary/replan after ${summary_max_retries} retries in cycle ${planningCycles}.`)
+					console.error(`Deep-research: Failed to generate valid summary/replan after ${summary_max_retries} retries in cycle ${planningCycles}.`)
 					AddLongTimeLog({
 						content: `\
 总结/重新规划阶段失败，已达最大重试次数 (${summary_max_retries})。思考中止。
 最后一次的总结:
 ${summaryRaw}
 `,
-						name: 'detail-thinking',
+						name: 'deep-research',
 						role: 'tool',
 					})
 					return true
 				}
 				else {
-					// Handle cases: invalid marker, or 'detail-thinking-replan:' used on the final cycle
-					const reason = isFinalCycle && summary.startsWith('detail-thinking-replan:')
+					// Handle cases: invalid marker, or 'deep-research-replan:' used on the final cycle
+					const reason = isFinalCycle && summary.startsWith('deep-research-replan:')
 						? '不允许在最终循环中重新规划。'
-						: `回答必须以 ${isFinalCycle ? '`detail-thinking-answer:` 或 `detail-thinking-failed:`' : '`detail-thinking-answer:`, `detail-thinking-failed:`, 或 `detail-thinking-replan:`'} 中的一个标记开头。`
-					console.warn(`Detail-thinking: Summary/Replan response invalid (Attempt ${summaryRetries}/${summary_max_retries}). Reason: ${reason} Received:\n${summaryRaw}`)
+						: `回答必须以 ${isFinalCycle ? '`deep-research-answer:` 或 `deep-research-failed:`' : '`deep-research-answer:`, `deep-research-failed:`, 或 `deep-research-replan:`'} 中的一个标记开头。`
+					console.warn(`Deep-research: Summary/Replan response invalid (Attempt ${summaryRetries}/${summary_max_retries}). Reason: ${reason} Received:\n${summaryRaw}`)
 					thinking_prompt_struct.chat_log.push({
 						content: `${reason} 你上次的输出未能正确处理。请根据当前情况选择一个有效标记并重新生成回答 (${summaryRetries}/${summary_max_retries})。`,
 						name: 'system',
@@ -431,24 +431,24 @@ ${summaryRaw}
 
 		// Fallback: This point should ideally not be reached if the logic within the loops correctly forces an exit via answer/failed/error.
 		// It acts as a safeguard in case max_planning_cycles is hit without a proper conclusion in the final summary phase.
-		console.error(`Detail-thinking: Reached end of planning cycles (${max_planning_cycles}) without explicit finish (answer/failed). This indicates a potential logic flaw or unexpected AI behavior.`)
+		console.error(`Deep-research: Reached end of planning cycles (${max_planning_cycles}) without explicit finish (answer/failed). This indicates a potential logic flaw or unexpected AI behavior.`)
 		AddLongTimeLog({
 			content: `\
-详细思考在达到最大循环次数 (${max_planning_cycles}) 后意外结束，未能明确得出答案或失败结论。
+深入研究在达到最大循环次数 (${max_planning_cycles}) 后意外结束，未能明确得出答案或失败结论。
 最后一次的总结:
 ${summaryRaw}
 `,
-			name: 'detail-thinking',
+			name: 'deep-research',
 			role: 'tool',
 		})
 		return true
 	} catch (error) {
-		console.error('Detail-thinking: Error during planning/execution cycle:', error)
+		console.error('Deep-research: Error during planning/execution cycle:', error)
 		const endTime = Date.now()
 		const thinkingTime = (endTime - startTime) / 1000
 		AddLongTimeLog({
 			content: `在思考执行过程中遇到错误 (耗时 ${thinkingTime.toFixed(2)} 秒, ${planningCycles} 轮): ${error.message}. 思考中止。`,
-			name: 'detail-thinking',
+			name: 'deep-research',
 			role: 'tool',
 		})
 		return true
