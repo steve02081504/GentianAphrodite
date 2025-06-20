@@ -358,7 +358,7 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
 			delete channelMuteStartTimes[channelId]
 			isMutedChannel = false
 		}
-		if ((isMutedChannel || isInFavor) && base_match_keys(content, ['闭嘴', '安静', '肃静']) && content.length < 10) {
+		if (isInFavor && base_match_keys(content, ['闭嘴', '安静', '肃静']) && content.length < 10) {
 			channelMuteStartTimes[channelId] = Date.now()
 			isMutedChannel = true
 			return false
@@ -405,17 +405,14 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
 			if (base_match_keys(content, ['你主人', '你的主人'])) possible += 100
 		}
 
+	if (isMutedChannel) return false
+
 	if (fountEntry.extension?.mentions_owner || base_match_keys(content, fountEntry.extension.OwnerNameKeywords)) {
 		possible += 7
 		if (base_match_keys(content, rude_words))
 			if (fuyanMode) return false
 			else return true
 	}
-
-	if (isMutedChannel)
-		return false
-	else if (channelMuteStartTimes[channelId] && !base_match_keys(content, ['闭嘴', '安静', '肃静']))
-		delete channelMuteStartTimes[channelId]
 
 	const okey = Math.random() * 100 < possible
 	console.dir({
@@ -557,7 +554,11 @@ async function sendAndLogReply(replyToSend, platformAPI, channelId, repliedToMes
 		return null
 	}
 
-	return await platformAPI.sendMessage(channelId, replyToSend, repliedToMessageEntry)
+	const result = await platformAPI.sendMessage(channelId, replyToSend, repliedToMessageEntry)
+	if (result)
+		channelLastSendMessageTime[channelId] = result.timeStamp
+
+	return result
 }
 
 /**

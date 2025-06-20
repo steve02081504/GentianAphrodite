@@ -93,7 +93,9 @@ export async function GetReply(args) {
 			console.log('logical_results', logical_results)
 			console.log('prompt_struct', inspect(prompt_struct, { depth: 4, colors: true }))
 		}
-		const AItype = logical_results.in_nsfw ? 'nsfw' : logical_results.in_assist ? 'expert' : 'sfw'
+		const AItype = logical_results.in_reply_to_master ? 
+			logical_results.in_nsfw ? 'nsfw' : logical_results.in_assist ? 'expert' : 'sfw'
+		 : 'from-other'
 		const requestresult = await OrderedAISourceCalling(AItype, async AI => {
 			const result = await AI.StructCall(prompt_struct)
 			if (!String(result.content).trim()) throw new Error('empty reply')
