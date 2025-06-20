@@ -540,15 +540,6 @@ async function doMessageReplyInternal(triggerMessage, platformAPI, channelId) {
  * @returns {Promise<chatLogEntry_t_ext | null>} 返回第一条成功发送的消息对应的 Fount Entry，如果发送失败或无内容则返回 null。
  */
 async function sendAndLogReply(replyToSend, platformAPI, channelId, repliedToMessageEntry) {
-	const currentChannelChatLog = channelChatLogs[channelId] || []
-	if (
-		repliedToMessageEntry &&
-		currentChannelChatLog.length > 0 &&
-		currentChannelChatLog[currentChannelChatLog.length - 1]?.extension?.platform_message_ids?.some(id => repliedToMessageEntry.extension?.platform_message_ids?.includes(id)) &&
-		(channelMessageQueues[channelId] || []).length === 0
-	)
-		repliedToMessageEntry = undefined
-
 	if (!replyToSend.content && !replyToSend.files?.length) {
 		console.warn('[BotLogic] sendAndLogReply: Attempted to send empty message, skipped.', replyToSend)
 		return null

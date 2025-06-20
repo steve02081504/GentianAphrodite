@@ -278,7 +278,20 @@ export async function DiscordBotMain(client, interfaceConfig) {
 			let repliedToDiscordMessage
 			if (originalMessageEntry?.extension?.platform_message_ids?.length)
 				try {
-					repliedToDiscordMessage = await /** @type {DiscordTextChannel | DiscordDMChannel} */ channel.messages.fetch(originalMessageEntry.extension.platform_message_ids.slice(-1)[0])
+					const originalMessage = await /** @type {DiscordTextChannel | DiscordDMChannel} */ channel.messages.fetch(originalMessageEntry.extension.platform_message_ids.slice(-1)[0])
+					const mentionArray = [
+						`<@${originalMessage.author.id}>`,
+						`<@!${originalMessage.author.id}>`,
+						`@${originalMessage.author.username}`,
+						`@${originalMessage.author.displayName} (${originalMessage.author.username})`,
+						`@${originalMessage.author.displayName}`,
+					]
+					for (const mention of mentionArray)
+						if (fountReplyPayload.content.startsWith(mention)) {
+							repliedToDiscordMessage = originalMessage
+							fountReplyPayload.content = fountReplyPayload.content.slice(mention.length)
+							break
+						}
 				} catch { /* 原始消息可能已被删除，静默处理，后续发送时不使用 .reply() */ }
 
 			const textContent = fountReplyPayload.content || ''

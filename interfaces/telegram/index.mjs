@@ -361,8 +361,22 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 			let firstSentTelegramMessage = null
 			const baseOptions = {
 				parse_mode: parseMode,
-				...replyToMessageId && { reply_to_message_id: replyToMessageId },
 				...messageThreadId && { message_thread_id: messageThreadId }
+			}
+
+			if (replyToMessageId) {
+				const fromUser = originalMessageEntry.telegram_message_obj.from
+				const mentionArray = [
+					`@${fromUser.first_name} (@${fromUser.username})`,
+					`@${fromUser.first_name}`,
+					`@${fromUser.username}`,
+				]
+				for (const mention of mentionArray)
+					if (aiMarkdownContent.startsWith(mention)) {
+						baseOptions.reply_to_message_id = replyToMessageId
+						aiMarkdownContent = aiMarkdownContent.slice(mention.length)
+						break
+					}
 			}
 
 			const sendFileWithCaption = async (file, captionAiMarkdown, isLastFile) => {

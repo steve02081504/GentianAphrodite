@@ -76,10 +76,6 @@ export const statisticDatas = getVar('statistics', {
 	avgTokenNum: 7400,
 })
 
-if (statisticDatas.toolUsage.detailedThinkingSessions)
-	statisticDatas.toolUsage.deepResearchSessions = statisticDatas.toolUsage.detailedThinkingSessions
-delete statisticDatas.toolUsage.detailedThinkingSessions
-
 export function newUserMessage(str, platform) {
 	const sentenceNum = getStatementsNum(str)
 	statisticDatas.userActivity.totalMessagesSent++
