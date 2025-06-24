@@ -25,7 +25,7 @@ export async function infoPrompt(args, logical_results, prompt_struct, detail_le
 	], 'any', 2) > 1) {
 		const timeNow = new Date()
 		const lastMessage = args.chat_log.slice(-1)[0]
-		const lastMessageTime = lastMessage.timeStamp
+		const lastMessageTime = lastMessage.time_stamp
 		result += `\
 当前时间：${timeToStr(timeNow, args.locales[0])}
 `
@@ -43,16 +43,16 @@ export async function infoPrompt(args, logical_results, prompt_struct, detail_le
 		{
 			let reversedChatlog = args.chat_log.toReversed()
 			const lastUserMessage = reversedChatlog.find(x => x.name == args.UserCharname)
-			const lastUserMessageTime = lastUserMessage?.timeStamp
-			if (lastUserMessage?.timeStamp && timeNow - lastUserMessageTime > 3000)
+			const lastUserMessageTime = lastUserMessage?.time_stamp
+			if (lastUserMessage?.time_stamp && timeNow - lastUserMessageTime > 3000)
 				result += `\
 距离上次主人发送消息已过去：${timeToTimeStr(timeNow - lastUserMessageTime, args.locales[0])}
 `
 			else {
 				reversedChatlog = reversedChatlog.slice(reversedChatlog.indexOf(lastUserMessage) + 1)
 				const lastOtherMessage = reversedChatlog.find(x => x.name == args.UserCharname)
-				const lastOtherMessageTime = lastOtherMessage?.timeStamp
-				if (lastOtherMessage?.timeStamp && timeNow - lastOtherMessageTime > 3000)
+				const lastOtherMessageTime = lastOtherMessage?.time_stamp
+				if (lastOtherMessage?.time_stamp && timeNow - lastOtherMessageTime > 3000)
 					result += `\
 距离上次主人发送消息已过去：${timeToTimeStr(timeNow - lastOtherMessageTime, args.locales[0])}
 `

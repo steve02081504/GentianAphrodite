@@ -45,7 +45,7 @@ const MAX_RANDOM_FLASHBACK = 2 // 最多选几条随机
 
 /**
  * @typedef {{
- * 	timeStamp: number, // 记录时间戳
+ * 	time_stamp: number, // 记录时间戳
  * 	text: string,      // 原始对话文本片段 (最近10条)
  * 	keywords: KeywordInfo[], // 关键词及权重
  * 	score: number,     // 记忆分数
@@ -93,7 +93,7 @@ function calculateRelevance(memoryEntry, currentKeywords, currentTimeStamp) {
 		}
 	})
 	relevanceScore += keywordMatchScore
-	const timeDiff = Math.max(0, currentTimeStamp - memoryEntry.timeStamp)
+	const timeDiff = Math.max(0, currentTimeStamp - (memoryEntry.time_stamp ?? 0))
 	const timePenalty = MAX_TIME_PENALTY * (1 - Math.exp(-timeDiff * TIME_DECAY_FACTOR_EXP))
 	relevanceScore -= timePenalty
 	relevanceScore += memoryEntry.score
@@ -113,7 +113,7 @@ function cleanupMemories(currentTimeStamp) {
 
 	for (const mem of chat_memories) {
 		mem.relevance = calculateRelevance(mem, [], currentTimeStamp)
-		if (mem.timeStamp < oneYearAgo) failingMemories.push(mem)
+		if (mem.time_stamp < oneYearAgo) failingMemories.push(mem)
 		if (mem.relevance >= CLEANUP_MIN_SCORE_THRESHOLD) passingMemories.push(mem)
 		else failingMemories.push(mem)
 	}
@@ -218,7 +218,7 @@ export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct
 		if (finalTopRelevant.length >= MAX_TOP_RELEVANT && finalNextRelevant.length >= MAX_NEXT_RELEVANT) break
 
 		const isFromSameChat = candidateMemory.memory.chat_name === currentChatName
-		const timeDiffSinceMemory = currentTimeStamp - candidateMemory.memory.timeStamp
+		const timeDiffSinceMemory = currentTimeStamp - candidateMemory.memory.time_stamp
 
 		// 跳过来自同聊天的近期记忆 (相关/次相关选择时)
 		if (isFromSameChat && timeDiffSinceMemory < MIN_TIME_DIFFERENCE_SAME_CHAT_MS)
@@ -227,7 +227,7 @@ export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct
 
 		let isTooCloseToSelectedRelevant = false
 		for (const selectedMem of allSelectedRelevantMemories)
-			if (Math.abs(candidateMemory.memory.timeStamp - selectedMem.memory.timeStamp) < MIN_TIME_DIFFERENCE_ANY_MS) {
+			if (Math.abs(candidateMemory.memory.time_stamp - selectedMem.memory.time_stamp) < MIN_TIME_DIFFERENCE_ANY_MS) {
 				isTooCloseToSelectedRelevant = true
 				break
 			}
@@ -258,7 +258,7 @@ export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct
 		// a. 过滤当前候选池
 		const currentCandidates = availableForRandomPool.filter(candidate => {
 			const isFromSameChat = candidate.memory.chat_name === currentChatName
-			const timeDiffSinceMemory = currentTimeStamp - candidate.memory.timeStamp
+			const timeDiffSinceMemory = currentTimeStamp - candidate.memory.time_stamp
 
 			// 过滤条件1: 不能是来自同聊天的近期记忆 (20分钟内)
 			if (isFromSameChat && timeDiffSinceMemory < MIN_TIME_DIFFERENCE_SAME_CHAT_MS)
@@ -267,7 +267,7 @@ export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct
 			// 过滤条件2: 不能与 *任何已选* (相关、次相关、已选随机) 的记忆时间过近 (10分钟内)
 			const allPreviouslySelected = [...allSelectedRelevantMemories, ...finalRandomFlashback] // 合并已选的相关/次相关 和 已选的随机
 			for (const selectedItem of allPreviouslySelected)
-				if (Math.abs(candidate.memory.timeStamp - selectedItem.memory.timeStamp) < MIN_TIME_DIFFERENCE_ANY_MS)
+				if (Math.abs(candidate.memory.time_stamp - selectedItem.memory.time_stamp) < MIN_TIME_DIFFERENCE_ANY_MS)
 					return false // 时间太近，过滤掉
 
 			return true // 通过所有过滤条件
@@ -278,7 +278,7 @@ export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct
 
 		// b. 计算剩余候选者的权重
 		const weights = currentCandidates.map(item => {
-			const ageFactor = Math.max(0, 1 - (currentTimeStamp - item.memory.timeStamp) / MEMORY_TTL_MS)
+			const ageFactor = Math.max(0, 1 - (currentTimeStamp - item.memory.time_stamp) / MEMORY_TTL_MS)
 			const cappedScore = Math.max(0, Math.min(item.memory.score, MAX_SCORE_FOR_RANDOM_WEIGHT))
 			const normalizedScoreFactor = MAX_SCORE_FOR_RANDOM_WEIGHT > 0 ? cappedScore / MAX_SCORE_FOR_RANDOM_WEIGHT : 0
 			const weight = BASE_RANDOM_WEIGHT
@@ -317,7 +317,7 @@ export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct
 
 	// --- 6. 格式化选中的记忆以加入Prompt (使用最终列表) ---
 	function formatMemory(memoryItem) {
-		const dateStr = new Date(memoryItem.memory.timeStamp).toLocaleString()
+		const dateStr = new Date(memoryItem.memory.time_stamp).toLocaleString()
 		return `\
 记忆来自 ${memoryItem.memory.chat_name}, ${dateStr}：
 ${memoryItem.memory.text}
@@ -378,7 +378,7 @@ ${args.UserCharname}: 给我把有关华为的记忆全忘掉。
 
 		if (memoryText.trim())
 			chat_memories.push({
-				timeStamp: memoryLogSlice[memoryLogSlice.length - 1]?.timeStamp || currentTimeStamp,
+				time_stamp: memoryLogSlice[memoryLogSlice.length - 1]?.time_stamp || currentTimeStamp,
 				text: memoryText,
 				keywords: newMemoryKeywords,
 				score: 0,

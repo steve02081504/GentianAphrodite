@@ -1,6 +1,6 @@
 /** @typedef {import('../../../../../../src/decl/AIsource.ts').AIsource_t} AIsource_t */
 
-import { loadAIsource } from '../../../../../../src/server/managers/AIsources_manager.mjs'
+import { loadAIsource } from '../../../../../../src/server/managers/AIsource_manager.mjs'
 import { getPartInfo } from '../../../../../../src/scripts/locale.mjs'
 import { username } from '../charbase.mjs'
 

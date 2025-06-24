@@ -84,7 +84,7 @@ ${escapeHTML(mostFrequentChatName)}
 		}),
 		version: charvar,
 		author: 'steve02081504',
-		homepage: '',
+		home_page: '',
 		tags: [
 			'纯爱',
 			'恋爱',

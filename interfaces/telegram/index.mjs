@@ -286,7 +286,7 @@ async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, message, int
 
 	/** @type {chatLogEntry_t_ext} */
 	const fountEntry = {
-		timeStamp: message.edit_date ? message.edit_date * 1000 : message.date * 1000,
+		time_stamp: message.edit_date ? message.edit_date * 1000 : message.date * 1000,
 		role: isFromOwner ? 'user' : 'char',
 		name: senderName,
 		content,

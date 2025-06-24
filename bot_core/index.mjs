@@ -276,12 +276,12 @@ function mergeChatLogEntries(logEntries) {
 		const currentEntry = logEntries[i]
 		if (
 			lastEntry.name === currentEntry.name &&
-			currentEntry.timeStamp - lastEntry.timeStamp < currentConfig.MergeMessagePeriodMs &&
+			currentEntry.time_stamp - lastEntry.time_stamp < currentConfig.MergeMessagePeriodMs &&
 			(lastEntry.files || []).length === 0
 		) {
 			lastEntry.content += '\n' + currentEntry.content
 			lastEntry.files = currentEntry.files
-			lastEntry.timeStamp = currentEntry.timeStamp
+			lastEntry.time_stamp = currentEntry.time_stamp
 			lastEntry.extension = {
 				...lastEntry.extension,
 				...currentEntry.extension,
@@ -347,7 +347,7 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
 
 	const isABotCommand = isBotCommand(content)
 
-	const timeSinceLastBotMessageInChannel = fountEntry.timeStamp - (channelLastSendMessageTime[channelId] || 0)
+	const timeSinceLastBotMessageInChannel = fountEntry.time_stamp - (channelLastSendMessageTime[channelId] || 0)
 	const isInFavor = timeSinceLastBotMessageInChannel < currentConfig.InteractionFavorPeriodMs
 
 	let isMutedChannel = (Date.now() - (channelMuteStartTimes[channelId] || 0)) < currentConfig.MuteDurationMs
@@ -547,7 +547,7 @@ async function sendAndLogReply(replyToSend, platformAPI, channelId, repliedToMes
 
 	const result = await platformAPI.sendMessage(channelId, replyToSend, repliedToMessageEntry)
 	if (result)
-		channelLastSendMessageTime[channelId] = result.timeStamp
+		channelLastSendMessageTime[channelId] = result.time_stamp
 
 	return result
 }
@@ -564,7 +564,7 @@ async function handleMessageQueue(channelId, platformAPI) {
 
 	if (!channelChatLogs[channelId] || channelChatLogs[channelId].length === 0) {
 		const historicalMessages = await platformAPI.fetchChannelHistory(channelId, currentConfig.DefaultMaxFetchCount)
-		const mergedHistoricalLog = mergeChatLogEntries(historicalMessages.sort((a, b) => a.timeStamp - b.timeStamp).slice(0, -1))
+		const mergedHistoricalLog = mergeChatLogEntries(historicalMessages.sort((a, b) => a.time_stamp - b.time_stamp).slice(0, -1))
 		channelChatLogs[channelId] = mergedHistoricalLog
 		while (channelChatLogs[channelId].length > currentConfig.DefaultMaxMessageDepth)
 			channelChatLogs[channelId].shift()
@@ -580,7 +580,7 @@ async function handleMessageQueue(channelId, platformAPI) {
 		function is_can_marge() {
 			return lastLogEntry && currentMessageToProcess &&
 				lastLogEntry.name === currentMessageToProcess.name &&
-				currentMessageToProcess.timeStamp - lastLogEntry.timeStamp < currentConfig.MergeMessagePeriodMs &&
+				currentMessageToProcess.time_stamp - lastLogEntry.time_stamp < currentConfig.MergeMessagePeriodMs &&
 				(lastLogEntry.files || []).length === 0 &&
 				(lastLogEntry.logContextAfter || []).length === 0 &&
 				lastLogEntry.extension?.platform_message_ids &&
@@ -623,7 +623,7 @@ async function handleMessageQueue(channelId, platformAPI) {
 				}
 			}
 
-			const recentChatLogForOtherBotCheck = currentChannelLog.filter(msg => (Date.now() - msg.timeStamp) < 5 * 60 * 1000)
+			const recentChatLogForOtherBotCheck = currentChannelLog.filter(msg => (Date.now() - msg.time_stamp) < 5 * 60 * 1000)
 			const hasOtherGentianBot = (() => {
 				const text = recentChatLogForOtherBotCheck
 					.filter(msg => msg.extension?.platform_user_id != platformAPI.getBotUserId())
@@ -686,7 +686,7 @@ async function handleMessageQueue(channelId, platformAPI) {
 				.join('\n')
 
 			lastLogEntry.files = currentMessageToProcess.files
-			lastLogEntry.timeStamp = currentMessageToProcess.timeStamp
+			lastLogEntry.time_stamp = currentMessageToProcess.time_stamp
 			lastLogEntry.extension = {
 				...lastLogEntry.extension,
 				...currentMessageToProcess.extension,
@@ -754,7 +754,7 @@ async function handleError(error, platformAPI, contextMessage) {
 			{
 				name: botNameForAI,
 				content: isInHypnosisForError ? '请主人下达指令。' : '主人，有什么我可以帮到您的吗～？',
-				timeStamp: new Date().getTime(),
+				time_stamp: new Date().getTime(),
 				role: 'char',
 				extension: {}
 			}, {
@@ -767,13 +767,13 @@ async function handleError(error, platformAPI, contextMessage) {
 - 不要删除整个项目并重新下载，那会删除你自己和我的用户配置
 - 不能修复也没问题，帮我分析下报错也可以，不会怪你
 `,
-				timeStamp: new Date().getTime(),
+				time_stamp: new Date().getTime(),
 				role: 'user',
 				extension: {}
 			}, {
 				name: 'system',
 				content: isInHypnosisForError ? '在回复时保持呆滞语气。' : '在回复问题时保持少女语气，适当添加语气词。',
-				timeStamp: new Date().getTime(),
+				time_stamp: new Date().getTime(),
 				role: 'system',
 				extension: {}
 			}
@@ -901,7 +901,7 @@ export async function processMessageUpdate(updatedFountEntry, platformAPI, chann
 			entryToUpdate.extension.content_parts[partIndex] = newContentPart
 
 			// 更新时间戳和文件（如果编辑时添加了文件）
-			entryToUpdate.timeStamp = updatedFountEntry.timeStamp
+			entryToUpdate.time_stamp = updatedFountEntry.time_stamp
 			if (updatedFountEntry.files?.length)
 				entryToUpdate.files = [...entryToUpdate.files || [], ...updatedFountEntry.files]
 
@@ -1032,7 +1032,7 @@ async function handleGroupCheck(group, platformAPI, ownerOverride = null) {
 			{
 				name: 'system',
 				role: 'system',
-				timeStamp: Date.now(),
+				time_stamp: Date.now(),
 				content: `\
 你目前在${groupNameForAI}群组中，但这里没有找到你的主人，显然你是被某个傻逼拉进来的。
 现在发挥你的聪明才智随便骂几句，随后你会自动退出群组。

@@ -84,7 +84,7 @@ ${escapeHTML(mostFrequentChatName)}
 		}),
 		version: charvar,
 		author: 'steve02081504',
-		homepage: '',
+		home_page: '',
 		tags: [
 			'pure love', // 纯爱
 			'romance', // 恋爱

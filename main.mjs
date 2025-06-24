@@ -7,9 +7,9 @@ import { GetData, SetData } from './config.mjs'
 import { saveMemories } from './prompt/memory/index.mjs'
 import { timerCallBack } from './reply_gener/functions/timer.mjs'
 import { saveVars } from './scripts/vars.mjs'
-/** @typedef {import('../../../../../src/decl/charAPI.ts').charAPI_t} charAPI_t */
+/** @typedef {import('../../../../../src/decl/charAPI.ts').CharAPI_t} CharAPI_t */
 
-/** @type {charAPI_t} */
+/** @type {CharAPI_t} */
 export default {
 	info: await UpdateInfo(),
 

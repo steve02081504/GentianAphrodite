@@ -194,7 +194,7 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 
 	/** @type {chatLogEntry_t_ext} */
 	const fountEntry = {
-		timeStamp: message.editedTimestamp || message.createdTimestamp,
+		time_stamp: message.editedTimestamp || message.createdTimestamp,
 		role: isFromOwner ? 'user' : 'char',
 		name: senderName,
 		content,
