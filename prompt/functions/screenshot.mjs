@@ -44,7 +44,7 @@ export async function ScreenshotPrompt(args, logical_results, prompt_struct, det
 			files: [{
 				buffer: screenShot,
 				name: 'screenshot.png',
-				mimeType: 'image/png'
+				mime_type: 'image/png'
 			}]
 		})
 	} catch (e) {

@@ -126,7 +126,7 @@ const b = 2;
 				name: x,
 				buffer,
 				description: `file path: ${x}`,
-				mimeType: await mimetypeFromBufferAndName(buffer, x)
+				mime_type: await mimetypeFromBufferAndName(buffer, x)
 			}
 		}).map(promise => promise.catch(console.error)))
 	).filter(Boolean)

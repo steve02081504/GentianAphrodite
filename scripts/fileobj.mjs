@@ -28,15 +28,15 @@ export async function getFileObjFormPathOrUrl(pathOrUrl) {
 		const contentDisposition = response.headers.get('Content-Disposition')
 		let name = getUrlFilename(pathOrUrl, contentDisposition)
 		const buffer = Buffer.from(await response.arrayBuffer())
-		const mimeType = response.headers.get('content-type') || await mimetypeFromBufferAndName(buffer, name || 'downloaded.bin')
-		name ||= 'downloaded.' + (getFileExtFormMimetype(mimeType) || 'bin')
-		pathOrUrl = { name, buffer, mimeType }
+		const mime_type = response.headers.get('content-type') || await mimetypeFromBufferAndName(buffer, name || 'downloaded.bin')
+		name ||= 'downloaded.' + (getFileExtFormMimetype(mime_type) || 'bin')
+		pathOrUrl = { name, buffer, mime_type }
 	}
 	else {
 		const filePath = resolvePath(pathOrUrl)
 		const buffer = fs.readFileSync(filePath)
 		const name = path.basename(filePath)
-		pathOrUrl = { name, buffer, mimeType: await mimetypeFromBufferAndName(buffer, name) }
+		pathOrUrl = { name, buffer, mime_type: await mimetypeFromBufferAndName(buffer, name) }
 	}
 
 	return pathOrUrl
@@ -48,8 +48,8 @@ export async function toFileObj(pathOrFileObj) {
 
 	if (pathOrFileObj instanceof Object && 'name' in pathOrFileObj && 'buffer' in pathOrFileObj) {
 		const buffer = Buffer.isBuffer(pathOrFileObj.buffer) ? pathOrFileObj.buffer : Buffer.from(pathOrFileObj.buffer)
-		const mimeType = pathOrFileObj.mimeType || await mimetypeFromBufferAndName(buffer, pathOrFileObj.name)
-		return { name: pathOrFileObj.name, buffer, mimeType }
+		const mime_type = pathOrFileObj.mime_type || await mimetypeFromBufferAndName(buffer, pathOrFileObj.name)
+		return { name: pathOrFileObj.name, buffer, mime_type }
 	}
 	else
 		throw new Error('无效的输入参数。期望为文件路径字符串、URL字符串或包含name和buffer属性的对象。')

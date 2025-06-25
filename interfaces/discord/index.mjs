@@ -161,7 +161,7 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 				name: attachment.name,
 				buffer,
 				description: attachment.description,
-				mimeType: attachment.contentType || await mimetypeFromBufferAndName(buffer, attachment.name)
+				mime_type: attachment.contentType || await mimetypeFromBufferAndName(buffer, attachment.name)
 			}
 		}
 		catch (error) {
@@ -175,7 +175,7 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 					() => fetch(url).then((response) => response.arrayBuffer())
 				)),
 				description: '',
-				mimeType: 'image/png'
+				mime_type: 'image/png'
 			}
 		}
 		catch (error) {

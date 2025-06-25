@@ -97,7 +97,7 @@ await unzip(workspace.zip, 'D:\\\\')
 	name: string;
 	role: 'system' | 'user' | 'char' | 'tool';
 	content: string;
-	files: { name: string; mimeType: string; buffer: global.Buffer<ArrayBufferLike>; description?: string; }[];
+	files: { name: string; mime_type: string; buffer: global.Buffer<ArrayBufferLike>; description?: string; }[];
 }[]
 如：[
 ${args.UserCharname}: 帮我把这个zip文件解压到D盘
@@ -117,7 +117,7 @@ ${args.supported_functions.files ? `\
 - 你可以通过在js中使用\`add_files\`函数来发送文件，其可以传递代表文件路径或url的string或自buffer构建带有附加信息的结构体。
   * 格式：add_files(file1: {
 		name: string;
-		mimeType: string;
+		mime_type: string;
 		buffer: global.Buffer<ArrayBufferLike>;
 		description?: string;
 	}, file2: string, ...)
@@ -131,7 +131,7 @@ ${args.UserCharname}: 发我屏幕截图看看？
 	}
 	await add_files({
 		name: 'screenShot.png',
-		mimeType: 'image/png',
+		mime_type: 'image/png',
 		buffer: await captureScreen(),
 		description: '主人需要的屏幕截图'
 	})

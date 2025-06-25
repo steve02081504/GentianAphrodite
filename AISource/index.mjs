@@ -79,7 +79,7 @@ export let last_used_AIsource
  * @param {(source:AIsource_t) => Promise<string>} caller
  * @param {number} trytimes
  * @param {(err: Error) => Promise<void>} error_logger
- * @returns {Promise<{content: string; files: {buffer: Buffer; name: string; mimeType: string; description: string}[]}>}
+ * @returns {Promise<{content: string; files: {buffer: Buffer; name: string; mime_type: string; description: string}[]}>}
  */
 export async function OrderedAISourceCalling(name, caller, trytimes = 3, error_logger = console.error) {
 	const sources = [...new Set([...GetAISourceCallingOrder(name).map(x => AIsources[x]).filter(x => x), ...Object.values(AIsources)])]

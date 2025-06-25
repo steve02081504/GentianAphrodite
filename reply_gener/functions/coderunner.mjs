@@ -90,11 +90,11 @@ export async function coderunner(result, args) {
 		if (!wait_screen) return
 		await new Promise(resolve => setTimeout(resolve, wait_screen * 1000))
 		try {
-			return { name: 'screenshot.png', buffer: await captureScreen(), mimeType: 'image/png' }
+			return { name: 'screenshot.png', buffer: await captureScreen(), mime_type: 'image/png' }
 		}
 		catch (e) {
 			console.error(e)
-			return { name: 'error.log', buffer: Buffer.from(`Error: ${e.stack}`), mimeType: 'text/plain' }
+			return { name: 'error.log', buffer: Buffer.from(`Error: ${e.stack}`), mime_type: 'text/plain' }
 		}
 	}
 

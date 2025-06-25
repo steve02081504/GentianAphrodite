@@ -219,23 +219,23 @@ async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, message, int
 				const buffer = Buffer.from(await response.arrayBuffer())
 
 				let fileName = fileNameFallback
-				let mimeType = mimeTypeFallback
+				let mime_type = mimeTypeFallback
 				if ('document' in message && message.document && message.document.file_id === fileId) {
 					fileName = message.document.file_name || fileNameFallback
-					mimeType = message.document.mime_type || mimeTypeFallback
+					mime_type = message.document.mime_type || mimeTypeFallback
 				} else if ('photo' in message && message.photo)
-					mimeType = 'image/jpeg'
+					mime_type = 'image/jpeg'
 				else if ('audio' in message && message.audio && message.audio.file_id === fileId) {
 					fileName = message.audio.file_name || fileNameFallback
-					mimeType = message.audio.mime_type || mimeTypeFallback
+					mime_type = message.audio.mime_type || mimeTypeFallback
 				} else if ('video' in message && message.video && message.video.file_id === fileId) {
 					fileName = message.video.file_name || fileNameFallback
-					mimeType = message.video.mime_type || mimeTypeFallback
+					mime_type = message.video.mime_type || mimeTypeFallback
 				} else if ('voice' in message && message.voice && message.voice.file_id === fileId)
-					mimeType = message.voice.mime_type || 'audio/ogg'
+					mime_type = message.voice.mime_type || 'audio/ogg'
 
-				const finalMimeType = mimeType || await mimetypeFromBufferAndName(buffer, fileName)
-				files.push({ name: fileName, buffer, mimeType: finalMimeType, description })
+				const finalMimeType = mime_type || await mimetypeFromBufferAndName(buffer, fileName)
+				files.push({ name: fileName, buffer, mime_type: finalMimeType, description })
 			} catch (e) { console.error(`[TelegramInterface] Failed to process file (ID: ${fileId}):`, e) }
 		}
 
@@ -405,11 +405,11 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 				const sendOptions = { ...baseOptions, caption: finalCaptionHtml }
 
 				try {
-					if (file.mimeType?.startsWith('image/'))
+					if (file.mime_type?.startsWith('image/'))
 						sentMsg = await tryFewTimes(() => bot.telegram.sendPhoto(platformChatId, fileSource, sendOptions))
-					else if (file.mimeType?.startsWith('audio/'))
+					else if (file.mime_type?.startsWith('audio/'))
 						sentMsg = await tryFewTimes(() => bot.telegram.sendAudio(platformChatId, fileSource, { ...sendOptions, title: file.name }))
-					else if (file.mimeType?.startsWith('video/'))
+					else if (file.mime_type?.startsWith('video/'))
 						sentMsg = await tryFewTimes(() => bot.telegram.sendVideo(platformChatId, fileSource, sendOptions))
 					else
 						sentMsg = await tryFewTimes(() => bot.telegram.sendDocument(platformChatId, fileSource, sendOptions))

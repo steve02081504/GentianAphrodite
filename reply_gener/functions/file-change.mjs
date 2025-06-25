@@ -48,7 +48,7 @@ export async function file_change(result, { AddLongTimeLog }) {
 			for (const path of paths)
 				try {
 					const fileObj = await getFileObjFormPathOrUrl(path)
-					if (fileObj.mimeType.startsWith('text/')) {
+					if (fileObj.mime_type.startsWith('text/')) {
 						const content = await fs.promises.readFile(resolvePath(path), 'utf-8')
 						file_content += `文件：${path}\n\`\`\`\n${content}\n\`\`\`\n`
 					}
