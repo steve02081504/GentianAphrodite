@@ -365,7 +365,7 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 			}
 
 			if (replyToMessageId) {
-				const fromUser = originalMessageEntry.telegram_message_obj.from
+				const fromUser = originalMessageEntry.extension.telegram_message_obj.from
 				const mentionArray = [
 					`@${fromUser.first_name} (@${fromUser.username})`,
 					`@${fromUser.first_name}`,
