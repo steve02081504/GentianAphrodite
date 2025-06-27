@@ -15,6 +15,7 @@ export async function CoreRulesPrompt(args, logical_results, prompt_struct, deta
 	let result = ''
 
 	result += `\
+你现在在${args.chat_name}中聊天。
 <<极其重要>>
 <<
 避免怪异输出以免困扰。

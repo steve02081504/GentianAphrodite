@@ -9,11 +9,9 @@ import { VirtualConsole } from './virtualConsole.mjs'
  *
  * @param {string} code - The JavaScript code to be evaluated.
  * @param {object} [args={}] - An optional object containing arguments to be used within the code.
- * @param {VirtualConsole} [virtualconsole=new VirtualConsole({ realConsoleOutput: true })] - An optional virtual console instance for capturing output.
  * @returns {Promise<{result?: any; output: string; error?: Error}>} A promise that resolves to an object containing either the result of the evaluation or an error if one occurred, along with any console output.
  */
-export async function async_eval(code, args = {}, virtualconsole = new VirtualConsole({ realConsoleOutput: true })) {
-	let coderesult
+export async function async_eval(code, args = {}) {
 	try {
 		const ast = parse(code, {
 			ecmaVersion: 'latest',
@@ -88,6 +86,13 @@ export async function async_eval(code, args = {}, virtualconsole = new VirtualCo
 						this.replace(expressionStatement)
 					}
 				}
+				// 移除exports
+				else if (node.type === 'ExportNamedDeclaration')
+					if (node.declaration)
+						this.replace(node.declaration)
+					else
+						this.skip()
+
 				// 添加隐式 return
 				else if (
 					node.type === 'Program' &&
@@ -113,25 +118,17 @@ export async function async_eval(code, args = {}, virtualconsole = new VirtualCo
 			},
 		})
 
-		const modifiedCode = generate(ast)
-		{
-			const console = virtualconsole; console
-			const result = await eval(`\
-(async () => {
-	const { ${Object.keys(args).join(', ')} } = args
-{
-	${modifiedCode}
-}})()`)
-			coderesult = {
-				result,
-				output: virtualconsole.outputs
-			}
+		args.console ??= new VirtualConsole({ realConsoleOutput: true })
+		const result = await ((async x => x).constructor)(...Object.keys(args), generate(ast))(...Object.values(args))
+		args.eval_result = {
+			result,
+			output: args.console.outputs
 		}
 	} catch (error) {
-		coderesult = {
+		args.eval_result = {
 			error,
-			output: virtualconsole.outputs
+			output: args.console.outputs
 		}
 	}
-	return coderesult
+	return args.eval_result
 }

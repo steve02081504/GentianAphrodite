@@ -24,7 +24,6 @@ export const recommend_command_plugin = {
 							name: 'system',
 							content: `\
 你可以通过回复以下格式来推荐命令让${args.UserCharname}选择是否执行：
-
 <recommend_command>
 command_body
 </recommend_command>

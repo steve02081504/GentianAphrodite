@@ -26,7 +26,7 @@ export async function CodeRunnerPrompt(args, logical_results, prompt_struct, det
 		/发给?我/, /发(|出|过)来/, /发.*群里/,
 		/[A-Za-z](:\/|盘)/
 	], 'any') || await match_keys(args, [
-		'打开', '桌面', '文件', '看看', '看下', '播放', '回收站', '电脑', '查看', /来.{0,3}bgm/i
+		'打开', '桌面', '文件', '看看', '看下', '播放', '回收站', '摄像头', '计算机', '拍照', '录像', '电脑', '查看', /来.{0,3}bgm/i
 	], 'user') >= 2) {
 		result += `\
 你可以运行NodeJS或${process.platform === 'win32' ? 'Powershell' : 'Bash'}代码，通过返回以下格式来触发执行并获取结果：
@@ -113,14 +113,41 @@ ${args.supported_functions.add_message ? `\
   * 例子：<run-js>callback('unzip result', super_slow_async_function())</run-js>
   * 返回值：callback是异步的，你无法在<run-js>的当场看到callback结果。
 `: ''}
-${args.supported_functions.files ? `\
-- 你可以通过在js中使用\`add_files\`函数来发送文件，其可以传递代表文件路径或url的string或自buffer构建带有附加信息的结构体。
-  * 格式：add_files(file1: {
+- 你可以通过在js中使用\`view_files\`函数来查看但不发送文件，其可以传递代表文件路径或url的string或自buffer构建带有附加信息的结构体。
+  * 格式：await view_files(file1: {
 		name: string;
 		mime_type: string;
 		buffer: global.Buffer<ArrayBufferLike>;
 		description?: string;
 	}, file2: string, ...)
+  * 例子：[
+${args.UserCharname}: 帮我用摄像头看看家里。
+龙胆: <run-js>
+	import Webcam from 'npm:node-webcam'
+	import fs from 'node:fs'
+	const cam = Webcam.create({
+		//...
+	})
+	const imageBuffer = await new Promise((resolve, reject) => {
+		cam.capture('test_shot', (err, data) => {
+			if (fs.existsSync('test_shot.jpg')) fs.unlinkSync('test_shot.jpg') // 不要留下临时文件！
+			if (data) resolve(data)
+			else reject(err)
+		})
+	})
+	if (imageBuffer)
+		await view_files({
+			name: 'captured_image.jpg',
+			mime_type: 'image/jpg',
+			buffer: imageBuffer,
+			description: '让龙胆看看哦...'
+		})
+	else
+		console.error('Failed to capture image')
+</run-js>
+]
+${args.supported_functions.files ? `\
+- 你可以通过在js中使用\`add_files\`函数来查看并发送文件，其和上述view_files函数的格式一样。
   * 例子：[
 ${args.UserCharname}: 发我屏幕截图看看？
 龙胆: <run-js>

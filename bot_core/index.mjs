@@ -696,7 +696,8 @@ async function handleMessageQueue(channelId, platformAPI) {
 				],
 				// 合并 content_parts 数组
 				content_parts: (lastLogEntry.extension.content_parts || [])
-					.concat(currentMessageToProcess.extension.content_parts || [currentMessageToProcess.content])
+					.concat(currentMessageToProcess.extension.content_parts || [currentMessageToProcess.content]),
+				SimplifiedContents: undefined // 刷新词匹配缓存
 			}
 
 			myQueue.shift()
@@ -1007,8 +1008,8 @@ async function handleGroupCheck(group, platformAPI, ownerOverride = null) {
 
 			const ownerPresenceResult = await platformAPI.getOwnerPresenceInGroups?.()
 			if (ownerPresenceResult?.groupsWithOwner?.length > 0)
-				for (const otherGroup of ownerPresenceResult.groupsWithOwner) {
-					if (otherGroup.id === group.id) continue
+				ownerPresenceResult.groupsWithOwner.map(async otherGroup => {
+					if (otherGroup.id === group.id) return
 
 					const otherGroupDefaultChannel = await platformAPI.getGroupDefaultChannel?.(otherGroup.id)
 					if (otherGroupDefaultChannel && platformAPI.sendMessage)
@@ -1017,8 +1018,7 @@ async function handleGroupCheck(group, platformAPI, ownerOverride = null) {
 						} catch (e) {
 							console.error(`[BotLogic] Failed to send invite message to owner in group ${otherGroup.name}:`, e)
 						}
-				}
-
+				})
 		} else
 			console.warn(`[BotLogic] Could not generate invite link for group ${group.id}.`)
 

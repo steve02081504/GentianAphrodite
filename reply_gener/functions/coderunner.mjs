@@ -12,8 +12,8 @@ import { toFileObj } from '../../scripts/fileobj.mjs'
 async function callback_handler(args, reason, code, result) {
 	let logger = args.AddChatLogEntry
 	const feedback = {
-		name: 'system',
-		role: 'system',
+		role: 'tool',
+		name: 'coderunner.callback',
 		content: `\
 你的js代码中的callback函数被调用了
 原因是：${reason}
@@ -63,11 +63,33 @@ export async function coderunner(result, args) {
 			 * @param {Promise<any>} promise
 			 */
 			js_eval_context.callback = (reason, promise) => {
-				if (!(promise instanceof Promise)) throw new Error('callback函数的第二个参数必须是一个Promise对象')
+				if (!js_eval_context.eval_result && !(promise instanceof Promise))
+					throw new Error('callback函数的第二个参数必须是一个Promise对象')
 				const _ = _ => callback_handler(args, reason, code, _)
-				promise.then(_, _)
+				Promise.resolve(promise).then(_, _)
 				return 'callback已注册'
 			}
+		const view_files = []
+		let view_files_flag = false
+		js_eval_context.view_files = async (...pathOrFileObjs) => {
+			const errors = []
+			for (const pathOrFileObj of pathOrFileObjs) try {
+				view_files.push(await toFileObj(pathOrFileObj))
+			} catch (e) {
+				errors.push(e)
+			}
+			if (!view_files_flag)
+				AddLongTimeLog(view_files_flag = {
+					role: 'tool',
+					name: 'coderunner.view_files',
+					content: '你需要查看的文件在此。',
+					files: view_files
+				})
+			if (errors.length == 1) throw errors[0]
+			if (errors.length) throw errors
+			return '文件已查看'
+		}
+		let sent_files
 		if (args.supported_functions.files)
 			js_eval_context.add_files = async (...pathOrFileObjs) => {
 				const errors = []
@@ -76,6 +98,13 @@ export async function coderunner(result, args) {
 				} catch (e) {
 					errors.push(e)
 				}
+				if (!sent_files)
+					AddLongTimeLog(sent_files = {
+						role: 'tool',
+						name: 'coderunner.add_files',
+						content: '文件已发送，内容见附件。',
+						files: result.files
+					})
 				if (errors.length == 1) throw errors[0]
 				if (errors.length) throw errors
 				return '文件已发送'
