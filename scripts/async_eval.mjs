@@ -119,7 +119,7 @@ export async function async_eval(code, args = {}) {
 		})
 
 		args.console ??= new VirtualConsole({ realConsoleOutput: true })
-		const result = await ((async x => x).constructor)(...Object.keys(args), generate(ast))(...Object.values(args))
+		const result = await (async x => x).constructor(...Object.keys(args), generate(ast))(...Object.values(args))
 		args.eval_result = {
 			result,
 			output: args.console.outputs

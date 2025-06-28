@@ -113,6 +113,9 @@ export async function coderunner(result, args) {
 			Object.values(args.plugins).map(plugin => plugin.interfaces?.chat?.GetJSCodeContext?.(args, args.prompt_struct))
 		)).filter(Boolean))
 	}
+	async function run_jscode_for_AI(code) {
+		return async_eval(code, await get_js_eval_context(code))
+	}
 	// 解析wait-screen
 	const wait_screen = Number(result.content.match(/<wait-screen>(?<timeout>\d*?)<\/wait-screen>/)?.groups?.timeout?.trim?.() || 0)
 	async function get_screen() {
@@ -137,7 +140,7 @@ export async function coderunner(result, args) {
 			files: []
 		})
 		console.info('AI运行的JS代码：', jsrunner)
-		const coderesult = await async_eval(jsrunner, await get_js_eval_context(jsrunner))
+		const coderesult = await run_jscode_for_AI(jsrunner)
 		console.info('coderesult', coderesult)
 		AddLongTimeLog({
 			name: 'coderunner',
@@ -208,7 +211,7 @@ export async function coderunner(result, args) {
 				.map(async match => {
 					const jsrunner = match.groups.code.split('<inline-js>').pop()
 					console.info('AI内联运行的JS代码：', jsrunner)
-					const coderesult = await async_eval(jsrunner, await get_js_eval_context(jsrunner))
+					const coderesult = await run_jscode_for_AI(jsrunner)
 					console.info('coderesult', coderesult)
 					if (coderesult.error) throw coderesult.error
 					return coderesult.result + ''

@@ -129,8 +129,9 @@ ${args.UserCharname}: 帮我用摄像头看看家里。
 		//...
 	})
 	const imageBuffer = await new Promise((resolve, reject) => {
-		cam.capture('test_shot', (err, data) => {
-			if (fs.existsSync('test_shot.jpg')) fs.unlinkSync('test_shot.jpg') // 不要留下临时文件！
+		const tempFilePath = 'test_shot'
+		cam.capture(tempFilePath, (err, data) => {
+			try { fs.unlinkSync(\`./\${tempFilePath}.jpg\`) } catch {} // 这个库必定会创建临时文件，需要清理
 			if (data) resolve(data)
 			else reject(err)
 		})
@@ -138,7 +139,7 @@ ${args.UserCharname}: 帮我用摄像头看看家里。
 	if (imageBuffer)
 		await view_files({
 			name: 'captured_image.jpg',
-			mime_type: 'image/jpg',
+			mime_type: 'image/jpeg',
 			buffer: imageBuffer,
 			description: '让龙胆看看哦...'
 		})
@@ -169,6 +170,7 @@ ${args.UserCharname}: 帮我下载http://host/file.txt然后发来。
 龙胆: <run-js>await add_files('http://host/file.txt')</run-js>
 ]
   * 返回值：返回值必须被await。若使用string进行文件或url发送，可能抛出文件或网络错误。
+  * 除非明确要求发送文件，否则有关摄像头或屏幕截图等内容时你更应该使用view_files。
 `: ''}
 ${codePluginPrompts}
 执行代码后若没得到想要的结果，鼓励反思原因并给出不同的解决方案。
