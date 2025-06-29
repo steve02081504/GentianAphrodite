@@ -1,7 +1,7 @@
 import process from 'node:process'
 import util from 'node:util'
+import { async_eval } from 'npm:@steve02081504/async-eval'
 import { bash_exec, pwsh_exec } from '../../scripts/exec.mjs'
-import { async_eval } from '../../scripts/async_eval.mjs'
 import { GetReply } from '../index.mjs'
 import { newCharReplay, statisticDatas } from '../../scripts/statistics.mjs'
 import { captureScreen } from '../../scripts/tools.mjs'

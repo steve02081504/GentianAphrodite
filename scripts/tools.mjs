@@ -1,5 +1,5 @@
 import fs from 'node:fs'
-import { async_eval } from './async_eval.mjs'
+import { async_eval } from 'npm:@steve02081504/async-eval'
 
 export async function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms))

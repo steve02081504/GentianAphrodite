@@ -1,4 +1,4 @@
-import { bigfloat } from './bigfloat.mjs'
+import { bigfloat } from 'npm:@steve02081504/bigfloat'
 import { escapeRegExp } from './tools.mjs'
 
 const NumberMap = {
