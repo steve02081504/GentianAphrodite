@@ -298,6 +298,10 @@ export async function DiscordBotMain(client, interfaceConfig) {
 			const filesToSend = (fountReplyPayload.files || []).map(f => ({
 				attachment: f.buffer, name: f.name || 'file.dat', description: f.description
 			}))
+			const MAX_FILES_PER_MESSAGE = 10
+			const filesSplit = []
+			for (let i = 0; i < filesToSend.length; i += MAX_FILES_PER_MESSAGE)
+				filesSplit.push(filesToSend.slice(i, i + MAX_FILES_PER_MESSAGE))
 
 			const splitTexts = splitDiscordReply(textContent, 2000)
 			let firstSentDiscordMessage = null
@@ -318,8 +322,8 @@ export async function DiscordBotMain(client, interfaceConfig) {
 			if (splitTexts.length === 0 && filesToSend.length > 0)
 				try {
 					const sentMsg = repliedToDiscordMessage
-						? await repliedToDiscordMessage.reply({ files: filesToSend, allowedMentions: { repliedUser: true } })
-						: await /** @type {DiscordTextChannel | DiscordDMChannel} */ channel.send({ files: filesToSend })
+						? await repliedToDiscordMessage.reply({ files: filesSplit[0], allowedMentions: { repliedUser: true } })
+						: await /** @type {DiscordTextChannel | DiscordDMChannel} */ channel.send({ files: filesSplit[0] })
 					firstSentDiscordMessage = sentMsg
 				} catch (e) { console.error('[DiscordInterface] Failed to send file-only message:', e) }
 			else
@@ -329,7 +333,7 @@ export async function DiscordBotMain(client, interfaceConfig) {
 					try {
 						const messageOptions = {
 							content: textPart,
-							files: isLastPart ? filesToSend : [],
+							files: isLastPart ? filesSplit[0] : [],
 							allowedMentions: { parse: ['users', 'roles'], repliedUser: !!repliedToDiscordMessage }
 						}
 						const sentMsg = repliedToDiscordMessage && i === 0
@@ -340,6 +344,14 @@ export async function DiscordBotMain(client, interfaceConfig) {
 						if (repliedToDiscordMessage && i === 0) repliedToDiscordMessage = undefined
 					} catch (e) { console.error(`[DiscordInterface] Failed to send message segment ${i + 1}:`, e); break }
 				}
+
+			filesSplit.shift()
+			while(filesSplit.length) {
+				try {
+					await /** @type {DiscordTextChannel | DiscordDMChannel} */ channel.send({ files: filesSplit[0] })
+				} catch (e) { console.error('[DiscordInterface] Failed to send file-only message:', e) }
+				filesSplit.shift()
+			}
 
 			if (firstSentDiscordMessage) {
 				if (fountReplyPayload && (fountReplyPayload.content || fountReplyPayload.files?.length))
