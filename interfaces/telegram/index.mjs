@@ -421,7 +421,6 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 						try {
 							sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, escapeHTML(fallbackText.substring(0, 4000)), baseOptions))
 						} catch (e2) { console.error('[TelegramInterface] Fallback message for failed file send also failed:', e2) }
-
 				}
 				return sentMsg
 			}

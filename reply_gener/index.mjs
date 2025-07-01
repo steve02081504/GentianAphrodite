@@ -89,10 +89,12 @@ export async function GetReply(args) {
 	if (last_entry?.name == args.UserCharname && last_entry.role == 'user')
 		newUserMessage(last_entry.content, args.extension?.platform || 'chat')
 	regen: while (true) {
-		if (globalThis.fountCharCI?.echo_prompt_struct || process.env.EdenOS) {
+		//*
+		if (process.env.EdenOS) {
 			console.log('logical_results', logical_results)
 			console.log('prompt_struct', inspect(prompt_struct, { depth: 4, colors: true }))
 		}
+		//*/
 		const AItype = logical_results.in_reply_to_master ?
 			logical_results.in_nsfw ? 'nsfw' : logical_results.in_assist ? 'expert' : 'sfw'
 		 : 'from-other'
