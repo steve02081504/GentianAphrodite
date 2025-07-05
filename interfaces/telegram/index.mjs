@@ -148,8 +148,8 @@ function _populateFountEntryExtension(
 		mentions_bot: mentionsBot,
 		mentions_owner: mentionsOwner,
 		telegram_message_obj: message, // For potential deeper inspection by plugins or core
-		...(message.message_thread_id && { telegram_message_thread_id: message.message_thread_id }),
-		...(message.reply_to_message && { telegram_reply_to_message_id: message.reply_to_message.message_id }),
+		...message.message_thread_id && { telegram_message_thread_id: message.message_thread_id },
+		...message.reply_to_message && { telegram_reply_to_message_id: message.reply_to_message.message_id },
 		...cachedAiReplyExtension, // Spread the cached extension if it exists
 	}
 }
@@ -184,13 +184,13 @@ function _getBotDisplayName(currentTelegramBotInfo, currentBotFountCharname) {
 function _processUserInfo(fromUser, currentTelegramBotInfo, currentBotFountCharname, userCache, userIdToNameMap, userNameToIdMap) {
 	userCache[fromUser.id] = fromUser
 
-	let senderName = (fromUser.first_name || fromUser.last_name)
+	let senderName = fromUser.first_name || fromUser.last_name
 		? `${fromUser.first_name || ''} ${fromUser.last_name || ''}`.trim()
 		: fromUser.username || `User_${fromUser.id}`
 
-	if (fromUser.username && !senderName.includes(`@${fromUser.username}`)) {
+	if (fromUser.username && !senderName.includes(`@${fromUser.username}`))
 		senderName += ` (@${fromUser.username})`
-	}
+
 
 	userIdToNameMap[fromUser.id] = senderName
 
@@ -212,13 +212,13 @@ function _processUserInfo(fromUser, currentTelegramBotInfo, currentBotFountCharn
  * @returns {number | string | undefined} The mentioned user ID, or undefined if not found or not relevant.
  */
 function _getMentionedUserIdFromEntity(entity, rawText, interfaceConfig) {
-	if (entity.type === 'text_mention' && entity.user?.id) {
+	if (entity.type === 'text_mention' && entity.user?.id)
 		return entity.user.id
-	} else if (entity.type === 'mention') {
+	else if (entity.type === 'mention') {
 		const mentionText = rawText.substring(entity.offset, entity.offset + entity.length)
-		if (mentionText === `@${interfaceConfig.OwnerUserName}` && interfaceConfig.OwnerUserID) {
+		if (mentionText === `@${interfaceConfig.OwnerUserName}` && interfaceConfig.OwnerUserID)
 			return Number(interfaceConfig.OwnerUserID)
-		}
+
 	}
 	return undefined
 }
@@ -237,16 +237,16 @@ function _detectMentions(message, rawText, entities, interfaceConfig, currentTel
 	let mentionsOwner = false
 	let isReplyToOwnerTopicCreationMessage = false
 
-	if (entities && rawText) {
+	if (entities && rawText)
 		for (const entity of entities) {
 			const mentionedUserId = _getMentionedUserIdFromEntity(entity, rawText, interfaceConfig)
-			if (mentionedUserId && String(mentionedUserId) === String(interfaceConfig.OwnerUserID)) {
+			if (mentionedUserId && String(mentionedUserId) === String(interfaceConfig.OwnerUserID))
 				mentionsOwner = true
-				// No break here, as a message could mention the owner multiple times or in different ways.
-				// Also, the reply check below is separate.
-			}
+			// No break here, as a message could mention the owner multiple times or in different ways.
+			// Also, the reply check below is separate.
+
 		}
-	}
+
 
 	// Check for replies to the owner
 	if (message.reply_to_message?.from?.id === Number(interfaceConfig.OwnerUserID)) {
@@ -255,15 +255,15 @@ function _detectMentions(message, rawText, entities, interfaceConfig, currentTel
 			message.reply_to_message.message_id === message.message_thread_id &&
 			chatType !== 'private' // In groups/supergroups with topics, a reply to the topic creation message by the owner.
 
-		if (isReplyToOwnerTopicCreation) {
+		if (isReplyToOwnerTopicCreation)
 			// This specific type of reply (to owner's topic creation message) does not by itself trigger 'mentionsOwner'
 			// for AI context, as it's an indirect interaction.
 			// It will only be true if the owner was also @mentioned in the message text (handled by the entity loop above).
 			isReplyToOwnerTopicCreationMessage = true
-		} else {
+		else
 			// Any other type of reply to the owner is considered a direct mention.
 			mentionsOwner = true
-		}
+
 	}
 
 	return { mentionsOwner, isReplyToOwnerTopicCreationMessage }
@@ -298,14 +298,14 @@ function _extractFileInfo(message, fileId, fileNameFallback, mimeTypeFallback) {
 	}
 	// For photo, mime_type is often implicitly jpeg or known from context where addFile is called.
 	// fileName will use fileNameFallback (e.g., unique_id.jpg)
-	else if (message.photo && mimeTypeFallback === 'image/jpeg') { // Check if this call was for a photo
+	else if (message.photo && mimeTypeFallback === 'image/jpeg')  // Check if this call was for a photo
 		mime_type = 'image/jpeg'
-	}
+
 	// Specific handling for voice
-	else if (message.voice && message.voice.file_id === fileId) {
+	else if (message.voice && message.voice.file_id === fileId)
 		// fileName will use fileNameFallback (e.g. unique_id.ogg)
 		mime_type = message.voice.mime_type || 'audio/ogg'
-	}
+
 	return { fileName, mime_type }
 }
 
@@ -326,11 +326,11 @@ function _truncateCaption(captionAiMarkdown, fileNameForDebug) {
 		console.warn(`[TelegramInterface] HTML caption for file "${fileNameForDebug}" is too long (${finalCaptionHtml.length} > ${CAPTION_LENGTH_LIMIT}), will try to truncate.`)
 		// Attempt to truncate the AI Markdown first, as it's more structured
 		let truncatedCaptionAiMarkdown = ''
-		if (captionAiMarkdown.length > CAPTION_LENGTH_LIMIT * 0.8) { // Heuristic: if raw MD is already long
+		if (captionAiMarkdown.length > CAPTION_LENGTH_LIMIT * 0.8)  // Heuristic: if raw MD is already long
 			truncatedCaptionAiMarkdown = captionAiMarkdown.substring(0, Math.floor(CAPTION_LENGTH_LIMIT * 0.7)) + '...' // More aggressive truncation for MD
-		} else {
+		else
 			truncatedCaptionAiMarkdown = captionAiMarkdown // Hope that HTML conversion is the main cause of length increase
-		}
+
 
 		finalCaptionHtml = aiMarkdownToTelegramHtml(truncatedCaptionAiMarkdown)
 
@@ -363,25 +363,25 @@ async function _trySendFileOrFallbackText(
 ) {
 	let sentMsg
 	try {
-		if (file.mime_type?.startsWith('image/')) {
+		if (file.mime_type?.startsWith('image/'))
 			sentMsg = await tryFewTimes(() => bot.telegram.sendPhoto(platformChatId, fileSource, sendOptions))
-		} else if (file.mime_type?.startsWith('audio/')) {
+		else if (file.mime_type?.startsWith('audio/'))
 			sentMsg = await tryFewTimes(() => bot.telegram.sendAudio(platformChatId, fileSource, { ...sendOptions, title: file.name }))
-		} else if (file.mime_type?.startsWith('video/')) {
+		else if (file.mime_type?.startsWith('video/'))
 			sentMsg = await tryFewTimes(() => bot.telegram.sendVideo(platformChatId, fileSource, sendOptions))
-		} else {
+		else
 			sentMsg = await tryFewTimes(() => bot.telegram.sendDocument(platformChatId, fileSource, sendOptions))
-		}
+
 	} catch (e) {
 		console.error(`[TelegramInterface] Failed to send file ${file.name} (ChatID: ${platformChatId}, ThreadID: ${messageThreadId}):`, e)
 		const fallbackText = `[文件发送失败: ${file.name}] ${file.description || captionAiMarkdown || ''}`.trim()
-		if (fallbackText) {
+		if (fallbackText)
 			try {
 				sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, escapeHTML(fallbackText.substring(0, 4000)), baseOptions))
 			} catch (e2) {
 				console.error('[TelegramInterface] Fallback message for failed file send also failed:', e2)
 			}
-		}
+
 	}
 	return sentMsg
 }
@@ -460,7 +460,7 @@ async function _processMessageFiles(message, ctx, globalTelegrafInstance) {
  */
 function _prepareReplyParameters(originalMessageEntry, aiMarkdownContent, baseOptions) {
 	let updatedAiMarkdownContent = aiMarkdownContent
-	let updatedBaseOptions = { ...baseOptions } // Clone to avoid modifying the original object directly
+	const updatedBaseOptions = { ...baseOptions } // Clone to avoid modifying the original object directly
 
 	if (originalMessageEntry?.extension?.platform_message_ids?.slice?.(-1)?.[0]) {
 		const replyToMessageId = originalMessageEntry.extension.platform_message_ids.slice(-1)[0]
@@ -471,13 +471,13 @@ function _prepareReplyParameters(originalMessageEntry, aiMarkdownContent, baseOp
 			`@${fromUser.username}`,
 		]
 
-		for (const mention of mentionPatterns) {
+		for (const mention of mentionPatterns)
 			if (updatedAiMarkdownContent.startsWith(mention)) {
 				updatedBaseOptions.reply_to_message_id = replyToMessageId
 				updatedAiMarkdownContent = updatedAiMarkdownContent.slice(mention.length).trimStart() // Trim leading space after removing mention
 				break
 			}
-		}
+
 	}
 	return { aiMarkdownContent: updatedAiMarkdownContent, baseOptions: updatedBaseOptions }
 }
@@ -497,11 +497,11 @@ async function _dispatchMessageSender(
 	bot, platformChatId, messageThreadId, baseOptions,
 	files, aiMarkdownContent, htmlContent
 ) {
-	if (files.length > 0) {
+	if (files.length > 0)
 		return await _sendFiles(bot, platformChatId, messageThreadId, baseOptions, files, aiMarkdownContent, htmlContent)
-	} else if (htmlContent.trim()) {
+	else if (htmlContent.trim())
 		return await _sendTextMessages(bot, platformChatId, baseOptions, htmlContent)
-	}
+
 	return null // Should not happen if checks are done before calling, but as a safeguard
 }
 
@@ -623,16 +623,14 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 		let mainTextSentAsCaption = false
 
 		const sendFileWithCaption = async (file, captionAiMarkdown, isLastFile) => {
-			let sentMsg
 			const fileSource = { source: file.buffer, filename: file.name }
 			const finalCaptionHtml = _truncateCaption(captionAiMarkdown, file.name)
 			const sendOptions = { ...baseOptions, caption: finalCaptionHtml }
 
-			sentMsg = await _trySendFileOrFallbackText(
+			return await _trySendFileOrFallbackText(
 				bot, platformChatId, fileSource, sendOptions,
 				file, captionAiMarkdown, baseOptions, messageThreadId
 			)
-			return sentMsg
 		}
 
 		for (let i = 0; i < files.length; i++) {
@@ -706,10 +704,10 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 			const htmlContent = aiMarkdownToTelegramHtml(aiMarkdownContent)
 
 			let firstSentTelegramMessage = null
-			let currentAiMarkdownContent = aiMarkdownContent // Use a new variable for modifications
+			const currentAiMarkdownContent = aiMarkdownContent // Use a new variable for modifications
 			const initialBaseOptions = {
 				parse_mode: parseMode,
-				...(messageThreadId && { message_thread_id: messageThreadId })
+				...messageThreadId && { message_thread_id: messageThreadId }
 			}
 
 			// Prepare reply parameters if it's a reply
