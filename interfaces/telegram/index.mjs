@@ -96,6 +96,405 @@ function constructLogicalChannelId(chatId, threadId) {
 }
 
 /**
+ * 检查机器人是否在消息中被提及。
+ * @param {string | undefined} rawText - 消息的原始文本。
+ * @param {TelegramMessageType} message - Telegram 消息对象。
+ * @param {TelegramBotInfo | null} currentTelegramBotInfo - 关于机器人自身的信息。
+ * @param {string} botFountCharname - Fount 中机器人的角色名称。
+ * @returns {boolean} 如果机器人被提及则返回 true，否则返回 false。
+ */
+function checkIfBotIsMentioned(rawText, message, currentTelegramBotInfo, botFountCharname) {
+	if (!currentTelegramBotInfo) return false
+	if (currentTelegramBotInfo.username && rawText && rawText.toLowerCase().includes(`@${currentTelegramBotInfo.username.toLowerCase()}`))
+		return true
+	if (botFountCharname && rawText && rawText.toLowerCase().includes(botFountCharname.toLowerCase()))
+		return true
+	if (message.reply_to_message?.from?.id === currentTelegramBotInfo.id)
+		return true
+	return false
+}
+
+/**
+ * 填充 Fount 聊天日志条目的 extension 对象。
+ * @param {TelegramMessageType} message - Telegram 消息对象。
+ * @param {TelegramInterfaceConfig_t} interfaceConfig - Telegram 接口的配置。
+ * @param {TelegramMessageType['chat']} chat - 消息中的聊天对象。
+ * @param {TelegramUser} fromUser - 发送消息的用户。
+ * @param {string} content - 处理后的消息内容。
+ * @param {Array<object>} files - 处理后的文件对象数组。
+ * @param {boolean} isDirectMessage - 消息是否为私聊。
+ * @param {boolean} isFromOwner - 消息是否来自主人。
+ * @param {boolean} mentionsBot - 是否提及了机器人。
+ * @param {boolean} mentionsOwner - 是否提及了主人。
+ * @param {object | undefined} cachedAiReplyExtension - 缓存的 AI 回复的 extension 对象 (如果有)。
+ * @returns {object} 填充后的 extension 对象。
+ */
+function populateFountEntryExtension(
+	message, interfaceConfig, chat, fromUser, content, files,
+	isDirectMessage, isFromOwner, mentionsBot, mentionsOwner,
+	cachedAiReplyExtension
+) {
+	return {
+		platform: 'telegram',
+		OwnerNameKeywords: interfaceConfig.OwnerNameKeywords,
+		platform_message_ids: [message.message_id],
+		content_parts: [content],
+		platform_channel_id: chat.id,
+		platform_user_id: fromUser.id,
+		platform_chat_type: chat.type,
+		platform_chat_title: chat.type !== 'private' ? chat.title : undefined,
+		is_direct_message: isDirectMessage,
+		is_from_owner: isFromOwner,
+		mentions_bot: mentionsBot,
+		mentions_owner: mentionsOwner,
+		telegram_message_obj: message, // 供插件或核心进行更深层次的检查
+		...message.message_thread_id && { telegram_message_thread_id: message.message_thread_id },
+		...message.reply_to_message && { telegram_reply_to_message_id: message.reply_to_message.message_id },
+		...cachedAiReplyExtension, // 如果存在，则展开缓存的扩展对象
+	}
+}
+
+/**
+ * 辅助函数，用于确定机器人的显示名称。
+ * @param {TelegramBotInfo} currentTelegramBotInfo - 关于机器人自身的信息。
+ * @param {string} currentBotFountCharname - Fount 中机器人的角色名称。
+ * @returns {string} 机器人的显示名称。
+ */
+function getBotDisplayName(currentTelegramBotInfo, currentBotFountCharname) {
+	let botDisplayName = currentTelegramBotInfo.first_name || ''
+	if (currentTelegramBotInfo.last_name) botDisplayName += ` ${currentTelegramBotInfo.last_name}`
+	if (!botDisplayName.trim() && currentTelegramBotInfo.username) botDisplayName = currentTelegramBotInfo.username
+	if (!botDisplayName.trim()) botDisplayName = currentBotFountCharname
+
+	if (currentTelegramBotInfo.username && !botDisplayName.includes(`@${currentTelegramBotInfo.username}`))
+		botDisplayName += ` (@${currentTelegramBotInfo.username})`
+	return botDisplayName
+}
+
+/**
+ * 辅助函数，用于处理用户信息并更新缓存。
+ * @param {TelegramUser} fromUser - Telegram 消息中的用户对象。
+ * @param {TelegramBotInfo | null} currentTelegramBotInfo - 关于机器人自身的信息。
+ * @param {string} currentBotFountCharname - Fount 中机器人的角色名称。
+ * @param {Record<number, TelegramUser>} userCache - Telegram 用户对象的缓存。
+ * @param {Record<number, string>} userIdToNameMap - 用户 ID 到显示名称的映射。
+ * @param {Record<string, number>} userNameToIdMap - 显示名称到用户 ID 的映射。
+ * @returns {{senderName: string}} 返回包含发送者名称的对象。
+ */
+function processUserInfo(fromUser, currentTelegramBotInfo, currentBotFountCharname, userCache, userIdToNameMap, userNameToIdMap) {
+	userCache[fromUser.id] = fromUser
+
+	let senderName = fromUser.first_name || fromUser.last_name
+		? `${fromUser.first_name || ''} ${fromUser.last_name || ''}`.trim()
+		: fromUser.username || `User_${fromUser.id}`
+
+	if (fromUser.username && !senderName.includes(`@${fromUser.username}`))
+		senderName += ` (@${fromUser.username})`
+
+
+	userIdToNameMap[fromUser.id] = senderName
+
+	if (currentTelegramBotInfo && fromUser.id === currentTelegramBotInfo.id) {
+		const botDisplayName = getBotDisplayName(currentTelegramBotInfo, currentBotFountCharname)
+		userNameToIdMap[botDisplayName.split(' (')[0]] = fromUser.id
+		userNameToIdMap[currentBotFountCharname] = fromUser.id // 确保 BotFountCharname 也映射到机器人的 ID
+		userIdToNameMap[fromUser.id] = `${botDisplayName} (咱自己)`
+		senderName = userIdToNameMap[fromUser.id]
+	}
+	return { senderName }
+}
+
+/**
+ * 从 Telegram 消息实体中提取被提及用户的 ID。
+ * @param {import('npm:telegraf/typings/core/types/typegram').MessageEntity} entity - 消息实体。
+ * @param {string} rawText - 消息的原始文本。
+ * @param {TelegramInterfaceConfig_t} interfaceConfig - Telegram 接口的配置。
+ * @returns {number | string | undefined} 被提及用户的 ID，如果未找到或不相关则返回 undefined。
+ */
+function getMentionedUserIdFromEntity(entity, rawText, interfaceConfig) {
+	if (entity.type === 'text_mention' && entity.user?.id)
+		return entity.user.id
+	else if (entity.type === 'mention') {
+		const mentionText = rawText.substring(entity.offset, entity.offset + entity.length)
+		if (mentionText === `@${interfaceConfig.OwnerUserName}` && interfaceConfig.OwnerUserID)
+			return Number(interfaceConfig.OwnerUserID)
+
+	}
+	return undefined
+}
+
+/**
+ * 检测消息中对主人或机器人的提及。
+ * @param {TelegramMessageType} message - Telegram 消息对象。
+ * @param {string | undefined} rawText - 消息的原始文本 (message.text 或 message.caption)。
+ * @param {Array<import('npm:telegraf/typings/core/types/typegram').MessageEntity> | undefined} entities - 消息实体。
+ * @param {TelegramInterfaceConfig_t} interfaceConfig - Telegram 接口的配置。
+ * @param {TelegramBotInfo | null} currentTelegramBotInfo - 关于机器人自身的信息。
+ * @param {string} chatType - 聊天的类型 (例如 'private', 'group', 'supergroup')。
+ * @returns {{mentionsOwner: boolean, isReplyToOwnerTopicCreationMessage: boolean}} 返回包含提及状态的对象。
+ */
+function detectMentions(message, rawText, entities, interfaceConfig, currentTelegramBotInfo, chatType) {
+	let mentionsOwner = false
+	let isReplyToOwnerTopicCreationMessage = false
+
+	if (entities && rawText)
+		for (const entity of entities) {
+			const mentionedUserId = getMentionedUserIdFromEntity(entity, rawText, interfaceConfig)
+			if (mentionedUserId && String(mentionedUserId) === String(interfaceConfig.OwnerUserID))
+				mentionsOwner = true
+		}
+
+
+	// 检查对主人的回复
+	if (message.reply_to_message?.from?.id === Number(interfaceConfig.OwnerUserID)) {
+		const isReplyToOwnerTopicCreation =
+			message.message_thread_id !== undefined &&
+			message.reply_to_message.message_id === message.message_thread_id &&
+			chatType !== 'private'
+
+		if (isReplyToOwnerTopicCreation)
+			// 这种特定类型的回复 (对主人创建话题消息的回复) 本身不会触发 'mentionsOwner' 以用于 AI 上下文，因为它是一种间接互动。
+			// 只有当消息文本中也 @ 提及时才会为 true (由上面的实体循环处理)。
+			isReplyToOwnerTopicCreationMessage = true
+		else
+			// 任何其他类型的对主人的回复都被视为直接提及。
+			mentionsOwner = true
+
+	}
+
+	return { mentionsOwner, isReplyToOwnerTopicCreationMessage }
+}
+
+/**
+ * 从 Telegram 消息中为给定的 file ID 提取文件名和 MIME 类型。
+ * @param {TelegramMessageType} message - Telegram 消息对象。
+ * @param {string} fileId - 附件的 file_id。
+ * @param {string} fileNameFallback - 如果在消息中找不到文件名的备用名称。
+ * @param {string} mimeTypeFallback - 备用的 MIME 类型。
+ * @returns {{fileName: string, mime_type: string}} 返回包含文件名和MIME类型的对象。
+ */
+function extractFileInfo(message, fileId, fileNameFallback, mimeTypeFallback) {
+	let fileName = fileNameFallback
+	let mime_type = mimeTypeFallback
+
+	if (message.document && message.document.file_id === fileId) {
+		fileName = message.document.file_name || fileNameFallback
+		mime_type = message.document.mime_type || mimeTypeFallback
+	}
+	else if (message.audio && message.audio.file_id === fileId) {
+		fileName = message.audio.file_name || fileNameFallback
+		mime_type = message.audio.mime_type || mimeTypeFallback
+	}
+	else if (message.video && message.video.file_id === fileId) {
+		fileName = message.video.file_name || fileNameFallback
+		mime_type = message.video.mime_type || mimeTypeFallback
+	}
+	else if (message.photo && mimeTypeFallback === 'image/jpeg')
+		mime_type = 'image/jpeg'
+
+	else if (message.voice && message.voice.file_id === fileId)
+		mime_type = message.voice.mime_type || 'audio/ogg'
+
+	return { fileName, mime_type }
+}
+
+const CAPTION_LENGTH_LIMIT = 1024 // Telegram 的说明文字长度限制
+
+/**
+ * 如果说明文字过长，则尝试多种策略进行截断。
+ * @param {string | undefined} captionAiMarkdown - AI Markdown 格式的说明文字。
+ * @param {string} fileNameForDebug - 文件名，用于在发生截断时记录日志。
+ * @returns {string | undefined} 处理后的 HTML 格式说明文字，如果没有则返回 undefined。
+ */
+function truncateCaption(captionAiMarkdown, fileNameForDebug) {
+	if (!captionAiMarkdown) return undefined
+
+	let finalCaptionHtml = aiMarkdownToTelegramHtml(captionAiMarkdown)
+
+	if (finalCaptionHtml && finalCaptionHtml.length > CAPTION_LENGTH_LIMIT) {
+		console.warn(`[TelegramInterface] HTML caption for file "${fileNameForDebug}" is too long (${finalCaptionHtml.length} > ${CAPTION_LENGTH_LIMIT}), will try to truncate.`)
+		// 首先尝试截断 AI Markdown，因为它更结构化
+		let truncatedCaptionAiMarkdown = ''
+		if (captionAiMarkdown.length > CAPTION_LENGTH_LIMIT * 0.8)
+			truncatedCaptionAiMarkdown = captionAiMarkdown.substring(0, Math.floor(CAPTION_LENGTH_LIMIT * 0.7)) + '...' // 对 Markdown 进行更激进的截断
+		else
+			truncatedCaptionAiMarkdown = captionAiMarkdown
+
+
+		finalCaptionHtml = aiMarkdownToTelegramHtml(truncatedCaptionAiMarkdown)
+
+		if (finalCaptionHtml.length > CAPTION_LENGTH_LIMIT) {
+			// 如果仍然太长，则回退到纯文本截断 (原始 AI Markdown)
+			const plainTextCaption = captionAiMarkdown.substring(0, CAPTION_LENGTH_LIMIT - 10) + '...' // 为 "..." 和一些 HTML 实体留出空间
+			finalCaptionHtml = escapeHTML(plainTextCaption)
+			console.warn(`[TelegramInterface] HTML caption for "${fileNameForDebug}" still too long after markdown truncation, falling back to plain text:`, plainTextCaption.substring(0, 50) + '...')
+		}
+	}
+	return finalCaptionHtml
+}
+
+/**
+ * 尝试根据 MIME 类型使用各种 Telegram 方法发送文件。
+ * 如果发送失败，则尝试发送备用的文本消息。
+ * @param {TelegrafInstance} bot - Telegraf 机器人实例。
+ * @param {string | number} platformChatId - 要发送到的聊天 ID。
+ * @param {{source: Buffer, filename: string}} fileSource - Telegraf 的文件源。
+ * @param {object} sendOptions - 发送文件的选项 (包括说明文字)。
+ * @param {{name: string, mime_type?: string, description?: string}} file - 文件对象。
+ * @param {string | undefined} captionAiMarkdown - 用于备用的原始 AI Markdown 说明文字。
+ * @param {object} baseOptions - 发送备用消息的基本选项。
+ * @param {number | undefined} messageThreadId - 用于上下文的消息话题 ID。
+ * @returns {Promise<TelegramMessageType | undefined>} 发送的消息对象或 undefined。
+ */
+async function trySendFileOrFallbackText(
+	bot, platformChatId, fileSource, sendOptions,
+	file, captionAiMarkdown, baseOptions, messageThreadId
+) {
+	let sentMsg
+	try {
+		if (file.mime_type?.startsWith('image/'))
+			sentMsg = await tryFewTimes(() => bot.telegram.sendPhoto(platformChatId, fileSource, sendOptions))
+		else if (file.mime_type?.startsWith('audio/'))
+			sentMsg = await tryFewTimes(() => bot.telegram.sendAudio(platformChatId, fileSource, { ...sendOptions, title: file.name }))
+		else if (file.mime_type?.startsWith('video/'))
+			sentMsg = await tryFewTimes(() => bot.telegram.sendVideo(platformChatId, fileSource, sendOptions))
+		else
+			sentMsg = await tryFewTimes(() => bot.telegram.sendDocument(platformChatId, fileSource, sendOptions))
+
+	} catch (e) {
+		console.error(`[TelegramInterface] Failed to send file ${file.name} (ChatID: ${platformChatId}, ThreadID: ${messageThreadId}):`, e)
+		const fallbackText = `[文件发送失败: ${file.name}] ${file.description || captionAiMarkdown || ''}`.trim()
+		if (fallbackText)
+			try {
+				sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, escapeHTML(fallbackText.substring(0, 4000)), baseOptions))
+			} catch (e2) {
+				console.error('[TelegramInterface] Fallback message for failed file send also failed:', e2)
+			}
+
+	}
+	return sentMsg
+}
+
+/**
+ * 处理并下载附加到 Telegram 消息的文件。
+ * @async
+ * @param {TelegramMessageType} message - Telegram 消息对象。
+ * @param {TelegrafContext | undefined} ctx - Telegraf 上下文，如果可用。
+ * @param {TelegrafInstance | null} globalTelegrafInstance - 全局可用的 Telegraf 实例。
+ * @returns {Promise<Array<{name: string, buffer: Buffer, mime_type: string, description: string}>>} - 处理后的文件对象数组。
+ */
+async function processMessageFiles(message, ctx, globalTelegrafInstance) {
+	const filesArr = []
+	const fileDownloadPromises = []
+	const telegrafAPI = ctx ? ctx.telegram : globalTelegrafInstance?.telegram
+
+	const addFile = async (fileId, fileNameFallback, mimeTypeFallback, description = '') => {
+		try {
+			if (!telegrafAPI) {
+				console.warn('[TelegramInterface:processMessageFiles] Cannot download file: Telegraf API accessor not available.')
+				return
+			}
+
+			const fileLink = await telegrafAPI.getFileLink(fileId)
+			const response = await tryFewTimes(() => fetch(fileLink.href))
+			if (!response.ok) throw new Error(`Failed to download file (ID: ${fileId}): ${response.statusText}`)
+			const buffer = Buffer.from(await response.arrayBuffer())
+
+			const { fileName, mime_type: extractedMimeType } = extractFileInfo(message, fileId, fileNameFallback, mimeTypeFallback)
+
+			const finalMimeType = extractedMimeType || await mimetypeFromBufferAndName(buffer, fileName)
+			filesArr.push({ name: fileName, buffer, mime_type: finalMimeType, description })
+		} catch (e) {
+			console.error(`[TelegramInterface:processMessageFiles] Failed to process file (ID: ${fileId}):`, e)
+		}
+	}
+
+	try {
+		if ('photo' in message && message.photo) {
+			const photo = message.photo.reduce((prev, current) => (prev.file_size || 0) > (current.file_size || 0) ? prev : current)
+			fileDownloadPromises.push(addFile(photo.file_id, `${photo.file_unique_id}.jpg`, 'image/jpeg', message.caption || '图片'))
+		}
+		if ('document' in message && message.document) {
+			const doc = message.document
+			fileDownloadPromises.push(addFile(doc.file_id, doc.file_name || `${doc.file_unique_id}`, doc.mime_type, message.caption || '文件'))
+		}
+		if ('voice' in message && message.voice) {
+			const { voice } = message
+			fileDownloadPromises.push(addFile(voice.file_id, `${voice.file_unique_id}.ogg`, voice.mime_type || 'audio/ogg', '语音消息'))
+		}
+		if ('audio' in message && message.audio) {
+			const { audio } = message
+			fileDownloadPromises.push(addFile(audio.file_id, audio.file_name || `${audio.file_unique_id}.${audio.mime_type?.split('/')[1] || 'mp3'}`, audio.mime_type, audio.title || '音频文件'))
+		}
+		if ('video' in message && message.video) {
+			const { video } = message
+			fileDownloadPromises.push(addFile(video.file_id, video.file_name || `${video.file_unique_id}.${video.mime_type?.split('/')[1] || 'mp4'}`, video.mime_type, message.caption || '视频文件'))
+		}
+
+		if (fileDownloadPromises.length > 0)
+			await Promise.all(fileDownloadPromises)
+
+	} catch (error) {
+		console.error(`[TelegramInterface:processMessageFiles] Top-level error occurred during file processing (MessageID ${message.message_id}):`, error)
+	}
+	return filesArr
+}
+
+/**
+ * 为回复消息准备参数，调整内容和选项。
+ * @param {chatLogEntry_t_ext | undefined} originalMessageEntry - 正在回复的原始消息条目。
+ * @param {string} aiMarkdownContent - 当前 AI 生成的 Markdown 内容。
+ * @param {object} baseOptions - 发送消息的基本选项。
+ * @returns {{aiMarkdownContent: string, baseOptions: object}} 更新后的内容和选项。
+ */
+function prepareReplyParameters(originalMessageEntry, aiMarkdownContent, baseOptions) {
+	let updatedAiMarkdownContent = aiMarkdownContent
+	const updatedBaseOptions = { ...baseOptions }
+
+	if (originalMessageEntry?.extension?.platform_message_ids?.slice?.(-1)?.[0]) {
+		const replyToMessageId = originalMessageEntry.extension.platform_message_ids.slice(-1)[0]
+		const fromUser = originalMessageEntry.extension.telegram_message_obj.from
+		const mentionPatterns = [
+			`@${fromUser.first_name} (@${fromUser.username})`,
+			`@${fromUser.first_name}`,
+			`@${fromUser.username}`,
+		]
+
+		for (const mention of mentionPatterns)
+			if (updatedAiMarkdownContent.startsWith(mention)) {
+				updatedBaseOptions.reply_to_message_id = replyToMessageId
+				updatedAiMarkdownContent = updatedAiMarkdownContent.slice(mention.length).trimStart()
+				break
+			}
+
+	}
+	return { aiMarkdownContent: updatedAiMarkdownContent, baseOptions: updatedBaseOptions }
+}
+
+/**
+ * 将消息发送任务分派给适当的处理程序 (sendFiles 或 sendTextMessages)。
+ * @param {TelegrafInstance} bot - Telegraf 机器人实例。
+ * @param {string | number} platformChatId - 要发送到的聊天 ID。
+ * @param {number | undefined} messageThreadId - 消息话题 ID。
+ * @param {object} baseOptions - 发送消息的基本选项 (包括 reply_to_message_id 等)。
+ * @param {Array<object>} files - 要发送的文件对象数组。
+ * @param {string} aiMarkdownContent - AI 生成的 Markdown 内容。
+ * @param {string} htmlContent - 内容的 HTML 版本。
+ * @returns {Promise<TelegramMessageType | null>} 第一个发送的 Telegram 消息对象或 null。
+ */
+async function dispatchMessageSender(
+	bot, platformChatId, messageThreadId, baseOptions,
+	files, aiMarkdownContent, htmlContent
+) {
+	if (files.length > 0)
+		return await sendFiles(bot, platformChatId, messageThreadId, baseOptions, files, aiMarkdownContent, htmlContent)
+	else if (htmlContent.trim())
+		return await sendTextMessages(bot, platformChatId, baseOptions, htmlContent)
+
+	return null
+}
+
+/**
  * 从逻辑频道 ID 解析出平台的 chat.id 和可选的 threadId。
  * @param {string | number} logicalChannelId - Bot逻辑层使用的频道ID。
  * @returns {{chatId: string, threadId?: number}} 包含平台 chatId 和可选的 threadId 的对象。
@@ -132,140 +531,28 @@ export function GetBotConfigTemplate() {
  * @param {TelegramInterfaceConfig_t} interfaceConfig - 当前 Telegram 接口的配置对象。
  * @returns {Promise<chatLogEntry_t_ext | null>} 转换后的 Fount 聊天日志条目，或在无法处理时返回 null。
  */
-async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, message, interfaceConfig) {
+export async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, message, interfaceConfig) {
 	if (!message || !message.from) return null
 
 	const fromUser = message.from
 	const { chat } = message
 	const ctx = 'telegram' in ctxOrBotInstance && typeof ctxOrBotInstance.telegram === 'object' ? ctxOrBotInstance : undefined
 
-	telegramUserCache[fromUser.id] = fromUser
-
-	let senderName = fromUser.first_name || ''
-	if (fromUser.last_name) senderName += ` ${fromUser.last_name}`
-	if (!senderName.trim() && fromUser.username) senderName = fromUser.username
-	if (!senderName.trim()) senderName = `User_${fromUser.id}`
-	if (fromUser.username && !senderName.includes(`@${fromUser.username}`))
-		senderName += ` (@${fromUser.username})`
-
-	telegramUserIdToDisplayName[fromUser.id] = senderName
-
-	if (telegramBotInfo && fromUser.id === telegramBotInfo.id) {
-		let botDisplayName = telegramBotInfo.first_name || ''
-		if (telegramBotInfo.last_name) botDisplayName += ` ${telegramBotInfo.last_name}`
-		if (!botDisplayName.trim() && telegramBotInfo.username) botDisplayName = telegramBotInfo.username
-		if (!botDisplayName.trim()) botDisplayName = BotFountCharname
-
-		if (telegramBotInfo.username && !botDisplayName.includes(`@${telegramBotInfo.username}`))
-			botDisplayName += ` (@${telegramBotInfo.username})`
-
-		telegramDisplayNameToId[botDisplayName.split(' (')[0]] = fromUser.id
-		telegramDisplayNameToId[BotFountCharname] = fromUser.id
-		telegramUserIdToDisplayName[fromUser.id] = `${botDisplayName} (咱自己)`
-		senderName = telegramUserIdToDisplayName[fromUser.id]
-	}
-
-	let mentionsOwner = false
-	let isReplyToOwnerTopicCreationMessage = false
+	const { senderName } = processUserInfo(fromUser, telegramBotInfo, BotFountCharname, telegramUserCache, telegramUserIdToDisplayName, telegramDisplayNameToId)
 
 	const rawText = message.text || message.caption
 	const entities = message.entities || message.caption_entities
 
-	if (entities && rawText)
-		for (const entity of entities)
-			if (entity.type === 'mention' || entity.type === 'text_mention') {
-				let mentionedUserId
-				if (entity.type === 'text_mention' && entity.user?.id)
-					mentionedUserId = entity.user.id
-				else if (entity.type === 'mention') {
-					const mentionText = rawText.substring(entity.offset, entity.offset + entity.length)
-					if (mentionText === `@${interfaceConfig.OwnerUserName}`)
-						mentionedUserId = interfaceConfig.OwnerUserID ? Number(interfaceConfig.OwnerUserID) : undefined
-				}
-				if (String(mentionedUserId) === String(interfaceConfig.OwnerUserID)) {
-					mentionsOwner = true
-					break
-				}
-			}
+	const { mentionsOwner, isReplyToOwnerTopicCreationMessage } = detectMentions(message, rawText, entities, interfaceConfig, telegramBotInfo, chat.type)
 
-	if (message.reply_to_message?.from?.id === Number(interfaceConfig.OwnerUserID))
-		if (message.message_thread_id !== undefined &&
-			message.reply_to_message.message_id === message.message_thread_id) {
-			isReplyToOwnerTopicCreationMessage = true
-			console.log(`[TelegramInterface] Identified a reply to owner's topic creation message. Message ID: ${message.message_id}, Replied To Message ID: ${message.reply_to_message.message_id}, Thread ID: ${message.message_thread_id}. This will NOT trigger 'mentions_owner' for AI context.`)
-		} else
-			mentionsOwner = true
+	if (isReplyToOwnerTopicCreationMessage)
+		console.log(`[TelegramInterface] Identified a reply to owner's topic creation message. Message ID: ${message.message_id}, Replied To Message ID: ${message.reply_to_message.message_id}, Thread ID: ${message.message_thread_id}. This will NOT trigger 'mentions_owner' for AI context if not also an @mention.`)
+
 
 	const replyToMessageForAiPrompt = isReplyToOwnerTopicCreationMessage ? undefined : message.reply_to_message
 	const content = telegramEntitiesToAiMarkdown(rawText, entities, telegramBotInfo || undefined, replyToMessageForAiPrompt)
 
-	const files = []
-	try {
-		const fileDownloadPromises = []
-		const addFile = async (fileId, fileNameFallback, mimeTypeFallback, description = '') => {
-			try {
-				if (!ctx && !telegrafInstance) {
-					console.warn('[TelegramInterface] Cannot download file: Telegraf context or instance not available.')
-					return
-				}
-				const tgAPI = ctx ? ctx.telegram : telegrafInstance?.telegram
-				if (!tgAPI) {
-					console.warn('[TelegramInterface] Cannot download file: Telegram API accessor not available.')
-					return
-				}
-				const fileLink = await tgAPI.getFileLink(fileId)
-				const response = await tryFewTimes(() => fetch(fileLink.href))
-				if (!response.ok) throw new Error(`Failed to download file (ID: ${fileId}): ${response.statusText}`)
-				const buffer = Buffer.from(await response.arrayBuffer())
-
-				let fileName = fileNameFallback
-				let mime_type = mimeTypeFallback
-				if ('document' in message && message.document && message.document.file_id === fileId) {
-					fileName = message.document.file_name || fileNameFallback
-					mime_type = message.document.mime_type || mimeTypeFallback
-				} else if ('photo' in message && message.photo)
-					mime_type = 'image/jpeg'
-				else if ('audio' in message && message.audio && message.audio.file_id === fileId) {
-					fileName = message.audio.file_name || fileNameFallback
-					mime_type = message.audio.mime_type || mimeTypeFallback
-				} else if ('video' in message && message.video && message.video.file_id === fileId) {
-					fileName = message.video.file_name || fileNameFallback
-					mime_type = message.video.mime_type || mimeTypeFallback
-				} else if ('voice' in message && message.voice && message.voice.file_id === fileId)
-					mime_type = message.voice.mime_type || 'audio/ogg'
-
-				const finalMimeType = mime_type || await mimetypeFromBufferAndName(buffer, fileName)
-				files.push({ name: fileName, buffer, mime_type: finalMimeType, description })
-			} catch (e) { console.error(`[TelegramInterface] Failed to process file (ID: ${fileId}):`, e) }
-		}
-
-		if ('photo' in message && message.photo) {
-			const photo = message.photo.reduce((prev, current) => (prev.file_size || 0) > (current.file_size || 0) ? prev : current)
-			fileDownloadPromises.push(addFile(photo.file_id, `${photo.file_unique_id}.jpg`, 'image/jpeg', message.caption || '图片'))
-		}
-		if ('document' in message && message.document) {
-			const doc = message.document
-			fileDownloadPromises.push(addFile(doc.file_id, doc.file_name || `${doc.file_unique_id}`, doc.mime_type, message.caption || '文件'))
-		}
-		if ('voice' in message && message.voice) {
-			const { voice } = message
-			fileDownloadPromises.push(addFile(voice.file_id, `${voice.file_unique_id}.ogg`, voice.mime_type || 'audio/ogg', '语音消息'))
-		}
-		if ('audio' in message && message.audio) {
-			const { audio } = message
-			fileDownloadPromises.push(addFile(audio.file_id, audio.file_name || `${audio.file_unique_id}.${audio.mime_type?.split('/')[1] || 'mp3'}`, audio.mime_type, audio.title || '音频文件'))
-		}
-		if ('video' in message && message.video) {
-			const { video } = message
-			fileDownloadPromises.push(addFile(video.file_id, video.file_name || `${video.file_unique_id}.${video.mime_type?.split('/')[1] || 'mp4'}`, video.mime_type, message.caption || '视频文件'))
-		}
-
-		if (fileDownloadPromises.length > 0)
-			await Promise.all(fileDownloadPromises)
-
-	} catch (error) {
-		console.error(`[TelegramInterface] Top-level error occurred during file processing (MessageID ${message.message_id}):`, error)
-	}
+	const files = await processMessageFiles(message, ctx, telegrafInstance)
 
 	if (!content.trim() && files.length === 0)
 		return null
@@ -273,16 +560,7 @@ async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, message, int
 	const isDirectMessage = chat.type === 'private'
 	const isFromOwner = String(fromUser.id) === String(interfaceConfig.OwnerUserID)
 
-	let mentionsBot = false
-	if (telegramBotInfo) {
-		if (telegramBotInfo.username && rawText && rawText.toLowerCase().includes(`@${telegramBotInfo.username.toLowerCase()}`))
-			mentionsBot = true
-		else if (BotFountCharname && rawText && rawText.toLowerCase().includes(BotFountCharname.toLowerCase()))
-			mentionsBot = true
-
-		if (message.reply_to_message?.from?.id === telegramBotInfo.id)
-			mentionsBot = true
-	}
+	const mentionsBot = checkIfBotIsMentioned(rawText, message, telegramBotInfo, BotFountCharname)
 
 	/** @type {chatLogEntry_t_ext} */
 	const fountEntry = {
@@ -291,24 +569,11 @@ async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, message, int
 		name: senderName,
 		content,
 		files,
-		extension: {
-			platform: 'telegram',
-			OwnerNameKeywords: interfaceConfig.OwnerNameKeywords,
-			platform_message_ids: [message.message_id],
-			content_parts: [content],
-			platform_channel_id: chat.id,
-			platform_user_id: fromUser.id,
-			platform_chat_type: chat.type,
-			platform_chat_title: chat.type !== 'private' ? chat.title : undefined,
-			is_direct_message: isDirectMessage,
-			is_from_owner: isFromOwner,
-			mentions_bot: mentionsBot,
-			mentions_owner: mentionsOwner,
-			telegram_message_obj: message,
-			...message.message_thread_id && { telegram_message_thread_id: message.message_thread_id },
-			...message.reply_to_message && { telegram_reply_to_message_id: message.reply_to_message.message_id },
-			...aiReplyObjectCacheTg[message.message_id]?.extension,
-		}
+		extension: populateFountEntryExtension(
+			message, interfaceConfig, chat, fromUser, content, files,
+			isDirectMessage, isFromOwner, mentionsBot, mentionsOwner,
+			aiReplyObjectCacheTg[message.message_id]?.extension
+		)
 	}
 	delete aiReplyObjectCacheTg[message.message_id]
 	return fountEntry
@@ -318,15 +583,15 @@ async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, message, int
  * Telegram Bot 的主设置和事件处理函数。
  * @param {TelegrafInstance} bot - 已初始化的 Telegraf 实例。
  * @param {TelegramInterfaceConfig_t} interfaceConfig - 传递给此 Telegram 接口的特定配置对象。
- * @returns {Promise<void>}
+ * @returns {Promise<PlatformAPI_t>} 返回配置好的平台 API 对象。
  */
 export async function TelegramBotMain(bot, interfaceConfig) {
 	telegrafInstance = bot
 	try {
 		telegramBotInfo = await tryFewTimes(() => bot.telegram.getMe())
 	} catch (error) {
-		console.error('[TelegramInterface] 无法获取机器人自身信息 (getMe):', error)
-		throw new Error('机器人初始化失败: 无法连接到 Telegram 或获取机器人信息。')
+		console.error('[TelegramInterface] Could not get bot info (getMe):', error)
+		throw new Error('Bot initialization failed: Could not connect to Telegram or get bot info.')
 	}
 
 	if (telegramBotInfo) {
@@ -340,6 +605,73 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 		if (BotFountCharname) telegramDisplayNameToId[BotFountCharname] = botUserId
 	}
 
+	async function sendFiles(bot, platformChatId, messageThreadId, baseOptions, files, aiMarkdownContent, htmlContent) {
+		let firstSentTelegramMessage = null
+		let mainTextSentAsCaption = false
+
+		const sendFileWithCaption = async (file, captionAiMarkdown, isLastFile) => {
+			const fileSource = { source: file.buffer, filename: file.name }
+			const finalCaptionHtml = truncateCaption(captionAiMarkdown, file.name)
+			const sendOptions = { ...baseOptions, caption: finalCaptionHtml }
+
+			return await trySendFileOrFallbackText(
+				bot, platformChatId, fileSource, sendOptions,
+				file, captionAiMarkdown, baseOptions, messageThreadId
+			)
+		}
+
+		for (let i = 0; i < files.length; i++) {
+			const file = files[i]
+			const isLastFile = i === files.length - 1
+			let captionForThisFileAiMarkdown = file.description
+
+			if (isLastFile && aiMarkdownContent.trim()) {
+				captionForThisFileAiMarkdown = aiMarkdownContent
+				mainTextSentAsCaption = true
+			} else if (!captionForThisFileAiMarkdown && aiMarkdownContent.trim() && files.length === 1) {
+				captionForThisFileAiMarkdown = aiMarkdownContent
+				mainTextSentAsCaption = true
+			}
+			const sentMsg = await sendFileWithCaption(file, captionForThisFileAiMarkdown, isLastFile)
+			if (sentMsg && !firstSentTelegramMessage)
+				firstSentTelegramMessage = sentMsg
+
+		}
+
+		if (!mainTextSentAsCaption && htmlContent.trim()) {
+			const remainingHtmlParts = splitTelegramReply(htmlContent, 4096)
+			for (const part of remainingHtmlParts)
+				try {
+					const sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, part, baseOptions))
+					if (sentMsg && !firstSentTelegramMessage)
+						firstSentTelegramMessage = sentMsg
+
+				} catch (e) {
+					console.error(`[TelegramInterface] Failed to send remaining HTML text (ChatID: ${platformChatId}, ThreadID: ${messageThreadId}):`, e)
+				}
+
+		}
+		return firstSentTelegramMessage
+	}
+
+	async function sendTextMessages(bot, platformChatId, baseOptions, htmlContent) {
+		let firstSentTelegramMessage = null
+		if (htmlContent.trim()) {
+			const textParts = splitTelegramReply(htmlContent, 4096)
+			for (const part of textParts)
+				try {
+					const sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, part, baseOptions))
+					if (sentMsg && !firstSentTelegramMessage)
+						firstSentTelegramMessage = sentMsg
+
+				} catch (e) {
+					console.error(`[TelegramInterface] Failed to send HTML text message (ChatID: ${platformChatId}, ThreadID: ${baseOptions.message_thread_id}):`, e)
+				}
+
+		}
+		return firstSentTelegramMessage
+	}
+
 	/** @type {PlatformAPI_t} */
 	const telegramPlatformAPI = {
 		name: 'telegram',
@@ -349,119 +681,27 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 			const { chatId, threadId: threadIdFromLogicalId } = parseLogicalChannelId(logicalChannelId)
 			const platformChatId = chatId
 
-			const aiMarkdownContent = fountReplyPayload.content || ''
+			let aiMarkdownContent = fountReplyPayload.content || ''
 			const files = fountReplyPayload.files || []
 			const parseMode = 'HTML'
 
-			const replyToMessageId = originalMessageEntry?.extension?.platform_message_ids?.slice?.(-1)?.[0]
 			const messageThreadId = originalMessageEntry?.extension?.telegram_message_thread_id || threadIdFromLogicalId
 
 			const htmlContent = aiMarkdownToTelegramHtml(aiMarkdownContent)
 
 			let firstSentTelegramMessage = null
-			const baseOptions = {
+			const initialBaseOptions = {
 				parse_mode: parseMode,
 				...messageThreadId && { message_thread_id: messageThreadId }
 			}
 
-			if (replyToMessageId) {
-				const fromUser = originalMessageEntry.extension.telegram_message_obj.from
-				const mentionArray = [
-					`@${fromUser.first_name} (@${fromUser.username})`,
-					`@${fromUser.first_name}`,
-					`@${fromUser.username}`,
-				]
-				for (const mention of mentionArray)
-					if (aiMarkdownContent.startsWith(mention)) {
-						baseOptions.reply_to_message_id = replyToMessageId
-						aiMarkdownContent = aiMarkdownContent.slice(mention.length)
-						break
-					}
-			}
+			const { aiMarkdownContent: finalAiMarkdownContent, baseOptions: finalBaseOptions } = prepareReplyParameters(originalMessageEntry, aiMarkdownContent, initialBaseOptions)
+			aiMarkdownContent = finalAiMarkdownContent
 
-			const sendFileWithCaption = async (file, captionAiMarkdown, isLastFile) => {
-				let sentMsg
-				const fileSource = { source: file.buffer, filename: file.name }
-				let finalCaptionHtml = captionAiMarkdown ? aiMarkdownToTelegramHtml(captionAiMarkdown) : undefined
-
-				const CAPTION_LENGTH_LIMIT = 1024
-				if (finalCaptionHtml && finalCaptionHtml.length > CAPTION_LENGTH_LIMIT) {
-					console.warn(`[TelegramInterface] HTML caption for file "${file.name}" is too long (${finalCaptionHtml.length} > ${CAPTION_LENGTH_LIMIT}), will try to truncate.`)
-					const originalCaptionText = captionAiMarkdown || ''
-					let truncatedCaptionAiMarkdown = ''
-					if (originalCaptionText.length > CAPTION_LENGTH_LIMIT * 0.8)
-						truncatedCaptionAiMarkdown = originalCaptionText.substring(0, Math.floor(CAPTION_LENGTH_LIMIT * 0.7)) + '...'
-					else
-						truncatedCaptionAiMarkdown = originalCaptionText
-
-					finalCaptionHtml = aiMarkdownToTelegramHtml(truncatedCaptionAiMarkdown)
-					if (finalCaptionHtml.length > CAPTION_LENGTH_LIMIT) {
-						const plainTextCaption = (captionAiMarkdown || file.description || '').substring(0, CAPTION_LENGTH_LIMIT - 10) + '...'
-						finalCaptionHtml = escapeHTML(plainTextCaption)
-						console.warn('[TelegramInterface] HTML caption still too long after markdown truncation, falling back to plain text:', plainTextCaption.substring(0, 50) + '...')
-					}
-				}
-
-				const sendOptions = { ...baseOptions, caption: finalCaptionHtml }
-
-				try {
-					if (file.mime_type?.startsWith('image/'))
-						sentMsg = await tryFewTimes(() => bot.telegram.sendPhoto(platformChatId, fileSource, sendOptions))
-					else if (file.mime_type?.startsWith('audio/'))
-						sentMsg = await tryFewTimes(() => bot.telegram.sendAudio(platformChatId, fileSource, { ...sendOptions, title: file.name }))
-					else if (file.mime_type?.startsWith('video/'))
-						sentMsg = await tryFewTimes(() => bot.telegram.sendVideo(platformChatId, fileSource, sendOptions))
-					else
-						sentMsg = await tryFewTimes(() => bot.telegram.sendDocument(platformChatId, fileSource, sendOptions))
-
-				} catch (e) {
-					console.error(`[TelegramInterface] Failed to send file ${file.name} (ChatID: ${platformChatId}, ThreadID: ${messageThreadId}):`, e)
-					const fallbackText = `[文件发送失败: ${file.name}] ${file.description || captionAiMarkdown || ''}`.trim()
-					if (fallbackText)
-						try {
-							sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, escapeHTML(fallbackText.substring(0, 4000)), baseOptions))
-						} catch (e2) { console.error('[TelegramInterface] Fallback message for failed file send also failed:', e2) }
-				}
-				return sentMsg
-			}
-
-			if (files.length > 0) {
-				let mainTextSentAsCaption = false
-				for (let i = 0; i < files.length; i++) {
-					const file = files[i]
-					const isLastFile = i === files.length - 1
-					let captionForThisFileAiMarkdown = file.description
-
-					if (isLastFile && aiMarkdownContent.trim()) {
-						captionForThisFileAiMarkdown = aiMarkdownContent
-						mainTextSentAsCaption = true
-					} else if (!captionForThisFileAiMarkdown && aiMarkdownContent.trim() && files.length === 1) {
-						captionForThisFileAiMarkdown = aiMarkdownContent
-						mainTextSentAsCaption = true
-					}
-					const sentMsg = await sendFileWithCaption(file, captionForThisFileAiMarkdown, isLastFile)
-					if (sentMsg && !firstSentTelegramMessage)
-						firstSentTelegramMessage = sentMsg
-
-				}
-				if (!mainTextSentAsCaption && htmlContent.trim()) {
-					const remainingHtmlParts = splitTelegramReply(htmlContent, 4096)
-					for (const part of remainingHtmlParts)
-						try {
-							const sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, part, baseOptions))
-							if (sentMsg && !firstSentTelegramMessage) firstSentTelegramMessage = sentMsg
-						} catch (e) { console.error(`[TelegramInterface] Failed to send remaining HTML text (ChatID: ${platformChatId}, ThreadID: ${messageThreadId}):`, e) }
-
-				}
-			} else if (htmlContent.trim()) {
-				const textParts = splitTelegramReply(htmlContent, 4096)
-				for (const part of textParts)
-					try {
-						const sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, part, baseOptions))
-						if (sentMsg && !firstSentTelegramMessage) firstSentTelegramMessage = sentMsg
-					} catch (e) { console.error(`[TelegramInterface] Failed to send HTML text message (ChatID: ${platformChatId}, ThreadID: ${messageThreadId}):`, e) }
-
-			}
+			firstSentTelegramMessage = await dispatchMessageSender(
+				bot, platformChatId, messageThreadId, finalBaseOptions,
+				files, aiMarkdownContent, htmlContent
+			)
 
 			if (firstSentTelegramMessage) {
 				if (fountReplyPayload && (fountReplyPayload.content || fountReplyPayload.files?.length))
@@ -481,7 +721,7 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 				await bot.telegram.sendChatAction(platformChatId, 'typing', {
 					...messageThreadId && { message_thread_id: messageThreadId }
 				})
-			} catch (e) { /* 静默处理，发送typing指示失败不应中断流程 */ }
+			} catch (e) { /* 静默处理，发送 "typing..." 指示失败不应中断流程 */ }
 		},
 
 		async fetchChannelHistory(logicalChannelId, limit) {
@@ -672,32 +912,6 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 				await telegrafInstance.telegram.leaveChat(String(chatId))
 			} catch (error) {
 				console.error(`[TelegramInterface] Error leaving group ${chatId}:`, error)
-			}
-		},
-
-		/**
-		 * (可选) 获取群组/服务器的默认或合适的首选频道。
-		 * @param {string | number} chatId - 群组的 ID。
-		 * @returns {Promise<import('../../bot_core/index.mjs').ChannelObject | null>}
-		 */
-		getGroupDefaultChannel: async (chatId) => {
-			if (!telegrafInstance) {
-				console.error('[TelegramInterface] getGroupDefaultChannel: Telegraf instance not available.')
-				return null
-			}
-			try {
-				const chat = await telegrafInstance.telegram.getChat(String(chatId))
-				/** @type {import('../../bot_core/index.mjs').ChannelObject} */
-				const channelObject = {
-					id: chat.id,
-					name: chat.title || `Group ${chat.id}`,
-					type: chat.type,
-					telegramChat: chat
-				}
-				return channelObject
-			} catch (error) {
-				console.error(`[TelegramInterface] Error getting chat info for ${chatId}:`, error)
-				return null
 			}
 		},
 
