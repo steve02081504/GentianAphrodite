@@ -96,6 +96,82 @@ function constructLogicalChannelId(chatId, threadId) {
 }
 
 /**
+ * Checks if the bot is mentioned in the message.
+ * @param {string | undefined} rawText - The raw text of the message.
+ * @param {TelegramMessageType} message - The Telegram message object.
+ * @param {TelegramBotInfo | null} currentTelegramBotInfo - Information about the bot itself.
+ * @param {string} botFountCharname - The bot's character name from Fount.
+ * @returns {boolean} True if the bot is mentioned, false otherwise.
+ */
+function _checkIfBotIsMentioned(rawText, message, currentTelegramBotInfo, botFountCharname) {
+	if (!currentTelegramBotInfo) return false
+	if (currentTelegramBotInfo.username && rawText && rawText.toLowerCase().includes(`@${currentTelegramBotInfo.username.toLowerCase()}`))
+		return true
+	if (botFountCharname && rawText && rawText.toLowerCase().includes(botFountCharname.toLowerCase()))
+		return true
+	if (message.reply_to_message?.from?.id === currentTelegramBotInfo.id)
+		return true
+	return false
+}
+
+/**
+ * Populates the extension object for a Fount chat log entry.
+ * @param {TelegramMessageType} message - The Telegram message object.
+ * @param {TelegramInterfaceConfig_t} interfaceConfig - The Telegram interface configuration.
+ * @param {TelegramMessageType['chat']} chat - The chat object from the message.
+ * @param {TelegramUser} fromUser - The user who sent the message.
+ * @param {string} content - The processed message content.
+ * @param {Array<object>} files - Array of processed file objects.
+ * @param {boolean} isDirectMessage - Whether the message is a direct message.
+ * @param {boolean} isFromOwner - Whether the message is from the owner.
+ * @param {boolean} mentionsBot - Whether the bot is mentioned.
+ * @param {boolean} mentionsOwner - Whether the owner is mentioned.
+ * @param {object | undefined} cachedAiReplyExtension - The cached AI reply's extension object, if any.
+ * @returns {object} The populated extension object.
+ */
+function _populateFountEntryExtension(
+	message, interfaceConfig, chat, fromUser, content, files,
+	isDirectMessage, isFromOwner, mentionsBot, mentionsOwner,
+	cachedAiReplyExtension
+) {
+	return {
+		platform: 'telegram',
+		OwnerNameKeywords: interfaceConfig.OwnerNameKeywords,
+		platform_message_ids: [message.message_id],
+		content_parts: [content], // Assuming content is already prepared as a single part here
+		platform_channel_id: chat.id,
+		platform_user_id: fromUser.id,
+		platform_chat_type: chat.type,
+		platform_chat_title: chat.type !== 'private' ? chat.title : undefined,
+		is_direct_message: isDirectMessage,
+		is_from_owner: isFromOwner,
+		mentions_bot: mentionsBot,
+		mentions_owner: mentionsOwner,
+		telegram_message_obj: message, // For potential deeper inspection by plugins or core
+		...(message.message_thread_id && { telegram_message_thread_id: message.message_thread_id }),
+		...(message.reply_to_message && { telegram_reply_to_message_id: message.reply_to_message.message_id }),
+		...cachedAiReplyExtension, // Spread the cached extension if it exists
+	}
+}
+
+/**
+ * Helper function to determine the bot's display name.
+ * @param {TelegramBotInfo} currentTelegramBotInfo - Information about the bot itself.
+ * @param {string} currentBotFountCharname - The bot's character name from Fount.
+ * @returns {string} The bot's display name.
+ */
+function _getBotDisplayName(currentTelegramBotInfo, currentBotFountCharname) {
+	let botDisplayName = currentTelegramBotInfo.first_name || ''
+	if (currentTelegramBotInfo.last_name) botDisplayName += ` ${currentTelegramBotInfo.last_name}`
+	if (!botDisplayName.trim() && currentTelegramBotInfo.username) botDisplayName = currentTelegramBotInfo.username
+	if (!botDisplayName.trim()) botDisplayName = currentBotFountCharname
+
+	if (currentTelegramBotInfo.username && !botDisplayName.includes(`@${currentTelegramBotInfo.username}`))
+		botDisplayName += ` (@${currentTelegramBotInfo.username})`
+	return botDisplayName
+}
+
+/**
  * Helper function to process user information and update caches.
  * @param {TelegramUser} fromUser - The user object from the Telegram message.
  * @param {TelegramBotInfo | null} currentTelegramBotInfo - Information about the bot itself.
@@ -108,30 +184,43 @@ function constructLogicalChannelId(chatId, threadId) {
 function _processUserInfo(fromUser, currentTelegramBotInfo, currentBotFountCharname, userCache, userIdToNameMap, userNameToIdMap) {
 	userCache[fromUser.id] = fromUser
 
-	let senderName = fromUser.first_name || ''
-	if (fromUser.last_name) senderName += ` ${fromUser.last_name}`
-	if (!senderName.trim() && fromUser.username) senderName = fromUser.username
-	if (!senderName.trim()) senderName = `User_${fromUser.id}`
-	if (fromUser.username && !senderName.includes(`@${fromUser.username}`))
+	let senderName = (fromUser.first_name || fromUser.last_name)
+		? `${fromUser.first_name || ''} ${fromUser.last_name || ''}`.trim()
+		: fromUser.username || `User_${fromUser.id}`
+
+	if (fromUser.username && !senderName.includes(`@${fromUser.username}`)) {
 		senderName += ` (@${fromUser.username})`
+	}
 
 	userIdToNameMap[fromUser.id] = senderName
 
 	if (currentTelegramBotInfo && fromUser.id === currentTelegramBotInfo.id) {
-		let botDisplayName = currentTelegramBotInfo.first_name || ''
-		if (currentTelegramBotInfo.last_name) botDisplayName += ` ${currentTelegramBotInfo.last_name}`
-		if (!botDisplayName.trim() && currentTelegramBotInfo.username) botDisplayName = currentTelegramBotInfo.username
-		if (!botDisplayName.trim()) botDisplayName = currentBotFountCharname
-
-		if (currentTelegramBotInfo.username && !botDisplayName.includes(`@${currentTelegramBotInfo.username}`))
-			botDisplayName += ` (@${currentTelegramBotInfo.username})`
-
+		const botDisplayName = _getBotDisplayName(currentTelegramBotInfo, currentBotFountCharname)
 		userNameToIdMap[botDisplayName.split(' (')[0]] = fromUser.id
 		userNameToIdMap[currentBotFountCharname] = fromUser.id // Ensure BotFountCharname also maps to bot's ID
 		userIdToNameMap[fromUser.id] = `${botDisplayName} (咱自己)`
 		senderName = userIdToNameMap[fromUser.id]
 	}
 	return { senderName }
+}
+
+/**
+ * Extracts a mentioned user ID from a Telegram message entity.
+ * @param {import('npm:telegraf/typings/core/types/typegram').MessageEntity} entity - The message entity.
+ * @param {string} rawText - The raw text of the message.
+ * @param {TelegramInterfaceConfig_t} interfaceConfig - The Telegram interface configuration.
+ * @returns {number | string | undefined} The mentioned user ID, or undefined if not found or not relevant.
+ */
+function _getMentionedUserIdFromEntity(entity, rawText, interfaceConfig) {
+	if (entity.type === 'text_mention' && entity.user?.id) {
+		return entity.user.id
+	} else if (entity.type === 'mention') {
+		const mentionText = rawText.substring(entity.offset, entity.offset + entity.length)
+		if (mentionText === `@${interfaceConfig.OwnerUserName}` && interfaceConfig.OwnerUserID) {
+			return Number(interfaceConfig.OwnerUserID)
+		}
+	}
+	return undefined
 }
 
 /**
@@ -148,41 +237,153 @@ function _detectMentions(message, rawText, entities, interfaceConfig, currentTel
 	let mentionsOwner = false
 	let isReplyToOwnerTopicCreationMessage = false
 
-	if (entities && rawText)
-		for (const entity of entities)
-			if (entity.type === 'mention' || entity.type === 'text_mention') {
-				let mentionedUserId
-				if (entity.type === 'text_mention' && entity.user?.id)
-					mentionedUserId = entity.user.id
-				else if (entity.type === 'mention') {
-					const mentionText = rawText.substring(entity.offset, entity.offset + entity.length)
-					if (mentionText === `@${interfaceConfig.OwnerUserName}`)
-						mentionedUserId = interfaceConfig.OwnerUserID ? Number(interfaceConfig.OwnerUserID) : undefined
-
-				}
-				if (String(mentionedUserId) === String(interfaceConfig.OwnerUserID))
-					mentionsOwner = true
-				// No break here, check all entities. A message could @owner and also reply to owner.
-				// The logic below handles reply to owner separately.
-
+	if (entities && rawText) {
+		for (const entity of entities) {
+			const mentionedUserId = _getMentionedUserIdFromEntity(entity, rawText, interfaceConfig)
+			if (mentionedUserId && String(mentionedUserId) === String(interfaceConfig.OwnerUserID)) {
+				mentionsOwner = true
+				// No break here, as a message could mention the owner multiple times or in different ways.
+				// Also, the reply check below is separate.
 			}
+		}
+	}
 
-
-
-	if (message.reply_to_message?.from?.id === Number(interfaceConfig.OwnerUserID))
-		if (message.message_thread_id !== undefined &&
+	// Check for replies to the owner
+	if (message.reply_to_message?.from?.id === Number(interfaceConfig.OwnerUserID)) {
+		const isReplyToOwnerTopicCreation =
+			message.message_thread_id !== undefined &&
 			message.reply_to_message.message_id === message.message_thread_id &&
-			chatType !== 'private' // In groups with topics, reply to topic creation is not a direct "mention" for alerting purposes.
-		)
-			isReplyToOwnerTopicCreationMessage = true
-		// If it's a reply to the topic creation message by the owner, we don't consider it a direct "mention" that requires special handling for AI context.
-		// However, if it's also an @mention, mentionsOwner might already be true.
-		// The existing console.log for this case can be kept in the main function if desired.
-		else
-			mentionsOwner = true // Any other reply to the owner is a strong indicator of mentioning the owner.
+			chatType !== 'private' // In groups/supergroups with topics, a reply to the topic creation message by the owner.
 
+		if (isReplyToOwnerTopicCreation) {
+			// This specific type of reply (to owner's topic creation message) does not by itself trigger 'mentionsOwner'
+			// for AI context, as it's an indirect interaction.
+			// It will only be true if the owner was also @mentioned in the message text (handled by the entity loop above).
+			isReplyToOwnerTopicCreationMessage = true
+		} else {
+			// Any other type of reply to the owner is considered a direct mention.
+			mentionsOwner = true
+		}
+	}
 
 	return { mentionsOwner, isReplyToOwnerTopicCreationMessage }
+}
+
+/**
+ * Extracts file name and MIME type from a Telegram message for a given file ID.
+ * @param {TelegramMessageType} message - The Telegram message object.
+ * @param {string} fileId - The file_id of the attachment.
+ * @param {string} fileNameFallback - A fallback file name if not found in message.
+ * @param {string} mimeTypeFallback - A fallback MIME type.
+ * @returns {{fileName: string, mime_type: string}}
+ */
+function _extractFileInfo(message, fileId, fileNameFallback, mimeTypeFallback) {
+	let fileName = fileNameFallback
+	let mime_type = mimeTypeFallback // Default to fallback
+
+	// Specific handling for document
+	if (message.document && message.document.file_id === fileId) {
+		fileName = message.document.file_name || fileNameFallback
+		mime_type = message.document.mime_type || mimeTypeFallback
+	}
+	// Specific handling for audio
+	else if (message.audio && message.audio.file_id === fileId) {
+		fileName = message.audio.file_name || fileNameFallback
+		mime_type = message.audio.mime_type || mimeTypeFallback
+	}
+	// Specific handling for video
+	else if (message.video && message.video.file_id === fileId) {
+		fileName = message.video.file_name || fileNameFallback
+		mime_type = message.video.mime_type || mimeTypeFallback
+	}
+	// For photo, mime_type is often implicitly jpeg or known from context where addFile is called.
+	// fileName will use fileNameFallback (e.g., unique_id.jpg)
+	else if (message.photo && mimeTypeFallback === 'image/jpeg') { // Check if this call was for a photo
+		mime_type = 'image/jpeg'
+	}
+	// Specific handling for voice
+	else if (message.voice && message.voice.file_id === fileId) {
+		// fileName will use fileNameFallback (e.g. unique_id.ogg)
+		mime_type = message.voice.mime_type || 'audio/ogg'
+	}
+	return { fileName, mime_type }
+}
+
+const CAPTION_LENGTH_LIMIT = 1024 // Telegram's caption length limit
+
+/**
+ * Truncates a caption if it's too long, attempting multiple strategies.
+ * @param {string | undefined} captionAiMarkdown - The caption in AI Markdown format.
+ * @param {string} fileNameForDebug - The filename, used for logging if truncation occurs.
+ * @returns {string | undefined} The processed HTML caption, or undefined if no caption.
+ */
+function _truncateCaption(captionAiMarkdown, fileNameForDebug) {
+	if (!captionAiMarkdown) return undefined
+
+	let finalCaptionHtml = aiMarkdownToTelegramHtml(captionAiMarkdown)
+
+	if (finalCaptionHtml && finalCaptionHtml.length > CAPTION_LENGTH_LIMIT) {
+		console.warn(`[TelegramInterface] HTML caption for file "${fileNameForDebug}" is too long (${finalCaptionHtml.length} > ${CAPTION_LENGTH_LIMIT}), will try to truncate.`)
+		// Attempt to truncate the AI Markdown first, as it's more structured
+		let truncatedCaptionAiMarkdown = ''
+		if (captionAiMarkdown.length > CAPTION_LENGTH_LIMIT * 0.8) { // Heuristic: if raw MD is already long
+			truncatedCaptionAiMarkdown = captionAiMarkdown.substring(0, Math.floor(CAPTION_LENGTH_LIMIT * 0.7)) + '...' // More aggressive truncation for MD
+		} else {
+			truncatedCaptionAiMarkdown = captionAiMarkdown // Hope that HTML conversion is the main cause of length increase
+		}
+
+		finalCaptionHtml = aiMarkdownToTelegramHtml(truncatedCaptionAiMarkdown)
+
+		if (finalCaptionHtml.length > CAPTION_LENGTH_LIMIT) {
+			// If still too long, fall back to plain text truncation (of original AI Markdown)
+			const plainTextCaption = captionAiMarkdown.substring(0, CAPTION_LENGTH_LIMIT - 10) + '...' // Leave space for "..." and some HTML entities
+			finalCaptionHtml = escapeHTML(plainTextCaption)
+			console.warn(`[TelegramInterface] HTML caption for "${fileNameForDebug}" still too long after markdown truncation, falling back to plain text:`, plainTextCaption.substring(0, 50) + '...')
+		}
+	}
+	return finalCaptionHtml
+}
+
+/**
+ * Attempts to send a file using various Telegram methods based on MIME type.
+ * If sending fails, it attempts to send a fallback text message.
+ * @param {TelegrafInstance} bot - The Telegraf bot instance.
+ * @param {string | number} platformChatId - The chat ID to send to.
+ * @param {{source: Buffer, filename: string}} fileSource - The file source for Telegraf.
+ * @param {object} sendOptions - Options for sending the file (includes caption).
+ * @param {{name: string, mime_type?: string, description?: string}} file - The file object.
+ * @param {string | undefined} captionAiMarkdown - Original AI Markdown caption for fallback.
+ * @param {object} baseOptions - Base options for sending fallback message.
+ * @param {number | undefined} messageThreadId - The message thread ID for context.
+ * @returns {Promise<TelegramMessageType | undefined>} The sent message object or undefined.
+ */
+async function _trySendFileOrFallbackText(
+	bot, platformChatId, fileSource, sendOptions,
+	file, captionAiMarkdown, baseOptions, messageThreadId
+) {
+	let sentMsg
+	try {
+		if (file.mime_type?.startsWith('image/')) {
+			sentMsg = await tryFewTimes(() => bot.telegram.sendPhoto(platformChatId, fileSource, sendOptions))
+		} else if (file.mime_type?.startsWith('audio/')) {
+			sentMsg = await tryFewTimes(() => bot.telegram.sendAudio(platformChatId, fileSource, { ...sendOptions, title: file.name }))
+		} else if (file.mime_type?.startsWith('video/')) {
+			sentMsg = await tryFewTimes(() => bot.telegram.sendVideo(platformChatId, fileSource, sendOptions))
+		} else {
+			sentMsg = await tryFewTimes(() => bot.telegram.sendDocument(platformChatId, fileSource, sendOptions))
+		}
+	} catch (e) {
+		console.error(`[TelegramInterface] Failed to send file ${file.name} (ChatID: ${platformChatId}, ThreadID: ${messageThreadId}):`, e)
+		const fallbackText = `[文件发送失败: ${file.name}] ${file.description || captionAiMarkdown || ''}`.trim()
+		if (fallbackText) {
+			try {
+				sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, escapeHTML(fallbackText.substring(0, 4000)), baseOptions))
+			} catch (e2) {
+				console.error('[TelegramInterface] Fallback message for failed file send also failed:', e2)
+			}
+		}
+	}
+	return sentMsg
 }
 
 /**
@@ -210,36 +411,9 @@ async function _processMessageFiles(message, ctx, globalTelegrafInstance) {
 			if (!response.ok) throw new Error(`Failed to download file (ID: ${fileId}): ${response.statusText}`)
 			const buffer = Buffer.from(await response.arrayBuffer())
 
-			let fileName = fileNameFallback
-			let mime_type = mimeTypeFallback // Default to fallback
+			const { fileName, mime_type: extractedMimeType } = _extractFileInfo(message, fileId, fileNameFallback, mimeTypeFallback)
 
-			// Specific handling for document
-			if (message.document && message.document.file_id === fileId) {
-				fileName = message.document.file_name || fileNameFallback
-				mime_type = message.document.mime_type || mimeTypeFallback
-			}
-			// Specific handling for audio
-			else if (message.audio && message.audio.file_id === fileId) {
-				fileName = message.audio.file_name || fileNameFallback
-				mime_type = message.audio.mime_type || mimeTypeFallback
-			}
-			// Specific handling for video
-			else if (message.video && message.video.file_id === fileId) {
-				fileName = message.video.file_name || fileNameFallback
-				mime_type = message.video.mime_type || mimeTypeFallback
-			}
-			// For photo, mime_type is often implicitly jpeg or known from context where addFile is called.
-			// fileName will use fileNameFallback (e.g., unique_id.jpg)
-			else if (message.photo && mimeTypeFallback === 'image/jpeg')  // Check if this call was for a photo
-				mime_type = 'image/jpeg'
-
-			// Specific handling for voice
-			else if (message.voice && message.voice.file_id === fileId)
-				// fileName will use fileNameFallback (e.g. unique_id.ogg)
-				mime_type = message.voice.mime_type || 'audio/ogg'
-
-
-			const finalMimeType = mime_type || await mimetypeFromBufferAndName(buffer, fileName)
+			const finalMimeType = extractedMimeType || await mimetypeFromBufferAndName(buffer, fileName)
 			filesArr.push({ name: fileName, buffer, mime_type: finalMimeType, description })
 		} catch (e) {
 			console.error(`[TelegramInterface:_processMessageFiles] Failed to process file (ID: ${fileId}):`, e)
@@ -275,6 +449,60 @@ async function _processMessageFiles(message, ctx, globalTelegrafInstance) {
 		console.error(`[TelegramInterface:_processMessageFiles] Top-level error occurred during file processing (MessageID ${message.message_id}):`, error)
 	}
 	return filesArr
+}
+
+/**
+ * Prepares parameters for a reply message, adjusting content and options.
+ * @param {chatLogEntry_t_ext | undefined} originalMessageEntry - The original message entry being replied to.
+ * @param {string} aiMarkdownContent - The current AI-generated Markdown content.
+ * @param {object} baseOptions - Base options for sending the message.
+ * @returns {{aiMarkdownContent: string, baseOptions: object}} Updated content and options.
+ */
+function _prepareReplyParameters(originalMessageEntry, aiMarkdownContent, baseOptions) {
+	let updatedAiMarkdownContent = aiMarkdownContent
+	let updatedBaseOptions = { ...baseOptions } // Clone to avoid modifying the original object directly
+
+	if (originalMessageEntry?.extension?.platform_message_ids?.slice?.(-1)?.[0]) {
+		const replyToMessageId = originalMessageEntry.extension.platform_message_ids.slice(-1)[0]
+		const fromUser = originalMessageEntry.extension.telegram_message_obj.from
+		const mentionPatterns = [
+			`@${fromUser.first_name} (@${fromUser.username})`,
+			`@${fromUser.first_name}`,
+			`@${fromUser.username}`,
+		]
+
+		for (const mention of mentionPatterns) {
+			if (updatedAiMarkdownContent.startsWith(mention)) {
+				updatedBaseOptions.reply_to_message_id = replyToMessageId
+				updatedAiMarkdownContent = updatedAiMarkdownContent.slice(mention.length).trimStart() // Trim leading space after removing mention
+				break
+			}
+		}
+	}
+	return { aiMarkdownContent: updatedAiMarkdownContent, baseOptions: updatedBaseOptions }
+}
+
+/**
+ * Dispatches the message sending to the appropriate handler (_sendFiles or _sendTextMessages).
+ * @param {TelegrafInstance} bot - The Telegraf bot instance.
+ * @param {string | number} platformChatId - The chat ID to send to.
+ * @param {number | undefined} messageThreadId - The message thread ID.
+ * @param {object} baseOptions - Base options for sending the message (includes reply_to_message_id, etc.).
+ * @param {Array<object>} files - Array of file objects to send.
+ * @param {string} aiMarkdownContent - The AI-generated Markdown content.
+ * @param {string} htmlContent - The HTML version of the content.
+ * @returns {Promise<TelegramMessageType | null>} The first sent Telegram message object or null.
+ */
+async function _dispatchMessageSender(
+	bot, platformChatId, messageThreadId, baseOptions,
+	files, aiMarkdownContent, htmlContent
+) {
+	if (files.length > 0) {
+		return await _sendFiles(bot, platformChatId, messageThreadId, baseOptions, files, aiMarkdownContent, htmlContent)
+	} else if (htmlContent.trim()) {
+		return await _sendTextMessages(bot, platformChatId, baseOptions, htmlContent)
+	}
+	return null // Should not happen if checks are done before calling, but as a safeguard
 }
 
 /**
@@ -345,16 +573,7 @@ async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, message, int
 	const isDirectMessage = chat.type === 'private'
 	const isFromOwner = String(fromUser.id) === String(interfaceConfig.OwnerUserID)
 
-	let mentionsBot = false
-	if (telegramBotInfo) {
-		if (telegramBotInfo.username && rawText && rawText.toLowerCase().includes(`@${telegramBotInfo.username.toLowerCase()}`))
-			mentionsBot = true
-		else if (BotFountCharname && rawText && rawText.toLowerCase().includes(BotFountCharname.toLowerCase()))
-			mentionsBot = true
-
-		if (message.reply_to_message?.from?.id === telegramBotInfo.id)
-			mentionsBot = true
-	}
+	const mentionsBot = _checkIfBotIsMentioned(rawText, message, telegramBotInfo, BotFountCharname)
 
 	/** @type {chatLogEntry_t_ext} */
 	const fountEntry = {
@@ -363,24 +582,11 @@ async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, message, int
 		name: senderName,
 		content,
 		files,
-		extension: {
-			platform: 'telegram',
-			OwnerNameKeywords: interfaceConfig.OwnerNameKeywords,
-			platform_message_ids: [message.message_id],
-			content_parts: [content],
-			platform_channel_id: chat.id,
-			platform_user_id: fromUser.id,
-			platform_chat_type: chat.type,
-			platform_chat_title: chat.type !== 'private' ? chat.title : undefined,
-			is_direct_message: isDirectMessage,
-			is_from_owner: isFromOwner,
-			mentions_bot: mentionsBot,
-			mentions_owner: mentionsOwner,
-			telegram_message_obj: message,
-			...message.message_thread_id && { telegram_message_thread_id: message.message_thread_id },
-			...message.reply_to_message && { telegram_reply_to_message_id: message.reply_to_message.message_id },
-			...aiReplyObjectCacheTg[message.message_id]?.extension,
-		}
+		extension: _populateFountEntryExtension(
+			message, interfaceConfig, chat, fromUser, content, files,
+			isDirectMessage, isFromOwner, mentionsBot, mentionsOwner,
+			aiReplyObjectCacheTg[message.message_id]?.extension
+		)
 	}
 	delete aiReplyObjectCacheTg[message.message_id]
 	return fountEntry
@@ -419,50 +625,13 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 		const sendFileWithCaption = async (file, captionAiMarkdown, isLastFile) => {
 			let sentMsg
 			const fileSource = { source: file.buffer, filename: file.name }
-			let finalCaptionHtml = captionAiMarkdown ? aiMarkdownToTelegramHtml(captionAiMarkdown) : undefined
-
-			const CAPTION_LENGTH_LIMIT = 1024
-			if (finalCaptionHtml && finalCaptionHtml.length > CAPTION_LENGTH_LIMIT) {
-				console.warn(`[TelegramInterface] HTML caption for file "${file.name}" is too long (${finalCaptionHtml.length} > ${CAPTION_LENGTH_LIMIT}), will try to truncate.`)
-				const originalCaptionText = captionAiMarkdown || ''
-				let truncatedCaptionAiMarkdown = ''
-				if (originalCaptionText.length > CAPTION_LENGTH_LIMIT * 0.8)
-					truncatedCaptionAiMarkdown = originalCaptionText.substring(0, Math.floor(CAPTION_LENGTH_LIMIT * 0.7)) + '...'
-				else
-					truncatedCaptionAiMarkdown = originalCaptionText
-
-
-				finalCaptionHtml = aiMarkdownToTelegramHtml(truncatedCaptionAiMarkdown)
-				if (finalCaptionHtml.length > CAPTION_LENGTH_LIMIT) {
-					const plainTextCaption = (captionAiMarkdown || file.description || '').substring(0, CAPTION_LENGTH_LIMIT - 10) + '...'
-					finalCaptionHtml = escapeHTML(plainTextCaption)
-					console.warn('[TelegramInterface] HTML caption still too long after markdown truncation, falling back to plain text:', plainTextCaption.substring(0, 50) + '...')
-				}
-			}
-
+			const finalCaptionHtml = _truncateCaption(captionAiMarkdown, file.name)
 			const sendOptions = { ...baseOptions, caption: finalCaptionHtml }
 
-			try {
-				if (file.mime_type?.startsWith('image/'))
-					sentMsg = await tryFewTimes(() => bot.telegram.sendPhoto(platformChatId, fileSource, sendOptions))
-				else if (file.mime_type?.startsWith('audio/'))
-					sentMsg = await tryFewTimes(() => bot.telegram.sendAudio(platformChatId, fileSource, { ...sendOptions, title: file.name }))
-				else if (file.mime_type?.startsWith('video/'))
-					sentMsg = await tryFewTimes(() => bot.telegram.sendVideo(platformChatId, fileSource, sendOptions))
-				else
-					sentMsg = await tryFewTimes(() => bot.telegram.sendDocument(platformChatId, fileSource, sendOptions))
-
-			} catch (e) {
-				console.error(`[TelegramInterface] Failed to send file ${file.name} (ChatID: ${platformChatId}, ThreadID: ${messageThreadId}):`, e)
-				const fallbackText = `[文件发送失败: ${file.name}] ${file.description || captionAiMarkdown || ''}`.trim()
-				if (fallbackText)
-					try {
-						sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, escapeHTML(fallbackText.substring(0, 4000)), baseOptions))
-					} catch (e2) {
-						console.error('[TelegramInterface] Fallback message for failed file send also failed:', e2)
-					}
-
-			}
+			sentMsg = await _trySendFileOrFallbackText(
+				bot, platformChatId, fileSource, sendOptions,
+				file, captionAiMarkdown, baseOptions, messageThreadId
+			)
 			return sentMsg
 		}
 
@@ -537,30 +706,21 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 			const htmlContent = aiMarkdownToTelegramHtml(aiMarkdownContent)
 
 			let firstSentTelegramMessage = null
-			const baseOptions = {
+			let currentAiMarkdownContent = aiMarkdownContent // Use a new variable for modifications
+			const initialBaseOptions = {
 				parse_mode: parseMode,
-				...messageThreadId && { message_thread_id: messageThreadId }
+				...(messageThreadId && { message_thread_id: messageThreadId })
 			}
 
-			if (replyToMessageId) {
-				const fromUser = originalMessageEntry.extension.telegram_message_obj.from
-				const mentionArray = [
-					`@${fromUser.first_name} (@${fromUser.username})`,
-					`@${fromUser.first_name}`,
-					`@${fromUser.username}`,
-				]
-				for (const mention of mentionArray)
-					if (aiMarkdownContent.startsWith(mention)) {
-						baseOptions.reply_to_message_id = replyToMessageId
-						aiMarkdownContent = aiMarkdownContent.slice(mention.length)
-						break
-					}
-			}
+			// Prepare reply parameters if it's a reply
+			const { aiMarkdownContent: finalAiMarkdownContent, baseOptions: finalBaseOptions } = _prepareReplyParameters(originalMessageEntry, currentAiMarkdownContent, initialBaseOptions)
+			// Use finalAiMarkdownContent and finalBaseOptions for sending
+			aiMarkdownContent = finalAiMarkdownContent
 
-			if (files.length > 0)
-				firstSentTelegramMessage = await _sendFiles(bot, platformChatId, messageThreadId, baseOptions, files, aiMarkdownContent, htmlContent)
-			else if (htmlContent.trim())
-				firstSentTelegramMessage = await _sendTextMessages(bot, platformChatId, baseOptions, htmlContent)
+			firstSentTelegramMessage = await _dispatchMessageSender(
+				bot, platformChatId, messageThreadId, finalBaseOptions,
+				files, aiMarkdownContent, htmlContent
+			)
 
 			if (firstSentTelegramMessage) {
 				if (fountReplyPayload && (fountReplyPayload.content || fountReplyPayload.files?.length))
