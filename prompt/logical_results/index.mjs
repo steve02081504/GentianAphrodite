@@ -33,7 +33,7 @@ import { getScopedChatLog, match_keys, match_keys_count, PreprocessChatLogEntry 
 export async function buildLogicalResults(args, prompt_struct, detail_level) {
 	/** @type {logical_results_t} */
 	const result = {
-		in_muti_char_chat: new Set([...args.chat_log.map(e => e.name)]).size > 2,
+		in_muti_char_chat: new Set(args.chat_log.map(e => e.name)).size > 2,
 		in_reply_to_master: args.ReplyToCharname ? args.ReplyToCharname == args.UserCharname : true,
 		in_hypnosis: false,
 		hypnosis_exit: false,

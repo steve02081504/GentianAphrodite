@@ -13,12 +13,12 @@ import process from 'node:process'
 export async function CodeRunnerPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	const codePluginPrompts = [
-		...await Promise.all([
-			...Object.values(args.plugins)
+	const codePluginPrompts = (
+		await Promise.all(
+			Object.values(args.plugins)
 				.map(plugin => plugin.interfaces?.chat?.GetJSCodePrompt?.(args, prompt_struct, detail_level))
-		])
-	].filter(Boolean).join('\n')
+		)
+	).filter(Boolean).join('\n')
 	if (codePluginPrompts || logical_results.in_assist || await match_keys(args, [
 		/(执行|运行|调用)((指|命)令|代码)/,
 		/代码(执行|运行)能力/, /(pwsh|powershell|js)代码(执行|运行)/i, /(执行|运行)(pwsh|powershell|js)代码/i,

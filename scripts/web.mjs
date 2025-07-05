@@ -52,7 +52,7 @@ export async function NewBrowser(configs) {
 	}
 	try {
 		const edgePath = await where_command('msedge') || (await import('npm:edge-paths')).getEdgePath()
-		const generator = await NewBrowserGenerByPath(edgePath)
+		const generator = await NewBrowserGener(edgePath, 'chrome')
 		if (generator) {
 			const browser = await generator(configs)
 			console.info('Successfully launched browser: Edge')

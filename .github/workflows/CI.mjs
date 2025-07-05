@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
+/* global fountCharCI */
 const CI = fountCharCI
 
 await CI.test('noAI Fallback', async () => {

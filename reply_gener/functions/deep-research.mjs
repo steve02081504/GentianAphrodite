@@ -21,7 +21,8 @@ import { statisticDatas } from '../../scripts/statistics.mjs'
  * Ignores lines that do not match the pattern.
  *
  * @param {string} text The text possibly containing plan steps.
- * @returns {{step: number, topic: string, result: string | null}[]} An array of parsed step objects, or an empty array if no matching lines are found or input is invalid. The order follows the appearance in the text.
+ * @returns {{step: number, topic: string, result: string | null}[]} An array of parsed step objects, or an empty array if no matching lines are found or input is invalid.
+ * The order follows the appearance in the text.
  */
 function parsePlan(text) {
 	const plan = []
@@ -209,6 +210,7 @@ Step 2: <步骤2主题>
 
 	// --- Planning and Execution Cycle ---
 	try {
+		let summaryRaw = '' // Define summaryRaw outside the loop to be accessible in the final fallback log
 		replan: while (planningCycles < max_planning_cycles) {
 			statisticDatas.toolUsage.deepResearchSessions++
 			planningCycles++
@@ -337,7 +339,6 @@ ${!isFinalCycle ? `
 			})
 
 			let summaryRetries = 0
-			let summaryRaw = '' // Define summaryRaw outside the loop to be accessible in the final fallback log
 			summary_regen: while (true) {
 				console.info(`Deep-research: Cycle ${planningCycles}, Requesting summary/replan (Attempt ${summaryRetries}/${summary_max_retries})...`)
 				const requestResult = await OrderedAISourceCalling('deep-research', AI => AI.StructCall(thinking_prompt_struct))
