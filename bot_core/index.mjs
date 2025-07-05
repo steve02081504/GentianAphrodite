@@ -396,12 +396,12 @@ async function _calculateTriggerPossibility(fountEntry, platformAPI, channelId, 
 			if (base_match_keys(content, [
 				/(再|多)(来|表演)(点|.*(次|个))/, '来个', '不够', '不如', '继续', '确认', '执行',
 				/^(那|所以你|可以再|你?再(讲|说|试试|猜)|你(觉得|想|知道|确定|试试)|但是|我?是说)/, /^so/i,
-			]) && messagesSinceLastBotReply <= 3) {
+			]) && messagesSinceLastBotReply <= 3)
 				possible += 100
-			}
+
 		}
 		if (!isABotCommand) possible += currentConfig.BaseTriggerChanceToOwner
-	} else { // Not from owner
+	} else  // Not from owner
 		if (mentionedWithoutAt) {
 			if (isInFavor) possible += 90
 			else possible += 40
@@ -409,23 +409,23 @@ async function _calculateTriggerPossibility(fountEntry, platformAPI, channelId, 
 		} else if (fountEntry.extension?.mentions_bot) {
 			possible += 40
 			if (base_match_keys(content, [/\?|？/, '怎么', '什么', '吗', /(大|小)还是/, /(还是|哪个)(大|小)/])) possible += 100
-			if (base_match_keys(content, rude_words)) {
+			if (base_match_keys(content, rude_words))
 				if (fuyanMode) return { possibility: 0, isMutedChannel, mentionedWithoutAt } // No reply in fuyan mode for rude words
 				else possible += 100
-			}
+
 			if (base_match_keys(content, ['你主人', '你的主人'])) possible += 100
 		}
-	}
+
 
 	if (fountEntry.extension?.mentions_owner || base_match_keys(content, fountEntry.extension.OwnerNameKeywords)) {
 		possible += 7
-		if (base_match_keys(content, rude_words)) {
+		if (base_match_keys(content, rude_words))
 			if (fuyanMode) return { possibility: 0, isMutedChannel, mentionedWithoutAt } // No reply for rude words to owner in fuyan mode
-			// Implicitly true for non-fuyan mode if rude words directed at owner (high possibility)
-			// This path leads to returning true in the main function if not in fuyanMode
-		}
+		// Implicitly true for non-fuyan mode if rude words directed at owner (high possibility)
+		// This path leads to returning true in the main function if not in fuyanMode
+
 	}
-	return { possibility, isMutedChannel, mentionedWithoutAt }
+	return { possibility: possible, isMutedChannel, mentionedWithoutAt }
 }
 
 /**
@@ -529,9 +529,9 @@ function _buildReplyRequest(triggerMessage, platformAPI, channelId, requestData)
 		chat_scoped_char_memory: channelCharScopedMemory[channelId],
 		chat_log: currentChannelChatLog,
 		async AddChatLogEntry(replyFromChar) {
-			if (replyFromChar && (replyFromChar.content || replyFromChar.files?.length)) {
+			if (replyFromChar && (replyFromChar.content || replyFromChar.files?.length))
 				return await sendAndLogReply(replyFromChar, platformAPI, channelId, triggerMessage)
-			}
+
 			return null
 		},
 		async Update() {
@@ -560,25 +560,25 @@ function _buildReplyRequest(triggerMessage, platformAPI, channelId, requestData)
  * @param {chatLogEntry_t_ext} triggerMessage - 原始触发消息。
  */
 async function _processAIReply(aiFinalReply, platformAPI, channelId, triggerMessage) {
-	if (channelCharScopedMemory[channelId]?.in_hypnosis) {
+	if (channelCharScopedMemory[channelId]?.in_hypnosis)
 		inHypnosisChannelId = channelId
-	} else {
+	else
 		inHypnosisChannelId = null
-	}
 
-	if (!aiFinalReply) {
+
+	if (!aiFinalReply)
 		return
-	}
 
-	for (const bannedStr of bannedStrings) {
-		if (aiFinalReply.content) {
+
+	for (const bannedStr of bannedStrings)
+		if (aiFinalReply.content)
 			aiFinalReply.content = aiFinalReply.content.replaceAll(bannedStr, '')
-		}
-	}
 
-	if (aiFinalReply.content || aiFinalReply.files?.length) {
+
+
+	if (aiFinalReply.content || aiFinalReply.files?.length)
 		await sendAndLogReply(aiFinalReply, platformAPI, channelId, aiFinalReply.extension?.replied_to_message_id ? undefined : triggerMessage)
-	}
+
 }
 
 /**
@@ -654,9 +654,9 @@ async function handleMessageQueue(channelId, platformAPI) {
 		const contextMessage = myQueue.length > 0 ? myQueue[myQueue.length - 1] : currentChannelLog?.slice(-1)[0]
 		await handleError(error, platformAPI, contextMessage)
 	} finally {
-		if (channelMessageQueues[channelId]?.length === 0) { // Check again in case new messages arrived during async operations
+		if (channelMessageQueues[channelId]?.length === 0)  // Check again in case new messages arrived during async operations
 			delete channelHandlers[channelId]
-		}
+
 	}
 }
 
@@ -671,9 +671,9 @@ async function _initializeChannelLogIfEmpty(channelId, platformAPI) {
 		const historicalMessages = await platformAPI.fetchChannelHistory(channelId, currentConfig.DefaultMaxFetchCount)
 		const mergedHistoricalLog = mergeChatLogEntries(historicalMessages.sort((a, b) => a.time_stamp - b.time_stamp).slice(0, -1))
 		channelChatLogs[channelId] = mergedHistoricalLog
-		while (channelChatLogs[channelId].length > currentConfig.DefaultMaxMessageDepth) {
+		while (channelChatLogs[channelId].length > currentConfig.DefaultMaxMessageDepth)
 			channelChatLogs[channelId].shift()
-		}
+
 	}
 }
 
@@ -704,7 +704,7 @@ async function _processNextMessageInQueue(myQueue, currentChannelLog, platformAP
 		if (triggerResult === 1) triggered = true
 	} else {
 		// This loop handles merging multiple messages
-		let actualLastLogEntry = lastLogEntry // To be updated if merged
+		const actualLastLogEntry = lastLogEntry // To be updated if merged
 		do {
 			actualLastLogEntry.content = (actualLastLogEntry.extension.content_parts || [actualLastLogEntry.content])
 				.concat(currentMessageToProcess.extension.content_parts || [currentMessageToProcess.content])
@@ -715,8 +715,8 @@ async function _processNextMessageInQueue(myQueue, currentChannelLog, platformAP
 				...actualLastLogEntry.extension,
 				...currentMessageToProcess.extension,
 				platform_message_ids: Array.from(new Set([
-					...(actualLastLogEntry.extension.platform_message_ids || []),
-					...(currentMessageToProcess.extension.platform_message_ids || [])
+					...actualLastLogEntry.extension.platform_message_ids || [],
+					...currentMessageToProcess.extension.platform_message_ids || []
 				])),
 				content_parts: (actualLastLogEntry.extension.content_parts || [actualLastLogEntry.content.split('\n').pop()])
 					.concat(currentMessageToProcess.extension.content_parts || [currentMessageToProcess.content]),
@@ -731,16 +731,16 @@ async function _processNextMessageInQueue(myQueue, currentChannelLog, platformAP
 		} while (currentMessageToProcess && _is_message_mergeable(actualLastLogEntry, currentMessageToProcess))
 	}
 
-	while (currentChannelLog.length > currentConfig.DefaultMaxMessageDepth) {
+	while (currentChannelLog.length > currentConfig.DefaultMaxMessageDepth)
 		currentChannelLog.shift()
-	}
+
 
 	// If triggered, call doMessageReplyInternal with the latest state of the message that caused the trigger.
 	// This would be the individually processed message or the final state of lastLogEntry after merges.
 	const messageForReply = triggered ? currentChannelLog[currentChannelLog.length - 1] : null
-	if (messageForReply) {
+	if (messageForReply)
 		await doMessageReplyInternal(messageForReply, platformAPI, channelId)
-	}
+
 }
 
 /**
@@ -824,9 +824,9 @@ async function _getAISuggestionForError(error, errorMessageForRecord, platformAP
 		const currentChannelId = contextMessage?.extension?.platform_channel_id
 		const isHypnosisContextForError = !!(inHypnosisChannelId && currentChannelId && currentChannelId === inHypnosisChannelId)
 
-		if (`${error.name}: ${error.message}` === `${anotherError.name}: ${anotherError.message}`) {
+		if (`${error.name}: ${error.message}` === `${anotherError.name}: ${anotherError.message}`)
 			return { content: isHypnosisContextForError ? '抱歉，洗脑母畜龙胆没有解决思路。' : '没什么解决思路呢？' }
-		}
+
 		return { content: '```\n' + anotherErrorStack + '\n```\n' + (isHypnosisContextForError ? '抱歉，洗脑母畜龙胆没有解决思路。' : '没什么解决思路呢？') }
 	}
 }
@@ -841,11 +841,11 @@ async function _getAISuggestionForError(error, errorMessageForRecord, platformAP
  */
 async function _sendErrorReport(fullReplyContent, platformAPI, originalError, contextMessage) {
 	try {
-		if (contextMessage?.extension?.platform_channel_id) {
+		if (contextMessage?.extension?.platform_channel_id)
 			await sendAndLogReply({ content: fullReplyContent }, platformAPI, contextMessage.extension.platform_channel_id, undefined)
-		} else {
+		else
 			platformAPI.logError(new Error('[BotLogic] Error occurred (no context channel to reply): ' + fullReplyContent.substring(0, 1000) + '...'), undefined)
-		}
+
 	} catch (sendError) {
 		platformAPI.logError(sendError, contextMessage)
 		console.error('[BotLogic] Failed to send error notification. Original error:', originalError, 'Send error:', sendError)
@@ -878,9 +878,9 @@ function _is_message_mergeable(lastLogEntry, currentMessageToProcess) {
  * @returns {Promise<number | 'exit' | undefined>} 1 表示触发回复, 'exit' 表示需要退出, undefined 表示无特殊操作。
  */
 async function _checkQueueMessageTrigger(currentMessageToProcess, currentChannelLog, platformAPI, channelId) {
-	if (currentMessageToProcess.extension?.platform_user_id == platformAPI.getBotUserId()) {
+	if (currentMessageToProcess.extension?.platform_user_id == platformAPI.getBotUserId())
 		return // Do not process bot's own messages for triggers here
-	}
+
 
 	// Owner commands
 	if (currentMessageToProcess.extension?.is_from_owner) {
@@ -904,10 +904,10 @@ async function _checkQueueMessageTrigger(currentMessageToProcess, currentChannel
 				return // Handled, no further trigger
 			}
 			const banWordMatch = content.match(/^龙胆.{0,2}禁止.{0,2}`(?<banned_content>[\S\s]*)`$/)
-			if (banWordMatch?.groups?.banned_content) {
+			if (banWordMatch?.groups?.banned_content)
 				bannedStrings.push(banWordMatch.groups.banned_content)
-				// Potentially send confirmation? For now, just adds and continues.
-			}
+			// Potentially send confirmation? For now, just adds and continues.
+
 			if (base_match_keys(content, [/^[\n,.~、。呵哦啊嗯噫欸胆龙，～]+$/, /^[\n,.~、。呵哦啊嗯噫欸胆龙，～]{4}[\n!,.?~、。呵哦啊嗯噫欸胆龙！，？～]+$/])) {
 				const ownerCallReply = SimplifyChinese(content).replaceAll('龙', '主').replaceAll('胆', '人')
 				await sendAndLogReply({ content: ownerCallReply }, platformAPI, channelId, currentMessageToProcess)
@@ -933,11 +933,11 @@ async function _checkQueueMessageTrigger(currentMessageToProcess, currentChannel
 		msg => msg.extension?.is_from_owner || msg.extension?.platform_user_id == platformAPI.getBotUserId()
 	)
 
-	if (await checkMessageTrigger(currentMessageToProcess, platformAPI, channelId, { has_other_gentian_bot: hasOtherGentianBot })) {
+	if (await checkMessageTrigger(currentMessageToProcess, platformAPI, channelId, { has_other_gentian_bot: hasOtherGentianBot }))
 		return 1 // Should trigger a reply
-	} else if (ownerBotOnlyInteraction && currentMessageToProcess.extension?.is_from_owner && !isMutedChannel) {
+	else if (ownerBotOnlyInteraction && currentMessageToProcess.extension?.is_from_owner && !isMutedChannel)
 		return 1 // Trigger if owner is interacting in an owner-bot only conversation
-	} else if (
+	else if (
 		(!inHypnosisChannelId || channelId !== inHypnosisChannelId) &&
 		!isMutedChannel &&
 		currentMessageToProcess.extension?.platform_user_id != platformAPI.getBotUserId() // Not from bot
@@ -959,7 +959,7 @@ async function _checkQueueMessageTrigger(currentMessageToProcess, currentChannel
 			(repet.element?.content || repet.element?.files?.length) && // Has content to repeat
 			repet.count >= currentConfig.RepetitionTriggerCount &&
 			// Avoid repeating sensitive keywords or commands
-			!base_match_keys(repet.element.content + '\n' + (repet.element.files || []).map(file => file.name).join('\n'), [...(currentMessageToProcess.extension.OwnerNameKeywords || []), ...rude_words, ...GentianWords]) &&
+			!base_match_keys(repet.element.content + '\n' + (repet.element.files || []).map(file => file.name).join('\n'), [...currentMessageToProcess.extension.OwnerNameKeywords || [], ...rude_words, ...GentianWords]) &&
 			!isBotCommand(repet.element.content) &&
 			// Check if the bot has already repeated this exact message recently
 			!currentChannelLog.slice(-10).some(msg => msg.extension?.platform_user_id == platformAPI.getBotUserId() && summary(msg, false) === summary(repet.element, false))
@@ -1012,12 +1012,12 @@ async function handleError(error, platformAPI, contextMessage) {
  */
 function _updateUserCache(senderId, senderName) {
 	if (senderId && senderName) {
-		if (!userIdToNameMap[senderId] || userIdToNameMap[senderId] !== senderName) {
+		if (!userIdToNameMap[senderId] || userIdToNameMap[senderId] !== senderName)
 			userIdToNameMap[senderId] = senderName
-		}
-		if (!nameToUserIdMap[senderName] || nameToUserIdMap[senderName] !== senderId) {
+
+		if (!nameToUserIdMap[senderName] || nameToUserIdMap[senderName] !== senderId)
 			nameToUserIdMap[senderName] = senderId
-		}
+
 	}
 }
 
@@ -1028,7 +1028,7 @@ function _updateUserCache(senderId, senderName) {
  * @param {chatLogEntry_t_ext} fountEntry - 当前消息条目 (用于错误处理上下文)。
  */
 function _ensureChannelHandlerIsRunning(channelId, platformAPI, fountEntry) {
-	if (!channelHandlers[channelId]) {
+	if (!channelHandlers[channelId])
 		channelHandlers[channelId] = handleMessageQueue(channelId, platformAPI)
 			.catch(err => {
 				handleError(err, platformAPI, fountEntry)
@@ -1036,17 +1036,17 @@ function _ensureChannelHandlerIsRunning(channelId, platformAPI, fountEntry) {
 			.finally(() => {
 				// Check again in case new messages were added to the queue by the handler itself
 				// or if the handler was cleared due to an error but the queue is not empty.
-				if (channelMessageQueues[channelId]?.length === 0) {
+				if (channelMessageQueues[channelId]?.length === 0)
 					delete channelHandlers[channelId]
-				} else if (!channelHandlers[channelId]) {
+				else if (!channelHandlers[channelId])
 					// If handler was deleted but queue is not empty (e.g. error during processing), restart it.
 					// This path might be contentious depending on desired error recovery.
 					// For now, let's assume if it was cleared, it was for a reason and avoid immediate restart loop.
 					// Consider a backoff or max_retry if auto-restart is desired.
 					console.warn(`[BotLogic] Channel handler for ${channelId} was cleared, but queue is not empty. Not auto-restarting immediately.`)
-				}
+
 			})
-	}
+
 }
 
 /**
@@ -1159,16 +1159,16 @@ async function _checkOwnerPresence(group, platformAPI, ownerOverride = null) {
 
 	if (platformAPI.getGroupMembers) {
 		const members = await platformAPI.getGroupMembers(group.id)
-		if (members) {
+		if (members)
 			return members.some(member =>
 				String(member.id) === String(ownerIdToCompare) ||
 				(member.username && ownerUsernameToCompare && member.username.toLowerCase() === ownerUsernameToCompare.toLowerCase())
 			)
-		}
+
 		console.warn(`[BotLogic] Could not retrieve members for group ${group.id} on ${platformAPI.name}. Skipping owner check.`)
-	} else {
+	} else
 		console.warn(`[BotLogic] getGroupMembers not implemented for platform ${platformAPI.name}. Cannot check owner presence in group ${group.id}. Skipping.`)
-	}
+
 	return false // Default to owner not present if checks fail
 }
 
@@ -1227,9 +1227,9 @@ async function _generateInsult(group, platformAPI, defaultChannel, channelHistor
 
 	try {
 		const aiInsultReply = await GentianAphrodite.interfaces.chat.GetReply(insultRequest)
-		if (aiInsultReply && aiInsultReply.content) {
+		if (aiInsultReply && aiInsultReply.content)
 			return aiInsultReply.content
-		}
+
 		console.warn('[BotLogic] AI did not generate insult content, using default.')
 	} catch (e) {
 		console.error(`[BotLogic] AI insult generation failed for group ${group.id}:`, e)
@@ -1248,62 +1248,62 @@ async function _handleOwnerNotPresent(group, platformAPI, defaultChannel) {
 	console.log(`[BotLogic] Owner NOT found in group ${group.name} (ID: ${group.id}). Taking action...`)
 
 	let inviteLink = null
-	if (platformAPI.generateInviteLink) {
+	if (platformAPI.generateInviteLink)
 		inviteLink = await platformAPI.generateInviteLink(group.id, defaultChannel.id)
 			.catch(error => {
 				console.error(`[BotLogic] Error generating invite link for group ${group.id}:`, error.stack)
 				return error // Keep the error object if needed, or nullify
 			})
-	}
+
 
 	if (inviteLink && !(inviteLink instanceof Error)) {
 		const inviteMessage = `咱被拉入了一个您不在的群组（已经退啦！）: \`${group.name}\` (ID: \`${group.id}\`)\n链接: ${inviteLink}`
-		if (platformAPI.sendDirectMessageToOwner) {
+		if (platformAPI.sendDirectMessageToOwner)
 			await platformAPI.sendDirectMessageToOwner(inviteMessage)
-		} else {
+		else
 			console.warn(`[BotLogic] sendDirectMessageToOwner not implemented for ${platformAPI.name}.`)
-		}
+
 
 		const ownerPresenceResult = await platformAPI.getOwnerPresenceInGroups?.()
 		const ownerUsernameToCompare = platformAPI.getOwnerUserName?.()
-		if (ownerPresenceResult?.groupsWithOwner?.length > 0) {
+		if (ownerPresenceResult?.groupsWithOwner?.length > 0)
 			ownerPresenceResult.groupsWithOwner.forEach(async otherGroup => {
 				if (otherGroup.id === group.id) return
 
 				const otherGroupDefaultChannel = await platformAPI.getGroupDefaultChannel?.(otherGroup.id)
-				if (otherGroupDefaultChannel && platformAPI.sendMessage) {
+				if (otherGroupDefaultChannel && platformAPI.sendMessage)
 					try {
 						await platformAPI.sendMessage(otherGroupDefaultChannel.id, { content: `@${ownerUsernameToCompare} ` + inviteMessage })
 					} catch (e) {
 						console.error(`[BotLogic] Failed to send invite message to owner in group ${otherGroup.name}:`, e)
 					}
-				}
+
 			})
-		}
-	} else {
+
+	} else
 		console.warn(`[BotLogic] Could not generate invite link for group ${group.id}.`)
-	}
+
 
 	let channelHistoryForAI = []
-	if (platformAPI.fetchChannelHistory) {
+	if (platformAPI.fetchChannelHistory)
 		channelHistoryForAI = await platformAPI.fetchChannelHistory(defaultChannel.id, 10)
-	}
+
 
 	const insultMessageContent = await _generateInsult(group, platformAPI, defaultChannel, channelHistoryForAI)
 
-	if (platformAPI.sendMessage && insultMessageContent) {
+	if (platformAPI.sendMessage && insultMessageContent)
 		try {
 			await platformAPI.sendMessage(defaultChannel.id, { content: insultMessageContent })
 		} catch (e) {
 			console.error(`[BotLogic] Failed to send insult to group ${group.id}:`, e)
 		}
-	}
 
-	if (platformAPI.leaveGroup) {
+
+	if (platformAPI.leaveGroup)
 		await platformAPI.leaveGroup(group.id)
-	} else {
+	else
 		console.warn(`[BotLogic] leaveGroup not implemented for ${platformAPI.name}. Cannot leave group ${group.id}.`)
-	}
+
 }
 
 /**
@@ -1340,13 +1340,13 @@ async function handleGroupCheck(group, platformAPI, ownerOverride = null) {
  * @param {PlatformAPI_t} platformAPI - 平台 API 实例。
  */
 function _setupOnGroupJoinHandler(platformAPI) {
-	if (platformAPI.onGroupJoin) {
+	if (platformAPI.onGroupJoin)
 		platformAPI.onGroupJoin(async (group) => {
 			await handleGroupCheck(group, platformAPI)
 		})
-	} else {
+	else
 		console.warn(`[BotLogic] onGroupJoin not implemented for platform: ${platformAPI.name}`)
-	}
+
 }
 
 /**
@@ -1356,40 +1356,40 @@ function _setupOnGroupJoinHandler(platformAPI) {
  */
 async function _performInitialGroupOwnerCheck(platformAPI) {
 	let usedOptimizedCheck = false
-	if (platformAPI.getOwnerPresenceInGroups) {
+	if (platformAPI.getOwnerPresenceInGroups)
 		try {
 			const presenceResult = await platformAPI.getOwnerPresenceInGroups()
 			if (presenceResult) {
-				if (presenceResult.groupsWithoutOwner.length > 0) {
+				if (presenceResult.groupsWithoutOwner.length > 0)
 					for (const group of presenceResult.groupsWithoutOwner) {
 						await new Promise(resolve => setTimeout(resolve, 2000)) // Stagger checks
 						await handleGroupCheck(group, platformAPI)
 					}
-				}
+
 				usedOptimizedCheck = true
-			} else {
+			} else
 				console.warn(`[BotLogic] Optimized owner presence check returned null for ${platformAPI.name}. Falling back if alternative is available.`)
-			}
+
 		} catch (e) {
 			console.error(`[BotLogic] Error calling getOwnerPresenceInGroups for ${platformAPI.name}:`, e)
 		}
-	}
 
-	if (!usedOptimizedCheck && platformAPI.getJoinedGroups) {
+
+	if (!usedOptimizedCheck && platformAPI.getJoinedGroups)
 		try {
 			const allGroups = await platformAPI.getJoinedGroups()
-			if (allGroups && allGroups.length > 0) {
+			if (allGroups && allGroups.length > 0)
 				for (const group of allGroups) {
 					await new Promise(resolve => setTimeout(resolve, 2000)) // Stagger checks
 					await handleGroupCheck(group, platformAPI)
 				}
-			}
+
 		} catch (e) {
 			console.error(`[BotLogic] Error fetching joined groups for ${platformAPI.name} fallback check:`, e)
 		}
-	} else if (!usedOptimizedCheck) {
+	else if (!usedOptimizedCheck)
 		console.log(`[BotLogic] No group checking mechanism available for ${platformAPI.name} at startup (Neither getOwnerPresenceInGroups nor getJoinedGroups are fully supported/implemented).`)
-	}
+
 }
 
 /**
@@ -1397,20 +1397,20 @@ async function _performInitialGroupOwnerCheck(platformAPI) {
  * @param {PlatformAPI_t} platformAPI - 平台 API 实例。
  */
 function _setupOnOwnerLeaveGroupHandler(platformAPI) {
-	if (platformAPI.onOwnerLeaveGroup) {
+	if (platformAPI.onOwnerLeaveGroup)
 		platformAPI.onOwnerLeaveGroup(async (groupId, leftUserId) => {
 			const ownerIdForPlatform = platformAPI.getOwnerUserId?.()
-			if (ownerIdForPlatform && String(leftUserId) === String(ownerIdForPlatform)) {
+			if (ownerIdForPlatform && String(leftUserId) === String(ownerIdForPlatform))
 				try {
 					await platformAPI.leaveGroup?.(groupId)
 				} catch (e) {
 					console.error(`[BotLogic] Error leaving group ${groupId} after owner departure on ${platformAPI.name}: `, e)
 				}
-			}
+
 		})
-	} else {
+	else
 		console.warn(`[BotLogic] onOwnerLeaveGroup not implemented for platform: ${platformAPI.name}.`)
-	}
+
 }
 
 /**
