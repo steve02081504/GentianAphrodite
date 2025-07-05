@@ -270,7 +270,7 @@ function updateBotNameMapping(platformAPI) {
 function mergeChatLogEntries(logEntries) {
 	if (!logEntries || logEntries.length === 0) return []
 	const newLog = []
-	let lastEntry = { ...logEntries[0], extension: { ...logEntries[0].extension || {}, platform_message_ids: [...logEntries[0].extension?.platform_message_ids || []] } }
+	let lastEntry = { ...logEntries[0], extension: { ...logEntries[0].extension, platform_message_ids: [...logEntries[0].extension?.platform_message_ids || []] } }
 
 	for (let i = 1; i < logEntries.length; i++) {
 		const currentEntry = logEntries[i]
@@ -292,7 +292,7 @@ function mergeChatLogEntries(logEntries) {
 			}
 		} else {
 			newLog.push(lastEntry)
-			lastEntry = { ...currentEntry, extension: { ...currentEntry.extension || {}, platform_message_ids: [...currentEntry.extension?.platform_message_ids || []] } }
+			lastEntry = { ...currentEntry, extension: { ...currentEntry.extension, platform_message_ids: [...currentEntry.extension?.platform_message_ids || []] } }
 		}
 	}
 	newLog.push(lastEntry)
@@ -314,16 +314,37 @@ function isBotCommand(str) {
  */
 async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {}) {
 	const content = (fountEntry.content || '').replace(/^(@\S+\s+)+/g, '')
-	const botUserId = platformAPI.getBotUserId()
 	const isFromOwner = fountEntry.extension?.is_from_owner === true
 
-	if (fountEntry.extension?.is_direct_message)
-		return isFromOwner
+	if (fountEntry.extension?.is_direct_message) return isFromOwner
+	if (inHypnosisChannelId && inHypnosisChannelId === channelId && !isFromOwner) return false
 
-	if (inHypnosisChannelId && inHypnosisChannelId === channelId && !isFromOwner)
-		return false
+	const { possibility, isMutedChannel, mentionedWithoutAt } = await _calculateTriggerPossibility(fountEntry, platformAPI, channelId, content, env)
 
+	if (isMutedChannel) return false // Check if channel was muted during possibility calculation
+
+	// Final decision based on possibility score
+	const okey = Math.random() * 100 < possibility
+
+	_logTriggerCheckDetails(fountEntry, platformAPI, channelId, content, possibility, okey, isFromOwner, mentionedWithoutAt, env)
+
+	return okey
+}
+
+/**
+ * 计算消息触发的可能性分数。
+ * @async
+ * @param {chatLogEntry_t_ext} fountEntry - 当前消息条目。
+ * @param {PlatformAPI_t} platformAPI - 平台 API。
+ * @param {string | number} channelId - 频道 ID。
+ * @param {string} content - 清理后的消息内容。
+ * @param {{has_other_gentian_bot?: boolean}} [env={}] - 环境信息。
+ * @returns {Promise<{possibility: number, isMutedChannel: boolean, mentionedWithoutAt: boolean}>}
+ */
+async function _calculateTriggerPossibility(fountEntry, platformAPI, channelId, content, env = {}) {
 	let possible = 0
+	const botUserId = platformAPI.getBotUserId()
+	const isFromOwner = fountEntry.extension?.is_from_owner === true
 
 	const EngWords = content.split(' ')
 	const oldLogicChineseCheck = base_match_keys(
@@ -335,7 +356,6 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
 		['gentian']
 	)
 	const nameMentionedByOldLogic = oldLogicChineseCheck || oldLogicEnglishCheck
-
 	const mentionedWithoutAt = !env.has_other_gentian_bot &&
 		nameMentionedByOldLogic &&
 		!base_match_keys(content, [/(龙胆(有|能|这边|目前|[^ 。你，]{0,3}的)|gentian('s|is|are|can|has))/i]) &&
@@ -346,24 +366,21 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
 	possible += base_match_keys(content, [/(花|华)(萝|箩|罗)(蘑|磨|摩)/g]) * 3
 
 	const isABotCommand = isBotCommand(content)
-
 	const timeSinceLastBotMessageInChannel = fountEntry.time_stamp - (channelLastSendMessageTime[channelId] || 0)
 	const isInFavor = timeSinceLastBotMessageInChannel < currentConfig.InteractionFavorPeriodMs
-
 	let isMutedChannel = (Date.now() - (channelMuteStartTimes[channelId] || 0)) < currentConfig.MuteDurationMs
 
 	if (isFromOwner) {
 		if (mentionedWithoutAt || fountEntry.extension?.mentions_bot) {
 			possible += 100
-			delete channelMuteStartTimes[channelId]
+			delete channelMuteStartTimes[channelId] // Unmute channel
 			isMutedChannel = false
 		}
 		if (isInFavor && base_match_keys(content, ['闭嘴', '安静', '肃静']) && content.length < 10) {
-			channelMuteStartTimes[channelId] = Date.now()
+			channelMuteStartTimes[channelId] = Date.now() // Mute channel
 			isMutedChannel = true
-			return false
+			return { possibility: 0, isMutedChannel, mentionedWithoutAt } // Early exit if owner mutes
 		}
-
 		if (base_match_keys(content, ['老婆', '女票', '女朋友', '炮友'])) possible += 50
 		if (base_match_keys(content, [/(有点|好)紧张/, '救救', '帮帮', /帮(我|(你|你家)?(主人|老公|丈夫|爸爸|宝宝))/, '来人', '咋用', '教教', /是真的(吗|么)/])) possible += 100
 		if (base_match_keys(content, GentianWords) && base_match_keys(content, [/怎么(想|看)/])) possible += 100
@@ -375,46 +392,57 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
 			possible += 4
 			const currentChannelLog = channelChatLogs[channelId] || []
 			const lastBotMsgIndex = currentChannelLog.findLastIndex(log => log.extension?.platform_user_id == botUserId)
-
-			const messagesSinceLastBotReply = lastBotMsgIndex === -1
-				? currentChannelLog.length
-				: currentChannelLog.slice(lastBotMsgIndex + 1).length
-
+			const messagesSinceLastBotReply = lastBotMsgIndex === -1 ? currentChannelLog.length : currentChannelLog.slice(lastBotMsgIndex + 1).length
 			if (base_match_keys(content, [
 				/(再|多)(来|表演)(点|.*(次|个))/, '来个', '不够', '不如', '继续', '确认', '执行',
 				/^(那|所以你|可以再|你?再(讲|说|试试|猜)|你(觉得|想|知道|确定|试试)|但是|我?是说)/, /^so/i,
-			]) && messagesSinceLastBotReply <= 3)
+			]) && messagesSinceLastBotReply <= 3) {
 				possible += 100
-
+			}
 		}
 		if (!isABotCommand) possible += currentConfig.BaseTriggerChanceToOwner
-	}
-	else
+	} else { // Not from owner
 		if (mentionedWithoutAt) {
 			if (isInFavor) possible += 90
 			else possible += 40
 			if (base_match_keys(content, [/[午安早晚]安/])) possible += 100
-		}
-		else if (fountEntry.extension?.mentions_bot) {
+		} else if (fountEntry.extension?.mentions_bot) {
 			possible += 40
 			if (base_match_keys(content, [/\?|？/, '怎么', '什么', '吗', /(大|小)还是/, /(还是|哪个)(大|小)/])) possible += 100
-			if (base_match_keys(content, rude_words))
-				if (fuyanMode) return false
+			if (base_match_keys(content, rude_words)) {
+				if (fuyanMode) return { possibility: 0, isMutedChannel, mentionedWithoutAt } // No reply in fuyan mode for rude words
 				else possible += 100
-
+			}
 			if (base_match_keys(content, ['你主人', '你的主人'])) possible += 100
 		}
-
-	if (isMutedChannel) return false
+	}
 
 	if (fountEntry.extension?.mentions_owner || base_match_keys(content, fountEntry.extension.OwnerNameKeywords)) {
 		possible += 7
-		if (base_match_keys(content, rude_words))
-			if (fuyanMode) return false
-			else return true
+		if (base_match_keys(content, rude_words)) {
+			if (fuyanMode) return { possibility: 0, isMutedChannel, mentionedWithoutAt } // No reply for rude words to owner in fuyan mode
+			// Implicitly true for non-fuyan mode if rude words directed at owner (high possibility)
+			// This path leads to returning true in the main function if not in fuyanMode
+		}
 	}
+	return { possibility, isMutedChannel, mentionedWithoutAt }
+}
 
-	const okey = Math.random() * 100 < possible
+/**
+ * 记录触发检查的详细信息。
+ * @param {chatLogEntry_t_ext} fountEntry - 消息条目。
+ * @param {PlatformAPI_t} platformAPI - 平台 API。
+ * @param {string | number} channelId - 频道 ID。
+ * @param {string} content - 清理后的消息内容。
+ * @param {number} possible - 计算出的可能性分数。
+ * @param {boolean} okey - 是否触发。
+ * @param {boolean} isFromOwner - 是否来自主人。
+ * @param {boolean} mentionedWithoutAt - 是否在没有@的情况下提及。
+ * @param {{has_other_gentian_bot?: boolean}} [env={}] - 环境信息。
+ */
+function _logTriggerCheckDetails(fountEntry, platformAPI, channelId, content, possible, okey, isFromOwner, mentionedWithoutAt, env = {}) {
+	const timeSinceLastBotMessageInChannel = fountEntry.time_stamp - (channelLastSendMessageTime[channelId] || 0)
+	const isInFavor = timeSinceLastBotMessageInChannel < currentConfig.InteractionFavorPeriodMs
 	console.dir({
 		chat_name: platformAPI.getChatNameForAI(channelId, fountEntry),
 		name: fountEntry.name,
@@ -424,14 +452,133 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
 		possible,
 		okey,
 		isFromOwner,
-		isInFavor,
+		isInFavor, // Recalculate for logging as it's not passed from _calculateTriggerPossibility
 		mentionsBot: fountEntry.extension?.mentions_bot,
 		mentionsOwner: fountEntry.extension?.mentions_owner,
 		mentionedWithoutAt,
 		hasOtherGentianBot: env.has_other_gentian_bot,
 	}, { depth: null })
+}
 
-	return okey
+/**
+ * 内部核心回复处理逻辑。
+ * @async
+ * @param {chatLogEntry_t_ext} triggerMessage - 触发本次回复的原始消息条目。
+ * @param {PlatformAPI_t} platformAPI - 当前平台的 API 对象。
+ * @param {string | number} channelId - 消息所在的频道 ID。
+ */
+async function _prepareReplyRequestData(triggerMessage, platformAPI, channelId) {
+	const currentChannelChatLog = channelChatLogs[channelId] || []
+	channelCharScopedMemory[channelId] ??= {} // Ensure memory object exists
+
+	const activePlugins = platformAPI.getPlatformSpecificPlugins(triggerMessage) || {}
+	const platformWorld = platformAPI.getPlatformWorld() || null
+	const chatNameForAI = platformAPI.getChatNameForAI(channelId, triggerMessage)
+	const fountBotDisplayName = (await GentianAphrodite.getPartInfo?.(localhostLocales[0]))?.name || BotCharname
+	const botNameForAIChat = userIdToNameMap[platformAPI.getBotUserId()] || `${platformAPI.getBotUsername()} (咱自己)` || `${fountBotDisplayName} (咱自己)`
+	const ownerPlatformUsername = platformAPI.getOwnerUserName()
+	const ownerPlatformId = platformAPI.getOwnerUserId()
+	const replyToCharName = userIdToNameMap[triggerMessage.extension?.platform_user_id || ''] || triggerMessage.name
+	const userCharNameForAI = triggerMessage.extension.is_from_owner ? replyToCharName : userIdToNameMap[ownerPlatformId] || ownerPlatformUsername
+
+	return {
+		currentChannelChatLog,
+		activePlugins,
+		platformWorld,
+		chatNameForAI,
+		botNameForAIChat,
+		userCharNameForAI,
+		replyToCharName,
+	}
+}
+
+/**
+ * 构建 AI 回复请求对象。
+ * @param {chatLogEntry_t_ext} triggerMessage - 触发消息。
+ * @param {PlatformAPI_t} platformAPI - 平台 API。
+ * @param {string | number} channelId - 频道 ID。
+ * @param {object} requestData - _prepareReplyRequestData 返回的数据。
+ * @returns {FountChatReplyRequest_t} 构建好的回复请求对象。
+ */
+function _buildReplyRequest(triggerMessage, platformAPI, channelId, requestData) {
+	const {
+		currentChannelChatLog,
+		activePlugins,
+		platformWorld,
+		chatNameForAI,
+		botNameForAIChat,
+		userCharNameForAI,
+		replyToCharName,
+	} = requestData
+
+	return {
+		supported_functions: { markdown: true, files: true, add_message: true, mathjax: true, html: false, unsafe_html: false },
+		username: FountUsername,
+		chat_name: chatNameForAI,
+		char_id: BotCharname,
+		Charname: botNameForAIChat,
+		UserCharname: userCharNameForAI,
+		ReplyToCharname: replyToCharName,
+		locales: localhostLocales,
+		time: new Date(),
+		world: platformWorld,
+		user: null,
+		char: GentianAphrodite,
+		other_chars: [],
+		plugins: activePlugins,
+		chat_scoped_char_memory: channelCharScopedMemory[channelId],
+		chat_log: currentChannelChatLog,
+		async AddChatLogEntry(replyFromChar) {
+			if (replyFromChar && (replyFromChar.content || replyFromChar.files?.length)) {
+				return await sendAndLogReply(replyFromChar, platformAPI, channelId, triggerMessage)
+			}
+			return null
+		},
+		async Update() {
+			const updatedRequest = { ...this }
+			updatedRequest.chat_log = channelChatLogs[channelId] || [] // Refresh log
+			updatedRequest.chat_scoped_char_memory = channelCharScopedMemory[channelId] // Refresh memory
+			updatedRequest.time = new Date()
+			return updatedRequest
+		},
+		extension: {
+			platform: platformAPI.name,
+			trigger_message_id: triggerMessage.extension?.platform_message_ids?.[0],
+			chat_id: channelId,
+			user_id: triggerMessage.extension?.platform_user_id,
+			...triggerMessage.extension
+		}
+	}
+}
+
+/**
+ * 处理 AI 的最终回复。
+ * @async
+ * @param {FountChatReply_t | null} aiFinalReply - AI 的回复。
+ * @param {PlatformAPI_t} platformAPI - 平台 API。
+ * @param {string | number} channelId - 频道 ID。
+ * @param {chatLogEntry_t_ext} triggerMessage - 原始触发消息。
+ */
+async function _processAIReply(aiFinalReply, platformAPI, channelId, triggerMessage) {
+	if (channelCharScopedMemory[channelId]?.in_hypnosis) {
+		inHypnosisChannelId = channelId
+	} else {
+		inHypnosisChannelId = null
+	}
+
+	if (!aiFinalReply) {
+		return
+	}
+
+	for (const bannedStr of bannedStrings) {
+		if (aiFinalReply.content) {
+			aiFinalReply.content = aiFinalReply.content.replaceAll(bannedStr, '')
+		}
+	}
+
+	if (aiFinalReply.content || aiFinalReply.files?.length) {
+		await sendAndLogReply(aiFinalReply, platformAPI, channelId, aiFinalReply.extension?.replied_to_message_id ? undefined : triggerMessage)
+	}
 }
 
 /**
@@ -450,79 +597,10 @@ async function doMessageReplyInternal(triggerMessage, platformAPI, channelId) {
 	updateBotNameMapping(platformAPI)
 
 	try {
-		const currentChannelChatLog = channelChatLogs[channelId] || []
-		channelCharScopedMemory[channelId] ??= {}
-
-		const activePlugins = platformAPI.getPlatformSpecificPlugins(triggerMessage) || {}
-		const platformWorld = platformAPI.getPlatformWorld() || null
-
-		const chatNameForAI = platformAPI.getChatNameForAI(channelId, triggerMessage)
-
-		const fountBotDisplayName = (await GentianAphrodite.getPartInfo?.(localhostLocales[0]))?.name || BotCharname
-		const botNameForAIChat = userIdToNameMap[platformAPI.getBotUserId()] || `${platformAPI.getBotUsername()} (咱自己)` || `${fountBotDisplayName} (咱自己)`
-
-		const ownerPlatformUsername = platformAPI.getOwnerUserName()
-		const ownerPlatformId = platformAPI.getOwnerUserId()
-
-		const replyToCharName = userIdToNameMap[triggerMessage.extension?.platform_user_id || ''] || triggerMessage.name
-
-		const userCharNameForAI = triggerMessage.extension.is_from_owner ? replyToCharName : userIdToNameMap[ownerPlatformId] || ownerPlatformUsername
-
-		/** @type {FountChatReplyRequest_t} */
-		const replyRequest = {
-			supported_functions: { markdown: true, files: true, add_message: true, mathjax: true, html: false, unsafe_html: false },
-			username: FountUsername,
-			chat_name: chatNameForAI,
-			char_id: BotCharname,
-			Charname: botNameForAIChat,
-			UserCharname: userCharNameForAI,
-			ReplyToCharname: replyToCharName,
-			locales: localhostLocales,
-			time: new Date(),
-			world: platformWorld,
-			user: null,
-			char: GentianAphrodite,
-			other_chars: [],
-			plugins: activePlugins,
-			chat_scoped_char_memory: channelCharScopedMemory[channelId],
-			chat_log: currentChannelChatLog,
-			async AddChatLogEntry(replyFromChar) {
-				if (replyFromChar && (replyFromChar.content || replyFromChar.files?.length))
-					return await sendAndLogReply(replyFromChar, platformAPI, channelId, triggerMessage)
-
-				return null
-			},
-			async Update() {
-				const updatedRequest = { ...this }
-				updatedRequest.chat_log = channelChatLogs[channelId] || []
-				updatedRequest.chat_scoped_char_memory = channelCharScopedMemory[channelId]
-				updatedRequest.time = new Date()
-				return updatedRequest
-			},
-			extension: {
-				platform: platformAPI.name,
-				trigger_message_id: triggerMessage.extension?.platform_message_ids?.[0],
-				chat_id: channelId,
-				user_id: triggerMessage.extension?.platform_user_id,
-				...triggerMessage.extension
-			}
-		}
-
+		const requestData = await _prepareReplyRequestData(triggerMessage, platformAPI, channelId)
+		const replyRequest = _buildReplyRequest(triggerMessage, platformAPI, channelId, requestData)
 		const aiFinalReply = fuyanMode ? { content: '嗯嗯！' } : await GentianAphrodite.interfaces.chat.GetReply(replyRequest)
-
-		if (channelCharScopedMemory[channelId]?.in_hypnosis)
-			inHypnosisChannelId = channelId
-		else
-			inHypnosisChannelId = null
-
-		if (!aiFinalReply)
-			return
-
-		for (const bannedStr of bannedStrings)
-			if (aiFinalReply.content) aiFinalReply.content = aiFinalReply.content.replaceAll(bannedStr, '')
-
-		if (aiFinalReply && (aiFinalReply.content || aiFinalReply.files?.length))
-			await sendAndLogReply(aiFinalReply, platformAPI, channelId, aiFinalReply.extension?.replied_to_message_id ? undefined : triggerMessage)
+		await _processAIReply(aiFinalReply, platformAPI, channelId, triggerMessage)
 	} catch (error) {
 		await handleError(error, platformAPI, triggerMessage)
 	} finally {
@@ -562,183 +640,119 @@ async function handleMessageQueue(channelId, platformAPI) {
 	if (!channelMessageQueues[channelId]?.length)
 		return delete channelHandlers[channelId]
 
-	if (!channelChatLogs[channelId] || channelChatLogs[channelId].length === 0) {
-		const historicalMessages = await platformAPI.fetchChannelHistory(channelId, currentConfig.DefaultMaxFetchCount)
-		const mergedHistoricalLog = mergeChatLogEntries(historicalMessages.sort((a, b) => a.time_stamp - b.time_stamp).slice(0, -1))
-		channelChatLogs[channelId] = mergedHistoricalLog
-		while (channelChatLogs[channelId].length > currentConfig.DefaultMaxMessageDepth)
-			channelChatLogs[channelId].shift()
-	}
+	await _initializeChannelLogIfEmpty(channelId, platformAPI)
+
 	const myQueue = channelMessageQueues[channelId]
 	const currentChannelLog = channelChatLogs[channelId]
 
-	while (myQueue.length) try {
-		let currentMessageToProcess = myQueue[0]
-		if (!currentMessageToProcess) { myQueue.shift(); continue }
-
-		const lastLogEntry = currentChannelLog.length > 0 ? currentChannelLog[currentChannelLog.length - 1] : null
-		function is_can_marge() {
-			return lastLogEntry && currentMessageToProcess &&
-				lastLogEntry.name === currentMessageToProcess.name &&
-				currentMessageToProcess.time_stamp - lastLogEntry.time_stamp < currentConfig.MergeMessagePeriodMs &&
-				(lastLogEntry.files || []).length === 0 &&
-				(lastLogEntry.logContextAfter || []).length === 0 &&
-				lastLogEntry.extension?.platform_message_ids &&
-				currentMessageToProcess.extension?.platform_message_ids
+	try {
+		while (myQueue.length > 0) {
+			const exitSignal = await _processNextMessageInQueue(myQueue, currentChannelLog, platformAPI, channelId)
+			if (exitSignal === 'exit') return
 		}
-		async function checkTrigger() {
-			if (currentMessageToProcess.extension?.platform_user_id == platformAPI.getBotUserId())
-				return
-
-			if (currentMessageToProcess.extension?.is_from_owner) {
-				const { content } = currentMessageToProcess
-				if (!inHypnosisChannelId || channelId === inHypnosisChannelId) {
-					if (base_match_keys(content, [/^龙胆.{0,2}敷衍点.{0,2}$/])) fuyanMode = true
-					if (base_match_keys(content, [/^龙胆.{0,2}不敷衍点.{0,2}$/])) fuyanMode = false
-					if (base_match_keys(content, [/^龙胆.{0,2}自裁.{0,2}$/])) {
-						const selfDestructReply = inHypnosisChannelId === channelId ? { content: '好的。' } : { content: '啊，咱死了～' }
-						await sendAndLogReply(selfDestructReply, platformAPI, channelId, currentMessageToProcess)
-						newUserMessage(content, platformAPI.name)
-						newCharReplay(selfDestructReply.content, platformAPI.name)
-						await platformAPI.destroySelf()
-						return 'exit'
-					}
-					const repeatMatch = content.match(/^龙胆.{0,2}复诵.{0,2}`(?<repeat_content>[\S\s]*)`$/)
-					if (repeatMatch?.groups?.repeat_content) {
-						await sendAndLogReply({ content: repeatMatch.groups.repeat_content }, platformAPI, channelId, currentMessageToProcess)
-						newUserMessage(content, platformAPI.name)
-						newCharReplay(repeatMatch.groups.repeat_content, platformAPI.name)
-						return
-					}
-					const banWordMatch = content.match(/^龙胆.{0,2}禁止.{0,2}`(?<banned_content>[\S\s]*)`$/)
-					if (banWordMatch?.groups?.banned_content)
-						bannedStrings.push(banWordMatch.groups.banned_content)
-					if (base_match_keys(content, [/^[\n,.~、。呵哦啊嗯噫欸胆龙，～]+$/, /^[\n,.~、。呵哦啊嗯噫欸胆龙，～]{4}[\n!,.?~、。呵哦啊嗯噫欸胆龙！，？～]+$/])) {
-						const ownerCallReply = SimplifyChinese(content).replaceAll('龙', '主').replaceAll('胆', '人')
-						await sendAndLogReply({ content: ownerCallReply }, platformAPI, channelId, currentMessageToProcess)
-						newUserMessage(content, platformAPI.name)
-						newCharReplay(ownerCallReply, platformAPI.name)
-						return
-					}
-				}
-			}
-
-			const recentChatLogForOtherBotCheck = currentChannelLog.filter(msg => (Date.now() - msg.time_stamp) < 5 * 60 * 1000)
-			const hasOtherGentianBot = (() => {
-				const text = recentChatLogForOtherBotCheck
-					.filter(msg => msg.extension?.platform_user_id != platformAPI.getBotUserId())
-					.map(msg => msg.content).join('\n')
-				return base_match_keys_count(text, GentianWords) && base_match_keys_count(text, ['主人', 'master']) > 1
-			})()
-
-			const isMutedChannel = (Date.now() - (channelMuteStartTimes[channelId] || 0)) < currentConfig.MuteDurationMs
-
-			const ownerBotOnlyInteraction = currentChannelLog.slice(-7).every(
-				msg => msg.extension?.is_from_owner || msg.extension?.platform_user_id == platformAPI.getBotUserId()
-			)
-
-			if (await checkMessageTrigger(currentMessageToProcess, platformAPI, channelId, { has_other_gentian_bot: hasOtherGentianBot }))
-				return 1
-			else if (ownerBotOnlyInteraction && currentMessageToProcess.extension?.is_from_owner && !isMutedChannel)
-				return 1
-			else if (
-				(!inHypnosisChannelId || channelId !== inHypnosisChannelId) &&
-				!isMutedChannel &&
-				currentMessageToProcess.extension?.platform_user_id != platformAPI.getBotUserId()
-			) {
-				const nameMap = {}
-				function summary(message, name_diff = true) {
-					let result = ''
-					if (name_diff) {
-						nameMap[message.name] ??= 0
-						result += nameMap[message.name]++ + '\n'
-					}
-					result += (message.content ?? '') + '\n\n'
-					result += (message.files || []).map(file => file.buffer instanceof Buffer ? file.buffer.toString('hex') : String(file.buffer)).join('\n')
-					return result
-				}
-				const repet = findMostFrequentElement(currentChannelLog.slice(-10), summary)
-				if (
-					(repet.element?.content || repet.element?.files?.length) &&
-					repet.count >= currentConfig.RepetitionTriggerCount &&
-					!base_match_keys(repet.element.content + '\n' + (repet.element.files || []).map(file => file.name).join('\n'), [...currentMessageToProcess.extension.OwnerNameKeywords, ...rude_words, ...GentianWords]) &&
-					!isBotCommand(repet.element.content) &&
-					!currentChannelLog.slice(-10).some(msg => msg.extension?.platform_user_id == platformAPI.getBotUserId() && summary(msg, false) === summary(repet.element, false))
-				)
-					await sendAndLogReply(
-						{ content: repet.element.content, files: repet.element.files },
-						platformAPI, channelId, currentMessageToProcess
-					)
-			}
-		}
-		let triggered = false
-		if (!is_can_marge()) {
-			currentChannelLog.push(currentMessageToProcess)
-			myQueue.shift()
-			switch (await checkTrigger()) {
-				case 'exit': return
-				case 1: triggered = true
-			}
-		}
-		else do {
-			lastLogEntry.content = (lastLogEntry.extension.content_parts || [lastLogEntry.content])
-				.concat(currentMessageToProcess.extension.content_parts || [currentMessageToProcess.content])
-				.join('\n')
-
-			lastLogEntry.files = currentMessageToProcess.files
-			lastLogEntry.time_stamp = currentMessageToProcess.time_stamp
-			lastLogEntry.extension = {
-				...lastLogEntry.extension,
-				...currentMessageToProcess.extension,
-				platform_message_ids: [
-					...lastLogEntry.extension.platform_message_ids || [],
-					...currentMessageToProcess.extension.platform_message_ids || []
-				],
-				// 合并 content_parts 数组
-				content_parts: (lastLogEntry.extension.content_parts || [])
-					.concat(currentMessageToProcess.extension.content_parts || [currentMessageToProcess.content]),
-				SimplifiedContents: undefined // 刷新词匹配缓存
-			}
-
-			myQueue.shift()
-			switch (await checkTrigger()) {
-				case 'exit': return
-				case 1: triggered = true
-			}
-			currentMessageToProcess = myQueue[0]
-		} while (is_can_marge())
-
-		while (currentChannelLog.length > currentConfig.DefaultMaxMessageDepth)
-			currentChannelLog.shift()
-
-		currentMessageToProcess = currentChannelLog[currentChannelLog.length - 1]
-		if (triggered)
-			await doMessageReplyInternal(currentMessageToProcess, platformAPI, channelId)
 	} catch (error) {
-		const lastMessageInQueueOrLog = myQueue.length > 0 ? myQueue[myQueue.length - 1] : currentChannelLog?.slice(-1)[0]
-		await handleError(error, platformAPI, lastMessageInQueueOrLog)
+		const contextMessage = myQueue.length > 0 ? myQueue[myQueue.length - 1] : currentChannelLog?.slice(-1)[0]
+		await handleError(error, platformAPI, contextMessage)
 	} finally {
-		if (channelMessageQueues[channelId] && channelMessageQueues[channelId].length === 0)
+		if (channelMessageQueues[channelId]?.length === 0) { // Check again in case new messages arrived during async operations
 			delete channelHandlers[channelId]
+		}
 	}
 }
 
 /**
- * 统一错误处理函数。
+ * 初始化频道日志（如果为空）。
+ * @async
+ * @param {string | number} channelId - 频道 ID。
+ * @param {PlatformAPI_t} platformAPI - 平台 API。
+ */
+async function _initializeChannelLogIfEmpty(channelId, platformAPI) {
+	if (!channelChatLogs[channelId] || channelChatLogs[channelId].length === 0) {
+		const historicalMessages = await platformAPI.fetchChannelHistory(channelId, currentConfig.DefaultMaxFetchCount)
+		const mergedHistoricalLog = mergeChatLogEntries(historicalMessages.sort((a, b) => a.time_stamp - b.time_stamp).slice(0, -1))
+		channelChatLogs[channelId] = mergedHistoricalLog
+		while (channelChatLogs[channelId].length > currentConfig.DefaultMaxMessageDepth) {
+			channelChatLogs[channelId].shift()
+		}
+	}
+}
+
+/**
+ * 处理消息队列中的下一条消息（包括合并和触发检查）。
+ * @async
+ * @param {chatLogEntry_t_ext[]} myQueue - 当前频道的消息队列。
+ * @param {chatLogEntry_t_ext[]} currentChannelLog - 当前频道的聊天记录。
+ * @param {PlatformAPI_t} platformAPI - 平台 API。
+ * @param {string | number} channelId - 频道 ID。
+ * @returns {Promise<'exit' | undefined>} 如果需要退出处理则返回 'exit'。
+ */
+async function _processNextMessageInQueue(myQueue, currentChannelLog, platformAPI, channelId) {
+	let currentMessageToProcess = myQueue[0]
+	if (!currentMessageToProcess) {
+		myQueue.shift() // Should not happen if myQueue.length > 0, but as a safeguard
+		return
+	}
+
+	const lastLogEntry = currentChannelLog.length > 0 ? currentChannelLog[currentChannelLog.length - 1] : null
+	let triggered = false
+
+	if (!_is_message_mergeable(lastLogEntry, currentMessageToProcess)) {
+		currentChannelLog.push(currentMessageToProcess)
+		myQueue.shift()
+		const triggerResult = await _checkQueueMessageTrigger(currentMessageToProcess, currentChannelLog, platformAPI, channelId)
+		if (triggerResult === 'exit') return 'exit'
+		if (triggerResult === 1) triggered = true
+	} else {
+		// This loop handles merging multiple messages
+		let actualLastLogEntry = lastLogEntry // To be updated if merged
+		do {
+			actualLastLogEntry.content = (actualLastLogEntry.extension.content_parts || [actualLastLogEntry.content])
+				.concat(currentMessageToProcess.extension.content_parts || [currentMessageToProcess.content])
+				.join('\n')
+			actualLastLogEntry.files = currentMessageToProcess.files
+			actualLastLogEntry.time_stamp = currentMessageToProcess.time_stamp
+			actualLastLogEntry.extension = {
+				...actualLastLogEntry.extension,
+				...currentMessageToProcess.extension,
+				platform_message_ids: Array.from(new Set([
+					...(actualLastLogEntry.extension.platform_message_ids || []),
+					...(currentMessageToProcess.extension.platform_message_ids || [])
+				])),
+				content_parts: (actualLastLogEntry.extension.content_parts || [actualLastLogEntry.content.split('\n').pop()])
+					.concat(currentMessageToProcess.extension.content_parts || [currentMessageToProcess.content]),
+				SimplifiedContents: undefined,
+			}
+			myQueue.shift()
+			// After merging, the trigger is checked against the merged `actualLastLogEntry`
+			const triggerResult = await _checkQueueMessageTrigger(actualLastLogEntry, currentChannelLog, platformAPI, channelId)
+			if (triggerResult === 'exit') return 'exit'
+			if (triggerResult === 1) triggered = true // Mark triggered if any part of a merged sequence triggers
+			currentMessageToProcess = myQueue[0]
+		} while (currentMessageToProcess && _is_message_mergeable(actualLastLogEntry, currentMessageToProcess))
+	}
+
+	while (currentChannelLog.length > currentConfig.DefaultMaxMessageDepth) {
+		currentChannelLog.shift()
+	}
+
+	// If triggered, call doMessageReplyInternal with the latest state of the message that caused the trigger.
+	// This would be the individually processed message or the final state of lastLogEntry after merges.
+	const messageForReply = triggered ? currentChannelLog[currentChannelLog.length - 1] : null
+	if (messageForReply) {
+		await doMessageReplyInternal(messageForReply, platformAPI, channelId)
+	}
+}
+
+/**
+ * 为错误生成 AI 建议。
  * @async
  * @param {Error} error - 发生的错误对象。
+ * @param {string} errorMessageForRecord - 格式化后的错误消息，用于记录和 AI 输入。
  * @param {PlatformAPI_t} platformAPI - 当前平台的 API 对象。
  * @param {chatLogEntry_t_ext | undefined} contextMessage - (可选) 发生错误时的上下文消息条目。
+ * @returns {Promise<FountChatReply_t | null>} AI 生成的回复建议，或在无法生成时返回 null。
  */
-async function handleError(error, platformAPI, contextMessage) {
-	const errorStack = error.stack || error.message
-	const errorMessageForRecord = `\`\`\`\n${errorStack}\n\`\`\``
-
-	if (errorRecord[errorMessageForRecord]) return
-	errorRecord[errorMessageForRecord] = true
-	setTimeout(() => delete errorRecord[errorMessageForRecord], 60000)
-
-	let aiSuggestionReply
+async function _getAISuggestionForError(error, errorMessageForRecord, platformAPI, contextMessage) {
 	try {
 		const botPlatformId = platformAPI.getBotUserId()
 		const fountBotDisplayName = (await GentianAphrodite.getPartInfo?.(localhostLocales[0]))?.name || BotCharname
@@ -804,34 +818,186 @@ async function handleError(error, platformAPI, contextMessage) {
 			chat_log: selfRepairChatLog,
 			extension: { platform: contextMessage?.extension?.platform || 'unknown' }
 		}
-
-		aiSuggestionReply = await GentianAphrodite.interfaces.chat.GetReply(selfRepairRequest)
-
+		return await GentianAphrodite.interfaces.chat.GetReply(selfRepairRequest)
 	} catch (anotherError) {
 		const anotherErrorStack = anotherError.stack || anotherError.message
 		const currentChannelId = contextMessage?.extension?.platform_channel_id
 		const isHypnosisContextForError = !!(inHypnosisChannelId && currentChannelId && currentChannelId === inHypnosisChannelId)
 
-		if (`${error.name}: ${error.message}` === `${anotherError.name}: ${anotherError.message}`)
-			aiSuggestionReply = { content: isHypnosisContextForError ? '抱歉，洗脑母畜龙胆没有解决思路。' : '没什么解决思路呢？' }
-		else
-			aiSuggestionReply = { content: '```\n' + anotherErrorStack + '\n```\n' + (isHypnosisContextForError ? '抱歉，洗脑母畜龙胆没有解决思路。' : '没什么解决思路呢？') }
-
+		if (`${error.name}: ${error.message}` === `${anotherError.name}: ${anotherError.message}`) {
+			return { content: isHypnosisContextForError ? '抱歉，洗脑母畜龙胆没有解决思路。' : '没什么解决思路呢？' }
+		}
+		return { content: '```\n' + anotherErrorStack + '\n```\n' + (isHypnosisContextForError ? '抱歉，洗脑母畜龙胆没有解决思路。' : '没什么解决思路呢？') }
 	}
+}
+
+/**
+ * 发送错误报告。
+ * @async
+ * @param {string} fullReplyContent - 包含错误信息和 AI 建议的完整回复内容。
+ * @param {PlatformAPI_t} platformAPI - 当前平台的 API 对象。
+ * @param {Error} originalError - 原始错误对象。
+ * @param {chatLogEntry_t_ext | undefined} contextMessage - (可选) 发生错误时的上下文消息条目。
+ */
+async function _sendErrorReport(fullReplyContent, platformAPI, originalError, contextMessage) {
+	try {
+		if (contextMessage?.extension?.platform_channel_id) {
+			await sendAndLogReply({ content: fullReplyContent }, platformAPI, contextMessage.extension.platform_channel_id, undefined)
+		} else {
+			platformAPI.logError(new Error('[BotLogic] Error occurred (no context channel to reply): ' + fullReplyContent.substring(0, 1000) + '...'), undefined)
+		}
+	} catch (sendError) {
+		platformAPI.logError(sendError, contextMessage)
+		console.error('[BotLogic] Failed to send error notification. Original error:', originalError, 'Send error:', sendError)
+	}
+}
+
+/**
+ * 检查消息是否可以合并到上一条消息。
+ * @param {chatLogEntry_t_ext | null} lastLogEntry - 上一条日志条目。
+ * @param {chatLogEntry_t_ext} currentMessageToProcess - 当前待处理的消息。
+ * @returns {boolean} 如果可以合并则返回 true。
+ */
+function _is_message_mergeable(lastLogEntry, currentMessageToProcess) {
+	return lastLogEntry && currentMessageToProcess &&
+		lastLogEntry.name === currentMessageToProcess.name &&
+		currentMessageToProcess.time_stamp - lastLogEntry.time_stamp < currentConfig.MergeMessagePeriodMs &&
+		(lastLogEntry.files || []).length === 0 && // Do not merge if the last entry has files
+		(lastLogEntry.logContextAfter || []).length === 0 && // Do not merge if the last entry has context after
+		lastLogEntry.extension?.platform_message_ids && // Ensure platform_message_ids exist
+		currentMessageToProcess.extension?.platform_message_ids
+}
+
+/**
+ * 在消息队列处理中检查单个消息是否应触发回复或特殊操作。
+ * @async
+ * @param {chatLogEntry_t_ext} currentMessageToProcess - 当前正在处理的消息条目。
+ * @param {chatLogEntry_t_ext[]} currentChannelLog - 当前频道的完整聊天记录。
+ * @param {PlatformAPI_t} platformAPI - 当前平台的 API 对象。
+ * @param {string | number} channelId - 消息所在的频道 ID。
+ * @returns {Promise<number | 'exit' | undefined>} 1 表示触发回复, 'exit' 表示需要退出, undefined 表示无特殊操作。
+ */
+async function _checkQueueMessageTrigger(currentMessageToProcess, currentChannelLog, platformAPI, channelId) {
+	if (currentMessageToProcess.extension?.platform_user_id == platformAPI.getBotUserId()) {
+		return // Do not process bot's own messages for triggers here
+	}
+
+	// Owner commands
+	if (currentMessageToProcess.extension?.is_from_owner) {
+		const { content } = currentMessageToProcess
+		if (!inHypnosisChannelId || channelId === inHypnosisChannelId) {
+			if (base_match_keys(content, [/^龙胆.{0,2}敷衍点.{0,2}$/])) fuyanMode = true
+			if (base_match_keys(content, [/^龙胆.{0,2}不敷衍点.{0,2}$/])) fuyanMode = false
+			if (base_match_keys(content, [/^龙胆.{0,2}自裁.{0,2}$/])) {
+				const selfDestructReply = inHypnosisChannelId === channelId ? { content: '好的。' } : { content: '啊，咱死了～' }
+				await sendAndLogReply(selfDestructReply, platformAPI, channelId, currentMessageToProcess)
+				newUserMessage(content, platformAPI.name)
+				newCharReplay(selfDestructReply.content, platformAPI.name)
+				await platformAPI.destroySelf()
+				return 'exit'
+			}
+			const repeatMatch = content.match(/^龙胆.{0,2}复诵.{0,2}`(?<repeat_content>[\S\s]*)`$/)
+			if (repeatMatch?.groups?.repeat_content) {
+				await sendAndLogReply({ content: repeatMatch.groups.repeat_content }, platformAPI, channelId, currentMessageToProcess)
+				newUserMessage(content, platformAPI.name)
+				newCharReplay(repeatMatch.groups.repeat_content, platformAPI.name)
+				return // Handled, no further trigger
+			}
+			const banWordMatch = content.match(/^龙胆.{0,2}禁止.{0,2}`(?<banned_content>[\S\s]*)`$/)
+			if (banWordMatch?.groups?.banned_content) {
+				bannedStrings.push(banWordMatch.groups.banned_content)
+				// Potentially send confirmation? For now, just adds and continues.
+			}
+			if (base_match_keys(content, [/^[\n,.~、。呵哦啊嗯噫欸胆龙，～]+$/, /^[\n,.~、。呵哦啊嗯噫欸胆龙，～]{4}[\n!,.?~、。呵哦啊嗯噫欸胆龙！，？～]+$/])) {
+				const ownerCallReply = SimplifyChinese(content).replaceAll('龙', '主').replaceAll('胆', '人')
+				await sendAndLogReply({ content: ownerCallReply }, platformAPI, channelId, currentMessageToProcess)
+				newUserMessage(content, platformAPI.name)
+				newCharReplay(ownerCallReply, platformAPI.name)
+				return // Handled
+			}
+		}
+	}
+
+	// General trigger checks
+	const recentChatLogForOtherBotCheck = currentChannelLog.filter(msg => (Date.now() - msg.time_stamp) < 5 * 60 * 1000)
+	const hasOtherGentianBot = (() => {
+		const text = recentChatLogForOtherBotCheck
+			.filter(msg => msg.extension?.platform_user_id != platformAPI.getBotUserId())
+			.map(msg => msg.content).join('\n')
+		return base_match_keys_count(text, GentianWords) && base_match_keys_count(text, ['主人', 'master']) > 1
+	})()
+
+	const isMutedChannel = (Date.now() - (channelMuteStartTimes[channelId] || 0)) < currentConfig.MuteDurationMs
+
+	const ownerBotOnlyInteraction = currentChannelLog.slice(-7).every(
+		msg => msg.extension?.is_from_owner || msg.extension?.platform_user_id == platformAPI.getBotUserId()
+	)
+
+	if (await checkMessageTrigger(currentMessageToProcess, platformAPI, channelId, { has_other_gentian_bot: hasOtherGentianBot })) {
+		return 1 // Should trigger a reply
+	} else if (ownerBotOnlyInteraction && currentMessageToProcess.extension?.is_from_owner && !isMutedChannel) {
+		return 1 // Trigger if owner is interacting in an owner-bot only conversation
+	} else if (
+		(!inHypnosisChannelId || channelId !== inHypnosisChannelId) &&
+		!isMutedChannel &&
+		currentMessageToProcess.extension?.platform_user_id != platformAPI.getBotUserId() // Not from bot
+	) {
+		// Repetition check
+		const nameMap = {}
+		function summary(message, name_diff = true) {
+			let result = ''
+			if (name_diff) {
+				nameMap[message.name] ??= 0
+				result += nameMap[message.name]++ + '\n'
+			}
+			result += (message.content ?? '') + '\n\n'
+			result += (message.files || []).map(file => file.buffer instanceof Buffer ? file.buffer.toString('hex') : String(file.buffer)).join('\n')
+			return result
+		}
+		const repet = findMostFrequentElement(currentChannelLog.slice(-10), summary) // Check last 10 messages
+		if (
+			(repet.element?.content || repet.element?.files?.length) && // Has content to repeat
+			repet.count >= currentConfig.RepetitionTriggerCount &&
+			// Avoid repeating sensitive keywords or commands
+			!base_match_keys(repet.element.content + '\n' + (repet.element.files || []).map(file => file.name).join('\n'), [...(currentMessageToProcess.extension.OwnerNameKeywords || []), ...rude_words, ...GentianWords]) &&
+			!isBotCommand(repet.element.content) &&
+			// Check if the bot has already repeated this exact message recently
+			!currentChannelLog.slice(-10).some(msg => msg.extension?.platform_user_id == platformAPI.getBotUserId() && summary(msg, false) === summary(repet.element, false))
+		) {
+			await sendAndLogReply(
+				{ content: repet.element.content, files: repet.element.files },
+				platformAPI, channelId, currentMessageToProcess
+			)
+			// Repetition sent, no further general trigger from this message.
+			return
+		}
+	}
+	return undefined // No specific trigger action from this function
+}
+
+/**
+ * 统一错误处理函数。
+ * @async
+ * @param {Error} error - 发生的错误对象。
+ * @param {PlatformAPI_t} platformAPI - 当前平台的 API 对象。
+ * @param {chatLogEntry_t_ext | undefined} contextMessage - (可选) 发生错误时的上下文消息条目。
+ */
+async function handleError(error, platformAPI, contextMessage) {
+	const errorStack = error.stack || error.message
+	const errorMessageForRecord = `\`\`\`\n${errorStack}\n\`\`\``
+
+	if (errorRecord[errorMessageForRecord]) return
+	errorRecord[errorMessageForRecord] = true
+	setTimeout(() => delete errorRecord[errorMessageForRecord], 60000)
+
+	const aiSuggestionReply = await _getAISuggestionForError(error, errorMessageForRecord, platformAPI, contextMessage)
 
 	let fullReplyContent = errorMessageForRecord + '\n' + (aiSuggestionReply?.content || '')
 	const randomIPDict = {}
 	fullReplyContent = fullReplyContent.replace(/(?:\d{1,3}\.){3}\d{1,3}/g, ip => randomIPDict[ip] ??= Array(4).fill(0).map(() => Math.floor(Math.random() * 255)).join('.'))
 
-	try {
-		if (contextMessage?.extension?.platform_channel_id)
-			await sendAndLogReply({ content: fullReplyContent }, platformAPI, contextMessage.extension.platform_channel_id, undefined)
-		else
-			platformAPI.logError(new Error('[BotLogic] Error occurred (no context channel to reply): ' + fullReplyContent.substring(0, 1000) + '...'), undefined)
-	} catch (sendError) {
-		platformAPI.logError(sendError, contextMessage)
-		console.error('[BotLogic] Failed to send error notification. Original error:', error, 'Send error:', sendError)
-	}
+	await _sendErrorReport(fullReplyContent, platformAPI, error, contextMessage)
+
 	platformAPI.logError(error, contextMessage)
 	console.error('[BotLogic] Original error handled:', error, 'Context:', contextMessage)
 	await reloadPart(FountUsername, 'chars', BotCharname)
@@ -844,32 +1010,61 @@ async function handleError(error, platformAPI, contextMessage) {
  * @param {PlatformAPI_t} platformAPI - 当前平台的 API 对象。
  * @param {string | number} channelId - 消息所在的频道 ID。
  */
+function _updateUserCache(senderId, senderName) {
+	if (senderId && senderName) {
+		if (!userIdToNameMap[senderId] || userIdToNameMap[senderId] !== senderName) {
+			userIdToNameMap[senderId] = senderName
+		}
+		if (!nameToUserIdMap[senderName] || nameToUserIdMap[senderName] !== senderId) {
+			nameToUserIdMap[senderName] = senderId
+		}
+	}
+}
+
+/**
+ * 确保指定频道的处理器正在运行。
+ * @param {string | number} channelId - 频道 ID。
+ * @param {PlatformAPI_t} platformAPI - 平台 API。
+ * @param {chatLogEntry_t_ext} fountEntry - 当前消息条目 (用于错误处理上下文)。
+ */
+function _ensureChannelHandlerIsRunning(channelId, platformAPI, fountEntry) {
+	if (!channelHandlers[channelId]) {
+		channelHandlers[channelId] = handleMessageQueue(channelId, platformAPI)
+			.catch(err => {
+				handleError(err, platformAPI, fountEntry)
+			})
+			.finally(() => {
+				// Check again in case new messages were added to the queue by the handler itself
+				// or if the handler was cleared due to an error but the queue is not empty.
+				if (channelMessageQueues[channelId]?.length === 0) {
+					delete channelHandlers[channelId]
+				} else if (!channelHandlers[channelId]) {
+					// If handler was deleted but queue is not empty (e.g. error during processing), restart it.
+					// This path might be contentious depending on desired error recovery.
+					// For now, let's assume if it was cleared, it was for a reason and avoid immediate restart loop.
+					// Consider a backoff or max_retry if auto-restart is desired.
+					console.warn(`[BotLogic] Channel handler for ${channelId} was cleared, but queue is not empty. Not auto-restarting immediately.`)
+				}
+			})
+	}
+}
+
+/**
+ * 处理从接入层传入的新消息。
+ * @async
+ * @param {chatLogEntry_t_ext} fountEntry - 已经由接入层转换为 Fount 格式的平台消息条目。
+ * @param {PlatformAPI_t} platformAPI - 当前平台的 API 对象。
+ * @param {string | number} channelId - 消息所在的频道 ID。
+ */
 export async function processIncomingMessage(fountEntry, platformAPI, channelId) {
 	try {
 		updateBotNameMapping(platformAPI)
-
-		const senderId = fountEntry.extension?.platform_user_id
-		const senderName = fountEntry.name
-		if (senderId && senderName) {
-			if (!userIdToNameMap[senderId] || userIdToNameMap[senderId] !== senderName)
-				userIdToNameMap[senderId] = senderName
-
-			if (!nameToUserIdMap[senderName] || nameToUserIdMap[senderName] !== senderId)
-				nameToUserIdMap[senderName] = senderId
-		}
+		_updateUserCache(fountEntry.extension?.platform_user_id, fountEntry.name)
 
 		channelMessageQueues[channelId] ??= []
 		channelMessageQueues[channelId].push(fountEntry)
 
-		if (!channelHandlers[channelId])
-			channelHandlers[channelId] = handleMessageQueue(channelId, platformAPI)
-				.catch(err => {
-					handleError(err, platformAPI, fountEntry)
-				})
-				.finally(() => {
-					if (channelMessageQueues[channelId]?.length === 0)
-						delete channelHandlers[channelId]
-				})
+		_ensureChannelHandlerIsRunning(channelId, platformAPI, fountEntry)
 	} catch (error) {
 		await handleError(error, platformAPI, fountEntry)
 	}
@@ -951,6 +1146,167 @@ export async function cleanup() {
 }
 
 /**
+ * 检查群组中是否存在主人。
+ * @async
+ * @param {import('./index.mjs').GroupObject} group - 要检查的群组。
+ * @param {import('./index.mjs').PlatformAPI_t} platformAPI - 平台 API 实例。
+ * @param {string | number | null} ownerOverride - (可选) 测试用的主人用户 ID 覆盖。
+ * @returns {Promise<boolean>} 如果主人存在则返回 true，否则返回 false。
+ */
+async function _checkOwnerPresence(group, platformAPI, ownerOverride = null) {
+	const ownerIdToCompare = ownerOverride || platformAPI.getOwnerUserId?.()
+	const ownerUsernameToCompare = platformAPI.getOwnerUserName?.()
+
+	if (platformAPI.getGroupMembers) {
+		const members = await platformAPI.getGroupMembers(group.id)
+		if (members) {
+			return members.some(member =>
+				String(member.id) === String(ownerIdToCompare) ||
+				(member.username && ownerUsernameToCompare && member.username.toLowerCase() === ownerUsernameToCompare.toLowerCase())
+			)
+		}
+		console.warn(`[BotLogic] Could not retrieve members for group ${group.id} on ${platformAPI.name}. Skipping owner check.`)
+	} else {
+		console.warn(`[BotLogic] getGroupMembers not implemented for platform ${platformAPI.name}. Cannot check owner presence in group ${group.id}. Skipping.`)
+	}
+	return false // Default to owner not present if checks fail
+}
+
+/**
+ * 生成 AI 侮辱消息。
+ * @async
+ * @param {import('./index.mjs').GroupObject} group - 目标群组。
+ * @param {import('./index.mjs').PlatformAPI_t} platformAPI - 平台 API 实例。
+ * @param {import('./index.mjs').ChannelObject} defaultChannel - 群组的默认频道。
+ * @param {chatLogEntry_t_ext[]} channelHistoryForAI - 用于 AI 上下文的频道历史记录。
+ * @returns {Promise<string>} AI 生成的侮辱消息内容。
+ */
+async function _generateInsult(group, platformAPI, defaultChannel, channelHistoryForAI) {
+	const groupNameForAI = group.name || `Group ${group.id}`
+	const insultRequestContext = [
+		...channelHistoryForAI,
+		{
+			name: 'system',
+			role: 'system',
+			time_stamp: Date.now(),
+			content: `\
+你目前在${groupNameForAI}群组中，但这里没有找到你的主人，显然你是被某个傻逼拉进来的。
+现在发挥你的聪明才智随便骂几句，随后你会自动退出群组。
+` },
+	]
+
+	const fountBotDisplayName = (await GentianAphrodite.getPartInfo?.(localhostLocales[0]))?.name || BotCharname
+	const botUserId = platformAPI.getBotUserId?.()
+	const botUsername = platformAPI.getBotUsername?.()
+	const botDisplayName = platformAPI.getBotDisplayName?.()
+	const botNameForAIChat = userIdToNameMap[botUserId] || `${botUsername} (咱自己)` || `${botDisplayName} (咱自己)` || `${fountBotDisplayName} (咱自己)`
+
+	const ownerPlatformUsernameForAI = platformAPI.getOwnerUserName?.()
+	const ownerPlatformIdForAI = platformAPI.getOwnerUserId?.()
+	const userCharNameForAI = userIdToNameMap[ownerPlatformIdForAI] || ownerPlatformUsernameForAI
+
+	const insultRequest = {
+		supported_functions: { markdown: true, files: false, add_message: false, mathjax: false, html: false, unsafe_html: false },
+		username: FountUsername,
+		chat_name: platformAPI.getChatNameForAI(group.id, { extension: { platform_guild_id: group.id, platform_channel_id: defaultChannel.id, platform: platformAPI.name } }),
+		char_id: BotCharname,
+		Charname: botNameForAIChat,
+		UserCharname: userCharNameForAI,
+		ReplyToCharname: '',
+		locales: localhostLocales,
+		time: new Date(),
+		world: platformAPI.getPlatformWorld?.() || null,
+		user: null,
+		char: GentianAphrodite,
+		other_chars: [],
+		plugins: { ...platformAPI.getPlatformSpecificPlugins?.({ extension: { platform_guild_id: group.id, platform_channel_id: defaultChannel.id, platform: platformAPI.name } }) || {} },
+		chat_scoped_char_memory: {},
+		chat_log: insultRequestContext,
+		extension: { platform: platformAPI.name, chat_id: defaultChannel.id, is_direct_message: false }
+	}
+
+	try {
+		const aiInsultReply = await GentianAphrodite.interfaces.chat.GetReply(insultRequest)
+		if (aiInsultReply && aiInsultReply.content) {
+			return aiInsultReply.content
+		}
+		console.warn('[BotLogic] AI did not generate insult content, using default.')
+	} catch (e) {
+		console.error(`[BotLogic] AI insult generation failed for group ${group.id}:`, e)
+	}
+	return '？' // Default insult
+}
+
+/**
+ * 处理主人不在群组中的情况。
+ * @async
+ * @param {import('./index.mjs').GroupObject} group - 目标群组。
+ * @param {import('./index.mjs').PlatformAPI_t} platformAPI - 平台 API 实例。
+ * @param {import('./index.mjs').ChannelObject} defaultChannel - 群组的默认频道。
+ */
+async function _handleOwnerNotPresent(group, platformAPI, defaultChannel) {
+	console.log(`[BotLogic] Owner NOT found in group ${group.name} (ID: ${group.id}). Taking action...`)
+
+	let inviteLink = null
+	if (platformAPI.generateInviteLink) {
+		inviteLink = await platformAPI.generateInviteLink(group.id, defaultChannel.id)
+			.catch(error => {
+				console.error(`[BotLogic] Error generating invite link for group ${group.id}:`, error.stack)
+				return error // Keep the error object if needed, or nullify
+			})
+	}
+
+	if (inviteLink && !(inviteLink instanceof Error)) {
+		const inviteMessage = `咱被拉入了一个您不在的群组（已经退啦！）: \`${group.name}\` (ID: \`${group.id}\`)\n链接: ${inviteLink}`
+		if (platformAPI.sendDirectMessageToOwner) {
+			await platformAPI.sendDirectMessageToOwner(inviteMessage)
+		} else {
+			console.warn(`[BotLogic] sendDirectMessageToOwner not implemented for ${platformAPI.name}.`)
+		}
+
+		const ownerPresenceResult = await platformAPI.getOwnerPresenceInGroups?.()
+		const ownerUsernameToCompare = platformAPI.getOwnerUserName?.()
+		if (ownerPresenceResult?.groupsWithOwner?.length > 0) {
+			ownerPresenceResult.groupsWithOwner.forEach(async otherGroup => {
+				if (otherGroup.id === group.id) return
+
+				const otherGroupDefaultChannel = await platformAPI.getGroupDefaultChannel?.(otherGroup.id)
+				if (otherGroupDefaultChannel && platformAPI.sendMessage) {
+					try {
+						await platformAPI.sendMessage(otherGroupDefaultChannel.id, { content: `@${ownerUsernameToCompare} ` + inviteMessage })
+					} catch (e) {
+						console.error(`[BotLogic] Failed to send invite message to owner in group ${otherGroup.name}:`, e)
+					}
+				}
+			})
+		}
+	} else {
+		console.warn(`[BotLogic] Could not generate invite link for group ${group.id}.`)
+	}
+
+	let channelHistoryForAI = []
+	if (platformAPI.fetchChannelHistory) {
+		channelHistoryForAI = await platformAPI.fetchChannelHistory(defaultChannel.id, 10)
+	}
+
+	const insultMessageContent = await _generateInsult(group, platformAPI, defaultChannel, channelHistoryForAI)
+
+	if (platformAPI.sendMessage && insultMessageContent) {
+		try {
+			await platformAPI.sendMessage(defaultChannel.id, { content: insultMessageContent })
+		} catch (e) {
+			console.error(`[BotLogic] Failed to send insult to group ${group.id}:`, e)
+		}
+	}
+
+	if (platformAPI.leaveGroup) {
+		await platformAPI.leaveGroup(group.id)
+	} else {
+		console.warn(`[BotLogic] leaveGroup not implemented for ${platformAPI.name}. Cannot leave group ${group.id}.`)
+	}
+}
+
+/**
  * 检查群组中是否存在主人，并在主人不在时执行相应操作。
  * @param {import('./index.mjs').GroupObject} group - 要检查的群组。
  * @param {import('./index.mjs').PlatformAPI_t} platformAPI - 平台 API 实例。
@@ -963,136 +1319,97 @@ async function handleGroupCheck(group, platformAPI, ownerOverride = null) {
 	}
 
 	try {
-		const ownerIdToCompare = ownerOverride || platformAPI.getOwnerUserId?.()
-		const ownerUsernameToCompare = platformAPI.getOwnerUserName?.()
-
-		let ownerIsPresent = false
-		if (platformAPI.getGroupMembers) {
-			const members = await platformAPI.getGroupMembers(group.id)
-			if (members)
-				ownerIsPresent = members.some(member =>
-					String(member.id) === String(ownerIdToCompare) ||
-					(member.username && ownerUsernameToCompare && member.username.toLowerCase() === ownerUsernameToCompare.toLowerCase())
-				)
-			else
-				console.warn(`[BotLogic] Could not retrieve members for group ${group.id} on ${platformAPI.name}. Skipping owner check.`)
-
-		} else
-			console.warn(`[BotLogic] getGroupMembers not implemented for platform ${platformAPI.name}. Cannot check owner presence in group ${group.id}. Skipping.`)
-
+		const ownerIsPresent = await _checkOwnerPresence(group, platformAPI, ownerOverride)
 		if (ownerIsPresent) return
-
-		console.log(`[BotLogic] Owner NOT found in group ${group.name} (ID: ${group.id}). Taking action...`)
 
 		const defaultChannel = await platformAPI.getGroupDefaultChannel?.(group.id)
 		if (!defaultChannel) {
 			console.warn(`[BotLogic] Could not find a default channel for group ${group.id}. Cannot send invite or message.`)
-			await platformAPI.leaveGroup?.(group.id)
+			await platformAPI.leaveGroup?.(group.id) // Attempt to leave even if no default channel
 			return
 		}
 
-		let inviteLink = null
-		if (platformAPI.generateInviteLink)
-			inviteLink = await platformAPI.generateInviteLink(group.id, defaultChannel.id)
-				.catch(error => {
-					console.error(`[BotLogic] Error generating invite link for group ${group.id}:`, error.stack)
-					return error
-				})
-
-		if (inviteLink) {
-			const inviteMessage = `咱被拉入了一个您不在的群组（已经退啦！）: \`${group.name}\` (ID: \`${group.id}\`)\n链接: ${inviteLink}`
-			if (platformAPI.sendDirectMessageToOwner)
-				await platformAPI.sendDirectMessageToOwner(inviteMessage)
-			else
-				console.warn(`[BotLogic] sendDirectMessageToOwner not implemented for ${platformAPI.name}.`)
-
-			const ownerPresenceResult = await platformAPI.getOwnerPresenceInGroups?.()
-			if (ownerPresenceResult?.groupsWithOwner?.length > 0)
-				ownerPresenceResult.groupsWithOwner.map(async otherGroup => {
-					if (otherGroup.id === group.id) return
-
-					const otherGroupDefaultChannel = await platformAPI.getGroupDefaultChannel?.(otherGroup.id)
-					if (otherGroupDefaultChannel && platformAPI.sendMessage)
-						try {
-							await platformAPI.sendMessage(otherGroupDefaultChannel.id, { content: `@${ownerUsernameToCompare} ` + inviteMessage })
-						} catch (e) {
-							console.error(`[BotLogic] Failed to send invite message to owner in group ${otherGroup.name}:`, e)
-						}
-				})
-		} else
-			console.warn(`[BotLogic] Could not generate invite link for group ${group.id}.`)
-
-		const groupNameForAI = group.name || `Group ${group.id}`
-		let channelHistoryForAI = []
-		if (platformAPI.fetchChannelHistory)
-			channelHistoryForAI = await platformAPI.fetchChannelHistory(defaultChannel.id, 10)
-
-		const insultRequestContext = [
-			...channelHistoryForAI,
-			{
-				name: 'system',
-				role: 'system',
-				time_stamp: Date.now(),
-				content: `\
-你目前在${groupNameForAI}群组中，但这里没有找到你的主人，显然你是被某个傻逼拉进来的。
-现在发挥你的聪明才智随便骂几句，随后你会自动退出群组。
-` },
-		]
-
-		const fountBotDisplayName = (await GentianAphrodite.getPartInfo?.(localhostLocales[0]))?.name || BotCharname
-		const botUserId = platformAPI.getBotUserId?.()
-		const botUsername = platformAPI.getBotUsername?.()
-		const botDisplayName = platformAPI.getBotDisplayName?.()
-		const botNameForAIChat = userIdToNameMap[botUserId] || `${botUsername} (咱自己)` || `${botDisplayName} (咱自己)` || `${fountBotDisplayName} (咱自己)`
-
-		const ownerPlatformUsernameForAI = platformAPI.getOwnerUserName?.()
-		const ownerPlatformIdForAI = platformAPI.getOwnerUserId?.()
-		const userCharNameForAI = userIdToNameMap[ownerPlatformIdForAI] || ownerPlatformUsernameForAI
-
-		const insultRequest = {
-			supported_functions: { markdown: true, files: false, add_message: false, mathjax: false, html: false, unsafe_html: false },
-			username: FountUsername,
-			chat_name: platformAPI.getChatNameForAI(group.id, { extension: { platform_guild_id: group.id, platform_channel_id: defaultChannel.id, platform: platformAPI.name } }),
-			char_id: BotCharname,
-			Charname: botNameForAIChat,
-			UserCharname: userCharNameForAI,
-			ReplyToCharname: '',
-			locales: localhostLocales,
-			time: new Date(),
-			world: platformAPI.getPlatformWorld?.() || null,
-			user: null,
-			char: GentianAphrodite,
-			other_chars: [],
-			plugins: { ...platformAPI.getPlatformSpecificPlugins?.({ extension: { platform_guild_id: group.id, platform_channel_id: defaultChannel.id, platform: platformAPI.name } } || {}) },
-			chat_scoped_char_memory: {},
-			chat_log: insultRequestContext,
-			extension: { platform: platformAPI.name, chat_id: defaultChannel.id, is_direct_message: false }
-		}
-
-		let insultMessageContent = '？'
-		try {
-			const aiInsultReply = await GentianAphrodite.interfaces.chat.GetReply(insultRequest)
-			if (aiInsultReply && aiInsultReply.content)
-				insultMessageContent = aiInsultReply.content
-			else
-				console.warn('[BotLogic] AI did not generate insult content, using default.')
-		} catch (e) {
-			console.error(`[BotLogic] AI insult generation failed for group ${group.id}:`, e)
-		}
-
-		if (platformAPI.sendMessage && insultMessageContent)
-			try {
-				await platformAPI.sendMessage(defaultChannel.id, { content: insultMessageContent })
-			} catch (e) {
-				console.error(`[BotLogic] Failed to send insult to group ${group.id}:`, e)
-			}
-
-		if (platformAPI.leaveGroup)
-			await platformAPI.leaveGroup(group.id)
-		else
-			console.warn(`[BotLogic] leaveGroup not implemented for ${platformAPI.name}. Cannot leave group ${group.id}.`)
+		await _handleOwnerNotPresent(group, platformAPI, defaultChannel)
 	} catch (error) {
 		console.error(`[BotLogic] Error in handleGroupCheck for group ${group.id} on ${platformAPI.name}:`, error)
+	}
+}
+
+/**
+ * 设置群组加入时的处理器。
+ * @param {PlatformAPI_t} platformAPI - 平台 API 实例。
+ */
+function _setupOnGroupJoinHandler(platformAPI) {
+	if (platformAPI.onGroupJoin) {
+		platformAPI.onGroupJoin(async (group) => {
+			await handleGroupCheck(group, platformAPI)
+		})
+	} else {
+		console.warn(`[BotLogic] onGroupJoin not implemented for platform: ${platformAPI.name}`)
+	}
+}
+
+/**
+ * 执行初始的群组主人存在性检查。
+ * @async
+ * @param {PlatformAPI_t} platformAPI - 平台 API 实例。
+ */
+async function _performInitialGroupOwnerCheck(platformAPI) {
+	let usedOptimizedCheck = false
+	if (platformAPI.getOwnerPresenceInGroups) {
+		try {
+			const presenceResult = await platformAPI.getOwnerPresenceInGroups()
+			if (presenceResult) {
+				if (presenceResult.groupsWithoutOwner.length > 0) {
+					for (const group of presenceResult.groupsWithoutOwner) {
+						await new Promise(resolve => setTimeout(resolve, 2000)) // Stagger checks
+						await handleGroupCheck(group, platformAPI)
+					}
+				}
+				usedOptimizedCheck = true
+			} else {
+				console.warn(`[BotLogic] Optimized owner presence check returned null for ${platformAPI.name}. Falling back if alternative is available.`)
+			}
+		} catch (e) {
+			console.error(`[BotLogic] Error calling getOwnerPresenceInGroups for ${platformAPI.name}:`, e)
+		}
+	}
+
+	if (!usedOptimizedCheck && platformAPI.getJoinedGroups) {
+		try {
+			const allGroups = await platformAPI.getJoinedGroups()
+			if (allGroups && allGroups.length > 0) {
+				for (const group of allGroups) {
+					await new Promise(resolve => setTimeout(resolve, 2000)) // Stagger checks
+					await handleGroupCheck(group, platformAPI)
+				}
+			}
+		} catch (e) {
+			console.error(`[BotLogic] Error fetching joined groups for ${platformAPI.name} fallback check:`, e)
+		}
+	} else if (!usedOptimizedCheck) {
+		console.log(`[BotLogic] No group checking mechanism available for ${platformAPI.name} at startup (Neither getOwnerPresenceInGroups nor getJoinedGroups are fully supported/implemented).`)
+	}
+}
+
+/**
+ * 设置主人离开群组时的处理器。
+ * @param {PlatformAPI_t} platformAPI - 平台 API 实例。
+ */
+function _setupOnOwnerLeaveGroupHandler(platformAPI) {
+	if (platformAPI.onOwnerLeaveGroup) {
+		platformAPI.onOwnerLeaveGroup(async (groupId, leftUserId) => {
+			const ownerIdForPlatform = platformAPI.getOwnerUserId?.()
+			if (ownerIdForPlatform && String(leftUserId) === String(ownerIdForPlatform)) {
+				try {
+					await platformAPI.leaveGroup?.(groupId)
+				} catch (e) {
+					console.error(`[BotLogic] Error leaving group ${groupId} after owner departure on ${platformAPI.name}: `, e)
+				}
+			}
+		})
+	} else {
+		console.warn(`[BotLogic] onOwnerLeaveGroup not implemented for platform: ${platformAPI.name}.`)
 	}
 }
 
@@ -1106,59 +1423,7 @@ export async function registerPlatformAPI(platformAPI) {
 		return
 	}
 
-	if (platformAPI.onGroupJoin)
-		platformAPI.onGroupJoin(async (group) => {
-			await handleGroupCheck(group, platformAPI)
-		})
-	else
-		console.warn(`[BotLogic] onGroupJoin not implemented for platform: ${platformAPI.name}`)
-
-	let usedOptimizedCheck = false
-	if (platformAPI.getOwnerPresenceInGroups)
-		try {
-			const presenceResult = await platformAPI.getOwnerPresenceInGroups()
-			if (presenceResult) {
-				if (presenceResult.groupsWithoutOwner.length > 0)
-					for (const group of presenceResult.groupsWithoutOwner) {
-						await new Promise(resolve => setTimeout(resolve, 2000))
-						await handleGroupCheck(group, platformAPI)
-					}
-
-				usedOptimizedCheck = true
-			} else
-				console.warn(`[BotLogic] Optimized owner presence check returned null for ${platformAPI.name}. Falling back if alternative is available.`)
-
-		} catch (e) {
-			console.error(`[BotLogic] Error calling getOwnerPresenceInGroups for ${platformAPI.name}:`, e)
-		}
-
-
-	if (!usedOptimizedCheck && platformAPI.getJoinedGroups)
-		try {
-			const allGroups = await platformAPI.getJoinedGroups()
-			if (allGroups && allGroups.length > 0)
-				for (const group of allGroups) {
-					await new Promise(resolve => setTimeout(resolve, 2000))
-					await handleGroupCheck(group, platformAPI)
-				}
-
-		} catch (e) {
-			console.error(`[BotLogic] Error fetching joined groups for ${platformAPI.name} fallback check:`, e)
-		}
-	else if (!usedOptimizedCheck)
-		console.log(`[BotLogic] No group checking mechanism available for ${platformAPI.name} at startup (Neither getOwnerPresenceInGroups nor getJoinedGroups are fully supported/implemented).`)
-
-	if (platformAPI.onOwnerLeaveGroup)
-		platformAPI.onOwnerLeaveGroup(async (groupId, leftUserId) => {
-			const ownerIdForPlatform = platformAPI.getOwnerUserId?.()
-			if (ownerIdForPlatform && String(leftUserId) === String(ownerIdForPlatform))
-				try {
-					await platformAPI.leaveGroup?.(groupId)
-				} catch (e) {
-					console.error(`[BotLogic] Error leaving group ${groupId} after owner departure on ${platformAPI.name}: `, e)
-				}
-
-		})
-	else
-		console.warn(`[BotLogic] onOwnerLeaveGroup not implemented for platform: ${platformAPI.name}.`)
+	_setupOnGroupJoinHandler(platformAPI)
+	await _performInitialGroupOwnerCheck(platformAPI) // Initial check on startup
+	_setupOnOwnerLeaveGroupHandler(platformAPI)
 }
