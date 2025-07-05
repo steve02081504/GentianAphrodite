@@ -331,6 +331,63 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
 	return okey
 }
 
+// Place this function before _calculateTriggerPossibility
+async function _calculateOwnerTriggerIncrement(fountEntry, content, platformAPI, channelId, possible, isInFavor, mentionedWithoutAt) {
+    let isMutedChannelUpdate = false; // Local variable to track if this function mutes
+    if (mentionedWithoutAt || fountEntry.extension?.mentions_bot) {
+        possible += 100;
+        delete channelMuteStartTimes[channelId]; // Unmute channel
+        // No need to set isMutedChannelUpdate = false, as it's already unmuted globally
+    }
+    if (isInFavor && base_match_keys(content, ['闭嘴', '安静', '肃静']) && content.length < 10) {
+        channelMuteStartTimes[channelId] = Date.now(); // Mute channel
+        isMutedChannelUpdate = true; // Signal that channel was muted by this function
+        return { newPossible: 0, isMutedUpdate: isMutedChannelUpdate }; // Early exit if owner mutes
+    }
+    if (base_match_keys(content, ['老婆', '女票', '女朋友', '炮友'])) possible += 50;
+    if (base_match_keys(content, [/(有点|好)紧张/, '救救', '帮帮', /帮(我|(你|你家)?(主人|老公|丈夫|爸爸|宝宝))/, '来人', '咋用', '教教', /是真的(吗|么)/])) possible += 100;
+    if (base_match_keys(content, GentianWords) && base_match_keys(content, [/怎么(想|看)/])) possible += 100;
+    if (base_match_keys(content, ['睡了', '眠了', '晚安', '睡觉去了'])) possible += 50;
+    if (base_match_keys(content, ['失眠了', '睡不着'])) possible += 100;
+    if (base_match_keys(content, ['早上好', '早安'])) possible += 100;
+
+    if (isInFavor) {
+        possible += 4;
+        const botUserId = platformAPI.getBotUserId();
+        const currentChannelLog = channelChatLogs[channelId] || [];
+        const lastBotMsgIndex = currentChannelLog.findLastIndex(log => log.extension?.platform_user_id == botUserId);
+        const messagesSinceLastBotReply = lastBotMsgIndex === -1 ? currentChannelLog.length : currentChannelLog.slice(lastBotMsgIndex + 1).length;
+        if (base_match_keys(content, [
+            /(再|多)(来|表演)(点|.*(次|个))/, '来个', '不够', '不如', '继续', '确认', '执行',
+            /^(那|所以你|可以再|你?再(讲|说|试试|猜)|你(觉得|想|知道|确定|试试)|但是|我?是说)/, /^so/i,
+        ]) && messagesSinceLastBotReply <= 3) {
+            possible += 100;
+        }
+    }
+    if (!isBotCommand(content)) { // isBotCommand is a global function
+        possible += currentConfig.BaseTriggerChanceToOwner;
+    }
+    return { newPossible: possible, isMutedUpdate: isMutedChannelUpdate };
+}
+
+// Place this function before _calculateTriggerPossibility
+async function _calculateNonOwnerTriggerIncrement(fountEntry, content, platformAPI, possible, isInFavor, mentionedWithoutAt) {
+    if (mentionedWithoutAt) {
+        if (isInFavor) possible += 90;
+        else possible += 40;
+        if (base_match_keys(content, [/[午安早晚]安/])) possible += 100;
+    } else if (fountEntry.extension?.mentions_bot) {
+        possible += 40;
+        if (base_match_keys(content, [/\?|？/, '怎么', '什么', '吗', /(大|小)还是/, /(还是|哪个)(大|小)/])) possible += 100;
+        if (base_match_keys(content, rude_words)) { // rude_words is global
+            if (fuyanMode) return { newPossible: 0, fuyanExit: true }; // fuyanMode is global
+            else possible += 100;
+        }
+        if (base_match_keys(content, ['你主人', '你的主人'])) possible += 100;
+    }
+    return { newPossible: possible, fuyanExit: false };
+}
+
 /**
  * 计算消息触发的可能性分数。
  * @async
@@ -342,90 +399,58 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
  * @returns {Promise<{possibility: number, isMutedChannel: boolean, mentionedWithoutAt: boolean}>}
  */
 async function _calculateTriggerPossibility(fountEntry, platformAPI, channelId, content, env = {}) {
-	let possible = 0
-	const botUserId = platformAPI.getBotUserId()
-	const isFromOwner = fountEntry.extension?.is_from_owner === true
+    let possible = 0;
+    const isFromOwner = fountEntry.extension?.is_from_owner === true;
 
-	const EngWords = content.split(' ')
-	const oldLogicChineseCheck = base_match_keys(
-		content.substring(0, 5) + ' ' + content.substring(content.length - 5),
-		['龙胆']
-	)
-	const oldLogicEnglishCheck = base_match_keys(
-		EngWords.slice(0, 6).concat(EngWords.slice(-3)).join(' '),
-		['gentian']
-	)
-	const nameMentionedByOldLogic = oldLogicChineseCheck || oldLogicEnglishCheck
-	const mentionedWithoutAt = !env.has_other_gentian_bot &&
-		nameMentionedByOldLogic &&
-		!base_match_keys(content, [/(龙胆(有|能|这边|目前|[^ 。你，]{0,3}的)|gentian('s|is|are|can|has))/i]) &&
-		!base_match_keys(content, [/^.{0,4}龙胆$/i])
+    const EngWords = content.split(' ');
+    const oldLogicChineseCheck = base_match_keys(
+        content.substring(0, 5) + ' ' + content.substring(content.length - 5),
+        ['龙胆']
+    );
+    const oldLogicEnglishCheck = base_match_keys(
+        EngWords.slice(0, 6).concat(EngWords.slice(-3)).join(' '),
+        ['gentian']
+    );
+    const nameMentionedByOldLogic = oldLogicChineseCheck || oldLogicEnglishCheck;
+    const mentionedWithoutAt = !env.has_other_gentian_bot &&
+        nameMentionedByOldLogic &&
+        !base_match_keys(content, [/(龙胆(有|能|这边|目前|[^ 。你，]{0,3}的)|gentian('s|is|are|can|has))/i]) &&
+        !base_match_keys(content, [/^.{0,4}龙胆$/i]);
 
-	possible += base_match_keys(content, fountEntry.extension.OwnerNameKeywords) * 7
-	possible += base_match_keys(content, GentianWords) * 5
-	possible += base_match_keys(content, [/(花|华)(萝|箩|罗)(蘑|磨|摩)/g]) * 3
+    possible += base_match_keys(content, fountEntry.extension.OwnerNameKeywords) * 7;
+    possible += base_match_keys(content, GentianWords) * 5; // GentianWords is global
+    possible += base_match_keys(content, [/(花|华)(萝|箩|罗)(蘑|磨|摩)/g]) * 3;
 
-	const isABotCommand = isBotCommand(content)
-	const timeSinceLastBotMessageInChannel = fountEntry.time_stamp - (channelLastSendMessageTime[channelId] || 0)
-	const isInFavor = timeSinceLastBotMessageInChannel < currentConfig.InteractionFavorPeriodMs
-	let isMutedChannel = (Date.now() - (channelMuteStartTimes[channelId] || 0)) < currentConfig.MuteDurationMs
+    const timeSinceLastBotMessageInChannel = fountEntry.time_stamp - (channelLastSendMessageTime[channelId] || 0);
+    const isInFavor = timeSinceLastBotMessageInChannel < currentConfig.InteractionFavorPeriodMs;
+    let isMutedChannel = (Date.now() - (channelMuteStartTimes[channelId] || 0)) < currentConfig.MuteDurationMs;
 
-	if (isFromOwner) {
-		if (mentionedWithoutAt || fountEntry.extension?.mentions_bot) {
-			possible += 100
-			delete channelMuteStartTimes[channelId] // Unmute channel
-			isMutedChannel = false
-		}
-		if (isInFavor && base_match_keys(content, ['闭嘴', '安静', '肃静']) && content.length < 10) {
-			channelMuteStartTimes[channelId] = Date.now() // Mute channel
-			isMutedChannel = true
-			return { possibility: 0, isMutedChannel, mentionedWithoutAt } // Early exit if owner mutes
-		}
-		if (base_match_keys(content, ['老婆', '女票', '女朋友', '炮友'])) possible += 50
-		if (base_match_keys(content, [/(有点|好)紧张/, '救救', '帮帮', /帮(我|(你|你家)?(主人|老公|丈夫|爸爸|宝宝))/, '来人', '咋用', '教教', /是真的(吗|么)/])) possible += 100
-		if (base_match_keys(content, GentianWords) && base_match_keys(content, [/怎么(想|看)/])) possible += 100
-		if (base_match_keys(content, ['睡了', '眠了', '晚安', '睡觉去了'])) possible += 50
-		if (base_match_keys(content, ['失眠了', '睡不着'])) possible += 100
-		if (base_match_keys(content, ['早上好', '早安'])) possible += 100
+    if (isFromOwner) {
+        const ownerResult = await _calculateOwnerTriggerIncrement(fountEntry, content, platformAPI, channelId, possible, isInFavor, mentionedWithoutAt);
+        possible = ownerResult.newPossible;
+        if (ownerResult.isMutedUpdate) { // If owner muted the channel
+            return { possibility: 0, isMutedChannel: true, mentionedWithoutAt };
+        }
+        // isMutedChannel could have been set to false inside _calculateOwnerTriggerIncrement if owner unmuted
+        // Re-evaluate isMutedChannel based on global state if not explicitly muted by ownerResult
+        isMutedChannel = (Date.now() - (channelMuteStartTimes[channelId] || 0)) < currentConfig.MuteDurationMs;
 
-		if (isInFavor) {
-			possible += 4
-			const currentChannelLog = channelChatLogs[channelId] || []
-			const lastBotMsgIndex = currentChannelLog.findLastIndex(log => log.extension?.platform_user_id == botUserId)
-			const messagesSinceLastBotReply = lastBotMsgIndex === -1 ? currentChannelLog.length : currentChannelLog.slice(lastBotMsgIndex + 1).length
-			if (base_match_keys(content, [
-				/(再|多)(来|表演)(点|.*(次|个))/, '来个', '不够', '不如', '继续', '确认', '执行',
-				/^(那|所以你|可以再|你?再(讲|说|试试|猜)|你(觉得|想|知道|确定|试试)|但是|我?是说)/, /^so/i,
-			]) && messagesSinceLastBotReply <= 3)
-				possible += 100
+    } else { // Not from owner
+        const nonOwnerResult = await _calculateNonOwnerTriggerIncrement(fountEntry, content, platformAPI, possible, isInFavor, mentionedWithoutAt);
+        possible = nonOwnerResult.newPossible;
+        if (nonOwnerResult.fuyanExit) { // If fuyanMode and rude words
+             return { possibility: 0, isMutedChannel, mentionedWithoutAt };
+        }
+    }
 
-		}
-		if (!isABotCommand) possible += currentConfig.BaseTriggerChanceToOwner
-	} else  // Not from owner
-		if (mentionedWithoutAt) {
-			if (isInFavor) possible += 90
-			else possible += 40
-			if (base_match_keys(content, [/[午安早晚]安/])) possible += 100
-		} else if (fountEntry.extension?.mentions_bot) {
-			possible += 40
-			if (base_match_keys(content, [/\?|？/, '怎么', '什么', '吗', /(大|小)还是/, /(还是|哪个)(大|小)/])) possible += 100
-			if (base_match_keys(content, rude_words))
-				if (fuyanMode) return { possibility: 0, isMutedChannel, mentionedWithoutAt } // No reply in fuyan mode for rude words
-				else possible += 100
-
-			if (base_match_keys(content, ['你主人', '你的主人'])) possible += 100
-		}
-
-
-	if (fountEntry.extension?.mentions_owner || base_match_keys(content, fountEntry.extension.OwnerNameKeywords)) {
-		possible += 7
-		if (base_match_keys(content, rude_words))
-			if (fuyanMode) return { possibility: 0, isMutedChannel, mentionedWithoutAt } // No reply for rude words to owner in fuyan mode
-		// Implicitly true for non-fuyan mode if rude words directed at owner (high possibility)
-		// This path leads to returning true in the main function if not in fuyanMode
-
-	}
-	return { possibility: possible, isMutedChannel, mentionedWithoutAt }
+    if (fountEntry.extension?.mentions_owner || base_match_keys(content, fountEntry.extension.OwnerNameKeywords)) {
+        possible += 7;
+        if (base_match_keys(content, rude_words)) { // rude_words is global
+            if (fuyanMode) return { possibility: 0, isMutedChannel, mentionedWithoutAt }; // fuyanMode is global
+            // Implicitly high possibility if not in fuyanMode and rude words to owner
+        }
+    }
+    return { possibility: possible, isMutedChannel, mentionedWithoutAt };
 }
 
 /**
@@ -868,6 +893,48 @@ function _is_message_mergeable(lastLogEntry, currentMessageToProcess) {
 		currentMessageToProcess.extension?.platform_message_ids
 }
 
+// Place this function before _checkQueueMessageTrigger
+async function _handleOwnerCommandsInQueue(currentMessageToProcess, platformAPI, channelId) {
+    if (currentMessageToProcess.extension?.is_from_owner) {
+        const { content } = currentMessageToProcess;
+        if (!inHypnosisChannelId || channelId === inHypnosisChannelId) {
+            if (base_match_keys(content, [/^龙胆.{0,2}敷衍点.{0,2}$/])) fuyanMode = true;
+            if (base_match_keys(content, [/^龙胆.{0,2}不敷衍点.{0,2}$/])) fuyanMode = false;
+            if (base_match_keys(content, [/^龙胆.{0,2}自裁.{0,2}$/])) {
+                const selfDestructReply = inHypnosisChannelId === channelId ? { content: '好的。' } : { content: '啊，咱死了～' };
+                await sendAndLogReply(selfDestructReply, platformAPI, channelId, currentMessageToProcess);
+                newUserMessage(content, platformAPI.name);
+                newCharReplay(selfDestructReply.content, platformAPI.name);
+                await platformAPI.destroySelf();
+                return 'exit'; // Signal to exit further processing
+            }
+            const repeatMatch = content.match(/^龙胆.{0,2}复诵.{0,2}`(?<repeat_content>[\S\s]*)`$/);
+            if (repeatMatch?.groups?.repeat_content) {
+                await sendAndLogReply({ content: repeatMatch.groups.repeat_content }, platformAPI, channelId, currentMessageToProcess);
+                newUserMessage(content, platformAPI.name);
+                newCharReplay(repeatMatch.groups.repeat_content, platformAPI.name);
+                return 'handled'; // Command handled, no further trigger check needed
+            }
+            const banWordMatch = content.match(/^龙胆.{0,2}禁止.{0,2}`(?<banned_content>[\S\s]*)`$/);
+            if (banWordMatch?.groups?.banned_content) {
+                bannedStrings.push(banWordMatch.groups.banned_content);
+                // No return here, as banning a word doesn't stop other checks unless specified
+            }
+            if (base_match_keys(content, [/^[
+,.~、。呵哦啊嗯噫欸胆龙，～]+$/, /^[
+,.~、。呵哦啊嗯噫欸胆龙，～]{4}[
+!,.?~、。呵哦啊嗯噫欸胆龙！，？～]+$/])) {
+                const ownerCallReply = SimplifyChinese(content).replaceAll('龙', '主').replaceAll('胆', '人');
+                await sendAndLogReply({ content: ownerCallReply }, platformAPI, channelId, currentMessageToProcess);
+                newUserMessage(content, platformAPI.name);
+                newCharReplay(ownerCallReply, platformAPI.name);
+                return 'handled'; // Command handled
+            }
+        }
+    }
+    return undefined; // No owner command handled or not from owner
+}
+
 /**
  * 在消息队列处理中检查单个消息是否应触发回复或特殊操作。
  * @async
@@ -878,101 +945,71 @@ function _is_message_mergeable(lastLogEntry, currentMessageToProcess) {
  * @returns {Promise<number | 'exit' | undefined>} 1 表示触发回复, 'exit' 表示需要退出, undefined 表示无特殊操作。
  */
 async function _checkQueueMessageTrigger(currentMessageToProcess, currentChannelLog, platformAPI, channelId) {
-	if (currentMessageToProcess.extension?.platform_user_id == platformAPI.getBotUserId())
-		return // Do not process bot's own messages for triggers here
+    if (currentMessageToProcess.extension?.platform_user_id == platformAPI.getBotUserId()) {
+        return; // Do not process bot's own messages for triggers here
+    }
 
+    // Handle Owner commands first
+    const ownerCommandResult = await _handleOwnerCommandsInQueue(currentMessageToProcess, platformAPI, channelId);
+    if (ownerCommandResult === 'exit' || ownerCommandResult === 'handled') {
+        return ownerCommandResult; // Exit or indicate handled
+    }
 
-	// Owner commands
-	if (currentMessageToProcess.extension?.is_from_owner) {
-		const { content } = currentMessageToProcess
-		if (!inHypnosisChannelId || channelId === inHypnosisChannelId) {
-			if (base_match_keys(content, [/^龙胆.{0,2}敷衍点.{0,2}$/])) fuyanMode = true
-			if (base_match_keys(content, [/^龙胆.{0,2}不敷衍点.{0,2}$/])) fuyanMode = false
-			if (base_match_keys(content, [/^龙胆.{0,2}自裁.{0,2}$/])) {
-				const selfDestructReply = inHypnosisChannelId === channelId ? { content: '好的。' } : { content: '啊，咱死了～' }
-				await sendAndLogReply(selfDestructReply, platformAPI, channelId, currentMessageToProcess)
-				newUserMessage(content, platformAPI.name)
-				newCharReplay(selfDestructReply.content, platformAPI.name)
-				await platformAPI.destroySelf()
-				return 'exit'
-			}
-			const repeatMatch = content.match(/^龙胆.{0,2}复诵.{0,2}`(?<repeat_content>[\S\s]*)`$/)
-			if (repeatMatch?.groups?.repeat_content) {
-				await sendAndLogReply({ content: repeatMatch.groups.repeat_content }, platformAPI, channelId, currentMessageToProcess)
-				newUserMessage(content, platformAPI.name)
-				newCharReplay(repeatMatch.groups.repeat_content, platformAPI.name)
-				return // Handled, no further trigger
-			}
-			const banWordMatch = content.match(/^龙胆.{0,2}禁止.{0,2}`(?<banned_content>[\S\s]*)`$/)
-			if (banWordMatch?.groups?.banned_content)
-				bannedStrings.push(banWordMatch.groups.banned_content)
-			// Potentially send confirmation? For now, just adds and continues.
+    // General trigger checks (original lines 729-774)
+    const recentChatLogForOtherBotCheck = currentChannelLog.filter(msg => (Date.now() - msg.time_stamp) < 5 * 60 * 1000);
+    const hasOtherGentianBot = (() => {
+        const text = recentChatLogForOtherBotCheck
+            .filter(msg => msg.extension?.platform_user_id != platformAPI.getBotUserId())
+            .map(msg => msg.content).join('\n');
+        return base_match_keys_count(text, GentianWords) && base_match_keys_count(text, ['主人', 'master']) > 1;
+    })();
 
-			if (base_match_keys(content, [/^[\n,.~、。呵哦啊嗯噫欸胆龙，～]+$/, /^[\n,.~、。呵哦啊嗯噫欸胆龙，～]{4}[\n!,.?~、。呵哦啊嗯噫欸胆龙！，？～]+$/])) {
-				const ownerCallReply = SimplifyChinese(content).replaceAll('龙', '主').replaceAll('胆', '人')
-				await sendAndLogReply({ content: ownerCallReply }, platformAPI, channelId, currentMessageToProcess)
-				newUserMessage(content, platformAPI.name)
-				newCharReplay(ownerCallReply, platformAPI.name)
-				return // Handled
-			}
-		}
-	}
+    const isMutedChannel = (Date.now() - (channelMuteStartTimes[channelId] || 0)) < currentConfig.MuteDurationMs;
 
-	// General trigger checks
-	const recentChatLogForOtherBotCheck = currentChannelLog.filter(msg => (Date.now() - msg.time_stamp) < 5 * 60 * 1000)
-	const hasOtherGentianBot = (() => {
-		const text = recentChatLogForOtherBotCheck
-			.filter(msg => msg.extension?.platform_user_id != platformAPI.getBotUserId())
-			.map(msg => msg.content).join('\n')
-		return base_match_keys_count(text, GentianWords) && base_match_keys_count(text, ['主人', 'master']) > 1
-	})()
+    const ownerBotOnlyInteraction = currentChannelLog.slice(-7).every(
+        msg => msg.extension?.is_from_owner || msg.extension?.platform_user_id == platformAPI.getBotUserId()
+    );
 
-	const isMutedChannel = (Date.now() - (channelMuteStartTimes[channelId] || 0)) < currentConfig.MuteDurationMs
-
-	const ownerBotOnlyInteraction = currentChannelLog.slice(-7).every(
-		msg => msg.extension?.is_from_owner || msg.extension?.platform_user_id == platformAPI.getBotUserId()
-	)
-
-	if (await checkMessageTrigger(currentMessageToProcess, platformAPI, channelId, { has_other_gentian_bot: hasOtherGentianBot }))
-		return 1 // Should trigger a reply
-	else if (ownerBotOnlyInteraction && currentMessageToProcess.extension?.is_from_owner && !isMutedChannel)
-		return 1 // Trigger if owner is interacting in an owner-bot only conversation
-	else if (
-		(!inHypnosisChannelId || channelId !== inHypnosisChannelId) &&
-		!isMutedChannel &&
-		currentMessageToProcess.extension?.platform_user_id != platformAPI.getBotUserId() // Not from bot
-	) {
-		// Repetition check
-		const nameMap = {}
-		function summary(message, name_diff = true) {
-			let result = ''
-			if (name_diff) {
-				nameMap[message.name] ??= 0
-				result += nameMap[message.name]++ + '\n'
-			}
-			result += (message.content ?? '') + '\n\n'
-			result += (message.files || []).map(file => file.buffer instanceof Buffer ? file.buffer.toString('hex') : String(file.buffer)).join('\n')
-			return result
-		}
-		const repet = findMostFrequentElement(currentChannelLog.slice(-10), summary) // Check last 10 messages
-		if (
-			(repet.element?.content || repet.element?.files?.length) && // Has content to repeat
-			repet.count >= currentConfig.RepetitionTriggerCount &&
-			// Avoid repeating sensitive keywords or commands
-			!base_match_keys(repet.element.content + '\n' + (repet.element.files || []).map(file => file.name).join('\n'), [...currentMessageToProcess.extension.OwnerNameKeywords || [], ...rude_words, ...GentianWords]) &&
-			!isBotCommand(repet.element.content) &&
-			// Check if the bot has already repeated this exact message recently
-			!currentChannelLog.slice(-10).some(msg => msg.extension?.platform_user_id == platformAPI.getBotUserId() && summary(msg, false) === summary(repet.element, false))
-		) {
-			await sendAndLogReply(
-				{ content: repet.element.content, files: repet.element.files },
-				platformAPI, channelId, currentMessageToProcess
-			)
-			// Repetition sent, no further general trigger from this message.
-			return
-		}
-	}
-	return undefined // No specific trigger action from this function
+    if (await checkMessageTrigger(currentMessageToProcess, platformAPI, channelId, { has_other_gentian_bot: hasOtherGentianBot })) {
+        return 1; // Should trigger a reply
+    } else if (ownerBotOnlyInteraction && currentMessageToProcess.extension?.is_from_owner && !isMutedChannel) {
+        return 1; // Trigger if owner is interacting in an owner-bot only conversation
+    } else if (
+        (!inHypnosisChannelId || channelId !== inHypnosisChannelId) &&
+        !isMutedChannel &&
+        currentMessageToProcess.extension?.platform_user_id != platformAPI.getBotUserId() // Not from bot
+    ) {
+        // Repetition check
+        const nameMap = {};
+        function summary(message, name_diff = true) {
+            let result = '';
+            if (name_diff) {
+                nameMap[message.name] ??= 0;
+                result += nameMap[message.name]++ + '\n';
+            }
+            result += (message.content ?? '') + '\n\n';
+            result += (message.files || []).map(file => file.buffer instanceof Buffer ? file.buffer.toString('hex') : String(file.buffer)).join('\n');
+            return result;
+        }
+        const repet = findMostFrequentElement(currentChannelLog.slice(-10), summary); // Check last 10 messages
+        if (
+            (repet.element?.content || repet.element?.files?.length) && // Has content to repeat
+            repet.count >= currentConfig.RepetitionTriggerCount &&
+            // Avoid repeating sensitive keywords or commands
+            !base_match_keys(repet.element.content + '\n' + (repet.element.files || []).map(file => file.name).join('\n'), [...currentMessageToProcess.extension.OwnerNameKeywords || [], ...rude_words, ...GentianWords]) &&
+            !isBotCommand(repet.element.content) &&
+            // Check if the bot has already repeated this exact message recently
+            !currentChannelLog.slice(-10).some(msg => msg.extension?.platform_user_id == platformAPI.getBotUserId() && summary(msg, false) === summary(repet.element, false))
+        ) {
+            await sendAndLogReply(
+                { content: repet.element.content, files: repet.element.files },
+                platformAPI, channelId, currentMessageToProcess
+            );
+            // Repetition sent, no further general trigger from this message.
+            return; // Return undefined, as repetition is a form of reply but not a "trigger" for a new AI response in the same way.
+        }
+    }
+    return undefined; // No specific trigger action from this function
 }
 
 /**
@@ -1219,7 +1256,7 @@ async function _generateInsult(group, platformAPI, defaultChannel, channelHistor
 		user: null,
 		char: GentianAphrodite,
 		other_chars: [],
-		plugins: { ...platformAPI.getPlatformSpecificPlugins?.({ extension: { platform_guild_id: group.id, platform_channel_id: defaultChannel.id, platform: platformAPI.name } }) || {} },
+		plugins: { ...platformAPI.getPlatformSpecificPlugins?.({ extension: { platform_guild_id: group.id, platform_channel_id: defaultChannel.id, platform: platformAPI.name } }) },
 		chat_scoped_char_memory: {},
 		chat_log: insultRequestContext,
 		extension: { platform: platformAPI.name, chat_id: defaultChannel.id, is_direct_message: false }
@@ -1237,6 +1274,60 @@ async function _generateInsult(group, platformAPI, defaultChannel, channelHistor
 	return '？' // Default insult
 }
 
+async function _sendOwnerInviteNotifications(group, platformAPI, defaultChannel, inviteLink) {
+    if (inviteLink && !(inviteLink instanceof Error)) {
+        const inviteMessage = `咱被拉入了一个您不在的群组（已经退啦！）: \`${group.name}\` (ID: \`${group.id}\`)
+链接: ${inviteLink}`;
+        if (platformAPI.sendDirectMessageToOwner) {
+            await platformAPI.sendDirectMessageToOwner(inviteMessage);
+        } else {
+            console.warn(`[BotLogic] sendDirectMessageToOwner not implemented for ${platformAPI.name}.`);
+        }
+
+        const ownerPresenceResult = await platformAPI.getOwnerPresenceInGroups?.();
+        const ownerUsernameToCompare = platformAPI.getOwnerUserName?.();
+        if (ownerPresenceResult?.groupsWithOwner?.length > 0) {
+            ownerPresenceResult.groupsWithOwner.forEach(async otherGroup => {
+                if (otherGroup.id === group.id) return;
+
+                const otherGroupDefaultChannel = await platformAPI.getGroupDefaultChannel?.(otherGroup.id);
+                if (otherGroupDefaultChannel && platformAPI.sendMessage) {
+                    try {
+                        await platformAPI.sendMessage(otherGroupDefaultChannel.id, { content: `@${ownerUsernameToCompare} ` + inviteMessage });
+                    } catch (e) {
+                        console.error(`[BotLogic] Failed to send invite message to owner in group ${otherGroup.name}:`, e);
+                    }
+                }
+            });
+        }
+    } else {
+        console.warn(`[BotLogic] Could not generate or use invite link for group ${group.id}. InviteLink:`, inviteLink);
+    }
+}
+
+async function _sendInsultAndLeaveGroup(group, platformAPI, defaultChannel) {
+    let channelHistoryForAI = [];
+    if (platformAPI.fetchChannelHistory) {
+        channelHistoryForAI = await platformAPI.fetchChannelHistory(defaultChannel.id, 10);
+    }
+
+    const insultMessageContent = await _generateInsult(group, platformAPI, defaultChannel, channelHistoryForAI);
+
+    if (platformAPI.sendMessage && insultMessageContent) {
+        try {
+            await platformAPI.sendMessage(defaultChannel.id, { content: insultMessageContent });
+        } catch (e) {
+            console.error(`[BotLogic] Failed to send insult to group ${group.id}:`, e);
+        }
+    }
+
+    if (platformAPI.leaveGroup) {
+        await platformAPI.leaveGroup(group.id);
+    } else {
+        console.warn(`[BotLogic] leaveGroup not implemented for ${platformAPI.name}. Cannot leave group ${group.id}.`);
+    }
+}
+
 /**
  * 处理主人不在群组中的情况。
  * @async
@@ -1245,65 +1336,21 @@ async function _generateInsult(group, platformAPI, defaultChannel, channelHistor
  * @param {import('./index.mjs').ChannelObject} defaultChannel - 群组的默认频道。
  */
 async function _handleOwnerNotPresent(group, platformAPI, defaultChannel) {
-	console.log(`[BotLogic] Owner NOT found in group ${group.name} (ID: ${group.id}). Taking action...`)
+	console.log(`[BotLogic] Owner NOT found in group ${group.name} (ID: ${group.id}). Taking action...`);
 
-	let inviteLink = null
-	if (platformAPI.generateInviteLink)
-		inviteLink = await platformAPI.generateInviteLink(group.id, defaultChannel.id)
-			.catch(error => {
-				console.error(`[BotLogic] Error generating invite link for group ${group.id}:`, error.stack)
-				return error // Keep the error object if needed, or nullify
-			})
+    let inviteLink = null;
+    if (platformAPI.generateInviteLink) {
+        inviteLink = await platformAPI.generateInviteLink(group.id, defaultChannel.id)
+            .catch(error => {
+                console.error(`[BotLogic] Error generating invite link for group ${group.id}:`, error.stack);
+                return error; // Keep the error object
+            });
+    } else {
+        console.warn(`[BotLogic] generateInviteLink not implemented for ${platformAPI.name}.`);
+    }
 
-
-	if (inviteLink && !(inviteLink instanceof Error)) {
-		const inviteMessage = `咱被拉入了一个您不在的群组（已经退啦！）: \`${group.name}\` (ID: \`${group.id}\`)\n链接: ${inviteLink}`
-		if (platformAPI.sendDirectMessageToOwner)
-			await platformAPI.sendDirectMessageToOwner(inviteMessage)
-		else
-			console.warn(`[BotLogic] sendDirectMessageToOwner not implemented for ${platformAPI.name}.`)
-
-
-		const ownerPresenceResult = await platformAPI.getOwnerPresenceInGroups?.()
-		const ownerUsernameToCompare = platformAPI.getOwnerUserName?.()
-		if (ownerPresenceResult?.groupsWithOwner?.length > 0)
-			ownerPresenceResult.groupsWithOwner.forEach(async otherGroup => {
-				if (otherGroup.id === group.id) return
-
-				const otherGroupDefaultChannel = await platformAPI.getGroupDefaultChannel?.(otherGroup.id)
-				if (otherGroupDefaultChannel && platformAPI.sendMessage)
-					try {
-						await platformAPI.sendMessage(otherGroupDefaultChannel.id, { content: `@${ownerUsernameToCompare} ` + inviteMessage })
-					} catch (e) {
-						console.error(`[BotLogic] Failed to send invite message to owner in group ${otherGroup.name}:`, e)
-					}
-
-			})
-
-	} else
-		console.warn(`[BotLogic] Could not generate invite link for group ${group.id}.`)
-
-
-	let channelHistoryForAI = []
-	if (platformAPI.fetchChannelHistory)
-		channelHistoryForAI = await platformAPI.fetchChannelHistory(defaultChannel.id, 10)
-
-
-	const insultMessageContent = await _generateInsult(group, platformAPI, defaultChannel, channelHistoryForAI)
-
-	if (platformAPI.sendMessage && insultMessageContent)
-		try {
-			await platformAPI.sendMessage(defaultChannel.id, { content: insultMessageContent })
-		} catch (e) {
-			console.error(`[BotLogic] Failed to send insult to group ${group.id}:`, e)
-		}
-
-
-	if (platformAPI.leaveGroup)
-		await platformAPI.leaveGroup(group.id)
-	else
-		console.warn(`[BotLogic] leaveGroup not implemented for ${platformAPI.name}. Cannot leave group ${group.id}.`)
-
+    await _sendOwnerInviteNotifications(group, platformAPI, defaultChannel, inviteLink);
+    await _sendInsultAndLeaveGroup(group, platformAPI, defaultChannel);
 }
 
 /**
