@@ -32,13 +32,13 @@ export async function NewBrowserGenerByName(name) {
 }
 
 /**
- * 尝试按顺序 ('firefox', 'chrome') 启动一个可用的浏览器。
+ * 尝试按顺序 ('chrome', 'firefox', 'edge') 启动一个可用的浏览器。
  * @param {import('npm:puppeteer').LaunchOptions} configs - Puppeteer 的启动配置。
  * @returns {Promise<import('npm:puppeteer').Browser>} - 返回一个 Puppeteer 浏览器实例。
  * @throws {Error} - 如果没有找到或无法启动任何支持的浏览器。
  */
 export async function NewBrowser(configs) {
-	const browserPriority = ['firefox', 'chrome']
+	const browserPriority = ['chrome', 'firefox']
 	for (const name of browserPriority) {
 		const generator = await NewBrowserGenerByName(name) // 获取对应浏览器的启动器
 		if (generator) try {
@@ -62,7 +62,7 @@ export async function NewBrowser(configs) {
 		console.warn(`Failed to launch Edge: ${error.stack}.`)
 	}
 
-	throw new Error('Failed to launch any supported browser (Firefox or Chrome or Edge).')
+	throw new Error('Failed to launch any supported browser (Chrome, Firefox or Edge).')
 }
 
 /**
