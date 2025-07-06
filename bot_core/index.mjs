@@ -422,20 +422,33 @@ async function calculateTriggerPossibility(fountEntry, platformAPI, channelId, c
 	let possible = 0
 	const isFromOwner = fountEntry.extension?.is_from_owner === true
 
-	const EngWords = content.split(' ')
-	const oldLogicChineseCheck = base_match_keys(
-		content.substring(0, 5) + ' ' + content.substring(content.length - 5),
-		['龙胆']
-	)
-	const oldLogicEnglishCheck = base_match_keys(
-		EngWords.slice(0, 6).concat(EngWords.slice(-3)).join(' '),
-		['gentian']
-	)
-	const nameMentionedByOldLogic = oldLogicChineseCheck || oldLogicEnglishCheck
+	// Start of mentionedWithoutAt calculation
+	// const lowerContent = content.toLowerCase(); // For case-insensitive checks if not handled by base_match_keys
+	const firstFiveChars = content.substring(0, 5);
+	const lastFiveChars = content.substring(content.length - 5);
+	const contentEdgesForChineseCheck = firstFiveChars + ' ' + lastFiveChars;
+
+	const engWords = content.split(' ');
+	const leadingEngWords = engWords.slice(0, 6).join(' ');
+	const trailingEngWords = engWords.slice(-3).join(' ');
+	const contentEdgesForEnglishCheck = leadingEngWords + ' ' + trailingEngWords;
+
+	const isChineseNamePattern = base_match_keys(contentEdgesForChineseCheck, ['龙胆']);
+	const isEnglishNamePattern = base_match_keys(contentEdgesForEnglishCheck, ['gentian']);
+	const isBotNamePatternDetected = isChineseNamePattern || isEnglishNamePattern;
+
+	// Check for phrases that negate a direct mention (e.g., "龙胆的", "gentian's")
+	const isPossessiveOrStatePhrase = base_match_keys(content, [
+		/(龙胆(有|能|这边|目前|[^ 。你，]{0,3}的)|gentian('s|is|are|can|has))/i
+	]);
+	// Check if the bot's name is at the very end of a short sentence, which might not be a direct mention.
+	const isNameAtEndOfShortPhrase = base_match_keys(content, [/^.{0,4}龙胆$/i]);
+
 	const mentionedWithoutAt = !env.has_other_gentian_bot &&
-		nameMentionedByOldLogic &&
-		!base_match_keys(content, [/(龙胆(有|能|这边|目前|[^ 。你，]{0,3}的)|gentian('s|is|are|can|has))/i]) &&
-		!base_match_keys(content, [/^.{0,4}龙胆$/i])
+		isBotNamePatternDetected &&
+		!isPossessiveOrStatePhrase &&
+		!isNameAtEndOfShortPhrase;
+	// End of mentionedWithoutAt calculation
 
 	possible += base_match_keys(content, fountEntry.extension.OwnerNameKeywords) * 7
 	possible += base_match_keys(content, GentianWords) * 5
@@ -1358,7 +1371,7 @@ async function sendInsultAndLeaveGroup(group, platformAPI, defaultChannel) {
  * @param {import('./index.mjs').PlatformAPI_t} platformAPI - 平台 API 实例。
  * @param {import('./index.mjs').ChannelObject} defaultChannel - 群组的默认频道。
  */
-async function handleOwnerNotPresent(group, platformAPI, defaultChannel) {
+async function _handleOwnerNotInGroupActions(group, platformAPI, defaultChannel) {
 	console.log(`[BotLogic] Owner NOT found in group ${group.name} (ID: ${group.id}). Taking action...`)
 
 	let inviteLink = null
@@ -1395,11 +1408,15 @@ async function handleGroupCheck(group, platformAPI, ownerOverride = null) {
 		const defaultChannel = await platformAPI.getGroupDefaultChannel?.(group.id)
 		if (!defaultChannel) {
 			console.warn(`[BotLogic] Could not find a default channel for group ${group.id}. Cannot send invite or message.`)
-			await platformAPI.leaveGroup?.(group.id) // 即使没有默认频道也尝试离开
+			// Still attempt to leave the group even if a default channel isn't found.
+			if (platformAPI.leaveGroup) {
+				await platformAPI.leaveGroup(group.id)
+			} else {
+				console.warn(`[BotLogic] leaveGroup not implemented for ${platformAPI.name}. Cannot leave group ${group.id}.`)
+			}
 			return
 		}
-
-		await handleOwnerNotPresent(group, platformAPI, defaultChannel)
+		await _handleOwnerNotInGroupActions(group, platformAPI, defaultChannel)
 	} catch (error) {
 		console.error(`[BotLogic] Error in handleGroupCheck for group ${group.id} on ${platformAPI.name}:`, error)
 	}
