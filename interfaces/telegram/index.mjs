@@ -410,6 +410,39 @@ async function processMessageFiles(message, ctx, globalTelegrafInstance) {
 	}
 
 	try {
+		if ('sticker' in message && message.sticker) {
+			const { sticker } = message
+			let fileIdToDownload = sticker.file_id
+			let fileName
+			let mimeType
+			let description = `贴纸${sticker.emoji ? `: ${sticker.emoji}` : ''}`
+
+			if (sticker.is_video) {
+				// 视频贴纸 (WEBM)
+				fileName = `${sticker.file_unique_id}.webm`
+				mimeType = 'video/webm'
+			} else if (sticker.is_animated)
+				// 动画贴纸 (TGS)。TGS 格式对 AI 无用，下载其光栅图缩略图。
+				if (sticker.thumb) {
+					fileIdToDownload = sticker.thumb.file_id
+					fileName = `animated_sticker_thumb_${sticker.file_unique_id}.jpg`
+					mimeType = 'image/jpeg'
+					description += ' (动画贴纸的缩略图)'
+				} else {
+					// 如果没有缩略图，则跳过
+					console.warn(`[TelegramInterface] Animated sticker ${sticker.file_unique_id} has no thumbnail, skipping.`)
+					fileIdToDownload = null
+				}
+			 else {
+				// 静态贴纸 (WEBP)
+				fileName = `${sticker.file_unique_id}.webp`
+				mimeType = 'image/webp'
+			}
+
+			if (fileIdToDownload)
+				fileDownloadPromises.push(addFile(fileIdToDownload, fileName, mimeType, description))
+		}
+
 		if ('photo' in message && message.photo) {
 			const photo = message.photo.reduce((prev, current) => (prev.file_size || 0) > (current.file_size || 0) ? prev : current)
 			fileDownloadPromises.push(addFile(photo.file_id, `${photo.file_unique_id}.jpg`, 'image/jpeg', message.caption || '图片'))
@@ -526,7 +559,6 @@ export async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, messa
 
 	if (isReplyToOwnerTopicCreationMessage)
 		console.log(`[TelegramInterface] Identified a reply to owner's topic creation message. Message ID: ${message.message_id}, Replied To Message ID: ${message.reply_to_message.message_id}, Thread ID: ${message.message_thread_id}. This will NOT trigger 'mentions_owner' for AI context if not also an @mention.`)
-
 
 	const replyToMessageForAiPrompt = isReplyToOwnerTopicCreationMessage ? undefined : message.reply_to_message
 	const content = telegramEntitiesToAiMarkdown(rawText, entities, telegramBotInfo || undefined, replyToMessageForAiPrompt)

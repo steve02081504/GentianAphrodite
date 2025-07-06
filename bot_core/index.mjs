@@ -679,9 +679,10 @@ async function sendAndLogReply(replyToSend, platformAPI, channelId, repliedToMes
 	}
 
 	const result = await platformAPI.sendMessage(channelId, replyToSend, repliedToMessageEntry)
-	if (result)
+	if (result) {
 		channelLastSendMessageTime[channelId] = result.time_stamp
-
+		channelChatLogs[channelId].push(result)
+	}
 	return result
 }
 
@@ -711,7 +712,6 @@ async function handleMessageQueue(channelId, platformAPI) {
 	} finally {
 		if (channelMessageQueues[channelId]?.length === 0)
 			delete channelHandlers[channelId]
-
 	}
 }
 
@@ -794,7 +794,6 @@ async function processNextMessageInQueue(myQueue, currentChannelLog, platformAPI
 	const messageForReply = triggered ? currentChannelLog[currentChannelLog.length - 1] : null
 	if (messageForReply)
 		await doMessageReplyInternal(messageForReply, platformAPI, channelId)
-
 }
 
 /**
@@ -1099,9 +1098,7 @@ function ensureChannelHandlerIsRunning(channelId, platformAPI, fountEntry) {
 					delete channelHandlers[channelId]
 				else if (!channelHandlers[channelId])
 					console.warn(`[BotLogic] Channel handler for ${channelId} was cleared, but queue is not empty. Not auto-restarting immediately.`)
-
 			})
-
 }
 
 /**

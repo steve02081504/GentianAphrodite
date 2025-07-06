@@ -145,43 +145,130 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 
 	const content = await getMessageFullContent(message, discordClientInstance)
 
-	const files = (await Promise.all([...[
-		message.attachments,
-		...message.messageSnapshots.map(referencedMessage => referencedMessage.attachments)
-	].flatMap(x => x.map(x => x)).filter(Boolean).map(async (attachment) => {
+	// 准备一个数组来存放所有需要下载的文件/图片的 Promise
+	const allFilePromises = []
+	const processedUrls = new Set()
+
+	// 1. 解析并下载自定义表情
+	const emojiRegex = /<(a?):(\w+):(\d+)>/g
+	let emojiMatch
+	while ((emojiMatch = emojiRegex.exec(content)) !== null) {
+		const isAnimated = emojiMatch[1] === 'a'
+		const emojiName = emojiMatch[2]
+		const emojiId = emojiMatch[3]
+		const extension = isAnimated ? 'gif' : 'png'
+		const mimeType = `image/${extension}`
+		const url = `https://cdn.discordapp.com/emojis/${emojiId}.${extension}`
+
+		if (processedUrls.has(url)) continue
+		processedUrls.add(url)
+		allFilePromises.push(
+			(async () => {
+				try {
+					const buffer = Buffer.from(await tryFewTimes(() => fetch(url).then((response) => response.arrayBuffer())))
+					return {
+						name: `${emojiName}.${extension}`,
+						buffer,
+						description: `Custom emoji: ${emojiName}`,
+						mime_type: mimeType
+					}
+				} catch (error) {
+					console.error(`[DiscordInterface] Failed to download custom emoji ${emojiName}:`, error)
+					return null
+				}
+			})()
+		)
+	}
+
+	// 2. 下载贴纸 (Stickers)
+	// Lottie 格式 (JSON) 的贴纸暂不处理，只处理 PNG/APNG/GIF 格式
+	message.stickers.forEach(sticker => {
+		if (sticker.format === 3) { // 3 is LOTTIE format
+			console.log(`[DiscordInterface] Skipping Lottie sticker: ${sticker.name}`)
+			return
+		}
+		if (!sticker.url) {
+			console.error('[DiscordInterface] Sticker has no url:', sticker)
+			return
+		}
+		if (processedUrls.has(sticker.url)) return
+		processedUrls.add(sticker.url)
+		allFilePromises.push(
+			(async () => {
+				try {
+					const buffer = Buffer.from(await tryFewTimes(() => fetch(sticker.url).then((response) => response.arrayBuffer())))
+					const fileName = sticker.url.split('/').pop() || `${sticker.name}.png`
+					return {
+						name: fileName,
+						buffer,
+						description: `Sticker: ${sticker.name}`,
+						mime_type: await mimetypeFromBufferAndName(buffer, fileName)
+					}
+				} catch (error) {
+					console.error(`[DiscordInterface] Failed to download sticker ${sticker.name}:`, error)
+					return null
+				}
+			})()
+		)
+	})
+
+	const originalAttachments = [...message.attachments.values(), ...message.messageSnapshots.flatMap(ref => [...ref.attachments.values()])]
+
+	originalAttachments.forEach(attachment => {
 		if (!attachment.url) {
 			console.error('[DiscordInterface] attachment has no url:', attachment)
-			return null
+			return
 		}
-		try {
-			const buffer = Buffer.from(await tryFewTimes(
-				() => fetch(attachment.url).then((response) => response.arrayBuffer())
-			))
-			return {
-				name: attachment.name,
-				buffer,
-				description: attachment.description,
-				mime_type: attachment.contentType || await mimetypeFromBufferAndName(buffer, attachment.name)
-			}
+
+		if (processedUrls.has(attachment.url)) return
+		processedUrls.add(attachment.url)
+		allFilePromises.push(
+			(async () => {
+				try {
+					const buffer = Buffer.from(await tryFewTimes(() => fetch(attachment.url).then((response) => response.arrayBuffer())))
+					return {
+						name: attachment.name,
+						buffer,
+						description: attachment.description,
+						mime_type: attachment.contentType || await mimetypeFromBufferAndName(buffer, attachment.name)
+					}
+				} catch (error) {
+					console.error(error)
+					return null
+				}
+			})()
+		)
+	})
+
+	message.embeds.forEach(embed => {
+		if (!embed.image?.url) {
+			console.error('[DiscordInterface] embed has no image url:', embed)
+			return
 		}
-		catch (error) {
-			console.error(error)
-		}
-	}), ...message.embeds.map(embed => embed.image?.url).filter(url => url).map(async url => {
-		try {
-			return {
-				name: url.split('/').pop(),
-				buffer: Buffer.from(await tryFewTimes(
-					() => fetch(url).then((response) => response.arrayBuffer())
-				)),
-				description: '',
-				mime_type: 'image/png'
-			}
-		}
-		catch (error) {
-			console.error(error)
-		}
-	})])).filter(Boolean)
+
+		if (processedUrls.has(embed.image.url)) return
+		processedUrls.add(embed.image.url)
+		allFilePromises.push(
+			(async () => {
+				try {
+					const url = embed.image.url
+					const buffer = Buffer.from(await tryFewTimes(() => fetch(url).then((response) => response.arrayBuffer())))
+					return {
+						name: url.split('/').pop() || 'embedded_image.png',
+						buffer,
+						description: '',
+						mime_type: (await mimetypeFromBufferAndName(buffer, url.split('/').pop() || 'embedded_image.png')) || 'image/png'
+					}
+				} catch (error) {
+					console.error(error)
+					return null
+				}
+			})()
+		)
+	})
+
+	// 并行执行所有下载任务，并过滤掉失败的结果
+	const files = (await Promise.all(allFilePromises)).filter(Boolean)
 
 	if (!content && files.length === 0) return null
 
@@ -198,7 +285,7 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 		role: isFromOwner ? 'user' : 'char',
 		name: senderName,
 		content,
-		files,
+		files, // 使用我们新构建的、包含所有类型附件的 files 数组
 		extension: {
 			platform: 'discord',
 			OwnerNameKeywords: interfaceConfig.OwnerNameKeywords,
@@ -346,7 +433,7 @@ export async function DiscordBotMain(client, interfaceConfig) {
 				}
 
 			filesSplit.shift()
-			while(filesSplit.length) {
+			while (filesSplit.length) {
 				try {
 					await /** @type {DiscordTextChannel | DiscordDMChannel} */ channel.send({ files: filesSplit[0] })
 				} catch (e) { console.error('[DiscordInterface] Failed to send file-only message:', e) }
@@ -734,6 +821,7 @@ export async function DiscordBotMain(client, interfaceConfig) {
 	}
 
 	client.on(Events.MessageCreate, async (message) => {
+		if (message.author.username === client.user.username) return
 		const fetchedMessage = await tryFewTimes(() => message.fetch().catch(e => {
 			if (e.code === 10008) return null
 			throw e
