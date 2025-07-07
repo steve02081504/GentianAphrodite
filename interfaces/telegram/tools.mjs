@@ -355,7 +355,7 @@ function splitHtmlAware(longString, maxLength) {
 		// 如果在候选块中没有找到任何安全分割点 (例如一个超长的单词或无标签/空格/换行的字符串)
 		// 或者找到的分割点在最开始（导致 splitPos <= 0），我们就必须硬分割。
 		// 这里的 `splitPos <= 0` 也处理了 `lastIndex` 结果为 `-1` （未找到）的情况。
-		if (splitPos <= 0)
+		if (splitPos <= 1)
 			splitPos = maxLength // 硬分割
 
 
