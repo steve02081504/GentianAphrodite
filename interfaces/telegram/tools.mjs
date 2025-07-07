@@ -270,16 +270,15 @@ export function aiMarkdownToTelegramHtml(aiMarkdownText) {
  * Telegram 的主要限制:
  * - 文本消息: 4096 字符 (HTML 或 MarkdownV2 格式化后)
  * - 图片/视频等媒体的标题 (Caption): 1024 字符 (HTML 或 MarkdownV2 格式化后)
- * 此函数尝试按换行符和指定长度分割。
+ * 此函数尝试按换行符和指定的“安全”分割点（如标签之间、空格）来分割长文本，
+ * 以避免破坏 HTML 标签。
  *
- * @param {string} reply - 原始回复文本。
+ * @param {string} reply - 原始回复文本 (可能是纯文本或 HTML)。
  * @param {number} [split_length=4096] - 每条消息的最大长度。对于标题，应使用 1024。
  * @returns {string[]} 分割后的消息片段数组。
  */
 export function splitTelegramReply(reply, split_length = 4096) {
 	if (!reply) return []
-	// 对于HTML内容，字符长度计算可能需要更保守，因为标签也占字符。
-	// 但Telegram的限制是针对最终的UTF-8字节流或字符数，这里以字符数为准。
 
 	const messages = []
 	let currentMessage = ''
@@ -288,36 +287,87 @@ export function splitTelegramReply(reply, split_length = 4096) {
 	for (const line of lines)
 		// 检查添加下一行（包括换行符）是否会超出长度
 		if (currentMessage.length + (currentMessage ? 1 : 0) + line.length <= split_length) {
-			if (currentMessage)
-				currentMessage += '\n'
+			if (currentMessage) currentMessage += '\n'
 
 			currentMessage += line
-		} else
-			// 当前行本身就超长
-			if (line.length > split_length) {
-				if (currentMessage) { // 推送之前累积的消息
-					messages.push(currentMessage)
-					currentMessage = ''
-				}
-				// 硬分割超长行
-				// TODO: 对于HTML，硬分割可能破坏标签。需要更智能的分割。
-				// 暂时简单处理，实际应用中可能需要HTML感知分割器。
-				for (let i = 0; i < line.length; i += split_length)
-					messages.push(line.substring(i, Math.min(i + split_length, line.length)))
+		} else {
+			// 当前行不超长，但加上它 currentMessage 就超长了
+			if (currentMessage) messages.push(currentMessage)
 
-			} else { // 当前行不超长，但加上它 currentMessage 就超长了
-				if (currentMessage)
-					messages.push(currentMessage)
+			// 新的 currentMessage 从当前行开始
+			currentMessage = line
 
-				currentMessage = line
+			// 如果当前行本身就超长，需要立即处理
+			if (currentMessage.length > split_length) {
+				// 将累积的（现在超长的）currentMessage 分割
+				const parts = splitHtmlAware(currentMessage, split_length)
+				if (parts.length > 1) {
+					// 将除最后一部分外的所有部分都推入 messages
+					messages.push(...parts.slice(0, -1))
+					// 最后一部分成为新的 currentMessage，等待与下一行合并
+					currentMessage = parts[parts.length - 1]
+				} else if (parts.length === 1)
+					// 理论上不应该发生，但作为保障
+					currentMessage = parts[0]
 			}
-
-
+		}
 
 	// 推送最后剩余的 currentMessage
 	if (currentMessage)
-		messages.push(currentMessage)
-
+		// 最后的 currentMessage 可能仍然超长（如果它是输入的最后一行且超长）
+		if (currentMessage.length > split_length)
+			messages.push(...splitHtmlAware(currentMessage, split_length))
+		 else
+			messages.push(currentMessage)
 
 	return messages.filter(msg => msg.trim().length > 0) // 过滤掉可能产生的空字符串
+}
+
+/**
+ * 一个辅助函数，用于智能地分割一个可能包含 HTML 的长字符串。
+ * 它会优先在标签之间、换行符或空格处分割，以避免破坏标记。
+ * @param {string} longString - 需要被分割的长字符串。
+ * @param {number} maxLength - 每个片段的最大长度。
+ * @returns {string[]} 分割后的字符串片段数组。
+ */
+function splitHtmlAware(longString, maxLength) {
+	const chunks = []
+	let remainingString = longString
+
+	while (remainingString.length > maxLength) {
+		// 取出可能成为一个片段的部分
+		const candidateChunk = remainingString.substring(0, maxLength)
+
+		// 从后往前寻找最佳分割点
+		// 优先级: 标签闭合处 ('>' 字符后) > 换行符 ('\n' 字符后) > 空格 (' ' 字符后)
+		const lastTagCloseIndex = candidateChunk.lastIndexOf('>')
+		const lastNewlineIndex = candidateChunk.lastIndexOf('\n')
+		const lastSpaceIndex = candidateChunk.lastIndexOf(' ')
+
+		// 找到最靠后的“安全”分割点。
+		// 注意：我们希望分割点在这些字符之后，所以通常是 index + 1。
+		let splitPos = Math.max(
+			lastTagCloseIndex > -1 ? lastTagCloseIndex + 1 : -1,
+			lastNewlineIndex > -1 ? lastNewlineIndex + 1 : -1,
+			lastSpaceIndex > -1 ? lastSpaceIndex + 1 : -1
+		)
+
+		// 如果在候选块中没有找到任何安全分割点 (例如一个超长的单词或无标签/空格/换行的字符串)
+		// 或者找到的分割点在最开始（导致 splitPos <= 0），我们就必须硬分割。
+		// 这里的 `splitPos <= 0` 也处理了 `lastIndex` 结果为 `-1` （未找到）的情况。
+		if (splitPos <= 0)
+			splitPos = maxLength // 硬分割
+
+
+		// 提取并推送片段
+		chunks.push(remainingString.substring(0, splitPos))
+		// 更新剩余部分
+		remainingString = remainingString.substring(splitPos)
+	}
+
+	// 推送最后剩余的部分
+	if (remainingString.length > 0)
+		chunks.push(remainingString)
+
+	return chunks
 }
