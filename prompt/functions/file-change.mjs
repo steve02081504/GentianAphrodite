@@ -31,7 +31,7 @@ async function findExistingPathsInText(text) {
 				if (!fs.statSync(resolvedPath).isFile()) continue
 				seekedpaths.add(resolvedPath)
 				paths.add(path)
-			} catch (e) { }
+			} catch (e) { /* ignore all errors */ }
 	})
 	return [...paths]
 }

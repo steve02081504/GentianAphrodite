@@ -212,7 +212,7 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 		)
 	})
 
-	const originalAttachments = [...message.attachments.values(), ...message.messageSnapshots.flatMap(ref => [...ref.attachments.values()])]
+	const originalAttachments = [...message.attachments.values(), ...message.messageSnapshots.flatMap(ref => [...ref?.attachments?.values?.() || []])]
 
 	originalAttachments.forEach(attachment => {
 		if (!attachment.url) {

@@ -433,7 +433,7 @@ async function processMessageFiles(message, ctx, globalTelegrafInstance) {
 					console.warn(`[TelegramInterface] Animated sticker ${sticker.file_unique_id} has no thumbnail, skipping.`)
 					fileIdToDownload = null
 				}
-			 else {
+			else {
 				// 静态贴纸 (WEBP)
 				fileName = `${sticker.file_unique_id}.webp`
 				mimeType = 'image/webp'

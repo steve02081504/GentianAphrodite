@@ -31,7 +31,7 @@ import { escapeHTML } from '../../scripts/tools.mjs'
  */
 export function escapeMarkdownV2(text) {
 	if (!text) return ''
-	return text.replace(/([!#()*+.=>?[\]_`{|}~\-])/g, '\\$1')
+	return text.replace(/([!#()*+.=>?[\]_`{|}~-])/g, '\\$1')
 }
 
 /**
@@ -239,8 +239,7 @@ export function aiMarkdownToTelegramHtml(aiMarkdownText) {
 	const processedLines = []
 	const blockquoteStartTag = '&gt; ' // Markdown的 '>' 在HTML转义后是 '&gt;'
 
-	for (let i = 0; i < lines.length; i++) {
-		const line = lines[i]
+	for (const line of lines) 
 		if (line.startsWith(blockquoteStartTag)) {
 			const quoteContent = line.substring(blockquoteStartTag.length) // 内容已经是转义过的
 			if (!inBlockquote) {
@@ -255,7 +254,7 @@ export function aiMarkdownToTelegramHtml(aiMarkdownText) {
 			}
 			processedLines.push(line) // 这部分行内容也已经是转义过的
 		}
-	}
+	
 	if (inBlockquote)  // 确保闭合最后的块引用
 		processedLines.push('</blockquote>')
 
@@ -317,7 +316,7 @@ export function splitTelegramReply(reply, split_length = 4096) {
 		// 最后的 currentMessage 可能仍然超长（如果它是输入的最后一行且超长）
 		if (currentMessage.length > split_length)
 			messages.push(...splitHtmlAware(currentMessage, split_length))
-		 else
+		else
 			messages.push(currentMessage)
 
 	return messages.filter(msg => msg.trim().length > 0) // 过滤掉可能产生的空字符串
@@ -353,11 +352,8 @@ function splitHtmlAware(longString, maxLength) {
 		)
 
 		// 如果在候选块中没有找到任何安全分割点 (例如一个超长的单词或无标签/空格/换行的字符串)
-		// 或者找到的分割点在最开始（导致 splitPos <= 0），我们就必须硬分割。
-		// 这里的 `splitPos <= 0` 也处理了 `lastIndex` 结果为 `-1` （未找到）的情况。
 		if (splitPos <= 1)
 			splitPos = maxLength // 硬分割
-
 
 		// 提取并推送片段
 		chunks.push(remainingString.substring(0, splitPos))

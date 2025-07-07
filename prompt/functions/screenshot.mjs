@@ -28,7 +28,9 @@ export async function ScreenshotPrompt(args, logical_results, prompt_struct, det
 		let qrcodes
 		try {
 			qrcodes = await decodeQrCodeFromBuffer(screenShot)
-		} catch (e) { }
+		} catch (e) {
+			console.error(e)
+		}
 		additional_chat_log.push({
 			name: 'system',
 			role: 'system',

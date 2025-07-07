@@ -216,7 +216,7 @@ export async function FormatStr(str, formats) {
 				result += eval_result.result
 				str = str.slice(end_index)
 				break find
-			} catch (error) { }
+			} catch (error) { /* ignore any error */ }
 		}
 	}
 	result += str
