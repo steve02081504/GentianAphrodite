@@ -257,7 +257,7 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 						name: url.split('/').pop() || 'embedded_image.png',
 						buffer,
 						description: '',
-						mime_type: (await mimetypeFromBufferAndName(buffer, url.split('/').pop() || 'embedded_image.png')) || 'image/png'
+						mime_type: await mimetypeFromBufferAndName(buffer, url.split('/').pop() || 'embedded_image.png') || 'image/png'
 					}
 				} catch (error) {
 					console.error(error)
