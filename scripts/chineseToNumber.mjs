@@ -114,7 +114,7 @@ export function chineseToNumber(str) {
 					last_slice = last_slice.mul(UnitMap[Unit]).add(num)
 			continue
 		}
-		else if (slice.match(/^\d+(\.\d+)?$/)) {
+		else if (slice.match(/^\d+(?:\.\d+)?$/)) {
 			math_array.push(last_slice)
 			last_slice = slice
 		}

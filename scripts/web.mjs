@@ -232,7 +232,7 @@ export function getUrlFilename(url, contentDisposition) {
 		// 首先尝试 filename* (RFC 5987)，因为它支持字符集定义。
 		// 示例: filename*=UTF-8''%e2%82%ac%20exchange%20rate.txt
 		// 正则表达式捕获: 1=字符集 (可选), 2=编码后的文件名
-		const filenameStarMatch = /filename\*=\s*(?:([^']*)'')?([^;]+)/i.exec(contentDisposition)
+		const filenameStarMatch = /filename\*=\s*(?:([^']*)'')?([^;]+?)/i.exec(contentDisposition)
 		if (filenameStarMatch && filenameStarMatch[2])
 			try {
 				const filename = decodeURIComponent(filenameStarMatch[2])

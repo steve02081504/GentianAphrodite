@@ -25,13 +25,13 @@ export async function DicePrompt(args, logical_results, prompt_struct, detail_le
 6面骰（默认类型）：${roll(6)}; ${roll(6)}; ${roll(6)}; ${roll(6)}; ${roll(6)};
 `
 
-	if (await match_keys(args, [/\b(\d*)d(\d+)\b/], 'any')) {
+	if (await match_keys(args, [/\b(\d+)?d(\d+)\b/], 'any')) {
 		result += `\
 当他人谈论起形似“1d6”的语句时，这很可能是指代掷骰子。
 XdY+Z，即扔出X个Y面骰子，结果加上Z
 若不指定X，则默认为1
 `
-		const matches = getScopedChatLog(args, 'any').map(x => x.content).join().match(/\b(\d*)d(\d+)([+-]\d+)?\b/g)
+		const matches = getScopedChatLog(args, 'any').map(x => x.content).join().match(/\b(\d+)?d(\d+)([+-]\d+)?\b/g)
 		result += `\
 以下是一些可能有用的roll结果，在你需要时可直接取用：
 `

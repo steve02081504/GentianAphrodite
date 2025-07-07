@@ -313,7 +313,7 @@ function isBotCommand(str) {
  * @returns {Promise<boolean>} 如果应该回复则返回 true，否则返回 false。
  */
 async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {}) {
-	const content = (fountEntry.content || '').replace(/^(@\S+\s+)+/g, '')
+	const content = (fountEntry.content || '').trim().replace(/^@\S+(?:\s+@\S+)*\s*/, '')
 	const isFromOwner = fountEntry.extension?.is_from_owner === true
 
 	if (fountEntry.extension?.is_direct_message) return isFromOwner

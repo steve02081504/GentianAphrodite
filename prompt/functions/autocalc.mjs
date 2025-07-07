@@ -15,7 +15,7 @@ export async function AutoCalcPrompt(args, logical_results, prompt_struct, detai
 
 	const getLog = () => getScopedChatLog(args, 'any').map(x => x.content).join()
 	if (await match_keys(args, [/((哪|那)个|谁)(最|)(大|小)/, /(大|小)还是/], 'any')) {
-		const str = getLog().replace(/(:|@\w*|\/)\b\d+(\.\d+)?\b/g, '')
+		const str = getLog().replace(/(:|@\w*|\/)\b\d+(?:\.\d+)?\b/g, '')
 		const nums = findChineseExprsAndNumbers(str)
 		if (Object.keys(nums).length >= 2)
 			result += `\
@@ -24,7 +24,7 @@ ${Object.entries(nums).sort((a, b) => a[1].compare(b[1])).map(([expr, value]) =>
 `
 	}
 	if (await match_keys(args, ['是多少', '是几', '算一下', '算下', '计算', /[=＝][?？]/], 'any')) {
-		const exprs = findChineseExprs(getLog().replace(/(:|@\w*)\b\d+(\.\d+)?\b/g, '').replace(/\b(\d*)d(\d+)([+-]\d+)?\b/g, ''))
+		const exprs = findChineseExprs(getLog().replace(/(:|@\w*)\b\d+(?:\.\d+)?\b/g, '').replace(/\b(\d+)?d(\d+)([+-]\d+)?\b/g, ''))
 		if (Object.keys(exprs).length) {
 			const expr_result = Object.entries(exprs).map(([expr, value]) => `${expr} = ${value}`).filter(x => x.length < 1024).join('\n')
 			result += `\
