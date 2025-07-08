@@ -30,7 +30,8 @@ export function arraysEqual(a, b) {
  * @param {string} [encoding='utf8'] - The encoding to use when writing the file.
  * @return {void}
  */
-export function nicerWriteFileSync(filePath, data, encoding = 'utf8') {
+export function nicerWriteFileSync(filePath, data, encoding) {
+	if (Object(data) instanceof String) encoding ??= 'utf8'
 	let oldData
 	if (fs.existsSync(filePath))
 		oldData = fs.readFileSync(filePath, encoding)
