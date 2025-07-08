@@ -1015,7 +1015,7 @@ async function checkQueueMessageTrigger(currentMessageToProcess, currentChannelL
 				result += nameMap[message.name]++ + '\n'
 			}
 			result += (message.content ?? '') + '\n\n'
-			result += (message.files || []).map(file => file.buffer instanceof Buffer ? file.buffer.toString('hex') : String(file.buffer)).join('\n')
+			result += (message.files || []).filter(file => !file.extension?.is_from_vision).map(file => file.buffer instanceof Buffer ? file.buffer.toString('hex') : String(file.buffer)).join('\n')
 			return result
 		}
 		const repet = findMostFrequentElement(currentChannelLog.slice(-10), summary) // 检查最近10条消息
@@ -1027,7 +1027,7 @@ async function checkQueueMessageTrigger(currentMessageToProcess, currentChannelL
 			!currentChannelLog.slice(-10).some(msg => msg.extension?.platform_user_id == platformAPI.getBotUserId() && summary(msg, false) === summary(repet.element, false))
 		) {
 			await sendAndLogReply(
-				{ content: repet.element.content, files: repet.element.files },
+				{ content: repet.element.content, files: repet.element.files.filter(file => !file.extension?.is_from_vision) },
 				platformAPI, channelId, currentMessageToProcess
 			)
 			// 复读已发送，此消息不再触发通用回复

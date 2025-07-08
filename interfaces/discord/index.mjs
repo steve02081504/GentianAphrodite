@@ -170,7 +170,8 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 						name: `${emojiName}.${extension}`,
 						buffer,
 						description: `Custom emoji: ${emojiName}`,
-						mime_type: mimeType
+						mime_type: mimeType,
+						extension: { is_from_vision: true },
 					}
 				} catch (error) {
 					console.error(`[DiscordInterface] Failed to download custom emoji ${emojiName}:`, error)
@@ -202,7 +203,8 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 						name: fileName,
 						buffer,
 						description: `Sticker: ${sticker.name}`,
-						mime_type: await mimetypeFromBufferAndName(buffer, fileName)
+						mime_type: await mimetypeFromBufferAndName(buffer, fileName),
+						extension: { is_from_vision: true },
 					}
 				} catch (error) {
 					console.error(`[DiscordInterface] Failed to download sticker ${sticker.name}:`, error)

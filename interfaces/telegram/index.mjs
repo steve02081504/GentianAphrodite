@@ -388,7 +388,7 @@ async function processMessageFiles(message, ctx, globalTelegrafInstance) {
 	const fileDownloadPromises = []
 	const telegrafAPI = ctx ? ctx.telegram : globalTelegrafInstance?.telegram
 
-	const addFile = async (fileId, fileNameFallback, mimeTypeFallback, description = '') => {
+	const addFile = async (fileId, fileNameFallback, mimeTypeFallback, description = '', extension) => {
 		try {
 			if (!telegrafAPI) {
 				console.warn('[TelegramInterface:processMessageFiles] Cannot download file: Telegraf API accessor not available.')
@@ -403,7 +403,7 @@ async function processMessageFiles(message, ctx, globalTelegrafInstance) {
 			const { fileName, mime_type: extractedMimeType } = extractFileInfo(message, fileId, fileNameFallback, mimeTypeFallback)
 
 			const finalMimeType = extractedMimeType || await mimetypeFromBufferAndName(buffer, fileName)
-			filesArr.push({ name: fileName, buffer, mime_type: finalMimeType, description })
+			filesArr.push({ name: fileName, buffer, mime_type: finalMimeType, description, extension })
 		} catch (e) {
 			console.error(`[TelegramInterface:processMessageFiles] Failed to process file (ID: ${fileId}):`, e)
 		}
@@ -440,7 +440,7 @@ async function processMessageFiles(message, ctx, globalTelegrafInstance) {
 			}
 
 			if (fileIdToDownload)
-				fileDownloadPromises.push(addFile(fileIdToDownload, fileName, mimeType, description))
+				fileDownloadPromises.push(addFile(fileIdToDownload, fileName, mimeType, description, { is_from_vision: true }))
 		}
 
 		if ('photo' in message && message.photo) {
@@ -466,7 +466,6 @@ async function processMessageFiles(message, ctx, globalTelegrafInstance) {
 
 		if (fileDownloadPromises.length > 0)
 			await Promise.all(fileDownloadPromises)
-
 	} catch (error) {
 		console.error(`[TelegramInterface:processMessageFiles] Top-level error occurred during file processing (MessageID ${message.message_id}):`, error)
 	}
