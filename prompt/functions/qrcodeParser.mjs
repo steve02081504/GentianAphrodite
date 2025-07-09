@@ -1,4 +1,5 @@
 import { decodeQrCodeFromBuffer } from '../../scripts/qrcode.mjs'
+import { findUrlsInText, getUrlMetadata } from '../../scripts/web.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
@@ -21,14 +22,22 @@ export async function qrcodeParserPrompt(args, logical_results, prompt_struct, d
 
 		if (qrcodes.length) {
 			log.extension.decodedQRCodes = qrcodes
+			const decodedContents = qrcodes.flat()
+			const urls = decodedContents.flatMap(content => findUrlsInText(content))
+			const metas = (await Promise.all(urls.map(async (url) => {
+				const meta = await getUrlMetadata(url)
+				if (meta?.length) return `\`${url}\`：\n${meta.join('\n')}`
+			}))).filter(Boolean)
+
+			let content = `上条消息中图片内的二维码内容是：\n\`\`\`${decodedContents.join('\n')}\`\`\``
+			if (metas.length)
+				content += `\n其中，链接的元信息如下：\n${metas.join('\n')}`
+
 			log.logContextAfter ??= []
 			log.logContextAfter.push({
 				name: 'system',
 				role: 'system',
-				content: `\
-上条消息中图片内的二维码内容是：
-${qrcodes.map(x => x.join('\n')).join('\n')}
-`,
+				content,
 				charVisibility: [args.char_id]
 			})
 		}

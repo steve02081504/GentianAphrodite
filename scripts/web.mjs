@@ -1,6 +1,8 @@
 import puppeteer from 'npm:puppeteer-core@^24.9.0'
 import TurndownService from 'npm:turndown'
-import { where_command } from './exec.mjs' // 假设这是一个查找命令路径的辅助函数
+import { where_command } from './exec.mjs'
+import path from 'node:path'
+import { parse } from 'npm:node-html-parser'
 
 const DEFAULT_NAVIGATION_TIMEOUT = 13 * 1000 // 设置一个默认导航超时时间 (毫秒)
 
@@ -225,8 +227,6 @@ export async function MarkdownWebFetch(url) {
 	}
 }
 
-import path from 'node:path'
-
 export function getUrlFilename(url, contentDisposition) {
 	if (contentDisposition) {
 		// 首先尝试 filename* (RFC 5987)，因为它支持字符集定义。
@@ -308,4 +308,116 @@ export function getUrlFilename(url, contentDisposition) {
 		}
 
 	return null // 无法确定文件名
+}
+
+/**
+ * 在文本中查找 URL。
+ * @param {string} text
+ * @returns {string[]}
+ */
+export function findUrlsInText(text) {
+	if (!text) return []
+	const urlRegex = /https?:\/\/[^\s`'"]+/gi
+	const urls = text.match(urlRegex)
+	return urls ? [...new Set(urls)] : []
+}
+
+/**
+ * 获取给定 URL 的元数据。
+ * 如果 URL 指向 HTML 页面，则使用 node-html-parser 提取标题、描述、图标和各种元标签。
+ * 如果指向其他文件类型，则从响应头中提取文件名、类型和大小等信息。
+ * @param {string} url - 要获取元数据的 URL。
+ * @returns {Promise<string[]|null>} - 一个包含元数据字符串的数组，如果获取失败或未找到元数据，则返回 null。
+ */
+export async function getUrlMetadata(url) {
+	const controller = new AbortController()
+	const timeoutId = setTimeout(() => controller.abort(), 5000) // 5秒超时
+
+	try {
+		// 统一处理不成功的响应
+		const handleFailedResponse = (response) => {
+			const metas = [`- status: ${response.status}`]
+			if (response.statusText) metas.push(`- statusText: ${response.statusText}`)
+			return metas
+		}
+
+		// 步骤 1: 使用 HEAD 请求获取头信息，避免下载整个文件体
+		const headResponse = await fetch(url, { method: 'HEAD', redirect: 'follow', signal: controller.signal })
+		if (!headResponse.ok) return handleFailedResponse(headResponse)
+
+		const contentType = headResponse.headers.get('content-type')
+		const metas = []
+
+		// 步骤 2: 判断内容类型，分支处理
+		if (contentType?.includes('text/html')) {
+			const getResponse = await fetch(url, { redirect: 'follow', signal: controller.signal })
+			if (!getResponse.ok) return handleFailedResponse(getResponse)
+
+			const html = await getResponse.text()
+			const root = parse(html)
+
+			const metadataMap = new Map()
+			const addMeta = (key, value) => {
+				// 检查 value 是否存在且不为空字符串
+				if (value && value.trim() && !metadataMap.has(key))
+					metadataMap.set(key, value.trim())
+			}
+
+			addMeta('title', root.querySelector('title')?.text)
+			addMeta('description', root.querySelector('meta[name="description"]')?.getAttribute('content'))
+			addMeta('keywords', root.querySelector('meta[name="keywords"]')?.getAttribute('content'))
+			addMeta('author', root.querySelector('meta[name="author"]')?.getAttribute('content'))
+
+			const ogTags = root.querySelectorAll('meta[property^="og:"]')
+			for (const el of ogTags) {
+				const property = el.getAttribute('property')
+				const content = el.getAttribute('content')
+				addMeta(property, content)
+			}
+
+			const twitterTags = root.querySelectorAll('meta[name^="twitter:"]')
+			for (const el of twitterTags) {
+				const name = el.getAttribute('name')
+				const content = el.getAttribute('content')
+				addMeta(name, content)
+			}
+
+			const favicon = root.querySelector('link[rel="icon"], link[rel="shortcut icon"]')?.getAttribute('href')
+			if (favicon)
+				try {
+					const absoluteFaviconUrl = new URL(favicon, url).href
+					addMeta('favicon', absoluteFaviconUrl)
+				} catch (e) {
+					console.warn(`无法解析favicon的URL: ${favicon}`, e)
+				}
+
+			for (const [key, value] of metadataMap.entries())
+				metas.push(`- ${key}: ${value}`)
+		}
+		else {
+			// 对于非 HTML 内容，直接使用 HEAD 响应的头信息
+			const contentDisposition = headResponse.headers.get('content-disposition')
+			const contentLength = headResponse.headers.get('content-length')
+			const filename = getUrlFilename(url, contentDisposition)
+
+			if (filename) metas.push(`- filename: ${filename}`)
+			if (contentType) metas.push(`- type: ${contentType.trim()}`)
+			if (contentLength) {
+				const size = Number.parseInt(contentLength, 10)
+				if (!Number.isNaN(size)) metas.push(`- size: ${size} bytes`)
+			}
+		}
+
+		// 步骤 3: 统一返回结果
+		return metas.length > 0 ? metas : null
+	}
+	catch (e) {
+		if (e.name === 'AbortError')
+			console.warn(`Timeout getting metadata for ${url}`)
+		else
+			console.warn(`Failed to get metadata for ${url}:`, e)
+		return null
+	} finally {
+		clearTimeout(timeoutId)
+	}
 }
