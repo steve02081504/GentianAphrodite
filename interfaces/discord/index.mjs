@@ -214,7 +214,7 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 		)
 	})
 
-	const originalAttachments = [...message.attachments.values(), ...message.messageSnapshots.flatMap(ref => [...ref?.attachments?.values?.() || []])]
+	const originalAttachments = [...message.attachments.values(), ...[...message.messageSnapshots].flatMap(ref => [...ref?.attachments?.values?.() || []])]
 
 	originalAttachments.forEach(attachment => {
 		if (!attachment.url) {
@@ -243,17 +243,17 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 	})
 
 	message.embeds.forEach(embed => {
-		if (!embed.image?.url) {
+		const url = embed.image?.url || embed.thumbnail?.url
+		if (!url) {
 			console.error('[DiscordInterface] embed has no image url:', embed)
 			return
 		}
 
-		if (processedUrls.has(embed.image.url)) return
-		processedUrls.add(embed.image.url)
+		if (processedUrls.has(url)) return
+		processedUrls.add(url)
 		allFilePromises.push(
 			(async () => {
 				try {
-					const url = embed.image.url
 					const buffer = Buffer.from(await tryFewTimes(() => fetch(url).then((response) => response.arrayBuffer())))
 					return {
 						name: url.split('/').pop() || 'embedded_image.png',
