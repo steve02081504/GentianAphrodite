@@ -1,6 +1,6 @@
 import process from 'node:process'
 import util from 'node:util'
-import { async_eval } from 'npm:@steve02081504/async-eval'
+import { async_eval } from 'https://cdn.jsdelivr.net/gh/steve02081504/async-eval/deno.mjs'
 import { bash_exec, pwsh_exec } from '../../scripts/exec.mjs'
 import { GetReply } from '../index.mjs'
 import { newCharReplay, statisticDatas } from '../../scripts/statistics.mjs'

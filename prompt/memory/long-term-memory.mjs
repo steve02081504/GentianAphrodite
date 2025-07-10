@@ -2,7 +2,7 @@ import { loadJsonFileIfExists, saveJsonFile } from '../../../../../../../src/scr
 import { chardir } from '../../charbase.mjs'
 import path from 'node:path'
 import fs from 'node:fs'
-import { async_eval } from 'npm:@steve02081504/async-eval'
+import { async_eval } from 'https://cdn.jsdelivr.net/gh/steve02081504/async-eval/deno.mjs'
 import { match_keys, match_keys_all } from '../../scripts/match.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */

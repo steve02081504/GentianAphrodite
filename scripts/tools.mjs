@@ -1,5 +1,5 @@
 import fs from 'node:fs'
-import { async_eval } from 'npm:@steve02081504/async-eval'
+import { async_eval } from 'https://cdn.jsdelivr.net/gh/steve02081504/async-eval/deno.mjs'
 
 export async function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms))
