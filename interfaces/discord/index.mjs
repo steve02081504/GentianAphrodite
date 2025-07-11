@@ -147,7 +147,7 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 
 	// 准备一个数组来存放所有需要下载的文件/图片的 Promise
 	const allFilePromises = []
-	const processedUrls = new Set()
+	const processedUrls = new Set() // 使用 Set 来防止重复下载同一个 URL
 
 	// 1. 解析并下载自定义表情
 	const emojiRegex = /<(a?):(\w+):(\d+)>/g
@@ -162,6 +162,7 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 
 		if (processedUrls.has(url)) continue
 		processedUrls.add(url)
+
 		allFilePromises.push(
 			(async () => {
 				try {
@@ -182,9 +183,8 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 	}
 
 	// 2. 下载贴纸 (Stickers)
-	// Lottie 格式 (JSON) 的贴纸暂不处理，只处理 PNG/APNG/GIF 格式
 	message.stickers.forEach(sticker => {
-		if (sticker.format === 3) { // 3 is LOTTIE format
+		if (sticker.format === 3) { // 3 is LOTTIE format, skip it
 			console.log(`[DiscordInterface] Skipping Lottie sticker: ${sticker.name}`)
 			return
 		}
@@ -194,6 +194,7 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 		}
 		if (processedUrls.has(sticker.url)) return
 		processedUrls.add(sticker.url)
+
 		allFilePromises.push(
 			(async () => {
 				try {
@@ -214,16 +215,20 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 		)
 	})
 
-	const originalAttachments = [...message.attachments.values(), ...[...message.messageSnapshots].flatMap(ref => [...ref?.attachments?.values?.() || []])]
+	// 3. 收集所有附件 (包括原始消息和所有转发/引用快照中的附件)
+	const allAttachments = [
+		...message.attachments.values(),
+		...message.messageSnapshots.values().flatMap(snapshot => [...snapshot.attachments.values()])
+	]
 
-	originalAttachments.forEach(attachment => {
-		if (!attachment.url) {
-			console.error('[DiscordInterface] attachment has no url:', attachment)
+	allAttachments.forEach(attachment => {
+		if (!attachment || !attachment.url) {
+			console.error('[DiscordInterface] Attachment has no url:', attachment)
 			return
 		}
-
 		if (processedUrls.has(attachment.url)) return
 		processedUrls.add(attachment.url)
+
 		allFilePromises.push(
 			(async () => {
 				try {
@@ -231,45 +236,50 @@ async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 					return {
 						name: attachment.name,
 						buffer,
-						description: attachment.description,
+						description: attachment.description || '',
 						mime_type: attachment.contentType || await mimetypeFromBufferAndName(buffer, attachment.name)
 					}
 				} catch (error) {
-					console.error(error)
+					console.error(`[DiscordInterface] Failed to download attachment ${attachment.name}:`, error)
 					return null
 				}
 			})()
 		)
 	})
 
+	// 4. 下载嵌入内容中的图片 (Embeds)
 	message.embeds.forEach(embed => {
-		const url = embed.image?.url || embed.thumbnail?.url
-		if (!url) {
-			console.error('[DiscordInterface] embed has no image url:', embed)
-			return
-		}
+		// 同时考虑 image 和 thumbnail
+		const imageUrl = embed.image?.url
+		const thumbnailUrl = embed.thumbnail?.url
 
-		if (processedUrls.has(url)) return
-		processedUrls.add(url)
-		allFilePromises.push(
-			(async () => {
-				try {
-					const buffer = Buffer.from(await tryFewTimes(() => fetch(url).then((response) => response.arrayBuffer())))
-					return {
-						name: url.split('/').pop() || 'embedded_image.png',
-						buffer,
-						description: '',
-						mime_type: await mimetypeFromBufferAndName(buffer, url.split('/').pop() || 'embedded_image.png') || 'image/png'
+		for (const url of [imageUrl, thumbnailUrl]) {
+			if (!url) continue
+			if (processedUrls.has(url)) continue
+			processedUrls.add(url)
+
+			allFilePromises.push(
+				(async () => {
+					try {
+						const buffer = Buffer.from(await tryFewTimes(() => fetch(url).then((response) => response.arrayBuffer())))
+						const fileName = url.split('/').pop()?.split('?')[0] || 'embedded_image.png'
+						return {
+							name: fileName,
+							buffer,
+							description: embed.title || embed.description || '',
+							mime_type: await mimetypeFromBufferAndName(buffer, fileName) || 'image/png',
+							extension: { is_from_vision: true }
+						}
+					} catch (error) {
+						console.error(`[DiscordInterface] Failed to download embedded image from ${url}:`, error)
+						return null
 					}
-				} catch (error) {
-					console.error(error)
-					return null
-				}
-			})()
-		)
+				})()
+			)
+		}
 	})
 
-	// 并行执行所有下载任务，并过滤掉失败的结果
+	// 并行执行所有下载任务，并过滤掉失败的结果 (null)
 	const files = (await Promise.all(allFilePromises)).filter(Boolean)
 
 	if (!content && files.length === 0) return null
