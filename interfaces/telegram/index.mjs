@@ -560,7 +560,13 @@ export async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, messa
 		console.log(`[TelegramInterface] Identified a reply to owner's topic creation message. Message ID: ${message.message_id}, Replied To Message ID: ${message.reply_to_message.message_id}, Thread ID: ${message.message_thread_id}. This will NOT trigger 'mentions_owner' for AI context if not also an @mention.`)
 
 	const replyToMessageForAiPrompt = isReplyToOwnerTopicCreationMessage ? undefined : message.reply_to_message
-	const content = telegramEntitiesToAiMarkdown(rawText, entities, telegramBotInfo || undefined, replyToMessageForAiPrompt)
+	let content = telegramEntitiesToAiMarkdown(rawText, entities, telegramBotInfo || undefined, replyToMessageForAiPrompt)
+	if ('sticker' in message && message.sticker) {
+		const sticker = message.sticker
+		const description = `<:${sticker.file_id}:${sticker.set_name || 'unknown_set'}:${sticker.emoji || ''}>`
+		content += `\n\n${description}`
+		content = content.trim()
+	}
 
 	const files = await processMessageFiles(message, ctx, telegrafInstance)
 
@@ -645,9 +651,15 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 			const sentMsg = await sendFileWithCaption(file, captionForThisFileAiMarkdown, isLastFile)
 			if (sentMsg && !firstSentTelegramMessage)
 				firstSentTelegramMessage = sentMsg
-
 		}
 
+		const stickerRegex = /&lt;:([^:]+):[^:]*:[^>]*&gt;\s*/g
+		const stickerIDarray = []
+		let match
+		while ((match = stickerRegex.exec(htmlContent)) !== null) {
+			stickerIDarray.push(match[1])
+			htmlContent = htmlContent.replace(match[0], '')
+		}
 		if (!mainTextSentAsCaption && htmlContent.trim()) {
 			const remainingHtmlParts = splitTelegramReply(htmlContent, 4096)
 			for (const part of remainingHtmlParts)
@@ -655,16 +667,30 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 					const sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, part, baseOptions))
 					if (sentMsg && !firstSentTelegramMessage)
 						firstSentTelegramMessage = sentMsg
-
 				} catch (e) {
 					console.error(`[TelegramInterface] Failed to send remaining HTML text (ChatID: ${platformChatId}, ThreadID: ${messageThreadId}):`, e)
 				}
-
 		}
+		for (const stickerID of stickerIDarray)
+			try {
+				const sentMsg = await tryFewTimes(() => bot.telegram.sendSticker(platformChatId, stickerID, baseOptions))
+				if (sentMsg && !firstSentTelegramMessage)
+					firstSentTelegramMessage = sentMsg
+			} catch (e) {
+				console.error(`[TelegramInterface] Failed to send sticker message (ChatID: ${platformChatId}, ThreadID: ${baseOptions.message_thread_id}):`, e)
+			}
+
 		return firstSentTelegramMessage
 	}
 
 	async function sendTextMessages(bot, platformChatId, baseOptions, htmlContent) {
+		const stickerRegex = /&lt;:([^:]+):[^:]*:[^>]*&gt;\s*/g
+		const stickerIDarray = []
+		let match
+		while ((match = stickerRegex.exec(htmlContent)) !== null) {
+			stickerIDarray.push(match[1])
+			htmlContent = htmlContent.replace(match[0], '')
+		}
 		let firstSentTelegramMessage = null
 		if (htmlContent.trim()) {
 			const textParts = splitTelegramReply(htmlContent, 4096)
@@ -673,12 +699,19 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 					const sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, part, baseOptions))
 					if (sentMsg && !firstSentTelegramMessage)
 						firstSentTelegramMessage = sentMsg
-
 				} catch (e) {
 					console.error(`[TelegramInterface] Failed to send HTML text message (ChatID: ${platformChatId}, ThreadID: ${baseOptions.message_thread_id}):`, e)
 				}
-
 		}
+		for (const stickerID of stickerIDarray)
+			try {
+				const sentMsg = await tryFewTimes(() => bot.telegram.sendSticker(platformChatId, stickerID, baseOptions))
+				if (sentMsg && !firstSentTelegramMessage)
+					firstSentTelegramMessage = sentMsg
+			} catch (e) {
+				console.error(`[TelegramInterface] Failed to send sticker message (ChatID: ${platformChatId}, ThreadID: ${baseOptions.message_thread_id}):`, e)
+			}
+
 		return firstSentTelegramMessage
 	}
 
