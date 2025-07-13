@@ -1,25 +1,9 @@
 import fs from 'node:fs'
 import { escapeRegExp, parseRegexFromString } from '../../scripts/tools.mjs'
-import { XMLParser, XMLValidator } from 'npm:fast-xml-parser'
 import { statisticDatas } from '../../scripts/statistics.mjs'
 import { getFileObjFormPathOrUrl, resolvePath } from '../../scripts/fileobj.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
-
-// XML Parser options
-const xmlParserOptions = {
-	ignoreAttributes: false,
-	attributeNamePrefix: '', // No prefix for attributes
-	allowBooleanAttributes: true, // Allow attributes like regex="true"
-	parseAttributeValue: true, // Try to parse numbers/booleans in attributes
-	parseTagValue: false,
-	trimValues: true, // Trim whitespace
-	// Ensure arrays are created even for single elements for consistency
-	isArray: (name, jpath, isLeafNode, isAttribute) => {
-		return ['file', 'replacement'].includes(name)
-	}
-}
-const parser = new XMLParser(xmlParserOptions)
 
 /** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
 export async function file_change(result, { AddLongTimeLog }) {
@@ -71,82 +55,70 @@ export async function file_change(result, { AddLongTimeLog }) {
 		regen = true
 	}
 
-	const replace_file_xml_str = result.content.match(/<replace-file>(?<xmlContent>[^]*?)<\/replace-file>/)?.groups?.xmlContent
-	if (replace_file_xml_str) {
-		const logContent = '<replace-file>' + replace_file_xml_str + '</replace-file>\n'
+	const replace_file_content = result.content.match(/<replace-file>(?<content>[^]*?)<\/replace-file>/)?.groups?.content
+	if (replace_file_content) {
+		const logContent = '<replace-file>' + replace_file_content + '</replace-file>\n'
 		if (!tool_calling_log.content) {
 			tool_calling_log.content += logContent
 			AddLongTimeLog(tool_calling_log)
 		} else
 			tool_calling_log.content += logContent
 
-
-		let parsedXml
 		const replace_files_data = [] // Structure to hold data compatible with old logic
 
 		try {
-			const validationResult = XMLValidator.validate(replace_file_xml_str)
-			if (validationResult !== true)
-				throw new Error(`Invalid XML structure: ${validationResult.err.msg}`)
+			// Regex to find each <file> block
+			const fileRegex = /<file\s+path="(?<path>[^"]+)">(?<replacements_str>[^]*?)<\/file>/g
+			// Regex to find each <replacement> block within a <file> block
+			const replacementRegex = /<replacement(?<attributes>[^>]*)>\s*<search>(?<search>[^]*?)<\/search>\s*<replace>(?<replace>[^]*?)<\/replace>\s*<\/replacement>/g
 
-			parsedXml = parser.parse(replace_file_xml_str)
+			for (const fileMatch of replace_file_content.matchAll(fileRegex)) {
+				const { path, replacements_str } = fileMatch.groups
+				if (!path) continue // Should not happen with this regex, but a good safeguard
 
-			if (parsedXml.file && Array.isArray(parsedXml.file))
-				for (const fileNode of parsedXml.file) {
-					if (!fileNode.path) {
-						console.warn('Skipping <file> node without \'path\' attribute in replace-file XML.')
+				const fileData = {
+					path,
+					replacements: []
+				}
+
+				for (const repMatch of replacements_str.matchAll(replacementRegex)) {
+					const { attributes, search, replace } = repMatch.groups
+
+					if (search === undefined || replace === undefined) {
+						console.warn('Skipping malformed <replacement> block for path:', path)
 						continue
 					}
-					const fileData = {
-						path: fileNode.path,
-						replacements: []
-					}
-					if (fileNode.replacement && Array.isArray(fileNode.replacement))
-						for (const repNode of fileNode.replacement) {
-							if (repNode.search === undefined || repNode.replace === undefined) {
-								console.warn('Skipping <replacement> node without <search> or <replace> tags in replace-file XML for path:', fileNode.path)
-								continue
-							}
-							fileData.replacements.push({
-								search: repNode.search,
-								replace: repNode.replace,
-								regex: repNode.regex
-							})
-						}
-					else
-						console.warn('No valid <replacement> array found for file:', fileNode.path)
 
-					replace_files_data.push(fileData)
+					// Check for regex="true" in attributes. A simple .includes() is robust enough.
+					const isRegex = attributes?.includes('regex="true"') ?? false
+
+					fileData.replacements.push({
+						// Use trim() to be consistent with the previous XML parser's `trimValues: true` option
+						search: search.trim(),
+						replace, // Do not trim replace content, as whitespace might be significant
+						regex: isRegex
+					})
 				}
-			else
-				console.warn('No valid <file> array found in <replace-file> XML.')
 
+				if (fileData.replacements.length > 0)
+					replace_files_data.push(fileData)
+			}
 
+			if (replace_files_data.length === 0)
+				throw new Error('解析<replace-file>标签后，未找到任何有效的<file>或<replacement>操作。')
 		} catch (err) {
-			console.error('Error parsing replace-file XML:', err)
+			console.error('Error parsing replace-file content with regex:', err)
 			AddLongTimeLog({
 				name: 'file-change',
 				role: 'tool',
-				content: `解析replace-file失败：\n\`\`\`\n${err}\n\`\`\`\n原始数据:\n<replace-file>${replace_file_xml_str}</replace-file>`,
+				content: `解析replace-file失败：\n\`\`\`\n${err}\n\`\`\`\n原始数据:\n<replace-file>${replace_file_content}</replace-file>`,
 				files: []
 			})
 			return true // Stop processing this command
 		}
 
-		// Check if we actually got data after parsing
-		if (replace_files_data.length === 0) {
-			AddLongTimeLog({
-				name: 'file-change',
-				role: 'tool',
-				content: `解析replace-file后未找到有效的文件替换操作。\n原始数据:\n<replace-file>${replace_file_xml_str}</replace-file>`,
-				files: []
-			})
-			return true // Stop processing if no valid data
-		}
-
 		console.info('AI替换的文件：', replace_files_data)
 
-		// --- Start of existing replacement logic (using replace_files_data) ---
 		for (const replace_file of replace_files_data) {
 			const { path, replacements } = replace_file
 			const failed_replaces = []
@@ -186,8 +158,6 @@ export async function file_change(result, { AddLongTimeLog }) {
 				else system_content += '，但内容未发生实际变化。\n'
 			} else
 				system_content = `文件 ${path} 内容未发生变化（尝试了 ${replacements.length} 项替换规则）。\n`
-
-
 
 			if (failed_replaces.length) {
 				system_content += `以下 ${failed_replaces.length} 处替换操作失败：\n`

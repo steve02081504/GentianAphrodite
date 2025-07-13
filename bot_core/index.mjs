@@ -359,6 +359,7 @@ async function calculateOwnerTriggerIncrement(fountEntry, content, platformAPI, 
 	if (base_match_keys(content, GentianWords) && base_match_keys(content, [/怎么(想|看)/])) possible += 100
 	if (base_match_keys(content, ['睡了', '眠了', '晚安', '睡觉去了'])) possible += 50
 	if (base_match_keys(content, ['失眠了', '睡不着'])) possible += 100
+	if (base_match_keys(content, [/(?<!你)失眠(?!的)/, /(?<!别)(伤心|难受)/, '好疼'])) possible += 50
 	if (base_match_keys(content, ['早上好', '早安'])) possible += 100
 
 	if (isInFavor) {
@@ -437,7 +438,7 @@ async function calculateTriggerPossibility(fountEntry, platformAPI, channelId, c
 
 	// Check for phrases that negate a direct mention (e.g., "龙胆的", "gentian's")
 	const isPossessiveOrStatePhrase = base_match_keys(content, [
-		/(龙胆(有|能|这边|目前|[^ 。你，]{0,3}的)|gentian('s|is|are|can|has))/i
+		/(龙胆(有(?!没有)|能|这边|目前|[^ 。你，]{0,3}的)|(gentian('s|is|are|can|has)))/i
 	])
 	// Check if the bot's name is at the very end of a short sentence, which might not be a direct mention.
 	const isNameAtEndOfShortPhrase = base_match_keys(content, [/^.{0,4}龙胆$/i])
