@@ -1,5 +1,5 @@
 import { Buffer } from 'node:buffer'
-import { charname as BotCharname, username as FountUsername } from '../charbase.mjs'
+import { charname as BotCharname, username as FountUsername, is_dist } from '../charbase.mjs'
 import GentianAphrodite from '../main.mjs'
 
 import { base_match_keys, base_match_keys_count, SimplifyChinese } from '../scripts/match.mjs'
@@ -828,7 +828,10 @@ async function getAISuggestionForError(error, errorMessageForRecord, platformAPI
 				extension: {}
 			}, {
 				name: ownerNameForAI,
-				content: errorMessageForRecord + `
+				content: errorMessageForRecord + is_dist ? `\
+龙胆，解释下这个错误是什么？可能该如何修复？
+同时给我你的创作者的相关信息，方便我反馈。
+`: `\
 龙胆，我该如何解决这个错误？可以的话你来直接修复它。
 注意的点：
 - 以修正出问题的文件为主，宏观上没什么好修复的
@@ -849,7 +852,7 @@ async function getAISuggestionForError(error, errorMessageForRecord, platformAPI
 		]
 
 		const chatNameForSelfRepair = platformAPI.getChatNameForAI(
-			currentChannelId || 'self-repair-context',
+			currentChannelId || is_dist ? 'error-report-context' : 'self-repair-context',
 			contextMessage
 		)
 

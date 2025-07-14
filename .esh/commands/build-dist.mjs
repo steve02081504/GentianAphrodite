@@ -23,11 +23,9 @@ const bundle = await rollup({
 		{
 			name: 'git-version-injector',
 			renderChunk(code) {
-				const replacement = `const charvar = "${charvar}";`
-				const newCode = code.replace(/(const|let)\s*charvar = [^]*?\n\);?\n/, replacement)
-
-				if (code === newCode)
-					console.warn('Warning: charvar pattern not found in bundle. Version was not injected.')
+				const newCode = code
+					.replace(/(const|let)\s*charvar = [^]*?\n\);?\n/, `const charvar = "${charvar}";`)
+					.replace(/(const|let)\s*is_dist = [^]*?\n\);?\n/, `const is_dist = true;`)
 
 				return { code: newCode, map: null }
 			}
