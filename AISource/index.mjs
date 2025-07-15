@@ -1,6 +1,6 @@
 /** @typedef {import('../../../../../../src/decl/AIsource.ts').AIsource_t} AIsource_t */
 
-import { loadAIsource } from '../../../../../../src/server/managers/AIsource_manager.mjs'
+import { loadAIsource, loadDefaultAIsource } from '../../../../../../src/server/managers/AIsource_manager.mjs'
 import { getPartInfo } from '../../../../../../src/scripts/locale.mjs'
 import { username } from '../charbase.mjs'
 
@@ -21,6 +21,7 @@ export function getAISourceData() {
 	const result = {}
 	for (const name in AIsources)
 		result[name] = AIsources[name]?.filename || ''
+	delete result.fount_default
 	return result
 }
 
@@ -28,7 +29,10 @@ export async function setAISourceData(data) {
 	const newAIsources = {}
 	for (const name in data) if (data[name])
 		newAIsources[name] = loadAIsource(username, data[name])
+	const fount_default = await loadDefaultAIsource(username)
 	for (const name in newAIsources) newAIsources[name] = await newAIsources[name]
+	if (!Object.values(newAIsources).some(x => x === fount_default))
+		newAIsources.fount_default = fount_default
 	AIsources = newAIsources
 }
 
