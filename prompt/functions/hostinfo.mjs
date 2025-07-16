@@ -3,6 +3,7 @@ import os from 'node:os'
 import osinfo from 'npm:node-os-utils'
 import process from 'node:process'
 import { exec } from '../../scripts/exec.mjs'
+import { getWindowInfos } from '../../scripts/window_info.mjs'
 
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
@@ -105,6 +106,24 @@ ${Object.entries(diskUsage).map(([disk, info]) => `\
 当前主机信息如下：
 ${result}
 `
+	try {
+		const windows = await getWindowInfos()
+		result += `\
+当前打开的窗口有：
+${windows.map(w => `\
+标题：${w.title}
+${w.isActive ? `当前活跃窗口
+` : ''}PID：${w.pid}
+进程名：${w.processName}
+路径：${w.path}
+`).join('\n')}
+`
+	} catch (e) {
+		result += `\
+无法获取当前打开的窗口信息：${e.message}
+`
+	}
+
 	return {
 		text: [{
 			content: result,
