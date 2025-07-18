@@ -16,6 +16,7 @@ const commonPlugins = {
 const commonRules = {
 	'remove-duplicates/remove-array-duplicates': ['error'],
 	'no-undef': ['error'],
+	'no-useless-escape': ['error'],
 	semi: ['error', 'never'],
 	'no-duplicate-imports': ['error'],
 	curly: ['error', 'multi'],
@@ -56,7 +57,7 @@ const globals = {
 
 export default [
 	{
-		ignores: ['**/dist/*'],
+		ignores: ['**/dist/*', '**/data/*'],
 		files: ['**/*.js', '**/*.mjs', '**/*.cjs', '**/*.html'],
 		plugins: {
 			...commonPlugins,
@@ -69,7 +70,7 @@ export default [
 		rules: commonRules,
 	},
 	{
-		ignores: ['**/dist/*'],
+		ignores: ['**/dist/*', '**/data/*'],
 		files: ['**/*.ts', '**/*.tsx'],
 		plugins: {
 			...commonPlugins,

@@ -35,23 +35,24 @@ function checkIfBotIsMentioned(rawText, message) {
 
 /**
  * 填充 Fount 聊天日志条目的 extension 对象。
- * @param {TelegramMessageType} message
- * @param {TelegramInterfaceConfig_t} interfaceConfig
- * @param {TelegramMessageType['chat']} chat
- * @param {TelegramUser} fromUser
- * @param {string} content
- * @param {boolean} isDirectMessage
- * @param {boolean} isFromOwner
- * @param {boolean} mentionsBot
- * @param {boolean} mentionsOwner
- * @param {object | undefined} cachedAiReplyExtension
+ * @param {object} params
+ * @param {TelegramMessageType} params.message
+ * @param {TelegramInterfaceConfig_t} params.interfaceConfig
+ * @param {TelegramMessageType['chat']} params.chat
+ * @param {TelegramUser} params.fromUser
+ * @param {string} params.content
+ * @param {boolean} params.isDirectMessage
+ * @param {boolean} params.isFromOwner
+ * @param {boolean} params.mentionsBot
+ * @param {boolean} params.mentionsOwner
+ * @param {object | undefined} params.cachedAiReplyExtension
  * @returns {object}
  */
-function populateFountEntryExtension(
+function populateFountEntryExtension({
 	message, interfaceConfig, chat, fromUser, content,
 	isDirectMessage, isFromOwner, mentionsBot, mentionsOwner,
 	cachedAiReplyExtension
-) {
+}) {
 	return {
 		platform: 'telegram',
 		OwnerNameKeywords: interfaceConfig.OwnerNameKeywords,
@@ -342,11 +343,11 @@ export async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, messa
 		name: senderName,
 		content,
 		files,
-		extension: populateFountEntryExtension(
+		extension: populateFountEntryExtension({
 			message, interfaceConfig, chat, fromUser, content,
 			isDirectMessage, isFromOwner, mentionsBot, mentionsOwner,
-			aiReplyObjectCacheTg[message.message_id]?.extension
-		)
+			cachedAiReplyExtension: aiReplyObjectCacheTg[message.message_id]?.extension
+		})
 	}
 	delete aiReplyObjectCacheTg[message.message_id]
 	return fountEntry

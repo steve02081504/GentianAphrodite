@@ -149,14 +149,14 @@ export function aiMarkdownToTelegramHtml(aiMarkdownText) {
 	let html = escapeHTML(aiMarkdownText)
 
 	html = html.replace(/```(\w*)\n([\S\s]*?)\n```/g, (match, lang, code) => {
-		const langClass = lang ? ` class=\"language-${escapeHTML(lang)}\"` : ''
+		const langClass = lang ? ` class="language-${escapeHTML(lang)}"` : ''
 		return `<pre><code${langClass}>${code}</code></pre>`
 	})
 
 	html = html.replace(/(?<!\\)`([^\n`]+?)(?<!\\)`/g, (match, code) => `<code>${code}</code>`)
 
 	html = html.replace(/\[(.*?)]\\((.*?)\\)/g, (match, text, url) => {
-		return `<a href=\"${url}\">${text}</a>`
+		return `<a href="${url}">${text}</a>`
 	})
 
 	html = html.replace(/\\|\\|(.+?)\\|\\|/g, (match, content) => `<tg-spoiler>${content}</tg-spoiler>`)
