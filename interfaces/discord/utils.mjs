@@ -1,4 +1,5 @@
 import { Kaomoji_list } from '../../scripts/dict.mjs'
+import { escapeRegExp } from '../../scripts/tools.mjs'
 
 /**
  * @param {string} reply
@@ -82,7 +83,7 @@ export function splitDiscordReply(reply, split_lenth = 2000) {
 	// 确保颜文字在文本中不被转义
 	for (const index in content_slices)
 		if (!content_slices[index].startsWith('```'))
-			for(const kaomoji of Kaomoji_list)
+			for (const kaomoji of Kaomoji_list)
 				content_slices[index] = content_slices[index].replaceAll(
 					kaomoji, kaomoji.replaceAll('`', '\\`')
 				)
@@ -207,4 +208,30 @@ export async function getMessageFullContent(message, client) {
 	}
 
 	return fullContent
+}
+
+/**
+ * 格式化文本中的提及，将 @用户名 转换为 <@用户ID>。
+ * @param {string} text - 原始文本。
+ * @param {Map<string, string>} [guildMembersMap] - (可选) 一个 Map 对象，键为小写的用户名或显示名，值为用户ID。
+ * @returns {string} 格式化后的文本。
+ */
+export function formatEmbedMentions(text, guildMembersMap) {
+	if (!text || !guildMembersMap || guildMembersMap.size === 0)
+		return text
+
+	const sortedNames = Array.from(guildMembersMap.keys()).sort((a, b) => b.length - a.length)
+
+	if (sortedNames.length === 0)
+		return text
+
+	const mentionRegex = new RegExp(`@(${sortedNames.map(name => escapeRegExp(name)).join('|')})(?!\\w)`, 'gi')
+
+	return text.replace(mentionRegex, (match, matchedName) => {
+		const userId = guildMembersMap.get(matchedName.toLowerCase())
+		if (userId)
+			return `<@${userId}>`
+
+		return match
+	})
 }
