@@ -6,4 +6,6 @@ $CI_DIR = try {
 catch {
 	"$FOUNT_DIR/../fount-charCI/"
 }
+if ($env:EdenOS) { $is_EdenOS = 1; $env:EdenOS = '' } # 避免spam
 & $CI_DIR/path/fount-charCI.ps1 $MY_DIR
+if ($is_EdenOS) { $env:EdenOS = 1 }
