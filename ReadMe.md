@@ -1,6 +1,6 @@
 # GentianAphrodite
 
-[![fount character](https://steve02081504.github.io/fount/badges/fount_character.svg)](https://steve02081504.github.io/fount/protocol?url=fount://run/shells/install/install;https://github.com/steve02081504/GentianAphrodite/releases/latest/download/GentianAphrodite.zip)
+[![fount character](https://steve02081504.github.io/fount/badges/fount_character.svg)](https://github.com/topics/fount-character)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/steve02081504/GentianAphrodite)
 [![CodeFactor](https://www.codefactor.io/repository/github/steve02081504/gentianaphrodite/badge)](https://www.codefactor.io/repository/github/steve02081504/gentianaphrodite)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/e9d1a379c8174738833e3ce335a147bb)](https://app.codacy.com/gh/steve02081504/GentianAphrodite/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
