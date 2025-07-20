@@ -8,6 +8,17 @@ import { isBotCommand } from './utils.mjs'
 import { sendAndLogReply, doMessageReplyInternal } from './reply.mjs'
 
 /**
+ * @readonly
+ * @enum {symbol}
+ */
+const TriggerResultType = Object.freeze({
+	TRIGGER_REPLY: Symbol('trigger_reply'),
+	EXIT: Symbol('exit'),
+	HANDLED: Symbol('handled'),
+	NO_ACTION: Symbol('no_action'),
+})
+
+/**
  * 平台接口 API 对象类型定义。
  * @typedef {import('./index.mjs').PlatformAPI_t} PlatformAPI_t
  */
@@ -286,7 +297,7 @@ function isMessageMergeable(lastLogEntry, currentMessageToProcess) {
  * @param {chatLogEntry_t_ext} currentMessageToProcess - 当前正在处理的消息。
  * @param {PlatformAPI_t} platformAPI - 平台 API。
  * @param {string | number} channelId - 频道 ID。
- * @returns {Promise<'exit' | 'handled' | undefined>} 如果命令需要终止处理则返回 'exit'，如果已处理则返回 'handled'。
+ * @returns {Promise<TriggerResultType>} 返回一个操作类型。
  */
 async function handleOwnerCommandsInQueue(currentMessageToProcess, platformAPI, channelId) {
 	if (currentMessageToProcess.extension?.is_from_owner) {
@@ -300,14 +311,14 @@ async function handleOwnerCommandsInQueue(currentMessageToProcess, platformAPI, 
 				newUserMessage(content, platformAPI.name)
 				newCharReplay(selfDestructReply.content, platformAPI.name)
 				await platformAPI.destroySelf()
-				return 'exit' // 发出退出信号
+				return TriggerResultType.EXIT // 发出退出信号
 			}
 			const repeatMatch = content.match(/^龙胆.{0,2}复诵.{0,2}`(?<repeat_content>[\S\s]*)`$/)
 			if (repeatMatch?.groups?.repeat_content) {
 				await sendAndLogReply({ content: repeatMatch.groups.repeat_content }, platformAPI, channelId, currentMessageToProcess)
 				newUserMessage(content, platformAPI.name)
 				newCharReplay(repeatMatch.groups.repeat_content, platformAPI.name)
-				return 'handled' // 命令已处理，无需进一步触发检查
+				return TriggerResultType.HANDLED // 命令已处理，无需进一步触发检查
 			}
 			const banWordMatch = content.match(/^龙胆.{0,2}禁止.{0,2}`(?<banned_content>[\S\s]*)`$/)
 			if (banWordMatch?.groups?.banned_content)
@@ -318,11 +329,11 @@ async function handleOwnerCommandsInQueue(currentMessageToProcess, platformAPI, 
 				await sendAndLogReply({ content: ownerCallReply }, platformAPI, channelId, currentMessageToProcess)
 				newUserMessage(content, platformAPI.name)
 				newCharReplay(ownerCallReply, platformAPI.name)
-				return 'handled' // 命令已处理
+				return TriggerResultType.HANDLED // 命令已处理
 			}
 		}
 	}
-	return undefined // 没有处理主人命令或消息非来自主人
+	return TriggerResultType.NO_ACTION // 没有处理主人命令或消息非来自主人
 }
 
 /**
@@ -332,15 +343,17 @@ async function handleOwnerCommandsInQueue(currentMessageToProcess, platformAPI, 
  * @param {chatLogEntry_t_ext[]} currentChannelLog - 当前频道的完整聊天记录。
  * @param {PlatformAPI_t} platformAPI - 当前平台的 API 对象。
  * @param {string | number} channelId - 消息所在的频道 ID。
- * @returns {Promise<number | 'exit' | 'handled' | undefined>} 1 表示触发回复, 'exit' 表示需要退出, 'handled' 表示已处理, undefined 表示无特殊操作。
+ * @returns {Promise<TriggerResultType>} 返回一个对象，指示应执行的操作类型。
  */
-export async function checkQueueMessageTrigger(currentMessageToProcess, currentChannelLog, platformAPI, channelId) {
+async function checkQueueMessageTrigger(currentMessageToProcess, currentChannelLog, platformAPI, channelId) {
 	if (currentMessageToProcess.extension?.platform_user_id == platformAPI.getBotUserId())
-		return // 不处理机器人自己的消息触发
+		return TriggerResultType.NO_ACTION // 不处理机器人自己的消息触发
+
 
 	const ownerCommandResult = await handleOwnerCommandsInQueue(currentMessageToProcess, platformAPI, channelId)
-	if (ownerCommandResult === 'exit' || ownerCommandResult === 'handled')
+	if (ownerCommandResult !== TriggerResultType.NO_ACTION)
 		return ownerCommandResult
+
 
 	const recentChatLogForOtherBotCheck = currentChannelLog.filter(msg => (Date.now() - msg.time_stamp) < 5 * 60 * 1000)
 	const hasOtherGentianBot = (() => {
@@ -357,9 +370,9 @@ export async function checkQueueMessageTrigger(currentMessageToProcess, currentC
 	)
 
 	if (await checkMessageTrigger(currentMessageToProcess, platformAPI, channelId, { has_other_gentian_bot: hasOtherGentianBot }))
-		return 1 // 应该触发回复
+		return TriggerResultType.TRIGGER_REPLY // 应该触发回复
 	else if (ownerBotOnlyInteraction && currentMessageToProcess.extension?.is_from_owner && !isMutedChannel)
-		return 1 // 如果是主人在仅有主人和机器人的对话中发言，则触发
+		return TriggerResultType.TRIGGER_REPLY // 如果是主人在仅有主人和机器人的对话中发言，则触发
 	else if (
 		(!inHypnosisChannelId || channelId !== inHypnosisChannelId) &&
 		!isMutedChannel &&
@@ -390,10 +403,10 @@ export async function checkQueueMessageTrigger(currentMessageToProcess, currentC
 				platformAPI, channelId, currentMessageToProcess
 			)
 			// 复读已发送，此消息不再触发通用回复
-			return // 返回 undefined，因为复读是一种回复，但不是需要新 AI 响应的“触发”
+			return TriggerResultType.HANDLED // 返回 'handled'，因为复读是一种回复，但不是需要新 AI 响应的“触发”
 		}
 	}
-	return undefined // 此函数无特定触发操作
+	return TriggerResultType.NO_ACTION // 此函数无特定触发操作
 }
 
 /**
@@ -403,7 +416,7 @@ export async function checkQueueMessageTrigger(currentMessageToProcess, currentC
  * @param {chatLogEntry_t_ext[]} currentChannelLog - 当前频道的聊天记录。
  * @param {PlatformAPI_t} platformAPI - 平台 API。
  * @param {string | number} channelId - 频道 ID。
- * @returns {Promise<'exit' | undefined>} 如果需要退出处理则返回 'exit'。
+ * @returns {Promise<number>} 如果需要退出处理则返回1。
  */
 export async function processNextMessageInQueue(myQueue, currentChannelLog, platformAPI, channelId) {
 	let currentMessageToProcess = myQueue[0]
@@ -419,8 +432,8 @@ export async function processNextMessageInQueue(myQueue, currentChannelLog, plat
 		currentChannelLog.push(currentMessageToProcess)
 		myQueue.shift()
 		const triggerResult = await checkQueueMessageTrigger(currentMessageToProcess, currentChannelLog, platformAPI, channelId)
-		if (triggerResult === 'exit') return 'exit'
-		if (triggerResult === 1) triggered = true
+		if (triggerResult === TriggerResultType.EXIT) return 1
+		if (triggerResult === TriggerResultType.TRIGGER_REPLY) triggered = true
 	} else {
 		const actualLastLogEntry = lastLogEntry
 		do {
@@ -444,8 +457,8 @@ export async function processNextMessageInQueue(myQueue, currentChannelLog, plat
 			}
 			myQueue.shift()
 
-			if (triggerResultForCurrent === 'exit') return 'exit'
-			if (triggerResultForCurrent === 1) triggered = true
+			if (triggerResultForCurrent === TriggerResultType.EXIT) return 'exit'
+			if (triggerResultForCurrent === TriggerResultType.TRIGGER_REPLY) triggered = true
 
 			currentMessageToProcess = myQueue[0]
 		} while (currentMessageToProcess && isMessageMergeable(actualLastLogEntry, currentMessageToProcess))
