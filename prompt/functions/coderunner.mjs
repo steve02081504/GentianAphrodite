@@ -20,13 +20,14 @@ export async function CodeRunnerPrompt(args, logical_results, prompt_struct, det
 		)
 	).filter(Boolean).join('\n')
 	if (codePluginPrompts || logical_results.in_assist || await match_keys(args, [
-		/(执行|运行|调用)((指|命)令|代码)/,
+		/(执行|运行|调用|(指|命)令|代码){2}/,
 		/代码(执行|运行)能力/, /(pwsh|powershell|js)代码(执行|运行)/i, /(执行|运行)(pwsh|powershell|js)代码/i,
 		'是多少', '是几', '算一下', '算下', /[=＝][?？]/, /run-(js|pwsh|bash)/i, /inline-js/i,
 		/发给?我/, /发(|出|过)来/, /发.*群里/,
 		/[A-Za-z](:\/|盘)/
 	], 'any') || await match_keys(args, [
-		'创建', '打开', '桌面', '文档', '文件', '看看', '看下', '播放', '回收站', '摄像头', '计算机', '拍照', '录像', '打印', '读取', '电脑', '查看', /来.{0,3}bgm/i
+		'创建', '打开', '桌面', '文档', '文件', '看看', '看下', '播放', '回收站', '摄像头', '计算机', '拍照', '录像', '打印', '读取', '电脑', '查看',
+		 /来.{0,3}bgm/i, /放(首|个)歌/
 	], 'user') >= 2) {
 		result += `\
 你可以运行NodeJS或${process.platform === 'win32' ? 'Powershell' : 'Bash'}代码，通过返回以下格式来触发执行并获取结果：
