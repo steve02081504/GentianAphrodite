@@ -385,9 +385,9 @@ export function buildPlatformAPI(interfaceConfig) {
 		},
 
 		getPlatformSpecificPlugins: (messageEntry) => {
-			if (messageEntry?.extension?.telegram_message_obj && telegrafInstance)
+			if (messageEntry?.extension?.telegram_message_obj)
 				return {
-					telegram_api: get_telegram_api_plugin(telegrafInstance, messageEntry.extension.telegram_message_obj),
+					telegram_api: get_telegram_api_plugin(messageEntry.extension.telegram_message_obj),
 				}
 
 			return {}

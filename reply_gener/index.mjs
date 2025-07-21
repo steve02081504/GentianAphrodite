@@ -15,6 +15,8 @@ import { ShortTermMemoryHandler } from './functions/short-term-memory.mjs'
 import { addNotifyAbleChannel } from '../scripts/notify.mjs'
 import { inspect } from 'node:util'
 import { newCharReplay, newUserMessage, saveStatisticDatas, statisticDatas } from '../scripts/statistics.mjs'
+import { get_discord_api_plugin } from '../interfaces/discord/api.mjs'
+import { get_telegram_api_plugin } from '../interfaces/telegram/api.mjs'
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReply_t} chatReply_t */
@@ -71,6 +73,8 @@ export function getLongTimeLogAdder(result, prompt_struct, max_forever_looping_n
 export async function GetReply(args) {
 	if (noAISourceAvailable()) return noAIreply(args)
 
+	args.plugins.discord_api ??= await get_discord_api_plugin()
+	args.plugins.telegram_api ??= await get_telegram_api_plugin()
 	const prompt_struct = await buildPromptStruct(args)
 	prompt_struct.alternative_charnames = [
 		'Gentian', /Gentian(•|·)Aphrodite/, '龙胆', /龙胆(•|·)阿芙萝黛蒂/
@@ -89,12 +93,10 @@ export async function GetReply(args) {
 	if (last_entry?.name == args.UserCharname && last_entry.role == 'user')
 		newUserMessage(last_entry.content, args.extension?.platform || 'chat')
 	regen: while (true) {
-		//*
 		if (process.env.EdenOS) {
 			console.log('logical_results', logical_results)
 			console.log('prompt_struct', inspect(prompt_struct, { depth: 4, colors: true }))
 		}
-		//*/
 		const AItype = logical_results.in_reply_to_master ?
 			logical_results.in_nsfw ? 'nsfw' : logical_results.in_assist ? 'expert' : 'sfw'
 			: 'from-other'
