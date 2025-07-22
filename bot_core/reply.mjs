@@ -4,6 +4,7 @@ import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
 import { channelChatLogs, channelLastSendMessageTime, channelCharScopedMemory, userIdToNameMap, bannedStrings, fuyanMode, setInHypnosisChannelId } from './state.mjs'
 import { handleError } from './error.mjs'
 import { updateBotNameMapping } from './utils.mjs'
+import { loadDefaultPersona } from '../../../../../../src/server/managers/persona_manager.mjs'
 
 /**
  * Fount 聊天回复对象类型。
@@ -88,7 +89,7 @@ function buildReplyRequest(triggerMessage, platformAPI, channelId, requestData) 
 		locales: localhostLocales,
 		time: new Date(),
 		world: platformWorld,
-		user: null,
+		user: loadDefaultPersona(FountUsername),
 		char: GentianAphrodite,
 		other_chars: [],
 		plugins: activePlugins,

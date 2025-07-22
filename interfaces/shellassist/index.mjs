@@ -4,6 +4,8 @@ import { GetShellWorld } from './world.mjs'
 import { recommend_command_plugin } from './recommend_command.mjs'
 import { localhostLocales } from '../../../../../../../src/scripts/i18n.mjs'
 import { newCharReplay, newUserMessage } from '../../scripts/statistics.mjs'
+import { loadDefaultPersona } from '../../../../../../../src/server/managers/persona_manager.mjs'
+import { username } from '../../charbase.mjs'
 /** @typedef {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
 
 /**
@@ -106,7 +108,7 @@ ${args.screen}
 		locales: localhostLocales,
 		time: new Date(),
 		world: GetShellWorld(args.shelltype),
-		user: null,
+		user: loadDefaultPersona(username),
 		char: GentianAphrodite,
 		other_chars: [],
 		plugins: {

@@ -2,6 +2,7 @@ import { charname as BotCharname, username as FountUsername } from '../charbase.
 import GentianAphrodite from '../main.mjs'
 import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
 import { userIdToNameMap } from './state.mjs'
+import { loadDefaultPersona } from '../../../../../../src/server/managers/persona_manager.mjs'
 
 /**
  * 平台接口 API 对象类型定义。
@@ -84,7 +85,7 @@ async function generateInsult(group, platformAPI, defaultChannel, channelHistory
 		locales: localhostLocales,
 		time: new Date(),
 		world: platformAPI.getPlatformWorld?.() || null,
-		user: null,
+		user: loadDefaultPersona(FountUsername),
 		char: GentianAphrodite,
 		other_chars: [],
 		plugins: { ...platformAPI.getPlatformSpecificPlugins?.({ extension: { platform_guild_id: group.id, platform_channel_id: defaultChannel.id, platform: platformAPI.name } }) },

@@ -4,6 +4,7 @@ import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
 import { reloadPart } from '../../../../../../src/server/managers/index.mjs'
 import { errorRecord, userIdToNameMap, inHypnosisChannelId } from './state.mjs'
 import { sendAndLogReply } from './reply.mjs'
+import { loadDefaultPersona } from '../../../../../../src/server/managers/persona_manager.mjs'
 
 /**
  * Fount 聊天回复对象类型。
@@ -95,7 +96,7 @@ async function getAISuggestionForError(error, errorMessageForRecord, platformAPI
 			locales: localhostLocales,
 			time: new Date(),
 			world: platformAPI.getPlatformWorld(),
-			user: null,
+			user: loadDefaultPersona(FountUsername),
 			char: GentianAphrodite,
 			other_chars: [],
 			plugins: {},
