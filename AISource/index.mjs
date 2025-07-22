@@ -31,7 +31,7 @@ export async function setAISourceData(data) {
 		newAIsources[name] = loadAIsource(username, data[name])
 	const fount_default = await loadDefaultAIsource(username)
 	for (const name in newAIsources) newAIsources[name] = await newAIsources[name]
-	if (!Object.values(newAIsources).some(x => x === fount_default))
+	if (fount_default && !Object.values(newAIsources).some(x => x === fount_default))
 		newAIsources.fount_default = fount_default
 	AIsources = newAIsources
 }
@@ -91,9 +91,8 @@ export async function OrderedAISourceCalling(name, caller, trytimes = 3, error_l
 	for (const source of sources)
 		for (let i = 0; i < trytimes; i++)
 			try {
-				console.info('OrderedAISourceCalling', name, (await getPartInfo(last_used_AIsource = source)).name)
-				const result = await caller(source)
-				return result
+				console.info('OrderedAISourceCalling', name, (await getPartInfo(last_used_AIsource = source))?.name)
+				return await caller(source)
 			} catch (err) {
 				await error_logger(lastErr = err)
 			}

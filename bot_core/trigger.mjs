@@ -5,7 +5,7 @@ import { rude_words } from '../scripts/dict.mjs'
 import { newCharReplay, newUserMessage } from '../scripts/statistics.mjs'
 import { channelLastSendMessageTime, channelMuteStartTimes, currentConfig, inHypnosisChannelId, fuyanMode, setFuyanMode, bannedStrings, channelChatLogs, GentianWords } from './state.mjs'
 import { isBotCommand } from './utils.mjs'
-import { sendAndLogReply, doMessageReplyInternal } from './reply.mjs'
+import { sendAndLogReply, doMessageReply } from './reply.mjs'
 
 /**
  * @readonly
@@ -470,5 +470,5 @@ export async function processNextMessageInQueue(myQueue, currentChannelLog, plat
 
 	const messageForReply = triggered ? currentChannelLog[currentChannelLog.length - 1] : null
 	if (messageForReply)
-		await doMessageReplyInternal(messageForReply, platformAPI, channelId)
+		await doMessageReply(messageForReply, platformAPI, channelId)
 }

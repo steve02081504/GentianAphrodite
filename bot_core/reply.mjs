@@ -155,7 +155,7 @@ async function processAIReply(aiFinalReply, platformAPI, channelId, triggerMessa
  * @param {PlatformAPI_t} platformAPI - 当前平台的 API 对象。
  * @param {string | number} channelId - 消息所在的频道 ID。
  */
-export async function doMessageReplyInternal(triggerMessage, platformAPI, channelId) {
+export async function doMessageReply(triggerMessage, platformAPI, channelId) {
 	let typingInterval = setInterval(() => { platformAPI.sendTyping(channelId).catch(() => { }) }, 5000)
 	function clearTypingInterval() {
 		if (typingInterval) typingInterval = clearInterval(typingInterval)
