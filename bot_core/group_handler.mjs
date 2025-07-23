@@ -3,6 +3,7 @@ import GentianAphrodite from '../main.mjs'
 import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
 import { userIdToNameMap } from './state.mjs'
 import { loadDefaultPersona } from '../../../../../../src/server/managers/persona_manager.mjs'
+import { fetchFilesForMessages } from './utils.mjs'
 
 /**
  * 平台接口 API 对象类型定义。
@@ -90,7 +91,7 @@ async function generateInsult(group, platformAPI, defaultChannel, channelHistory
 		other_chars: [],
 		plugins: { ...platformAPI.getPlatformSpecificPlugins?.({ extension: { platform_guild_id: group.id, platform_channel_id: defaultChannel.id, platform: platformAPI.name } }) },
 		chat_scoped_char_memory: {},
-		chat_log: insultRequestContext,
+		chat_log: await fetchFilesForMessages(insultRequestContext),
 		extension: { platform: platformAPI.name, chat_id: defaultChannel.id, is_direct_message: false }
 	}
 

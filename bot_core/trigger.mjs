@@ -4,7 +4,7 @@ import { findMostFrequentElement } from '../scripts/tools.mjs'
 import { rude_words } from '../scripts/dict.mjs'
 import { newCharReplay, newUserMessage } from '../scripts/statistics.mjs'
 import { channelLastSendMessageTime, channelMuteStartTimes, currentConfig, inHypnosisChannelId, fuyanMode, setFuyanMode, bannedStrings, channelChatLogs, GentianWords } from './state.mjs'
-import { isBotCommand } from './utils.mjs'
+import { fetchFilesForMessages, isBotCommand } from './utils.mjs'
 import { sendAndLogReply, doMessageReply } from './reply.mjs'
 
 /**
@@ -262,7 +262,7 @@ function logTriggerCheckDetails(fountEntry, platformAPI, channelId, content, pos
 		chat_name: platformAPI.getChatNameForAI(channelId, fountEntry),
 		name: fountEntry.name,
 		content,
-		files: fountEntry.files,
+		files: fountEntry.files.length,
 		channelId,
 		possible,
 		okey,
@@ -379,7 +379,9 @@ async function checkQueueMessageTrigger(currentMessageToProcess, currentChannelL
 		currentMessageToProcess.extension?.platform_user_id != platformAPI.getBotUserId()
 	) {
 		// 复读检查
+		const repetCheckLog = currentChannelLog.slice(-10)
 		const nameMap = {}
+		let summaryFiles = files => files.length
 		function summary(message, name_diff = true) {
 			let result = ''
 			if (name_diff) {
@@ -387,23 +389,35 @@ async function checkQueueMessageTrigger(currentMessageToProcess, currentChannelL
 				result += nameMap[message.name]++ + '\n'
 			}
 			result += (message.content ?? '') + '\n\n'
-			result += (message.files || []).filter(file => !file.extension?.is_from_vision).map(file => file.buffer instanceof Buffer ? file.buffer.toString('hex') : String(file.buffer)).join('\n')
+			result += summaryFiles(message.files || [])
 			return result
 		}
-		const repet = findMostFrequentElement(currentChannelLog.slice(-10), summary) // 检查最近10条消息
+		let repet = findMostFrequentElement(repetCheckLog, summary)
+		// 先进行粗略检测决定是否fetch
 		if (
 			(repet.element?.content || repet.element?.files?.length) &&
 			repet.count >= currentConfig.RepetitionTriggerCount &&
-			!base_match_keys(repet.element.content + '\n' + (repet.element.files || []).map(file => file.name).join('\n'), [...currentMessageToProcess.extension.OwnerNameKeywords || [], ...rude_words, ...GentianWords]) &&
-			!isBotCommand(repet.element.content) &&
-			!currentChannelLog.slice(-10).some(msg => msg.extension?.platform_user_id == platformAPI.getBotUserId() && summary(msg, false) === summary(repet.element, false))
+			!base_match_keys(repet.element.content, [...currentMessageToProcess.extension.OwnerNameKeywords || [], ...rude_words, ...GentianWords]) &&
+			!isBotCommand(repet.element.content)
 		) {
-			await sendAndLogReply(
-				{ content: repet.element.content, files: repet.element.files.filter(file => !file.extension?.is_from_vision) },
-				platformAPI, channelId, currentMessageToProcess
-			)
-			// 复读已发送，此消息不再触发通用回复
-			return TriggerResultType.HANDLED // 返回 'handled'，因为复读是一种回复，但不是需要新 AI 响应的“触发”
+			// 通过，fetch后重新计算复读内容
+			await fetchFilesForMessages(repetCheckLog)
+			repet = findMostFrequentElement(repetCheckLog, summary)
+			summaryFiles = files => files.filter(file => !file.extension?.is_from_vision).map(file => file.buffer instanceof Buffer ? file.buffer.toString('hex') : String(file.buffer)).join('\n')
+			if (
+				(repet.element?.content || repet.element?.files?.length) &&
+				repet.count >= currentConfig.RepetitionTriggerCount &&
+				!base_match_keys(repet.element.content + '\n' + (repet.element.files || []).map(file => file.name).join('\n'), [...currentMessageToProcess.extension.OwnerNameKeywords || [], ...rude_words, ...GentianWords]) &&
+				!isBotCommand(repet.element.content) &&
+				!repetCheckLog.some(msg => msg.extension?.platform_user_id == platformAPI.getBotUserId() && summary(msg, false) === summary(repet.element, false))
+			) {
+				await sendAndLogReply(
+					{ content: repet.element.content, files: repet.element.files.filter(file => !file.extension?.is_from_vision) },
+					platformAPI, channelId, currentMessageToProcess
+				)
+				// 复读已发送，此消息不再触发通用回复
+				return TriggerResultType.HANDLED // 返回 'handled'，因为复读是一种回复，但不是需要新 AI 响应的“触发”
+			}
 		}
 	}
 	return TriggerResultType.NO_ACTION // 此函数无特定触发操作

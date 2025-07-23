@@ -120,3 +120,13 @@ export function updateUserCache(senderId, senderName) {
 
 	}
 }
+
+export async function fetchFiles(files) {
+	files = await Promise.allSettled(files.map(file => Object(file) instanceof Function ? file() : file))
+	return files.filter(file => file.status === 'fulfilled' && file.value).map(file => file.value)
+}
+export async function fetchFilesForMessages(messages) {
+	for (const message of messages)
+		if (message.files) message.files = await fetchFiles(message.files)
+	return messages
+}
