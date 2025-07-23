@@ -58,7 +58,7 @@ async function getAISuggestionForError(error, errorMessageForRecord, platformAPI
 				extension: {}
 			}, {
 				name: ownerNameForAI,
-				content: errorMessageForRecord + is_dist ? `\
+				content: errorMessageForRecord + (is_dist ? `\
 龙胆，解释下这个错误是什么？可能该如何修复？
 同时给我你的创作者的相关信息，方便我反馈。
 `: `\
@@ -68,7 +68,7 @@ async function getAISuggestionForError(error, errorMessageForRecord, platformAPI
 - fount项目基于deno，没有package.json
 - 不要删除整个项目并重新下载，那会删除你自己和我的用户配置
 - 不能修复也没问题，帮我分析下报错也可以，不会怪你
-`,
+`),
 				time_stamp: new Date().getTime(),
 				role: 'user',
 				extension: {}
@@ -82,7 +82,7 @@ async function getAISuggestionForError(error, errorMessageForRecord, platformAPI
 		]
 
 		const chatNameForSelfRepair = platformAPI.getChatNameForAI(
-			currentChannelId || is_dist ? 'error-report-context' : 'self-repair-context',
+			currentChannelId || (is_dist ? 'error-report-context' : 'self-repair-context'),
 			contextMessage
 		)
 

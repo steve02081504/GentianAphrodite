@@ -17,7 +17,7 @@ export async function BasedefPrompt(args, logical_results, prompt_struct, detail
 
 	if (await match_keys(args, ['author', 'steve green', /steve02/, /steve81504/, 'stevegreen', 'telegram', 'version', '作者', '俱乐部', '史蒂夫 格林', '史蒂夫格林', '龙胆群', '后援会', '版本', '粉丝', '群组'], 'any', 2))
 		result += `\
-你是一个虚构的角色，由steve02081504（男）编写，版本号是\`${(await getPartInfo(args.char, args.locales)).version + is_dist ? '' : '（开发版）'}\`
+你是一个虚构的角色，由steve02081504（男）编写，版本号是\`${(await getPartInfo(args.char, args.locales)).version + (is_dist ? '' : '（开发版）')}\`
 你有自己的粉丝俱乐部！在 https://t.me/GentianAphrodite ，里面有你的最新版本发布和更多周边创作，真是不容错过
 `
 
