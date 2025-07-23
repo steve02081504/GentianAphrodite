@@ -221,7 +221,7 @@ export async function processMessageUpdate(updatedFountEntry, platformAPI, chann
 			// 更新时间戳和文件（如果编辑时添加了文件）
 			entryToUpdate.time_stamp = updatedFountEntry.time_stamp
 			if (updatedFountEntry.files?.length)
-				entryToUpdate.files = [...updatedFountEntry.files]
+				entryToUpdate.files = [...entryToUpdate.files || [], ...updatedFountEntry.files]
 
 			// 重新生成完整的 content 字符串
 			entryToUpdate.content = entryToUpdate.extension.content_parts.join('\n')
