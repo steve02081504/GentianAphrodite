@@ -213,24 +213,27 @@ async function processMessageFiles(message, ctx) {
 	const telegrafAPI = ctx ? ctx.telegram : telegrafInstance?.telegram
 
 	const addFile = async (fileId, fileNameFallback, mimeTypeFallback, description = '', extension) => {
-		try {
-			if (!telegrafAPI) {
-				console.warn('[TelegramInterface:processMessageFiles] Cannot download file: Telegraf API accessor not available.')
-				return
-			}
-
-			const fileLink = await telegrafAPI.getFileLink(fileId)
-			const response = await tryFewTimes(() => fetch(fileLink.href))
-			if (!response.ok) throw new Error(`Failed to download file (ID: ${fileId}): ${response.statusText}`)
-			const buffer = Buffer.from(await response.arrayBuffer())
-
-			const { fileName, mime_type: extractedMimeType } = extractFileInfo(message, fileId, fileNameFallback, mimeTypeFallback)
-
-			const finalMimeType = extractedMimeType || await mimetypeFromBufferAndName(buffer, fileName)
-			filesArr.push({ name: fileName, buffer, mime_type: finalMimeType, description, extension })
-		} catch (e) {
-			console.error(`[TelegramInterface:processMessageFiles] Failed to process file (ID: ${fileId}):`, e)
+		if (!telegrafAPI) {
+			console.warn('[TelegramInterface:processMessageFiles] Cannot download file: Telegraf API accessor not available.')
+			return
 		}
+
+		filesArr.push(async () => {
+			try {
+				const fileLink = await telegrafAPI.getFileLink(fileId)
+				const response = await tryFewTimes(() => fetch(fileLink.href))
+				if (!response.ok) throw new Error(`Failed to download file (ID: ${fileId}): ${response.statusText}`)
+				const buffer = Buffer.from(await response.arrayBuffer())
+
+				const { fileName, mime_type: extractedMimeType } = extractFileInfo(message, fileId, fileNameFallback, mimeTypeFallback)
+
+				const finalMimeType = extractedMimeType || await mimetypeFromBufferAndName(buffer, fileName)
+				return { name: fileName, buffer, mime_type: finalMimeType, description, extension }
+			}
+			catch (e) {
+				console.error(`[TelegramInterface:processMessageFiles] Failed to process file (ID: ${fileId}):`, e)
+			}
+		})
 	}
 
 	try {

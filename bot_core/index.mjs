@@ -148,7 +148,6 @@ async function initializeChannelLogIfEmpty(channelId, platformAPI) {
 		channelChatLogs[channelId] = mergedHistoricalLog
 		while (channelChatLogs[channelId].length > currentConfig.DefaultMaxMessageDepth)
 			channelChatLogs[channelId].shift()
-
 	}
 }
 

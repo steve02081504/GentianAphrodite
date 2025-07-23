@@ -68,23 +68,21 @@ export async function discordMessageToFountChatLogEntry(message, interfaceConfig
 		if (processedUrls.has(url)) continue
 		processedUrls.add(url)
 
-		allFilePromises.push(
-			(async () => {
-				try {
-					const buffer = Buffer.from(await tryFewTimes(() => fetch(url).then((response) => response.arrayBuffer())))
-					return {
-						name: `${emojiName}.${extension}`,
-						buffer,
-						description: `Custom emoji: ${emojiName}`,
-						mime_type: mimeType,
-						extension: { is_from_vision: true },
-					}
-				} catch (error) {
-					console.error(`[DiscordInterface] Failed to download custom emoji ${emojiName}:`, error)
-					return null
+		allFilePromises.push(async () => {
+			try {
+				const buffer = Buffer.from(await tryFewTimes(() => fetch(url).then((response) => response.arrayBuffer())))
+				return {
+					name: `${emojiName}.${extension}`,
+					buffer,
+					description: `Custom emoji: ${emojiName}`,
+					mime_type: mimeType,
+					extension: { is_from_vision: true },
 				}
-			})()
-		)
+			} catch (error) {
+				console.error(`[DiscordInterface] Failed to download custom emoji ${emojiName}:`, error)
+				return null
+			}
+		})
 	}
 
 	// 2. 下载贴纸 (Stickers)
@@ -100,24 +98,22 @@ export async function discordMessageToFountChatLogEntry(message, interfaceConfig
 		if (processedUrls.has(sticker.url)) return
 		processedUrls.add(sticker.url)
 
-		allFilePromises.push(
-			(async () => {
-				try {
-					const buffer = Buffer.from(await tryFewTimes(() => fetch(sticker.url).then((response) => response.arrayBuffer())))
-					const fileName = sticker.url.split('/').pop() || `${sticker.name}.png`
-					return {
-						name: fileName,
-						buffer,
-						description: `Sticker: ${sticker.name}`,
-						mime_type: await mimetypeFromBufferAndName(buffer, fileName),
-						extension: { is_from_vision: true },
-					}
-				} catch (error) {
-					console.error(`[DiscordInterface] Failed to download sticker ${sticker.name}:`, error)
-					return null
+		allFilePromises.push(async () => {
+			try {
+				const buffer = Buffer.from(await tryFewTimes(() => fetch(sticker.url).then((response) => response.arrayBuffer())))
+				const fileName = sticker.url.split('/').pop() || `${sticker.name}.png`
+				return {
+					name: fileName,
+					buffer,
+					description: `Sticker: ${sticker.name}`,
+					mime_type: await mimetypeFromBufferAndName(buffer, fileName),
+					extension: { is_from_vision: true },
 				}
-			})()
-		)
+			} catch (error) {
+				console.error(`[DiscordInterface] Failed to download sticker ${sticker.name}:`, error)
+				return null
+			}
+		})
 	})
 
 	// 3. 收集所有附件 (包括原始消息和所有转发/引用快照中的附件)
@@ -134,22 +130,20 @@ export async function discordMessageToFountChatLogEntry(message, interfaceConfig
 		if (processedUrls.has(attachment.url)) return
 		processedUrls.add(attachment.url)
 
-		allFilePromises.push(
-			(async () => {
-				try {
-					const buffer = Buffer.from(await tryFewTimes(() => fetch(attachment.url).then((response) => response.arrayBuffer())))
-					return {
-						name: attachment.name,
-						buffer,
-						description: attachment.description || '',
-						mime_type: attachment.contentType || await mimetypeFromBufferAndName(buffer, attachment.name)
-					}
-				} catch (error) {
-					console.error(`[DiscordInterface] Failed to download attachment ${attachment.name}:`, error)
-					return null
+		allFilePromises.push(async () => {
+			try {
+				const buffer = Buffer.from(await tryFewTimes(() => fetch(attachment.url).then((response) => response.arrayBuffer())))
+				return {
+					name: attachment.name,
+					buffer,
+					description: attachment.description || '',
+					mime_type: attachment.contentType || await mimetypeFromBufferAndName(buffer, attachment.name)
 				}
-			})()
-		)
+			} catch (error) {
+				console.error(`[DiscordInterface] Failed to download attachment ${attachment.name}:`, error)
+				return null
+			}
+		})
 	})
 
 	// 4. 下载嵌入内容中的图片 (Embeds)
@@ -163,31 +157,26 @@ export async function discordMessageToFountChatLogEntry(message, interfaceConfig
 			if (processedUrls.has(url)) continue
 			processedUrls.add(url)
 
-			allFilePromises.push(
-				(async () => {
-					try {
-						const buffer = Buffer.from(await tryFewTimes(() => fetch(url).then((response) => response.arrayBuffer())))
-						const fileName = url.split('/').pop()?.split('?')[0] || 'embedded_image.png'
-						return {
-							name: fileName,
-							buffer,
-							description: embed.title || embed.description || '',
-							mime_type: await mimetypeFromBufferAndName(buffer, fileName) || 'image/png',
-							extension: { is_from_vision: true }
-						}
-					} catch (error) {
-						console.error(`[DiscordInterface] Failed to download embedded image from ${url}:`, error)
-						return null
+			allFilePromises.push(async () => {
+				try {
+					const buffer = Buffer.from(await tryFewTimes(() => fetch(url).then((response) => response.arrayBuffer())))
+					const fileName = url.split('/').pop()?.split('?')[0] || 'embedded_image.png'
+					return {
+						name: fileName,
+						buffer,
+						description: embed.title || embed.description || '',
+						mime_type: await mimetypeFromBufferAndName(buffer, fileName) || 'image/png',
+						extension: { is_from_vision: true }
 					}
-				})()
-			)
+				} catch (error) {
+					console.error(`[DiscordInterface] Failed to download embedded image from ${url}:`, error)
+					return null
+				}
+			})
 		}
 	})
 
-	// 并行执行所有下载任务，并过滤掉失败的结果 (null)
-	const files = (await Promise.all(allFilePromises)).filter(Boolean)
-
-	if (!content && files.length === 0) return null
+	if (!content && allFilePromises.length === 0) return null
 
 	const isDirectMessage = message.channel.type === ChannelType.DM
 	const isFromOwner = message.author.username === interfaceConfig.OwnerUserName
@@ -202,7 +191,7 @@ export async function discordMessageToFountChatLogEntry(message, interfaceConfig
 		role: isFromOwner ? 'user' : 'char',
 		name: senderName,
 		content,
-		files, // 使用我们新构建的、包含所有类型附件的 files 数组
+		files: allFilePromises,
 		extension: {
 			platform: 'discord',
 			OwnerNameKeywords: interfaceConfig.OwnerNameKeywords,

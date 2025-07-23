@@ -120,3 +120,25 @@ export function updateUserCache(senderId, senderName) {
 
 	}
 }
+
+/**
+ * Asynchronously fetches files, resolving any functions within the input array.
+ *
+ * @param {Array<Function | any>} files - An array of files or functions returning files.
+ * @returns {Promise<Array<any>>} A promise that resolves to an array of successfully fetched files.
+ */
+
+export async function fetchFiles(files) {
+	files = await Promise.allSettled(files.map(file => Object(file) instanceof Function ? file() : file))
+	return files.filter(file => file.status === 'fulfilled' && file.value).map(file => file.value)
+}
+/**
+ * Fetches files for the input array of messages.
+ * @param {chatLogEntry_t_ext[]} messages - The array of messages.
+ * @returns {Promise<chatLogEntry_t_ext[]>} A promise that resolves to the same array of messages, but with any file promises resolved.
+ */
+export async function fetchFilesForMessages(messages) {
+	for (const message of messages)
+		if (message.files) message.files = await fetchFiles(message.files)
+	return messages
+}

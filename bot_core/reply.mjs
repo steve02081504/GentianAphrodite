@@ -3,7 +3,7 @@ import GentianAphrodite from '../main.mjs'
 import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
 import { channelChatLogs, channelLastSendMessageTime, channelCharScopedMemory, userIdToNameMap, bannedStrings, fuyanMode, setInHypnosisChannelId } from './state.mjs'
 import { handleError } from './error.mjs'
-import { updateBotNameMapping } from './utils.mjs'
+import { fetchFilesForMessages, updateBotNameMapping } from './utils.mjs'
 import { loadDefaultPersona } from '../../../../../../src/server/managers/persona_manager.mjs'
 
 /**
@@ -65,9 +65,9 @@ async function prepareReplyRequestData(triggerMessage, platformAPI, channelId) {
  * @param {PlatformAPI_t} platformAPI - 平台 API。
  * @param {string | number} channelId - 频道 ID。
  * @param {object} requestData - `prepareReplyRequestData` 返回的数据。
- * @returns {FountChatReplyRequest_t} 构建好的回复请求对象。
+ * @returns {Promise<FountChatReplyRequest_t>} 构建好的回复请求对象。
  */
-function buildReplyRequest(triggerMessage, platformAPI, channelId, requestData) {
+async function buildReplyRequest(triggerMessage, platformAPI, channelId, requestData) {
 	const {
 		currentChannelChatLog,
 		activePlugins,
@@ -94,7 +94,7 @@ function buildReplyRequest(triggerMessage, platformAPI, channelId, requestData) 
 		other_chars: [],
 		plugins: activePlugins,
 		chat_scoped_char_memory: channelCharScopedMemory[channelId],
-		chat_log: currentChannelChatLog,
+		chat_log: await fetchFilesForMessages(currentChannelChatLog),
 		async AddChatLogEntry(replyFromChar) {
 			if (replyFromChar && (replyFromChar.content || replyFromChar.files?.length))
 				return await sendAndLogReply(replyFromChar, platformAPI, channelId, triggerMessage)
@@ -165,7 +165,7 @@ export async function doMessageReply(triggerMessage, platformAPI, channelId) {
 
 	try {
 		const requestData = await prepareReplyRequestData(triggerMessage, platformAPI, channelId)
-		const replyRequest = buildReplyRequest(triggerMessage, platformAPI, channelId, requestData)
+		const replyRequest = await buildReplyRequest(triggerMessage, platformAPI, channelId, requestData)
 		const aiFinalReply = fuyanMode ? { content: '嗯嗯！' } : await GentianAphrodite.interfaces.chat.GetReply(replyRequest)
 		await processAIReply(aiFinalReply, platformAPI, channelId, triggerMessage)
 	} catch (error) {
