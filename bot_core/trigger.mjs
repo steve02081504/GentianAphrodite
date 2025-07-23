@@ -402,8 +402,8 @@ async function checkQueueMessageTrigger(currentMessageToProcess, currentChannelL
 		) {
 			// 通过，fetch后重新计算复读内容
 			await fetchFilesForMessages(repetCheckLog)
-			repet = findMostFrequentElement(repetCheckLog, summary)
 			summaryFiles = files => files.filter(file => !file.extension?.is_from_vision).map(file => file.buffer instanceof Buffer ? file.buffer.toString('hex') : String(file.buffer)).join('\n')
+			repet = findMostFrequentElement(repetCheckLog, summary)
 			if (
 				(repet.element?.content || repet.element?.files?.length) &&
 				repet.count >= currentConfig.RepetitionTriggerCount &&
