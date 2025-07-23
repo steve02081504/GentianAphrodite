@@ -146,24 +146,37 @@ export function telegramEntitiesToAiMarkdown(text, entities, botInfo, replyToMes
 export function aiMarkdownToTelegramHtml(aiMarkdownText) {
 	if (!aiMarkdownText) return ''
 
+	// 首先，转义原始文本中的HTML特殊字符，防止注入
 	let html = escapeHTML(aiMarkdownText)
 
+	// 代码块: ```lang\ncode\n``` -> <pre><code class="language-lang">code</code></pre>
 	html = html.replace(/```(\w*)\n([\S\s]*?)\n```/g, (match, lang, code) => {
 		const langClass = lang ? ` class="language-${escapeHTML(lang)}"` : ''
+		// 在pre/code标签内的内容不需要再次转义，因为它已经是被escapeHTML处理过的
 		return `<pre><code${langClass}>${code}</code></pre>`
 	})
 
+	// 行内代码: `code` -> <code>code</code>
 	html = html.replace(/(?<!\\)`([^\n`]+?)(?<!\\)`/g, (match, code) => `<code>${code}</code>`)
 
-	html = html.replace(/\[(.*?)]\\((.*?)\\)/g, (match, text, url) => {
-		return `<a href="${url}">${text}</a>`
+	// 链接: [text](url) -> <a href="url">text</a>
+	html = html.replace(/\[(.*?)\]\((.*?)\)/g, (match, text, url) => {
+		return `<a href="${escapeHTML(url)}">${text}</a>`
 	})
 
-	html = html.replace(/\\|\\|(.+?)\\|\\|/g, (match, content) => `<tg-spoiler>${content}</tg-spoiler>`)
+	// 剧透: ||content|| -> <tg-spoiler>content</tg-spoiler>
+	html = html.replace(/\|\|(.+?)\|\|/g, (match, content) => `<tg-spoiler>${content}</tg-spoiler>`)
 
-	html = html.replace(/\\*\\*(.+?)\\*\\*/g, '<b>$1</b>')
-	html = html.replace(/(?<!\\*)\\*([^*]+?)\\*(?!\\*)/g, '<i>$1</i>')
+	// 加粗: **content** -> <b>content</b>
+	html = html.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+
+	// 斜体: *content* -> <i>content</i> (不匹配被**包裹的)
+	html = html.replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, '<i>$1</i>')
+
+	// 下划线: __content__ -> <u>content</u>
 	html = html.replace(/__(.+?)__/g, '<u>$1</u>')
+
+	// 删除线: ~~content~~ -> <s>content</s>
 	html = html.replace(/~~(.+?)~~/g, '<s>$1</s>')
 
 	const lines = html.split('\n')
