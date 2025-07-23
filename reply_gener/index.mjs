@@ -17,6 +17,7 @@ import { inspect } from 'node:util'
 import { newCharReplay, newUserMessage, saveStatisticDatas, statisticDatas } from '../scripts/statistics.mjs'
 import { get_discord_api_plugin } from '../interfaces/discord/api.mjs'
 import { get_telegram_api_plugin } from '../interfaces/telegram/api.mjs'
+import { is_dist } from '../charbase.mjs'
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReply_t} chatReply_t */
@@ -93,7 +94,7 @@ export async function GetReply(args) {
 	if (last_entry?.name == args.UserCharname && last_entry.role == 'user')
 		newUserMessage(last_entry.content, args.extension?.platform || 'chat')
 	regen: while (true) {
-		if (process.env.EdenOS) {
+		if (!is_dist && process.env.EdenOS) {
 			console.log('logical_results', logical_results)
 			console.log('prompt_struct', inspect(prompt_struct, { depth: 4, colors: true }))
 		}
