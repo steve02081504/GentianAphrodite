@@ -1,4 +1,4 @@
-import { search, OrganicResult, ResultTypes } from 'npm:google-sr'
+import { search, OrganicResult } from 'npm:google-sr@^6.0.0'
 import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
 import { statisticDatas } from '../../scripts/statistics.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
@@ -43,28 +43,26 @@ export async function googlesearch(result, { AddLongTimeLog }) {
 				console.info(`执行搜索: ${searchQueryItem}`)
 				const queryResult = await tryFewTimes(() => search({
 					query: searchQueryItem,
-					resultTypes: [OrganicResult], // Fetch only organic results
-					numResults: 5, // Limit to 5 results directly in the query if possible (library dependent)
-					requestConfig: {}, // Add any necessary config like user agent, proxy etc. here
+					parsers: [OrganicResult],
+					requestConfig: {},
 				}))
 
-				let searchResults = ''
-				const organicResults = queryResult.filter(item => item.type === ResultTypes.OrganicResult).slice(0, 5) // Ensure only organic and max 5
+				const organicResults = queryResult.filter(item => !item.isAd).slice(0, 5)
 
+				let searchResults = ''
 				if (organicResults.length > 0) {
 					searchResults += '搜索结果：\n'
 					organicResults.forEach((item, index) => {
-						searchResults += `${index + 1}. ${item.title}\n   ${item.link}\n   ${item.description}\n\n`
+						const source = item.source ? `[${item.source}] ` : ''
+						searchResults += `${index + 1}. ${source}${item.title}\n   ${item.link}\n`
+						if (item.description)
+							searchResults += `${item.description}\n`
 					})
-				} else
-					searchResults = '未找到相关搜索结果。\n'
-
-
+				} else searchResults = '未找到相关搜索结果。\n'
 
 				// Prepend query if multiple queries were issued
 				if (searchQueries.length > 1)
 					searchResults = `对于 "${searchQueryItem}" 的${searchResults}`
-
 
 				AddLongTimeLog({
 					name: 'google-search',
@@ -83,7 +81,6 @@ export async function googlesearch(result, { AddLongTimeLog }) {
 				content: '搜索时出现错误：\n' + (err.stack || err.message || err),
 				files: []
 			})
-
 			return true // Indicate the command was attempted but failed
 		}
 	}
