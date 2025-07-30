@@ -35,11 +35,11 @@ async function checkOwnerPresence(group, platformAPI, ownerOverride = null) {
 				(member.username && ownerUsernameToCompare && member.username.toLowerCase() === ownerUsernameToCompare.toLowerCase())
 			)
 
-		console.warn(`[BotLogic] Could not retrieve members for group ${group.id} on ${platformAPI.name}. Skipping owner check.`)
+		console.warn(`[BotLogic] Could not retrieve members for group ${group.id} on ${platformAPI.name}. Assuming owner is present to avoid leaving due to network issues.`)
 	} else
 		console.warn(`[BotLogic] getGroupMembers not implemented for platform ${platformAPI.name}. Cannot check owner presence in group ${group.id}. Skipping.`)
 
-	return false // 如果检查失败，默认主人不存在
+	return true // 如果检查失败，默认主人存在（防止网络波动时乱退群）
 }
 
 /**
