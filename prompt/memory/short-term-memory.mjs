@@ -186,10 +186,24 @@ export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct
 	const currentChatName = args.chat_name // 缓存当前聊天名称
 
 	async function getKeyWords(chat_log) {
-		const texts = chat_log.map(entry => entry.extension?.SimplifiedContents?.[0] || entry.content).filter(text => text.trim())
-		const combinedText = texts.join('\n')
-		const keywords = jieba.extract(combinedText, 72).filter(kw => kw.weight >= KEYWORD_MIN_WEIGHT)
-		return keywords
+		const keywordMap = {}
+
+		for (const entry of chat_log) {
+			const text = entry.extension?.SimplifiedContents?.[0] || entry.content
+			if (!text.trim()) continue
+
+			let multiplier = 1.0
+			if (entry.name == args.Charname) multiplier = 2.0
+			else if (entry.name == args.UserCharname) multiplier = 2.7
+
+			for (const kw of jieba.extract(text, 72))
+				keywordMap[kw.word] = kw.weight * multiplier + (keywordMap[kw.word] || 0)
+		}
+
+		return Object.entries(keywordMap).map(([word, weight]) => ({ word, weight }))
+			.filter(kw => kw.weight >= KEYWORD_MIN_WEIGHT)
+			.sort((a, b) => b.weight - a.weight)
+			.slice(0, 72)
 	}
 
 	// --- 2. 分析当前对话，提取关键词 ---
