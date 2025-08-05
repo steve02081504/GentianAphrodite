@@ -5,7 +5,6 @@ import { getPartInfo } from '../../../../../../../src/scripts/locale.mjs'
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
-import { Lunar } from 'npm:lunar-javascript'
 import { timeToStr, timeToTimeStr } from '../../scripts/tools.mjs'
 
 /**
@@ -36,10 +35,12 @@ export async function infoPrompt(args, logical_results, prompt_struct, detail_le
 			'谷雨', '立夏', '小满', '芒种', '夏至', '小暑', '大暑', '立秋', '处暑', '白露', '秋分', '寒露', '霜降', '立冬',
 			'小雪', '大雪', '冬至', '小寒', '大寒',
 			'春节', '龙抬头', '上巳', '端午', '七夕', '重阳', '元宵', '中元', '中秋', '下元',
-		], 'any', 2))
+		], 'any', 2)) {
+			const { Lunar } = await import('npm:lunar-javascript')
 			result += `\
 农历时间：${Lunar.fromDate(new Date()).toFullString()}
 `
+		}
 		{
 			let reversedChatlog = args.chat_log.toReversed()
 			const lastUserMessage = reversedChatlog.find(x => x.name == args.UserCharname)
@@ -74,10 +75,12 @@ export async function infoPrompt(args, logical_results, prompt_struct, detail_le
 		'谷雨', '立夏', '小满', '芒种', '夏至', '小暑', '大暑', '立秋', '处暑', '白露', '秋分', '寒露', '霜降', '立冬',
 		'小雪', '大雪', '冬至', '小寒', '大寒',
 		'春节', '龙抬头', '上巳', '端午', '七夕', '重阳', '元宵', '中元', '中秋', '下元',
-	], 'any', 2))
+	], 'any', 2)) {
+		const { Lunar } = await import('npm:lunar-javascript')
 		result += `\
 当前农历时间：${Lunar.fromDate(new Date()).toFullString()}
 `
+	}
 
 	if ((await match_keys(args, ['什么', '名字', '名称', '哪个', '啥', '哪些'], 'any', 2) &&
 		await match_keys(args, ['AI', '大模型', '模型', /ai来?源/i], 'any', 2)) ||

@@ -1,8 +1,5 @@
-import puppeteer from 'npm:puppeteer-core@^24.9.0'
-import TurndownService from 'npm:turndown'
 import { where_command } from './exec.mjs'
 import path from 'node:path'
-import { parse } from 'npm:node-html-parser'
 
 const DEFAULT_NAVIGATION_TIMEOUT = 13 * 1000 // 设置一个默认导航超时时间 (毫秒)
 
@@ -13,6 +10,7 @@ const DEFAULT_NAVIGATION_TIMEOUT = 13 * 1000 // 设置一个默认导航超时�
  */
 export async function NewBrowserGener(path, name) {
 	// 返回一个函数，该函数接收配置并启动 Puppeteer
+	const puppeteer = await import('npm:puppeteer-core@^24.9.0').then(m => m.default)
 	return (configs) => puppeteer.launch({
 		...configs, // 合并传入的配置
 		browser: name,
@@ -35,8 +33,8 @@ export async function NewBrowserGenerByName(name) {
 
 /**
  * 尝试按顺序 ('chrome', 'firefox', 'edge') 启动一个可用的浏览器。
- * @param {import('npm:puppeteer').LaunchOptions} configs - Puppeteer 的启动配置。
- * @returns {Promise<import('npm:puppeteer').Browser>} - 返回一个 Puppeteer 浏览器实例。
+ * @param {import('npm:puppeteer-core').LaunchOptions} configs - Puppeteer 的启动配置。
+ * @returns {Promise<import('npm:puppeteer-core').Browser>} - 返回一个 Puppeteer 浏览器实例。
  * @throws {Error} - 如果没有找到或无法启动任何支持的浏览器。
  */
 export async function NewBrowser(configs) {
@@ -190,6 +188,7 @@ export async function MarkdownWebFetch(url) {
 		console.info('HTML content fetched.')
 
 		console.info('Initializing Turndown service for HTML to Markdown conversion.')
+		const TurndownService = await import('npm:turndown').then(m => m.default)
 		// 初始化 Turndown 服务，用于将 HTML 转换为 Markdown
 		const turndownService = new TurndownService({
 			headingStyle: 'atx', // 使用 '#' 样式的标题
@@ -354,6 +353,7 @@ export async function getUrlMetadata(url) {
 			if (!getResponse.ok) return handleFailedResponse(getResponse)
 
 			const html = await getResponse.text()
+			const { parse } = await import('npm:node-html-parser')
 			const root = parse(html)
 
 			const metadataMap = new Map()

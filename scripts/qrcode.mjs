@@ -1,8 +1,6 @@
-import { grayscale, binarize, Detector, Decoder } from 'npm:@nuintun/qrcode'
-import { createCanvas, loadImage } from 'https://deno.land/x/canvas/mod.ts'
-
 async function bufferToImageData(buffer) {
 	try {
+		const { createCanvas, loadImage } = await import('https://deno.land/x/canvas/mod.ts')
 		const image = await loadImage(buffer) // 使用Canvas库加载Buffer
 		const canvas = createCanvas(image.width(), image.height())
 		const ctx = canvas.getContext('2d')
@@ -37,6 +35,7 @@ export async function decodeQrCodeFromBuffer(buffer) {
 	const { imageData, width, height } = imageInfo
 
 	try {
+		const { grayscale, binarize, Detector, Decoder } = await import('npm:@nuintun/qrcode')
 		// 2. 灰度化
 		const luminances = grayscale(imageData)
 		// 3. 二值化

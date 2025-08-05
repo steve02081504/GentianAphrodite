@@ -1,4 +1,3 @@
-import { search, OrganicResult } from 'npm:google-sr@^6.0.0'
 import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
 import { statisticDatas } from '../../scripts/statistics.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
@@ -9,6 +8,7 @@ export async function googlesearch(result, { AddLongTimeLog }) {
 	// Match <google-search>...</google-search>
 	let searchQueryContent = result.content.match(/<google-search>(?<query>[^]*?)<\/google-search>/)?.groups?.query
 	if (searchQueryContent) {
+		const { search, OrganicResult } = await import('npm:google-sr@^6.0.0')
 		statisticDatas.toolUsage.googleSearches++
 		searchQueryContent = searchQueryContent.trim()
 		if (!searchQueryContent) {

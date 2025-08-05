@@ -1,9 +1,9 @@
 import { parseDuration } from './tools.mjs'
 import { getVar, saveVar } from './vars.mjs'
-import llama3Tokenizer from 'npm:llama3-tokenizer-js'
+import Tokenizer from 'npm:mistral-tokenizer-js'
 
 function tokenize(prompt) {
-	return llama3Tokenizer.encode(prompt)
+	return Tokenizer.encode(prompt)
 }
 
 export const statisticDatas = getVar('statistics', {
