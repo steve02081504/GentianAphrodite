@@ -25,7 +25,7 @@ const bundle = await rollup({
 			renderChunk(code) {
 				const newCode = code
 					.replace(/(const|let)\s*charvar = [^]*?\n\);?\n/, `const charvar = "${charvar}";`)
-					.replace(/(const|let)\s*is_dist = [^]*?\n\);?\n/, 'const is_dist = true;')
+					.replace(/(const|let)\s*is_dist = [^\n]*\n/, 'const is_dist = true;')
 
 				return { code: newCode, map: null }
 			}
