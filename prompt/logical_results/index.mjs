@@ -64,7 +64,6 @@ export async function buildLogicalResults(args, prompt_struct, detail_level) {
 		result.hypnosis_exit = true
 	args.chat_scoped_char_memory.in_hypnosis = result.in_hypnosis
 
-
 	if (await match_keys(args, ['ai卡', '人物卡', '卡片'], 'any', 10) &&
 		await match_keys(args, ['ai卡', '人物卡', '人设', '设定'], 'any', 10))
 		result.talking_about_ai_character = true

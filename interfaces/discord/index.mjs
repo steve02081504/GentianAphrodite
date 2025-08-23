@@ -1,7 +1,8 @@
 import { registerPlatformAPI } from '../../bot_core/index.mjs'
-import { setDiscordClientInstance } from './state.mjs'
-import { buildPlatformAPI } from './platform-api.mjs'
+
 import { registerEventHandlers } from './event-handlers.mjs'
+import { buildPlatformAPI } from './platform-api.mjs'
+import { setDiscordClientInstance } from './state.mjs'
 
 /**
  * @typedef {import('./config.mjs').DiscordInterfaceConfig_t} DiscordInterfaceConfig_t

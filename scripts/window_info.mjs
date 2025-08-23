@@ -1,5 +1,6 @@
-import { bash_exec, pwsh_exec, where_command } from './exec.mjs'
 import process, { env } from 'node:process'
+
+import { bash_exec, pwsh_exec, where_command } from './exec.mjs'
 
 // --- 内部辅助函数 ---
 
@@ -38,7 +39,6 @@ function extractWindowsFromSwayTree(node, windows) {
 		extractWindowsFromSwayTree(child, windows)
 
 }
-
 
 // --- 核心功能函数 ---
 
@@ -122,7 +122,6 @@ return $windowpid
 	}
 }
 
-
 /**
  * 获取所有可见窗口的详细信息列表。
  * @private
@@ -139,7 +138,6 @@ async function getAllWindows() {
 
 			if (code !== 0 || !stdout)
 				throw new Error(`Failed to get window details on Windows: ${stderr || 'No output'}`)
-
 
 			// PowerShell 在只有一个结果时可能返回单个对象而非数组，此处进行兼容性处理。
 			const processes = JSON.parse(stdout)
@@ -247,7 +245,6 @@ async function getAllWindows() {
 						if (nameResult.status === 'rejected' || nameResult.value.code !== 0)
 							console.warn(`Could not determine process name for PID ${pid}.`)
 
-
 						return {
 							pid,
 							processName: nameResult.status === 'fulfilled' && nameResult.value.stdout ? nameResult.value.stdout.trim() : 'unknown',
@@ -270,7 +267,6 @@ async function getAllWindows() {
 			throw new Error(`Unsupported platform: ${process.platform}`)
 	}
 }
-
 
 /**
  * 获取所有窗口的详细信息，并附带一个标志指示哪个窗口是当前活跃的。

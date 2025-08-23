@@ -1,7 +1,8 @@
 import fs from 'node:fs'
-import { escapeRegExp, parseRegexFromString } from '../../scripts/tools.mjs'
-import { statisticDatas } from '../../scripts/statistics.mjs'
+
 import { getFileObjFormPathOrUrl, resolvePath } from '../../scripts/fileobj.mjs'
+import { statisticDatas } from '../../scripts/statistics.mjs'
+import { escapeRegExp, parseRegexFromString } from '../../scripts/tools.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
@@ -174,7 +175,6 @@ export async function file_change(result, { AddLongTimeLog }) {
 			} else if (failed_replaces.length === 0)
 				// If content didn't change AND no errors, explicitly state that
 				system_content += '所有替换规则均未匹配到内容或未导致文件变化。'
-
 
 			AddLongTimeLog({
 				name: 'file-change',

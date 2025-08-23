@@ -1,8 +1,10 @@
-import { rollup } from 'npm:rollup'
-import { visualizer } from 'npm:rollup-plugin-visualizer'
-import terser from 'npm:@rollup/plugin-terser'
-import obfuscator from 'npm:rollup-plugin-obfuscator'
 import fs from 'node:fs'
+
+import terser from 'npm:@rollup/plugin-terser'
+import { rollup } from 'npm:rollup'
+import obfuscator from 'npm:rollup-plugin-obfuscator'
+import { visualizer } from 'npm:rollup-plugin-visualizer'
+
 import { exec } from '../../scripts/exec.mjs'
 import { nicerWriteFileSync } from '../../scripts/tools.mjs'
 
@@ -17,7 +19,7 @@ const bundle = await rollup({
 		/node:.*/,
 		/npm:.*/,
 		/https:\/\/.*/,
-		/(?:.{2}\/){6}.*/
+		/(?:.{2}\/){5}.*/
 	],
 	plugins: [
 		{
@@ -91,7 +93,7 @@ await bundle.close()
 
 console.log('Build completed successfully and written to dist/main.mjs')
 
-const copy_paths = ['info/description', 'imgs', 'README.md', 'fount.json']
+const copy_paths = ['info/description', 'imgs', 'README.md', 'fount.json', 'locales', 'config/display.html', 'config/display.mjs']
 for (const path of copy_paths)
 	if (fs.statSync(path).isDirectory())
 		await exec(`robocopy ".\\${path}" ".\\dist\\${path}" /MIR /XD .git /XF .gitignore /XA:H /XA:S"`, { cwd: '.' }).catch(console.dir)

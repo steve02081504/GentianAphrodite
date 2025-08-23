@@ -1,8 +1,10 @@
+import fs from 'node:fs'
+import path from 'node:path'
+
+import { async_eval } from 'https://cdn.jsdelivr.net/gh/steve02081504/async-eval/deno.mjs'
+
 import { loadJsonFileIfExists, saveJsonFile } from '../../../../../../../src/scripts/json_loader.mjs'
 import { chardir } from '../../charbase.mjs'
-import path from 'node:path'
-import fs from 'node:fs'
-import { async_eval } from 'https://cdn.jsdelivr.net/gh/steve02081504/async-eval/deno.mjs'
 import { match_keys, match_keys_all } from '../../scripts/match.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
@@ -43,7 +45,7 @@ ${actived_memories.map(memory => `\
 </long-term-memories>
 `
 	let enable_memory_prompt = false
-	if (!logical_results.in_assist || await match_keys(args, ['记忆', '记住'], 'user'))
+	if (args.extension?.enable_prompts?.LongTermMemory || !logical_results.in_assist || await match_keys(args, ['记忆', '记住'], 'user'))
 		enable_memory_prompt = true
 	return {
 		text: [result ? {

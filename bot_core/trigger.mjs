@@ -1,11 +1,13 @@
 import { Buffer } from 'node:buffer'
-import { base_match_keys, base_match_keys_count, SimplifyChinese } from '../scripts/match.mjs'
-import { findMostFrequentElement } from '../scripts/tools.mjs'
+
 import { rude_words } from '../scripts/dict.mjs'
+import { base_match_keys, base_match_keys_count, SimplifyChinese } from '../scripts/match.mjs'
 import { newCharReplay, newUserMessage } from '../scripts/statistics.mjs'
+import { findMostFrequentElement } from '../scripts/tools.mjs'
+
+import { sendAndLogReply, doMessageReply } from './reply.mjs'
 import { channelLastSendMessageTime, channelMuteStartTimes, currentConfig, inHypnosisChannelId, fuyanMode, setFuyanMode, bannedStrings, channelChatLogs, GentianWords } from './state.mjs'
 import { fetchFilesForMessages, isBotCommand } from './utils.mjs'
-import { sendAndLogReply, doMessageReply } from './reply.mjs'
 
 /**
  * @readonly
@@ -76,7 +78,6 @@ function calculateKeywordBasedScore(content) {
 		if (base_match_keys(content, mapping.keywords))
 			score += mapping.score
 
-
 	if (base_match_keys(content, GentianWords) && base_match_keys(content, [/怎么(想|看)/]))
 		score += 100
 
@@ -133,7 +134,6 @@ async function calculateOwnerTriggerIncrement(fountEntry, content, platformAPI, 
 
 	if (isInFavor)
 		possible += calculateInFavorScore(content, platformAPI, channelId)
-
 
 	if (!isBotCommand(content))
 		possible += currentConfig.BaseTriggerChanceToOwner
@@ -349,11 +349,9 @@ async function checkQueueMessageTrigger(currentMessageToProcess, currentChannelL
 	if (currentMessageToProcess.extension?.platform_user_id == platformAPI.getBotUserId())
 		return TriggerResultType.NO_ACTION // 不处理机器人自己的消息触发
 
-
 	const ownerCommandResult = await handleOwnerCommandsInQueue(currentMessageToProcess, platformAPI, channelId)
 	if (ownerCommandResult !== TriggerResultType.NO_ACTION)
 		return ownerCommandResult
-
 
 	const recentChatLogForOtherBotCheck = currentChannelLog.filter(msg => (Date.now() - msg.time_stamp) < 5 * 60 * 1000)
 	const hasOtherGentianBot = (() => {
@@ -480,7 +478,6 @@ export async function processNextMessageInQueue(myQueue, currentChannelLog, plat
 
 	while (currentChannelLog.length > currentConfig.DefaultMaxMessageDepth)
 		currentChannelLog.shift()
-
 
 	const messageForReply = triggered ? currentChannelLog[currentChannelLog.length - 1] : null
 	if (messageForReply)

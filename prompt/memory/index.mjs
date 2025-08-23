@@ -1,6 +1,7 @@
 import { mergePrompt } from '../build.mjs'
-import { saveShortTermMemory, ShortTermMemoryPrompt } from './short-term-memory.mjs'
+
 import { LongTermMemoryPrompt, saveLongTermMemory } from './long-term-memory.mjs'
+import { saveShortTermMemory, ShortTermMemoryPrompt } from './short-term-memory.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
@@ -16,7 +17,7 @@ export async function MemoriesPrompt(args, logical_results, prompt_struct, detai
 	result.push(ShortTermMemoryPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(LongTermMemoryPrompt(args, logical_results, prompt_struct, detail_level))
 
-	return mergePrompt(...await Promise.all(result))
+	return mergePrompt(...result)
 }
 
 export async function saveMemories() {

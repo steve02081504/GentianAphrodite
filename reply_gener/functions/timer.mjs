@@ -84,7 +84,6 @@ export async function timer(result, args) {
 
 			console.info('AI设置定时器:', { trigger: finalTrigger, reason, repeat })
 
-
 			timersToSet.push({
 				trigger: finalTrigger,
 				reason,
@@ -119,7 +118,6 @@ export async function timer(result, args) {
 			systemLogContent += '届时将触发新回复，现在你可以继续当前对话。\n'
 		} else
 			systemLogContent += '未找到有效的定时器条目进行设置。\n'
-
 
 		AddLongTimeLog({
 			name: 'timer',

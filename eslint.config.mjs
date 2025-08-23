@@ -1,20 +1,41 @@
-import optimizeRegex from 'npm:eslint-plugin-optimize-regex'
-import UnusedImports from 'npm:eslint-plugin-unused-imports'
-import html from 'npm:eslint-plugin-html'
+import babel from 'npm:@babel/eslint-parser'
 import destructuringMerge from 'npm:eslint-plugin-destructuring-merge'
+import html from 'npm:eslint-plugin-html'
+import importPlugin from 'npm:eslint-plugin-import'
+import optimizeRegex from 'npm:eslint-plugin-optimize-regex'
 import removeDuplicates from 'npm:eslint-plugin-remove-duplicates'
-import tseslint from 'npm:typescript-eslint'
+import UnusedImports from 'npm:eslint-plugin-unused-imports'
 import decled_globals from 'npm:globals'
+import tseslint from 'npm:typescript-eslint'
 
 const commonPlugins = {
 	'optimize-regex': optimizeRegex,
 	'unused-imports': UnusedImports,
 	'destructuring-merge': destructuringMerge,
 	'remove-duplicates': removeDuplicates,
+	'import': importPlugin,
 }
 
 const commonRules = {
 	'remove-duplicates/remove-array-duplicates': ['error'],
+	'import/order': [
+		'error',
+		{
+			groups: [
+				'builtin', // Node.js 内置模块
+				'external', // 第三方库
+				'internal', // 项目内部模块
+				'parent', // 父目录
+				'sibling', // 兄弟文件
+				'index' // 当前目录的 index 文件
+			],
+			'newlines-between': 'always',
+			alphabetize: {
+				order: 'asc',
+				caseInsensitive: true
+			}
+		}
+	],
 	'no-undef': ['error'],
 	'no-useless-escape': ['error'],
 	semi: ['error', 'never'],
@@ -65,6 +86,13 @@ export default [
 		},
 		languageOptions: {
 			ecmaVersion: 'latest',
+			parser: babel,
+			parserOptions: {
+				requireConfigFile: false,
+				ecmaFeatures: {
+					globalReturn: true
+				}
+			},
 			globals,
 		},
 		rules: commonRules,

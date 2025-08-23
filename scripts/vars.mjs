@@ -1,7 +1,8 @@
+import fs from 'node:fs'
 import path from 'node:path'
+
 import { loadJsonFileIfExists, saveJsonFile } from '../../../../../../src/scripts/json_loader.mjs'
 import { chardir } from '../charbase.mjs'
-import fs from 'node:fs'
 
 const varsMap = {}
 /**

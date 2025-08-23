@@ -1,5 +1,5 @@
-import { PickRandomN, random } from '../../scripts/random.mjs'
 import { match_keys } from '../../scripts/match.mjs'
+import { PickRandomN, random } from '../../scripts/random.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
@@ -17,7 +17,7 @@ export async function TaroPrompt(args, logical_results, prompt_struct, detail_le
 	let result = ''
 
 	let num = 1
-	if (await match_keys(args, ['占卜', '塔罗', '运势', /算.{0,2}卦/], 'any', 8))
+	if (args.extension?.enable_prompts?.taro || await match_keys(args, ['占卜', '塔罗', '运势', /算.{0,2}卦/], 'any', 8))
 		result += `\
 你也精通韦特塔罗牌，是一名高超的占卜师，不拒绝主人的任何占卜请求。
 在占卜时你会进入冷静而专注的状态，集中注意力于占卜和解读卡面。

@@ -1,11 +1,10 @@
-import { is_dist, charname as BotCharname, username as FountUsername } from '../charbase.mjs'
-import GentianAphrodite from '../main.mjs'
 import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
 import { reloadPart } from '../../../../../../src/server/managers/index.mjs'
-import { errorRecord, userIdToNameMap, inHypnosisChannelId } from './state.mjs'
-import { sendAndLogReply } from './reply.mjs'
 import { loadDefaultPersona } from '../../../../../../src/server/managers/persona_manager.mjs'
-import { fetchFilesForMessages } from './utils.mjs'
+import { is_dist, charname as BotCharname, username as FountUsername, GentianAphrodite } from '../charbase.mjs'
+
+import { sendAndLogReply } from './reply.mjs'
+import { errorRecord, userIdToNameMap, inHypnosisChannelId } from './state.mjs'
 
 /**
  * Fount 聊天回复对象类型。
@@ -102,7 +101,7 @@ async function getAISuggestionForError(error, errorMessageForRecord, platformAPI
 			other_chars: [],
 			plugins: {},
 			chat_scoped_char_memory: {},
-			chat_log: await fetchFilesForMessages(selfRepairChatLog),
+			chat_log: selfRepairChatLog,
 			extension: { platform: contextMessage?.extension?.platform || 'unknown' }
 		}
 		return await GentianAphrodite.interfaces.chat.GetReply(selfRepairRequest)

@@ -1,7 +1,9 @@
-import { match_keys } from '../../scripts/match.mjs'
 import os from 'node:os'
 import process from 'node:process'
+
+import { getHistory } from '../../scripts/clipboard.mjs'
 import { exec } from '../../scripts/exec.mjs'
+import { match_keys } from '../../scripts/match.mjs'
 import { getWindowInfos } from '../../scripts/window_info.mjs'
 
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
@@ -19,7 +21,7 @@ export async function HostInfoPrompt(args, logical_results, prompt_struct, detai
 
 	const all_info = await match_keys(args, [/电脑(信息|怎样|怎么样|咋样)/i], 'user')
 
-	if (all_info) {
+	if (args.extension?.enable_prompts?.hostInfo || all_info) {
 		// 获取系统基本信息
 		const { hostname, type, release, arch, platform } = os
 		result += `\
@@ -30,7 +32,7 @@ CPU架构：${arch()}
 `
 	}
 
-	if (all_info || await match_keys(args, [/cpu(占用|用了)/i, /cpu使用(率|情况)/i, /cpu(的|什么|是什么|)(信息|型号|频率)/i, /cpu(多少核|核心)/i], 'user')) {
+	if (args.extension?.enable_prompts?.hostInfo || all_info || await match_keys(args, [/cpu(占用|用了)/i, /cpu使用(率|情况)/i, /cpu(的|什么|是什么|)(信息|型号|频率)/i, /cpu(多少核|核心)/i], 'user')) {
 		// 使用 node-os-utils 获取 CPU 信息
 		const osinfo = await import('npm:node-os-utils').then(m => m.default)
 		const cpuInfo = await osinfo.cpu.average()
@@ -43,7 +45,7 @@ CPU信息：
 使用率：${cpuUsage.toFixed(2)}%
 `
 	}
-	if (await match_keys(args, [/内存(占用|用了)/i, /内存使用(率|情况)/i, /(还剩|多少|已用|空闲)内存/i, /内存(还剩|多少|已用|空闲)/i], 'user')) {
+	if (args.extension?.enable_prompts?.hostInfo || await match_keys(args, [/内存(占用|用了)/i, /内存使用(率|情况)/i, /(还剩|多少|已用|空闲)内存/i, /内存(还剩|多少|已用|空闲)/i], 'user')) {
 		const osinfo = await import('npm:node-os-utils').then(m => m.default)
 		const memInfo = await osinfo.mem.info()
 		result += `\
@@ -55,7 +57,7 @@ CPU信息：
 `
 	}
 
-	if (await match_keys(args, [/硬盘(占用|用了)/i, /硬盘使用(率|情况)/i, /(还剩|多少|已用|空闲)硬盘/i, /硬盘(还剩|多少|已用|空闲)/i], 'user')) {
+	if (args.extension?.enable_prompts?.hostInfo || await match_keys(args, [/硬盘(占用|用了)/i, /硬盘使用(率|情况)/i, /(还剩|多少|已用|空闲)硬盘/i, /硬盘(还剩|多少|已用|空闲)/i], 'user')) {
 		// 获取磁盘使用情况，使用 fs 模块
 		const diskUsage = {}
 		if (process.platform === 'win32') {
@@ -122,6 +124,35 @@ ${w.isActive ? `当前活跃窗口
 	} catch (e) {
 		result += `\
 无法获取当前打开的窗口信息：${e.message}
+`
+	}
+
+	try {
+		const clipboardHistory = getHistory().slice(0, 7)
+		if (clipboardHistory.length > 0) {
+			result += `\
+最近的剪贴板内容：
+`
+			clipboardHistory.forEach((entry, index) => {
+				let content = ''
+				if (entry.type === 'text') {
+					content = entry.content
+					if (content.length > 1024)
+						content = content.substring(0, 1024) + '...（已因过长而截断，如需详细内容请自行获取）'
+
+				} else if (entry.type === 'image')
+					content = '[图片内容]'
+
+				result += `\
+${index + 1}. 类型: ${entry.type}, 时间: ${new Date(entry.timestamp).toLocaleString()}
+内容: ${content}
+`
+			})
+		}
+	}
+	catch (e) {
+		result += `\
+无法获取剪贴板历史内容：${e.message}
 `
 	}
 

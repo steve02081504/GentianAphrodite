@@ -1,10 +1,10 @@
-import { charname as BotCharname, username as FountUsername } from '../charbase.mjs'
-import GentianAphrodite from '../main.mjs'
 import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
-import { channelChatLogs, channelLastSendMessageTime, channelCharScopedMemory, userIdToNameMap, bannedStrings, fuyanMode, setInHypnosisChannelId } from './state.mjs'
-import { handleError } from './error.mjs'
-import { fetchFilesForMessages, updateBotNameMapping } from './utils.mjs'
 import { loadDefaultPersona } from '../../../../../../src/server/managers/persona_manager.mjs'
+import { charname as BotCharname, username as FountUsername, GentianAphrodite } from '../charbase.mjs'
+
+import { handleError } from './error.mjs'
+import { channelChatLogs, channelLastSendMessageTime, channelCharScopedMemory, userIdToNameMap, bannedStrings, fuyanMode, setInHypnosisChannelId } from './state.mjs'
+import { fetchFilesForMessages, updateBotNameMapping } from './utils.mjs'
 
 /**
  * Fount 聊天回复对象类型。
@@ -132,16 +132,11 @@ async function processAIReply(aiFinalReply, platformAPI, channelId, triggerMessa
 	else
 		setInHypnosisChannelId(null)
 
-
-	if (!aiFinalReply)
-		return
-
+	if (!aiFinalReply) return
 
 	for (const bannedStr of bannedStrings)
 		if (aiFinalReply.content)
 			aiFinalReply.content = aiFinalReply.content.replaceAll(bannedStr, '')
-
-
 
 	if (aiFinalReply.content || aiFinalReply.files?.length)
 		await sendAndLogReply(aiFinalReply, platformAPI, channelId, aiFinalReply.extension?.replied_to_message_id ? undefined : triggerMessage)

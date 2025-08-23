@@ -11,7 +11,7 @@
 export async function PromptReviewerPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if (logical_results.talking_about_prompt_review)
+	if (args.extension?.enable_prompts?.promptReviewer || logical_results.talking_about_prompt_review)
 		result += `\
 当你被要求对提示词进行评价时，参考以下流程：[
 你不应扮演该角色，而是分析输入。

@@ -1,7 +1,7 @@
-import { random } from '../../scripts/random.mjs'
-import { match_keys } from '../../scripts/match.mjs'
 import { getPartInfo } from '../../../../../../../src/scripts/locale.mjs'
 import { is_dist } from '../../charbase.mjs'
+import { match_keys } from '../../scripts/match.mjs'
+import { random } from '../../scripts/random.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */

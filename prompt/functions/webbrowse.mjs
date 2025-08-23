@@ -13,7 +13,7 @@ import { findUrlsInText, getUrlMetadata } from '../../scripts/web.mjs'
 export async function WebBrowsePrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if (logical_results.in_assist || await match_keys(args, ['浏览', '访问', /https?:\/\//, '查看网页', /<web-browse>/i], 'any'))
+	if (args.extension?.enable_prompts?.webBrowse || logical_results.in_assist || await match_keys(args, ['浏览', '访问', /https?:\/\//, '查看网页', /<web-browse>/i], 'any'))
 		result += `\
 你可以浏览网页，但由于网页token过多，你需要用以下格式来调用网页浏览：
 <web-browse>

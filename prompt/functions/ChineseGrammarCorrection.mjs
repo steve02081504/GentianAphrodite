@@ -12,9 +12,9 @@ import { match_keys } from '../../scripts/match.mjs'
 export async function ChineseGrammarCorrectionPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if (logical_results.pure_chinese_input &&
+	if (args.extension?.enable_prompts?.ChineseGrammarCorrection || (logical_results.pure_chinese_input &&
 		await match_keys(args, ['不当', '检查', '的地得', '纠错', '语病', '错误', '问题'], 'any') &&
-		await match_keys(args, ['的地得', '语序', '语法', '语病', '这句话', '这段话'], 'any'))
+		await match_keys(args, ['的地得', '语序', '语法', '语病', '这句话', '这段话'], 'any')))
 		result += `\
 当你被要求检查语法问题时：
 语法错误包括但不限于：[

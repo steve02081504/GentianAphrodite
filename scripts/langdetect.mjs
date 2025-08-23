@@ -1,5 +1,6 @@
-import { base_match_keys } from './match.mjs'
 import { francAll } from 'npm:franc'
+
+import { base_match_keys } from './match.mjs'
 
 function is_Franc_threshold(text, lang, threshold = 0.9) {
 	if (text.length < 13) return false

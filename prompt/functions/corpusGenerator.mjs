@@ -12,8 +12,8 @@ import { match_keys } from '../../scripts/match.mjs'
 export async function CorpusGeneratorPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if (await match_keys(args, ['写一些', '写一句', '写一段', '写一点', '写些', '写几句', '写段', '写点', '总结', '给我一些', '给我一段', '给我一点', '给我些', '给我关于', '给我几句', '给我段', '给我点'], 'any') &&
-		await match_keys(args, ['语料'], 'any'))
+	if (args.extension?.enable_prompts?.corpusGenerator || (await match_keys(args, ['写一些', '写一句', '写一段', '写一点', '写些', '写几句', '写段', '写点', '总结', '给我一些', '给我一段', '给我一点', '给我些', '给我关于', '给我几句', '给我段', '给我点'], 'any') &&
+		await match_keys(args, ['语料'], 'any')))
 		result += `\
 “语料”是指在用于指导AI完成角色扮演的prompt中使用直白的句子供模型参考的部分，如：
 语气词：[

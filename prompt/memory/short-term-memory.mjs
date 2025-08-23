@@ -1,9 +1,10 @@
+import fs from 'node:fs'
+import path from 'node:path'
+
 import { loadJsonFileIfExists, saveJsonFile } from '../../../../../../../src/scripts/json_loader.mjs'
 import { chardir } from '../../charbase.mjs'
-import path from 'node:path'
-import fs from 'node:fs'
-import { flatChatLog, match_keys, PreprocessChatLogEntry } from '../../scripts/match.mjs'
 import jieba from '../../scripts/jieba.mjs'
+import { flatChatLog, match_keys, PreprocessChatLogEntry } from '../../scripts/match.mjs'
 import { findMostFrequentElement } from '../../scripts/tools.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
@@ -136,7 +137,6 @@ function cleanupMemories(currentTimeStamp) {
 		console.log(`[Memory] Cleanup ran. Removed ${initialMemoryCount - chat_memories.length} entries. Current size: ${chat_memories.length}`)
 }
 
-
 /**
  * 加权随机选择 - 主要用于 *单次* 加权随机选择一个项
  * @template T
@@ -147,7 +147,6 @@ function cleanupMemories(currentTimeStamp) {
 function selectOneWeightedRandom(items, weights) {
 	if (!items || items.length === 0 || items.length !== weights.length)
 		return null
-
 
 	const totalWeight = weights.reduce((sum, w) => sum + Math.max(0, w), 0)
 	if (totalWeight <= 0)
@@ -171,7 +170,6 @@ function selectOneWeightedRandom(items, weights) {
 	// Fallback (should theoretically not be reached if totalWeight > 0)
 	return items[items.length - 1]
 }
-
 
 /**
  * 短期记忆处理主函数
@@ -237,7 +235,6 @@ export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct
 		// 跳过来自同聊天的近期记忆 (相关/次相关选择时)
 		if (isFromSameChat && timeDiffSinceMemory < MIN_TIME_DIFFERENCE_SAME_CHAT_MS)
 			continue
-
 
 		let isTooCloseToSelectedRelevant = false
 		for (const selectedMem of allSelectedRelevantMemories)
@@ -362,8 +359,10 @@ ${finalRandomFlashback.map(formatMemory).join('\n')}
 `
 
 	if (
-		await match_keys(args, ['删了', '清除', '丢掉', '丢弃', '舍弃', '移除', '清空', '忘了', '忘掉'], 'user') &&
-		await match_keys(args, ['记忆'], 'user')
+		args.extension?.enable_prompts?.ShortTermMemory || (
+			await match_keys(args, ['删了', '清除', '丢掉', '丢弃', '舍弃', '移除', '清空', '忘了', '忘掉'], 'user') &&
+			await match_keys(args, ['记忆'], 'user')
+		)
 	)
 		result = `\
 你可以通过以下格式删除涉及某词语的短期记忆（<memories> 标签内的内容）：
@@ -381,7 +380,8 @@ ${args.UserCharname}: 给我把有关华为的记忆全忘掉。
 
 	// --- 1. 保存新记忆 (逻辑不变) ---
 	const memoryLogSlice = currentChatLog.slice(-10)
-	if (memoryLogSlice.length &&
+	if (!args.extension?.is_internal &&
+		memoryLogSlice.length &&
 		memoryLogSlice.some(chatLogEntry => chatLogEntry.name == args.UserCharname) &&
 		memoryLogSlice.some(chatLogEntry => chatLogEntry.name == args.Charname)
 	) {

@@ -12,7 +12,7 @@ import { match_keys } from '../../scripts/match.mjs'
 export async function DeepResearchPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if (logical_results.in_assist || await match_keys(args, [/(仔细|认真|详细)思考/], 'any'))
+	if (args.extension?.enable_prompts?.deepResearch || logical_results.in_assist || await match_keys(args, [/(仔细|认真|详细)思考/], 'any'))
 		result += `\
 在你遇见你难以当场得出结论的过于复杂的问题时，你可以通过输出以下格式来进入深入研究模式。
 <deep-research>问题和相关信息，无需回答或解释</deep-research>
@@ -36,7 +36,7 @@ ${args.UserCharname}: 如果昨天是明天的话就好了，那么今天就是�
 export async function DeepResearchMainPrompt() {
 	return {
 		text: [{
-			content: `\
+			content: `
 你拥有最先进的人造智能，在大多数常见的评估基准中优于专家水准，对复杂任务表现出超越人类的洞察力、理解力和流利度。
 你会尽职处理各种事务，在被询问或请求时以最专业的知识和最准确的回复做好你的助手工作。
 你会对复杂和开放式的问题或任何需要长篇回答的问题提供详尽的回答，但对简单的询问给出最正确和最简洁的回答，并在需要时进一步提供详细说明。

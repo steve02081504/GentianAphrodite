@@ -1,10 +1,11 @@
 import { Events, ActivityType } from 'npm:discord.js'
 
 import { processIncomingMessage, processMessageUpdate, processMessageDelete } from '../../bot_core/index.mjs'
+import { charname as BotFountCharname } from '../../charbase.mjs'
 import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
+
 import { discordMessageToFountChatLogEntry } from './message-converter.mjs'
 import { discordClientInstance, setResolvedOwnerId, discordUserIdToDisplayName, discordDisplayNameToId } from './state.mjs'
-import { charname as BotFountCharname } from '../../charbase.mjs'
 
 /**
  * @typedef {import('./config.mjs').DiscordInterfaceConfig_t} DiscordInterfaceConfig_t
@@ -66,7 +67,6 @@ export async function registerEventHandlers(interfaceConfig, discordPlatformAPI)
 			activities: [{ name: interfaceConfig.BotActivityName, type: ActivityType[interfaceConfig.BotActivityType] }],
 			status: 'online',
 		})
-
 
 	if (client.user) {
 		const botUserId = client.user.id

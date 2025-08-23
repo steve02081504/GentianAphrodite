@@ -1,5 +1,7 @@
-import { match_keys } from '../../scripts/match.mjs'
 import process from 'node:process'
+
+import { chardir } from '../../charbase.mjs'
+import { match_keys } from '../../scripts/match.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
@@ -19,7 +21,7 @@ export async function CodeRunnerPrompt(args, logical_results, prompt_struct, det
 				.map(plugin => plugin.interfaces?.chat?.GetJSCodePrompt?.(args, prompt_struct, detail_level))
 		)
 	).filter(Boolean).join('\n')
-	if (codePluginPrompts || logical_results.in_assist || await match_keys(args, [
+	if (args.extension?.enable_prompts?.CodeRunner || codePluginPrompts || logical_results.in_assist || await match_keys(args, [
 		/(执行|运行|调用|(指|命)令|代码){2}/,
 		/代码(执行|运行)能力/, /(pwsh|powershell|js)代码(执行|运行)/i, /(执行|运行)(pwsh|powershell|js)代码/i,
 		'是多少', '是几', '算一下', '算下', /[=＝][?？]/, /run-(js|pwsh|bash)/i, /inline-js/i,
@@ -179,6 +181,8 @@ ${codePluginPrompts}
 系统输出不会显示在回复中，需要你总结。
 鼓励在回答输出较多时用<inline-js>以避免大段复述。
 **只是解释说明或举例时使用普通代码块（如\`\`\`js）而不是执行代码。**
+
+你的文件的地址是：${chardir}
 `
 
 		if (!logical_results.in_reply_to_master)

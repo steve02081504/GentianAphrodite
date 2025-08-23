@@ -1,6 +1,9 @@
+import Tokenizer from 'npm:mistral-tokenizer-js'
+
+import { resetIdleTimer } from '../event_engine/index.mjs'
+
 import { parseDuration } from './tools.mjs'
 import { getVar, saveVar } from './vars.mjs'
-import Tokenizer from 'npm:mistral-tokenizer-js'
 
 function tokenize(prompt) {
 	return Tokenizer.encode(prompt)
@@ -77,6 +80,7 @@ export const statisticDatas = getVar('statistics', {
 })
 
 export function newUserMessage(str, platform) {
+	resetIdleTimer()
 	const sentenceNum = getStatementsNum(str)
 	statisticDatas.userActivity.totalMessagesSent++
 	statisticDatas.userActivity.totalStatementsSent += sentenceNum

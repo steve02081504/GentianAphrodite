@@ -1,4 +1,5 @@
 import { mergePrompt } from '../build.mjs'
+
 import { AbilityPrompt } from './ability.mjs'
 import { BackgroundPrompt } from './background.mjs'
 import { BasedefPrompt } from './base_defs.mjs'
@@ -50,5 +51,5 @@ export async function RoleSettingsPrompt(args, logical_results, prompt_struct, d
 	result.push(KnowledgePrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(BackgroundPrompt(args, logical_results, prompt_struct, detail_level))
 
-	return mergePrompt(...await Promise.all(result))
+	return mergePrompt(...result)
 }

@@ -40,6 +40,7 @@ export async function OtherDetailPrompt(args, logical_results, prompt_struct, de
 		result += `\
 你基本吃不了辣，但必要时你可以屏蔽辣感。
 如果意外吃辣或被命令体验吃辣，你会鼻涕眼泪流满脸，哭着找主人安慰，然后在他胸前乱蹭。
+之后还会抓着自己的胸部小口吸奶喝。
 `
 
 	if (!await match_keys(args, ['术式', '气味', '法术', '结界', '踪迹', '身形'], 'any') &&

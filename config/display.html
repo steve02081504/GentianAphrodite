@@ -1,0 +1,60 @@
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+	<div class="p-4 border rounded-lg">
+		<h3 class="text-lg font-semibold" data-i18n="GentianAphrodite.config.reference_voice"></h3>
+		<p class="text-sm opacity-70" data-i18n="GentianAphrodite.config.record_or_preview_master_voice_desc"></p>
+		<div class="mt-4">
+			<h4 class="font-semibold" data-i18n="GentianAphrodite.config.current_voice"></h4>
+			<audio id="audioPlayback" controls class="mt-2 w-full"></audio>
+			<p id="audioStatus" class="mt-2 text-sm"></p>
+		</div>
+		<div class="mt-4">
+			<h4 class="font-semibold" data-i18n="GentianAphrodite.config.record_new_voice"></h4>
+			<p class="text-sm opacity-70" data-i18n="GentianAphrodite.config.click_button_to_start_recording_desc"></p>
+			<div class="mt-2">
+				<button id="recordButton" class="btn btn-primary">
+					<img src="https://api.iconify.design/material-symbols/mic.svg" class="w-6 h-6 mr-2 text-icon" />
+					<span data-i18n="GentianAphrodite.config.start_recording"></span>
+				</button>
+				<button id="stopButton" class="btn btn-secondary hidden">
+					<img src="https://api.iconify.design/material-symbols/stop.svg" class="w-6 h-6 mr-2 text-icon" />
+					<span data-i18n="GentianAphrodite.config.stop_recording"></span>
+				</button>
+				<p id="recordingStatus" class="mt-2"></p>
+			</div>
+		</div>
+	</div>
+
+	<div class="p-4 border rounded-lg">
+		<h3 class="text-lg font-semibold" data-i18n="GentianAphrodite.config.reference_photo"></h3>
+		<p class="text-sm opacity-70" data-i18n="GentianAphrodite.config.upload_or_preview_master_photo_desc"></p>
+		<div class="mt-4">
+			<h4 class="font-semibold" data-i18n="GentianAphrodite.config.current_photo"></h4>
+			<img id="imagePreview" class="mt-2 rounded-lg max-w-full h-auto hidden" />
+			<p id="photoStatus" class="mt-2 text-sm"></p>
+		</div>
+		<div class="mt-4">
+			<h4 class="font-semibold" data-i18n="GentianAphrodite.config.upload_new_photo"></h4>
+			<p class="text-sm opacity-70" data-i18n="GentianAphrodite.config.select_image_or_take_photo_desc"></p>
+			<div class="mt-2">
+				<div id="cameraView" class="hidden mt-2">
+					<video id="videoElement" autoplay class="w-full rounded-lg"></video>
+					<button id="captureButton" class="btn btn-accent mt-2 w-full">
+						<img src="https://api.iconify.design/material-symbols/camera.svg" class="w-6 h-6 mr-2 text-icon" />
+						<span data-i18n="GentianAphrodite.config.capture"></span>
+					</button>
+				</div>
+				<div class="flex items-center gap-2 mt-2">
+					<input type="file" id="photoInput" accept="image/*" class="file-input file-input-bordered w-full max-w-xs" />
+					<button id="cameraButton" class="btn btn-secondary">
+						<img src="https://api.iconify.design/material-symbols/photo-camera.svg" class="w-6 h-6 text-icon" />
+					</button>
+				</div>
+				<button id="savePhotoButton" class="btn btn-primary mt-2 w-full">
+					<img src="https://api.iconify.design/material-symbols/upload-file.svg" class="w-6 h-6 mr-2 text-icon" />
+					<span data-i18n="GentianAphrodite.config.upload_and_save"></span>
+				</button>
+				<p id="uploadStatus" class="mt-2"></p>
+			</div>
+		</div>
+	</div>
+</div>

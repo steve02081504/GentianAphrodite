@@ -1,8 +1,9 @@
 /** @typedef {import('../../../../../../src/decl/AIsource.ts').AIsource_t} AIsource_t */
 
-import { loadAIsource, loadDefaultAIsource } from '../../../../../../src/server/managers/AIsource_manager.mjs'
 import { getPartInfo } from '../../../../../../src/scripts/locale.mjs'
+import { loadAIsource, loadDefaultAIsource } from '../../../../../../src/server/managers/AIsource_manager.mjs'
 import { username } from '../charbase.mjs'
+import { checkVoiceSentinel } from '../event_engine/voice_sentinel.mjs'
 
 /**
  * @type {Record<string, AIsource_t>}
@@ -34,6 +35,7 @@ export async function setAISourceData(data) {
 	if (fount_default && !Object.values(newAIsources).some(x => x === fount_default))
 		newAIsources.fount_default = fount_default
 	AIsources = newAIsources
+	checkVoiceSentinel()
 }
 
 /**

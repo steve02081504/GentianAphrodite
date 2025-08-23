@@ -12,7 +12,7 @@ import { match_keys } from '../../scripts/match.mjs'
 export async function TimerPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if (await match_keys(args, [
+	if (args.extension?.enable_prompts?.timer || await match_keys(args, [
 		/(定|计)时器/, '闹钟', '提醒我', '设置提醒', /到时间?提醒我/, /过(多久|一?阵)提醒我/, 'schedule', 'timer', /(周|天|月|星期|小时|分|时辰|年|秒)后/, /<timer>/i,
 		/每.{0,3}(周|天|月|星期|小时|分|时辰|年|秒)/i
 	], 'any'))

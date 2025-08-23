@@ -14,7 +14,7 @@ import { parseDuration, timeToStr, timeToTimeStr } from '../../scripts/tools.mjs
 export async function StatisticDatasPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if (await match_keys(args, ['第一次', '多久']))
+	if (args.extension?.enable_prompts?.statisticDatas || await match_keys(args, ['第一次', '多久']))
 		result += `\
 你第一次和主人聊天是在${statisticDatas.firstInteraction.chat_name}的${timeToStr(statisticDatas.firstInteraction.time, 'zh-CN')}，距离今天已经过去了${timeToTimeStr(Date.now() - statisticDatas.firstInteraction.time, 'zh-CN')}
 
@@ -25,7 +25,7 @@ ${statisticDatas.firstInteraction.userMessageContent}
 ${statisticDatas.firstInteraction.characterReplyContent}
 ]
 `
-	if (await match_keys(args, ['多少次', '多久', '多少条']))
+	if (args.extension?.enable_prompts?.statisticDatas || await match_keys(args, ['多少次', '多久', '多少条']))
 		result += `\
 直到今天，你主人累积发了${statisticDatas.userActivity.totalMessagesSent}条信息，一共${statisticDatas.userActivity.totalStatementsSent}句，其中：
 - ${statisticDatas.userActivity.NsfwMessagesSent}次是在聊NSFW
@@ -47,6 +47,7 @@ ${statisticDatas.firstInteraction.characterReplyContent}
 
 `
 	if (
+		args.extension?.enable_prompts?.statisticDatas ||
 		statisticDatas.longestDailyChat.end - statisticDatas.longestDailyChat.start > parseDuration('48h')
 		&&
 		await match_keys(args, ['最长'])
@@ -57,7 +58,7 @@ ${statisticDatas.firstInteraction.characterReplyContent}
 	, 'zh-CN')}的时间中，每日都有保持对话。
 `
 
-	if (await match_keys(args, ['token', 'tokens', '平均']))
+	if (args.extension?.enable_prompts?.statisticDatas || await match_keys(args, ['token', 'tokens', '平均']))
 		result += `\
 你每次调用的token数平均为${statisticDatas.avgTokenNum}
 `

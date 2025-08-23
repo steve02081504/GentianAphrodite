@@ -1,12 +1,14 @@
+import { Buffer } from 'node:buffer'
 import process from 'node:process'
 import util from 'node:util'
+
 import { async_eval } from 'https://cdn.jsdelivr.net/gh/steve02081504/async-eval/deno.mjs'
+
 import { bash_exec, pwsh_exec } from '../../scripts/exec.mjs'
-import { GetReply } from '../index.mjs'
+import { toFileObj } from '../../scripts/fileobj.mjs'
 import { newCharReplay, statisticDatas } from '../../scripts/statistics.mjs'
 import { captureScreen } from '../../scripts/tools.mjs'
-import { toFileObj } from '../../scripts/fileobj.mjs'
-import { Buffer } from 'node:buffer'
+import { GetReply } from '../index.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 

@@ -1,5 +1,5 @@
-import { match_keys } from '../../scripts/match.mjs'
 import { lewd_words, rude_words } from '../../scripts/dict.mjs'
+import { match_keys } from '../../scripts/match.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
@@ -14,6 +14,7 @@ export async function RudePrompt(args, logical_results, prompt_struct, detail_le
 	let result = ''
 
 	if (
+		args.extension?.enable_prompts?.rude ||
 		await match_keys(args, rude_words, 'any', 3) ||
 		await match_keys(args, lewd_words, 'any', 6) ||
 		await match_keys(args, ['骂'], 'user', 2)

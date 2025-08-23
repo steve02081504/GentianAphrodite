@@ -1,11 +1,13 @@
-import { ChannelType } from 'npm:discord.js'
 import { Buffer } from 'node:buffer'
 
+import { ChannelType } from 'npm:discord.js'
+
 import { charname as BotFountCharname } from '../../charbase.mjs'
-import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
 import { mimetypeFromBufferAndName } from '../../scripts/mimetype.mjs'
-import { getMessageFullContent } from './utils.mjs'
+import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
+
 import { discordClientInstance, discordUserCache, discordUserIdToDisplayName, discordDisplayNameToId, aiReplyObjectCache } from './state.mjs'
+import { getMessageFullContent } from './utils.mjs'
 
 /**
  * @typedef {import('./config.mjs').DiscordInterfaceConfig_t} DiscordInterfaceConfig_t

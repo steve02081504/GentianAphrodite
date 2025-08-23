@@ -1,4 +1,5 @@
 import { mergePrompt } from '../build.mjs'
+
 import { ps12exePrompt } from './ps12exe.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
@@ -13,5 +14,5 @@ import { ps12exePrompt } from './ps12exe.mjs'
 export async function ADPrompt(args, logical_results, prompt_struct, detail_level) {
 	const result = []
 	result.push(ps12exePrompt(args, logical_results, prompt_struct, detail_level))
-	return mergePrompt(...await Promise.all(result))
+	return mergePrompt(...result)
 }

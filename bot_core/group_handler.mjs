@@ -1,8 +1,8 @@
-import { charname as BotCharname, username as FountUsername } from '../charbase.mjs'
-import GentianAphrodite from '../main.mjs'
 import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
-import { userIdToNameMap } from './state.mjs'
 import { loadDefaultPersona } from '../../../../../../src/server/managers/persona_manager.mjs'
+import { charname as BotCharname, username as FountUsername, GentianAphrodite } from '../charbase.mjs'
+
+import { userIdToNameMap } from './state.mjs'
 import { fetchFilesForMessages } from './utils.mjs'
 
 /**
@@ -124,7 +124,6 @@ async function sendOwnerInviteNotifications(group, platformAPI, defaultChannel, 
 		else
 			console.warn(`[BotLogic] sendDirectMessageToOwner not implemented for ${platformAPI.name}.`)
 
-
 		const ownerPresenceResult = await platformAPI.getOwnerPresenceInGroups?.()
 		const ownerUsernameToCompare = platformAPI.getOwnerUserName?.()
 		if (ownerPresenceResult?.groupsWithOwner?.length > 0)
@@ -158,7 +157,6 @@ async function sendInsultAndLeaveGroup(group, platformAPI, defaultChannel) {
 	if (platformAPI.fetchChannelHistory)
 		channelHistoryForAI = await platformAPI.fetchChannelHistory(defaultChannel.id, 10)
 
-
 	const insultMessageContent = await generateInsult(group, platformAPI, defaultChannel, channelHistoryForAI)
 
 	if (platformAPI.sendMessage && insultMessageContent)
@@ -167,7 +165,6 @@ async function sendInsultAndLeaveGroup(group, platformAPI, defaultChannel) {
 		} catch (e) {
 			console.error(`[BotLogic] Failed to send insult to group ${group.id}:`, e)
 		}
-
 
 	if (platformAPI.leaveGroup)
 		await platformAPI.leaveGroup(group.id)
@@ -195,7 +192,6 @@ async function handleOwnerNotInGroup(group, platformAPI, defaultChannel) {
 			})
 	else
 		console.warn(`[BotLogic] generateInviteLink not implemented for ${platformAPI.name}.`)
-
 
 	await sendOwnerInviteNotifications(group, platformAPI, defaultChannel, inviteLink)
 	await sendInsultAndLeaveGroup(group, platformAPI, defaultChannel)
@@ -272,7 +268,6 @@ async function performInitialGroupOwnerCheck(platformAPI) {
 		} catch (e) {
 			console.error(`[BotLogic] Error calling getOwnerPresenceInGroups for ${platformAPI.name}:`, e)
 		}
-
 
 	if (!usedOptimizedCheck && platformAPI.getJoinedGroups)
 		try {

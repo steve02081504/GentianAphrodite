@@ -2,18 +2,19 @@
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 import { OrderedAISourceCalling } from '../../AISource/index.mjs'
+import { config } from '../../config/index.mjs'
 import { mergePrompt } from '../../prompt/build.mjs'
-import { WebBrowsePrompt } from '../../prompt/functions/webbrowse.mjs'
 import { CodeRunnerPrompt } from '../../prompt/functions/coderunner.mjs'
 import { DeepResearchMainPrompt } from '../../prompt/functions/deep-research.mjs'
-import { webbrowse } from './webbrowse.mjs'
-import { googlesearch } from './googlesearch.mjs'
-import { coderunner } from './coderunner.mjs'
 import { GoogleSearchPrompt } from '../../prompt/functions/googlesearch.mjs'
-import { getLongTimeLogAdder } from '../index.mjs'
-import { config } from '../../config.mjs'
-import { sleep } from '../../scripts/tools.mjs'
+import { WebBrowsePrompt } from '../../prompt/functions/webbrowse.mjs'
 import { statisticDatas } from '../../scripts/statistics.mjs'
+import { sleep } from '../../scripts/tools.mjs'
+import { getLongTimeLogAdder } from '../index.mjs'
+
+import { coderunner } from './coderunner.mjs'
+import { googlesearch } from './googlesearch.mjs'
+import { webbrowse } from './webbrowse.mjs'
 
 /**
  * Parses plan text into a structured plan array with relaxed validation.
@@ -52,7 +53,6 @@ function parsePlan(text) {
 
 	return plan
 }
-
 
 /** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
 export async function deepResearch(result, args) {
@@ -207,7 +207,6 @@ Step 2: <步骤2主题>
 		return true
 	}
 
-
 	// --- Planning and Execution Cycle ---
 	try {
 		let summaryRaw = '' // Define summaryRaw outside the loop to be accessible in the final fallback log
@@ -216,11 +215,9 @@ Step 2: <步骤2主题>
 			planningCycles++
 			console.info(`Deep-research: Starting planning cycle ${planningCycles}/${max_planning_cycles}`)
 
-			thinking_prompt_struct.char_prompt = mergePrompt(
-				await Promise.all(
-					[DeepResearchMainPrompt, GoogleSearchPrompt, WebBrowsePrompt, CodeRunnerPrompt]
-						.map(p => p(thinkingArgs, thinking_logical_results, thinking_prompt_struct, 0))
-				),
+			thinking_prompt_struct.char_prompt = await mergePrompt(
+				...[DeepResearchMainPrompt, GoogleSearchPrompt, WebBrowsePrompt, CodeRunnerPrompt]
+					.map(p => p(thinkingArgs, thinking_logical_results, thinking_prompt_struct, 0)),
 			)
 
 			for (const step of plan) {
@@ -273,7 +270,6 @@ Step 2: <步骤2主题>
 							// Continue the inner loop to let the AI process the function result for the same step
 							continue regen_step
 						}
-
 
 					if (!functionCalled) {
 						// Check if AI mistakenly generated a plan or step instead of executing the current one

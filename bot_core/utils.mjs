@@ -1,4 +1,5 @@
 import { charname as BotCharname } from '../charbase.mjs'
+
 import { userIdToNameMap, nameToUserIdMap } from './state.mjs'
 
 /**

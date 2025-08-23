@@ -13,7 +13,7 @@ export async function NullReplayPrompt(args, logical_results, prompt_struct, det
 
 	if (logical_results.in_muti_char_chat || args.extension?.from_timer)
 		result += `\
-你若认为当前语境不适合或无需回复，可以单纯输出<-<null>->来跳过回复。
+若你认为当前语境不适合或无需回复，可以单纯输出<-<null>->来跳过回复。
 如：
 ${args.UserCharname}: 那张三你觉得我什么时候去合适？
 龙胆: <-<null>->

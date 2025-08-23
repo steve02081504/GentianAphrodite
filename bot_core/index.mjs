@@ -1,8 +1,8 @@
-import { configure, channelMessageQueues, channelHandlers, channelChatLogs, currentConfig } from './state.mjs'
 import { handleError } from './error.mjs'
+import { registerPlatformAPI as registerGroupHandlers } from './group_handler.mjs'
+import { configure, channelMessageQueues, channelHandlers, channelChatLogs, currentConfig } from './state.mjs'
 import { processNextMessageInQueue } from './trigger.mjs'
 import { mergeChatLogEntries, updateBotNameMapping, updateUserCache } from './utils.mjs'
-import { registerPlatformAPI as registerGroupHandlers } from './group_handler.mjs'
 
 export { configure, registerGroupHandlers as registerPlatformAPI }
 

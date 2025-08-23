@@ -1,6 +1,6 @@
 import { fileTypeFromBuffer } from 'npm:file-type@^21.0.0'
-import mimetype from 'npm:mime-types'
 import mime from 'npm:mime'
+import mimetype from 'npm:mime-types'
 
 /**
  * @param {Buffer} buffer

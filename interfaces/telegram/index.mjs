@@ -1,9 +1,10 @@
-import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
 import { registerPlatformAPI } from '../../bot_core/index.mjs'
 import { charname as BotFountCharname } from '../../charbase.mjs'
-import { setTelegrafInstance, setTelegramBotInfo, telegramBotInfo, telegramUserIdToDisplayName, telegramDisplayNameToId } from './state.mjs'
-import { buildPlatformAPI } from './platform-api.mjs'
+import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
+
 import { registerEventHandlers } from './event-handlers.mjs'
+import { buildPlatformAPI } from './platform-api.mjs'
+import { setTelegrafInstance, setTelegramBotInfo, telegramBotInfo, telegramUserIdToDisplayName, telegramDisplayNameToId } from './state.mjs'
 
 export { GetBotConfigTemplate } from './config.mjs'
 

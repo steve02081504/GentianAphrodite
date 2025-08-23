@@ -1,13 +1,15 @@
 /** @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
-import { escapeRegExp } from './tools.mjs'
-import * as OpenCC from 'npm:opencc-js'
 import { translate } from 'npm:@vitalets/google-translate-api'
-import { is_PureChinese } from './langdetect.mjs'
-import { remove_kaomoji } from './dict.mjs'
 import { francAll } from 'npm:franc'
-import { normalizeFancyText } from './fancytext.mjs'
+import * as OpenCC from 'npm:opencc-js'
+
 import { charname } from '../charbase.mjs'
+
+import { remove_kaomoji } from './dict.mjs'
+import { normalizeFancyText } from './fancytext.mjs'
+import { is_PureChinese } from './langdetect.mjs'
+import { escapeRegExp } from './tools.mjs'
 
 const chT2S = OpenCC.Converter({ from: 'twp', to: 'cn' })
 export function SimplifyChinese(content) {

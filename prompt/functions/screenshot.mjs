@@ -15,14 +15,14 @@ import { captureScreen } from '../../scripts/tools.mjs'
 export async function ScreenshotPrompt(args, logical_results, prompt_struct, detail_level) {
 	const additional_chat_log = []
 
-	if (!(in_docker || in_termux) && (
+	if (!(in_docker || in_termux) && (args.extension?.enable_prompts?.screenshot || (
 		await match_keys(args, ['屏幕上', '电脑上', '显示屏上', '荧幕上'], 'any', 2) || (
 			await match_keys(args, ['屏幕', '电脑', '显示屏', '荧幕'], 'any', 2) &&
 			await match_keys(args, ['看看', '看到', '看下', '看一下', '有什', '有啥'], 'any', 2)
 		) || (
 			await match_keys(args, [/看.{0,2}我/, '现在', /在(干|做|弄些?)什/], 'user', 2) >= 3
 		)
-	)) try {
+	))) try {
 		/** @type {Buffer} */
 		const screenShot = await captureScreen()
 		let qrcodes
@@ -48,7 +48,8 @@ export async function ScreenshotPrompt(args, logical_results, prompt_struct, det
 				name: 'screenshot.png',
 				mime_type: 'image/png'
 			}]
-		})
+		});
+		(((args.extension ??= {}).enable_prompts ??= {}).masterRecognize ??= {}).photo = true
 	} catch (e) {
 		console.error(e)
 	}

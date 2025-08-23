@@ -1,12 +1,13 @@
-import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
-import { escapeHTML } from '../../scripts/tools.mjs'
-import { splitTelegramReply, aiMarkdownToTelegramHtml, parseLogicalChannelId } from './utils.mjs'
-import { telegrafInstance, telegramBotInfo, telegramUserIdToDisplayName, aiReplyObjectCacheTg } from './state.mjs'
-import { telegramMessageToFountChatLogEntry } from './message-converter.mjs'
-import { get_telegram_api_plugin } from './api.mjs'
-import { telegramWorld } from './world.mjs'
 import { cleanup as cleanupBotLogic } from '../../bot_core/index.mjs'
 import { charname as BotFountCharname } from '../../charbase.mjs'
+import { escapeHTML } from '../../scripts/tools.mjs'
+import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
+
+import { get_telegram_api_plugin } from './api.mjs'
+import { telegramMessageToFountChatLogEntry } from './message-converter.mjs'
+import { telegrafInstance, telegramBotInfo, telegramUserIdToDisplayName, aiReplyObjectCacheTg } from './state.mjs'
+import { splitTelegramReply, aiMarkdownToTelegramHtml, parseLogicalChannelId } from './utils.mjs'
+import { telegramWorld } from './world.mjs'
 
 /**
  * @typedef {import('./config.mjs').TelegramInterfaceConfig_t} TelegramInterfaceConfig_t

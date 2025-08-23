@@ -1,4 +1,5 @@
 import path from 'node:path'
+
 import { exec } from './scripts/exec.mjs'
 
 export const is_dist = false
@@ -15,3 +16,8 @@ export let username = ''
 export function initCharBase(init) {
 	username = init.username
 }
+
+/** @typedef {import('../../../../../src/decl/charAPI.ts').CharAPI_t} CharAPI_t */
+
+/** @type {CharAPI_t} */
+export const GentianAphrodite = {}

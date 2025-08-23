@@ -1,10 +1,11 @@
 import { Buffer } from 'node:buffer'
 
 import { charname as BotFountCharname } from '../../charbase.mjs'
-import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
 import { mimetypeFromBufferAndName } from '../../scripts/mimetype.mjs'
-import { telegramEntitiesToAiMarkdown } from './utils.mjs'
+import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
+
 import { telegrafInstance, telegramBotInfo, telegramUserCache, telegramUserIdToDisplayName, telegramDisplayNameToId, aiReplyObjectCacheTg } from './state.mjs'
+import { telegramEntitiesToAiMarkdown } from './utils.mjs'
 
 /**
  * @typedef {import('./config.mjs').TelegramInterfaceConfig_t} TelegramInterfaceConfig_t

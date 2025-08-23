@@ -2,11 +2,12 @@ import { ChannelType, Events } from 'npm:discord.js'
 
 import { cleanup as cleanupBotLogic } from '../../bot_core/index.mjs'
 import { charname as BotFountCharname } from '../../charbase.mjs'
+
 import { get_discord_api_plugin } from './api.mjs'
-import { discordWorld } from './world.mjs'
-import { splitDiscordReply, formatEmbedMentions } from './utils.mjs'
-import { discordClientInstance, resolvedOwnerId, aiReplyObjectCache } from './state.mjs'
 import { discordMessageToFountChatLogEntry } from './message-converter.mjs'
+import { discordClientInstance, resolvedOwnerId, aiReplyObjectCache } from './state.mjs'
+import { splitDiscordReply, formatEmbedMentions } from './utils.mjs'
+import { discordWorld } from './world.mjs'
 
 /**
  * @typedef {import('./config.mjs').DiscordInterfaceConfig_t} DiscordInterfaceConfig_t
@@ -482,10 +483,8 @@ export function buildPlatformAPI(interfaceConfig) {
 				if (resolvedOwnerId)
 					ownerUser = await client.users.fetch(resolvedOwnerId).catch(() => null)
 
-
 				if (!ownerUser && interfaceConfig.OwnerUserName)
 					ownerUser = client.users.cache.find(user => user.username === interfaceConfig.OwnerUserName)
-
 
 				if (!ownerUser && interfaceConfig.OwnerUserName) {
 					console.warn(`[DiscordInterface] Owner user "${interfaceConfig.OwnerUserName}" not in cache/by ID, attempting to fetch across all guilds...`)
