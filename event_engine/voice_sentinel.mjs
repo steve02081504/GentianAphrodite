@@ -14,9 +14,10 @@ import wavefile from 'npm:wavefile'
 import 'npm:@steve02081504/virtual-console'
 
 import { chardir, charname } from '../charbase.mjs'
+import { config as charConfig } from '../config/index.mjs'
 import { GetReply } from '../reply_gener/index.mjs'
 
-import { RealityChannel } from './index.mjs'
+import { initRealityChannel, RealityChannel } from './index.mjs'
 
 // --- 配置中心 (Configuration) ---
 const CONFIG = {
@@ -378,9 +379,6 @@ function handleMonitoringQuietState(rms, now) {
 }
 
 function handleArmedState(frameData, now) {
-	const { rms } = frameData
-	const { avgEnvRms } = sentinelState
-
 	const isLoud = frameData.rms > sentinelState.dynamicThresholds.loud
 
 	// --- 近期高激活检测 ---
@@ -585,6 +583,10 @@ export async function checkVoiceSentinel() {
 }
 
 export function startVoiceSentinel() {
+	if (charConfig.disable_voice_sentinel) {
+		console.log('🎤 Audio sentinel is disabled by config.')
+		return
+	}
 	if (isRunning) {
 		console.log('🎤 Audio sentinel already running.')
 		return
@@ -613,4 +615,13 @@ export function startVoiceSentinel() {
 		console.error(`❌ Failed to start recorder: ${err.message}`)
 		isRunning = false
 	}
+}
+
+/**
+ * 初始化语音监视器。
+ * 检查是否已存在语音监视器，如果不存在，则创建一个新的语音监视器。
+ */
+export function initializeVoiceSentinel() {
+	initRealityChannel()
+	startVoiceSentinel()
 }

@@ -3,7 +3,7 @@
 import { charname } from '../charbase.mjs'
 import { GetReply } from '../reply_gener/index.mjs'
 
-import { RealityChannel } from './index.mjs'
+import { initRealityChannel, RealityChannel } from './index.mjs'
 
 /**
  * 定义闲置时可以执行的随机任务列表。
@@ -69,4 +69,24 @@ ${randomTask.content}
 	})
 	result.logContextBefore.push(logEntry)
 	await RealityChannel.AddChatLogEntry(result)
+}
+
+const IDLE_INTERVAL_MS = 15 * 60 * 1000 // 15 minutes
+let idleID = null
+
+export function resetIdleTimer() {
+	if (idleID) clearInterval(idleID)
+	idleID = setInterval(onIdleCallback, IDLE_INTERVAL_MS)
+}
+export function stopIdleTimer() {
+	if (idleID) clearInterval(idleID)
+}
+
+/**
+ * 初始化闲置任务处理器。
+ * 检查是否已存在闲置计时器，如果不存在，则创建一个新的重复计时器。
+ */
+export function initializeOnIdleHandler() {
+	initRealityChannel()
+	resetIdleTimer()
 }

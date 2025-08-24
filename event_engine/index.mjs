@@ -2,20 +2,6 @@ import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
 import { notify } from '../../../../../../src/scripts/notify.mjs'
 import { charname, GentianAphrodite, username } from '../charbase.mjs'
 
-import { onIdleCallback } from './on_idle.mjs'
-import { startVoiceSentinel } from './voice_sentinel.mjs'
-
-const IDLE_INTERVAL_MS = 15 * 60 * 1000 // 15 minutes
-let idleID = null
-
-export function resetIdleTimer() {
-	if (idleID) clearInterval(idleID)
-	idleID = setInterval(onIdleCallback, IDLE_INTERVAL_MS)
-}
-export function stopIdleTimer() {
-	if (idleID) clearInterval(idleID)
-}
-
 const realityWorld = {
 	info: {
 		'zh-CN': {
@@ -84,8 +70,7 @@ const notify_plugin = {
 				const match = result.content.match(/<notify>(?<content>[\S\s]*?)<\/notify>/)
 				const content = match?.groups?.content?.trim?.() // Extract and trim the content
 
-				if (content)
-					notify(charname, result.extension.notify = result.notify = content)
+				if (content) notify(charname, result.extension.notify = content)
 
 				// Return false as this handler only modifies the result, doesn't fully handle the reply
 				return false
@@ -95,7 +80,7 @@ const notify_plugin = {
 }
 
 export const RealityChannel = {}
-function initRealityChannel() {
+export function initRealityChannel() {
 	if (RealityChannel.chat_name) return
 	Object.assign(RealityChannel, {
 		supported_functions: {
@@ -156,21 +141,4 @@ function initRealityChannel() {
 		chat_scoped_char_memory: {},
 		extension: {},
 	})
-}
-
-/**
- * 初始化闲置任务处理器。
- * 检查是否已存在闲置计时器，如果不存在，则创建一个新的重复计时器。
- */
-export function initializeOnIdleHandler() {
-	initRealityChannel()
-	resetIdleTimer()
-}
-
-/**
- * 初始化语音监视器。
- * 检查是否已存在语音监视器，如果不存在，则创建一个新的语音监视器。
- */
-export function initializeVoiceSentinel() {
-	startVoiceSentinel()
 }

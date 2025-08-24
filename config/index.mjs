@@ -3,7 +3,8 @@ import path from 'node:path'
 
 import { getAISourceData, setAISourceData } from '../AISource/index.mjs'
 import { chardir } from '../charbase.mjs'
-import { resetIdleTimer, stopIdleTimer } from '../event_engine/index.mjs'
+import { resetIdleTimer, stopIdleTimer } from '../event_engine/on_idle.mjs'
+import { checkVoiceSentinel, stopVoiceSentinel } from '../event_engine/voice_sentinel.mjs'
 
 export async function GetConfigDisplayContent() {
 	return {
@@ -19,18 +20,27 @@ export const config = {
 		summary_max_retries: 5,
 		reasoning_interval: 3000
 	},
-	disable_idle_event: false
+	disable_idle_event: false,
+	disable_voice_sentinel: false
 }
 
 export function GetData() {
 	return {
 		AIsources: getAISourceData(),
-		deep_research: config.deep_research
+		deep_research: config.deep_research,
+		disable_idle_event: config.disable_idle_event,
+		disable_voice_sentinel: config.disable_voice_sentinel
 	}
 }
 export async function SetData(data) {
 	if (data.AIsources) await setAISourceData(data.AIsources)
 	Object.assign(config.deep_research, data.deep_research)
-	if (data.disable_idle_event) stopIdleTimer()
+
+	config.disable_idle_event = data.disable_idle_event
+	if (config.disable_idle_event) stopIdleTimer()
 	else resetIdleTimer()
+
+	config.disable_voice_sentinel = data.disable_voice_sentinel
+	if (config.disable_voice_sentinel) stopVoiceSentinel()
+	else checkVoiceSentinel()
 }
