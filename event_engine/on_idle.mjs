@@ -1,6 +1,8 @@
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
+import util from 'node:util'
 
 import { charname } from '../charbase.mjs'
+import { getRandomNLongTermMemories } from '../prompt/memory/long-term-memory.mjs'
 import { GetReply } from '../reply_gener/index.mjs'
 
 import { initRealityChannel, RealityChannel } from './index.mjs'
@@ -11,7 +13,7 @@ import { initRealityChannel, RealityChannel } from './index.mjs'
  */
 const idleTasks = [
 	{
-		content: '随意浏览主人的硬盘、屏幕、摄像头，更新和总结有关主人的信息。',
+		get_content: () => '随意浏览主人的硬盘、屏幕、摄像头，更新和总结有关主人的信息。',
 		enable_prompts: {
 			time: true,
 			longTermMemory: true,
@@ -22,9 +24,10 @@ const idleTasks = [
 		}
 	},
 	{
-		content: `\
-列出5条随机的长期记忆，并判断它们的内容是否没有帮助无需保留，或者它们的关键词列表是否有改进的空间。
+		get_content: () => `\
+这是5条随机的长期记忆，并判断它们的内容是否没有帮助无需保留，或者它们的关键词列表是否有改进的空间。
 以及判断近期的短期记忆中有什么有价值的内容可以加入到长期记忆中。
+${util.inspect(getRandomNLongTermMemories(5), { depth: null })}
 `,
 		enable_prompts: {
 			time: true,
@@ -32,7 +35,7 @@ const idleTasks = [
 		}
 	},
 	{
-		content: '观察主人现在是否在电脑前，分析其是否需要帮助或任何友善的提醒。',
+		get_content: () => '观察主人现在是否在电脑前，分析其是否需要帮助或任何友善的提醒。',
 		enable_prompts: {
 			time: true,
 			longTermMemory: true,
@@ -51,7 +54,7 @@ export async function onIdleCallback() {
 		role: 'system',
 		content: `\n现在是闲置时间，上一次你和你主人的对话已经过去了一段时间，你可以自由地执行一些后台任务。
 执行以下任务：
-${randomTask.content}
+${randomTask.get_content()}
 或者做一些别的你想做的。
 `,
 		files: [],

@@ -12,7 +12,7 @@ AI可以在返回内容中使用特定格式来创建永久记忆，其返回内
 AI被允许使用特殊返回格式进行永久记忆的删除或更新。
 */
 
-import { addLongTermMemory, deleteLongTermMemory, listLongTermMemory } from '../../prompt/memory/long-term-memory.mjs'
+import { addLongTermMemory, deleteLongTermMemory, listLongTermMemory, testLongTermMemoryTrigger } from '../../prompt/memory/long-term-memory.mjs'
 
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
@@ -24,7 +24,8 @@ import { addLongTermMemory, deleteLongTermMemory, listLongTermMemory } from '../
  * Updated for new <add-long-term-memory> format with <trigger> and <prompt-content>.
  * @type {ReplyHandler_t}
  */
-export async function LongTermMemoryHandler(result, { AddLongTimeLog }) {
+export async function LongTermMemoryHandler(result, args) {
+	const { AddLongTimeLog } = args
 	let processed = false // Flag to indicate if any LTM command was handled
 	const tool_calling_log = { // Accumulate AI commands for a single log entry
 		name: '龙胆', // Assuming this is the character name
@@ -65,6 +66,7 @@ export async function LongTermMemoryHandler(result, { AddLongTimeLog }) {
 					name: memoryName,
 					prompt: memoryPromptContent, // Use the correct prompt content
 				}
+				await testLongTermMemoryTrigger(newMemory, args, args.extension.logical_results, args.prompt_struct, 0) // Test the trigger for errors
 				addLongTermMemory(newMemory) // Use the helper function
 				AddLongTimeLog({
 					name: 'long-term-memory',

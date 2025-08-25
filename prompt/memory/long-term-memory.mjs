@@ -20,6 +20,35 @@ import { match_keys, match_keys_all } from '../../scripts/match.mjs'
 const LongTermMemories = loadJsonFileIfExists(path.join(chardir, 'memory/long-term-memory.json'), [])
 
 /**
+ * @param {object} memory
+ * @param {chatReplyRequest_t} args
+ * @param {logical_results_t} logical_results
+ * @param {prompt_struct_t} prompt_struct
+ * @param {number} detail_level
+ */
+async function runLongTermMemoryTrigger(memory, args, logical_results, prompt_struct, detail_level) {
+	return (await async_eval(memory.trigger, {
+		args, logical_results, prompt_struct, detail_level,
+		match_keys, match_keys_all
+	})).result
+}
+
+/**
+ * @param {object} memory
+ * @param {chatReplyRequest_t} args
+ * @param {logical_results_t} logical_results
+ * @param {prompt_struct_t} prompt_struct
+ * @param {number} detail_level
+ */
+export async function testLongTermMemoryTrigger(memory, args, logical_results, prompt_struct, detail_level) {
+	const result = await async_eval(memory.trigger, {
+		args, logical_results, prompt_struct, detail_level,
+		match_keys, match_keys_all
+	})
+	if (result.error) throw result.error
+}
+
+/**
  * @param {chatReplyRequest_t} args
  * @param {logical_results_t} logical_results
  * @param {prompt_struct_t} prompt_struct
@@ -28,10 +57,7 @@ const LongTermMemories = loadJsonFileIfExists(path.join(chardir, 'memory/long-te
 export async function LongTermMemoryPrompt(args, logical_results, prompt_struct, detail_level) {
 	const actived_memories = []
 	for (const memory of LongTermMemories)
-		if ((await async_eval(memory.trigger, {
-			args, logical_results, prompt_struct, detail_level,
-			match_keys, match_keys_all
-		})).result)
+		if (await runLongTermMemoryTrigger(memory, args, logical_results, prompt_struct, detail_level))
 			actived_memories.push(memory)
 
 	let result = ''
@@ -115,6 +141,10 @@ export function deleteLongTermMemory(name) {
 
 export function listLongTermMemory() {
 	return LongTermMemories.map(mem => mem.name)
+}
+
+export function getRandomNLongTermMemories(n) {
+	return LongTermMemories.sort(() => 0.5 - Math.random()).slice(0, n)
 }
 
 export function saveLongTermMemory() {
