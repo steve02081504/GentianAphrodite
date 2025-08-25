@@ -262,7 +262,7 @@ async function finishRecordingSession(now) {
 		name: 'system',
 		role: 'system',
 		content: isMatch
-			? '检测到与主人的声音相似的声音，正在请求识别和处理。'
+			? '检测到可能与主人的声音相似的声音，请求识别和处理。'
 			: '检测到来自未知来源的声音，已记录。',
 		files: [{
 			name: `voice-recording-${new Date().toISOString()}.wav`,
