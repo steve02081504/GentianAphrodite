@@ -27,8 +27,8 @@ import { webbrowse } from './webbrowse.mjs'
  */
 function parsePlan(text) {
 	const plan = []
-	if (!text || typeof text !== 'string') {
-		console.warn('parsePlan: Input text is invalid or empty.')
+	if (!text) {
+		console.warn('parsePlan: Input text is empty.')
 		return []
 	}
 

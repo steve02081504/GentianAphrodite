@@ -309,7 +309,7 @@ export async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, messa
 
 	const fromUser = message.from
 	const { chat } = message
-	const ctx = 'telegram' in ctxOrBotInstance && typeof ctxOrBotInstance.telegram === 'object' ? ctxOrBotInstance : undefined
+	const ctx = ctxOrBotInstance?.telegram ? ctxOrBotInstance : undefined
 
 	const { senderName } = processUserInfo(fromUser)
 

@@ -397,7 +397,7 @@ export function buildPlatformAPI(interfaceConfig) {
 		getPlatformWorld: () => telegramWorld,
 
 		onGroupJoin: (onJoinCallback) => {
-			if (telegrafInstance && typeof onJoinCallback === 'function')
+			if (telegrafInstance)
 				telegrafInstance.on('my_chat_member', async (ctx) => {
 					const oldStatus = ctx.myChatMember.old_chat_member.status
 					const newStatus = ctx.myChatMember.new_chat_member.status
@@ -483,10 +483,6 @@ export function buildPlatformAPI(interfaceConfig) {
 		onOwnerLeaveGroup: (onLeaveCallback) => {
 			if (!telegrafInstance) {
 				console.error('[TelegramInterface] onOwnerLeaveGroup: Telegraf instance not initialized.')
-				return
-			}
-			if (typeof onLeaveCallback !== 'function') {
-				console.error('[TelegramInterface] onOwnerLeaveGroup: Invalid callback provided.')
 				return
 			}
 

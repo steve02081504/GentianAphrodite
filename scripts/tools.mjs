@@ -162,7 +162,7 @@ export function unescapeUnicode(str) {
  * @returns {Object|Array} The data with duplicate entries removed.
  */
 export function removeDuplicates(data) {
-	if (typeof data == 'string') return data
+	if (Object(data) instanceof String) return data
 	for (const key in data)
 		data[key] = removeDuplicates(data[key])
 
