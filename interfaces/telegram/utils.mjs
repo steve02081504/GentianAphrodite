@@ -160,7 +160,7 @@ export function aiMarkdownToTelegramHtml(aiMarkdownText) {
 	html = html.replace(/(?<!\\)`([^\n`]+?)(?<!\\)`/g, (match, code) => `<code>${code}</code>`)
 
 	// 链接: [text](url) -> <a href="url">text</a>
-	html = html.replace(/\[(.*?)\]\((.*?)\)/g, (match, text, url) => {
+	html = html.replace(/\[(.*?)]\((.*?)\)/g, (match, text, url) => {
 		return `<a href="${escapeHTML(url)}">${text}</a>`
 	})
 

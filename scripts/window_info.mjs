@@ -108,7 +108,7 @@ return $windowpid
 					const command = `${xpropPath} -root _NET_ACTIVE_WINDOW`
 					const { stdout, code } = await bash_exec(command)
 					if (code !== 0 || !stdout) return null
-					const match = stdout.match(/window id # (0x[0-9a-fA-F]+)/)
+					const match = stdout.match(/window id # (0x[\dA-Fa-f]+)/)
 					return match ? match[1] : null
 				}
 			}

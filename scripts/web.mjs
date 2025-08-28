@@ -317,7 +317,7 @@ export function getUrlFilename(url, contentDisposition) {
  */
 export function findUrlsInText(text) {
 	if (!text) return []
-	const urlRegex = /https?:\/\/[^\s`'"]+/gi
+	const urlRegex = /https?:\/\/[^\s"'`]+/gi
 	const urls = text.match(urlRegex)
 	return urls ? [...new Set(urls)] : []
 }
