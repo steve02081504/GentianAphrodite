@@ -1,5 +1,6 @@
 import { Buffer } from 'node:buffer'
 
+import { setMyData } from '../config/index.mjs'
 import { rude_words } from '../scripts/dict.mjs'
 import { base_match_keys, base_match_keys_count, SimplifyChinese } from '../scripts/match.mjs'
 import { newCharReplay, newUserMessage } from '../scripts/statistics.mjs'
@@ -305,6 +306,22 @@ async function handleOwnerCommandsInQueue(currentMessageToProcess, platformAPI, 
 		if (!inHypnosisChannelId || channelId === inHypnosisChannelId) {
 			if (base_match_keys(content, [/^龙胆.{0,2}敷衍点.{0,2}$/])) setFuyanMode(true)
 			if (base_match_keys(content, [/^龙胆.{0,2}不敷衍点.{0,2}$/])) setFuyanMode(false)
+			if (base_match_keys(content, [/^龙胆.{0,2}(捂住耳朵|关上耳朵|[关闭]耳|别听|关闭听觉|中断听觉).{0,2}$/])) {
+				await setMyData({ disable_voice_sentinel: true })
+				const replyContent = '唔...听不见了。'
+				await sendAndLogReply({ content: replyContent }, platformAPI, channelId, currentMessageToProcess)
+				newUserMessage(content, platformAPI.name)
+				newCharReplay(replyContent, platformAPI.name)
+				return TriggerResultType.HANDLED
+			}
+			if (base_match_keys(content, [/^龙胆.{0,2}(可以听了|张开耳朵|开耳|开启听觉|恢复听觉).{0,2}$/])) {
+				await setMyData({ disable_voice_sentinel: false })
+				const replyContent = '嗯！又能听见主人的声音了！'
+				await sendAndLogReply({ content: replyContent }, platformAPI, channelId, currentMessageToProcess)
+				newUserMessage(content, platformAPI.name)
+				newCharReplay(replyContent, platformAPI.name)
+				return TriggerResultType.HANDLED
+			}
 			if (base_match_keys(content, [/^龙胆.{0,2}自裁.{0,2}$/])) {
 				const selfDestructReply = inHypnosisChannelId === channelId ? { content: '好的。' } : { content: '啊，咱死了～' }
 				await sendAndLogReply(selfDestructReply, platformAPI, channelId, currentMessageToProcess)

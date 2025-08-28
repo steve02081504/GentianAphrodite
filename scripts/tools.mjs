@@ -145,6 +145,30 @@ export function deepCopy(object, weakMap = new WeakMap()) {
 	return target
 }
 
+
+/**
+ * Recursively merges two objects into a new object.
+ * If the first object is falsy, the second object is returned.
+ * If the first object is a string, the second object is returned if it is also a string.
+ * If the first object is an object, the second object is merged into the first object.
+ * The merge is performed using a WeakMap to keep track of the copied objects.
+ *
+ * @template T, U
+ * @param {T | null | undefined} obj1 - The first object to be merged.
+ * @param {U | null | undefined} obj2 - The second object to be merged.
+ * @param {WeakMap<object, object>} [weakMap] - A WeakMap used to store the copied objects.
+ * @return {T & U} A new object that is the result of merging the two input objects.
+ */
+export function mergeTree(obj1, obj2, weakMap = new WeakMap()) {
+	if (!obj1 || !(obj1 instanceof Object)) return obj2 ?? obj1
+	if (obj1 instanceof String) return obj2 ?? obj1
+	const target = deepCopy(obj1, weakMap)
+	for (const key in obj2)
+		if (Object.hasOwnProperty.call(obj2, key)) target[key] = mergeTree(obj1?.[key], obj2?.[key], weakMap)
+
+	return target
+}
+
 /**
  * Replaces Unicode escape sequences in a string with their corresponding characters.
  *

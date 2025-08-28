@@ -2,9 +2,10 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 
 import { getAISourceData, setAISourceData } from '../AISource/index.mjs'
-import { chardir } from '../charbase.mjs'
+import { chardir, charname, username } from '../charbase.mjs'
 import { resetIdleTimer, stopIdleTimer } from '../event_engine/on_idle.mjs'
 import { checkVoiceSentinel, stopVoiceSentinel } from '../event_engine/voice_sentinel.mjs'
+import { mergeTree } from '../scripts/tools.mjs'
 
 export async function GetConfigDisplayContent() {
 	return {
@@ -43,4 +44,9 @@ export async function SetData(data) {
 	config.disable_voice_sentinel = data.disable_voice_sentinel
 	if (config.disable_voice_sentinel) stopVoiceSentinel()
 	else checkVoiceSentinel()
+}
+
+export async function setMyData(data) {
+	const { setPartData } = await import('../../../../../../src/public/shells/config/src/server/manager.mjs')
+	return setPartData(username, 'chars', charname, mergeTree(await GetData(), data))
 }
