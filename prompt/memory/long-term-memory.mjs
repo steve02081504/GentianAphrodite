@@ -115,6 +115,13 @@ trigger的关键词应容易触发并涵盖大部分情况，鼓励使用或\`||
 - 思考可能的同义关键词或触发语句变式
 - 提炼条件
 
+你也可以这样更新一个已有的永久记忆：
+<update-long-term-memory>
+<name>要更新的记忆名称</name>
+<trigger>可选，新的触发逻辑</trigger>
+<prompt-content>可选，新的内容</prompt-content>
+</update-long-term-memory>
+
 你也可以这样删除永久记忆：
 <delete-long-term-memory>名称</delete-long-term-memory>
 列出永久记忆：
@@ -131,6 +138,18 @@ export function addLongTermMemory(memory) {
 	if (LongTermMemories.find(mem => mem.name === memory.name))
 		LongTermMemories.splice(LongTermMemories.findIndex(mem => mem.name === memory.name), 1)
 	LongTermMemories.push(memory)
+	saveLongTermMemory()
+}
+
+export function updateLongTermMemory({ name, trigger, prompt }) {
+	const memoryIndex = LongTermMemories.findIndex(mem => mem.name === name)
+	if (memoryIndex === -1) throw new Error(`Memory with name "${name}" not found for update.`)
+
+	const memoryToUpdate = LongTermMemories[memoryIndex]
+
+	if (trigger !== undefined) memoryToUpdate.trigger = trigger
+	if (prompt !== undefined) memoryToUpdate.prompt = prompt
+
 	saveLongTermMemory()
 }
 

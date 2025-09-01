@@ -12,7 +12,7 @@ AI可以在返回内容中使用特定格式来创建永久记忆，其返回内
 AI被允许使用特殊返回格式进行永久记忆的删除或更新。
 */
 
-import { addLongTermMemory, deleteLongTermMemory, listLongTermMemory, testLongTermMemoryTrigger } from '../../prompt/memory/long-term-memory.mjs'
+import { addLongTermMemory, deleteLongTermMemory, listLongTermMemory, updateLongTermMemory, testLongTermMemoryTrigger } from '../../prompt/memory/long-term-memory.mjs'
 
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
@@ -97,7 +97,80 @@ export async function LongTermMemoryHandler(result, args) {
 		}
 	}
 
-	// --- Handle <delete-long-term-memory> --- (No changes needed here)
+	// --- Handle <update-long-term-memory> ---
+	const updateMatch = result.content.match(/<update-long-term-memory>(?<content>.*?)<\/update-long-term-memory>/s)
+	if (updateMatch?.groups?.content) {
+		const content = updateMatch.groups.content.trim()
+		const nameMatch = content.match(/<name>(?<name>.*?)<\/name>/s)
+		const triggerMatch = content.match(/<trigger>(?<trigger>.*?)<\/trigger>/s)
+		const promptContentMatch = content.match(/<prompt-content>(?<prompt>.*?)<\/prompt-content>/s)
+
+		const memoryName = nameMatch?.groups?.name?.trim()
+
+		const logEntry = `<update-long-term-memory>${updateMatch.groups.content}</update-long-term-memory>\n`
+		tool_calling_log.content += logEntry
+		if (!log_content_added) AddLongTimeLog(tool_calling_log)
+		log_content_added = true
+
+		if (memoryName) {
+			const memoryTrigger = triggerMatch?.groups?.trigger?.trim()
+			const memoryPromptContent = promptContentMatch?.groups?.prompt?.trim()
+
+			if (memoryTrigger !== undefined || memoryPromptContent !== undefined)
+				try {
+					const logPayload = { name: memoryName }
+					if (memoryTrigger !== undefined) logPayload.trigger = memoryTrigger
+					if (memoryPromptContent !== undefined) logPayload.prompt = memoryPromptContent
+					console.info('AI请求更新永久记忆:', logPayload)
+
+					// Test trigger if it's being updated
+					if (memoryTrigger)
+						await testLongTermMemoryTrigger({ trigger: memoryTrigger, name: memoryName, prompt: '' }, args, args.extension.logical_results, args.prompt_struct, 0)
+
+					updateLongTermMemory({
+						name: memoryName,
+						trigger: memoryTrigger,
+						prompt: memoryPromptContent
+					})
+
+					AddLongTimeLog({
+						name: 'long-term-memory',
+						role: 'tool',
+						content: `已成功更新永久记忆："${memoryName}"`,
+						files: []
+					})
+					processed = true
+				} catch (err) {
+					console.error(`Error updating long-term memory "${memoryName}":`, err)
+					AddLongTimeLog({
+						name: 'long-term-memory',
+						role: 'tool',
+						content: `更新永久记忆 "${memoryName}" 时出错：\n${err.message || err}`,
+						files: []
+					})
+					processed = true // Still processed, even if failed
+				}
+			else {
+				AddLongTimeLog({
+					name: 'long-term-memory',
+					role: 'tool',
+					content: `更新永久记忆失败：必须提供 <trigger> 或 <prompt-content> 标签中的至少一个。\n收到的内容:\n${content}`,
+					files: []
+				})
+				processed = true // Processed the tag, but it was invalid
+			}
+		} else {
+			AddLongTimeLog({
+				name: 'long-term-memory',
+				role: 'tool',
+				content: `更新永久记忆失败：缺少 <name> 标签。\n收到的内容:\n${content}`,
+				files: []
+			})
+			processed = true // Processed the tag, but it was invalid
+		}
+	}
+
+	// --- Handle <delete-long-term-memory> ---
 	const deleteMatch = result.content.match(/<delete-long-term-memory>(?<name>.*?)<\/delete-long-term-memory>/s)
 	if (deleteMatch?.groups?.name) {
 		const memoryName = deleteMatch.groups.name.trim()
@@ -140,7 +213,7 @@ export async function LongTermMemoryHandler(result, args) {
 		}
 	}
 
-	// --- Handle <list-long-term-memory> --- (No changes needed here)
+	// --- Handle <list-long-term-memory> ---
 	if (result.content.includes('<list-long-term-memory></list-long-term-memory>')) {
 		const logEntry = '<list-long-term-memory></list-long-term-memory>\n'
 		tool_calling_log.content += logEntry
