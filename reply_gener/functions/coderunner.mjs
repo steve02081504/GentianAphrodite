@@ -253,5 +253,115 @@ export async function coderunner(result, args) {
 		return true
 	}
 
+	if (process.platform === 'win32') {
+		if (result.content.match(/<inline-pwsh>[^]*?<\/inline-pwsh>/)) try {
+			const original = result.content
+			const replacements = await Promise.all(
+				Array.from(result.content.matchAll(/<inline-pwsh>(?<code>[^]*?)<\/inline-pwsh>/g))
+					.map(async match => {
+						const pwshrunner = match.groups.code.split('<inline-pwsh>').pop()
+						console.info('AI内联运行的Powershell代码：', pwshrunner)
+						let pwshresult
+						try {
+							pwshresult = await pwsh_exec(pwshrunner, { no_ansi_terminal_sequences: true })
+						} catch (err) {
+							pwshresult = err
+						}
+
+						if (pwshresult instanceof Error) throw pwshresult
+
+						if (pwshresult.exitCode !== 0)
+							throw new Error('Powershell execution of code ' + pwshrunner + ' failed with exit code ' + pwshresult.exitCode + ':\n' + util.inspect(pwshresult))
+
+						return pwshresult.stdout.trim()
+					})
+			)
+			let i = 0
+			result.logContextBefore.push({
+				name: '龙胆',
+				role: 'char',
+				content: original,
+				files: result.files,
+				charVisibility: [args.char_id],
+			}, {
+				name: 'coderunner',
+				role: 'tool',
+				content: '内联pwsh代码执行和替换完毕\n',
+				files: [],
+				charVisibility: [args.char_id],
+			})
+			result.content = result.content.replace(/<inline-pwsh>(?<code>[^]*?)<\/inline-pwsh>/g, () => replacements[i++])
+		} catch (error) {
+			console.error('内联pwsh代码执行失败：', error)
+			AddLongTimeLog({
+				name: '龙胆',
+				role: 'char',
+				content: result.content,
+				files: result.files,
+			})
+			AddLongTimeLog({
+				name: 'coderunner',
+				role: 'tool',
+				content: '内联pwsh代码执行失败：\n' + error.stack,
+				files: []
+			})
+			return true
+		}
+	}
+	else
+		if (result.content.match(/<inline-bash>[^]*?<\/inline-bash>/)) try {
+			const original = result.content
+			const replacements = await Promise.all(
+				Array.from(result.content.matchAll(/<inline-bash>(?<code>[^]*?)<\/inline-bash>/g))
+					.map(async match => {
+						const bashrunner = match.groups.code.split('<inline-bash>').pop()
+						console.info('AI内联运行的Bash代码：', bashrunner)
+						let bashresult
+						try {
+							bashresult = await bash_exec(bashrunner, { no_ansi_terminal_sequences: true })
+						} catch (err) {
+							bashresult = err
+						}
+
+						if (bashresult instanceof Error) throw bashresult
+
+						if (bashresult.exitCode !== 0)
+							throw new Error(`Bash execution of code '${bashrunner}' failed with exit code ${bashresult.exitCode}:\n${util.inspect(bashresult)}`)
+
+						return bashresult.stdout.trim()
+					})
+			)
+			let i = 0
+			result.logContextBefore.push({
+				name: '龙胆',
+				role: 'char',
+				content: original,
+				files: result.files,
+				charVisibility: [args.char_id],
+			}, {
+				name: 'coderunner',
+				role: 'tool',
+				content: '内联bash代码执行和替换完毕\n',
+				files: [],
+				charVisibility: [args.char_id],
+			})
+			result.content = result.content.replace(/<inline-bash>(?<code>[^]*?)<\/inline-bash>/g, () => replacements[i++])
+		} catch (error) {
+			console.error('内联bash代码执行失败：', error)
+			AddLongTimeLog({
+				name: '龙胆',
+				role: 'char',
+				content: result.content,
+				files: result.files,
+			})
+			AddLongTimeLog({
+				name: 'coderunner',
+				role: 'tool',
+				content: '内联bash代码执行失败：\n' + error.stack,
+				files: []
+			})
+			return true
+		}
+
 	return false
 }

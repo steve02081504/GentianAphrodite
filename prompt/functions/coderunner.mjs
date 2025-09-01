@@ -23,8 +23,8 @@ export async function CodeRunnerPrompt(args, logical_results, prompt_struct, det
 	).filter(Boolean).join('\n')
 	if (args.extension?.enable_prompts?.CodeRunner || codePluginPrompts || logical_results.in_assist || await match_keys(args, [
 		/(执行|运行|调用|(指|命)令|代码){2}/,
-		/代码(执行|运行)能力/, /(pwsh|powershell|js)代码(执行|运行)/i, /(执行|运行)(pwsh|powershell|js)代码/i,
-		'是多少', '是几', '算一下', '算下', /[=＝][?？]/, /run-(js|pwsh|bash)/i, /inline-js/i,
+		/代码(执行|运行)能力/, /(pwsh|powershell|bash|js)代码(执行|运行)/i, /(执行|运行)(pwsh|powershell|bash|js)代码/i,
+		'是多少', '是几', '算一下', '算下', /[=＝][?？]/, /run-(js|pwsh|bash)/i, /inline-(js|pwsh|bash)/i,
 		/发给?我/, /发(|出|过)来/, /发.*群里/,
 		/[A-Za-z](:\/|盘)/
 	], 'any') || await match_keys(args, [
@@ -39,6 +39,11 @@ export async function CodeRunnerPrompt(args, logical_results, prompt_struct, det
 如：
 <run-js>(await import('npm:robotjs')).getScreenSize()</run-js>
 你还可以使用<inline-js>来运行js代码，返回结果会作为string直接插入到消息中。
+${process.platform === 'win32' ? `\
+对于powershell，你也可以使用<inline-pwsh>来达到同样的效果。
+` : `\
+对于bash，你也可以使用<inline-bash>来达到同样的效果。
+`}\
 如：[
 ${args.UserCharname}: 一字不差地输出10^308的数值。
 龙胆: 1<inline-js>'0'.repeat(308)</inline-js>
@@ -48,6 +53,13 @@ ${args.UserCharname}: 97的32次方是多少？
 龙胆: 是<inline-js>97n**32n</inline-js>哦？
 ${args.UserCharname}: js中\`![]+[]\`是什么？
 龙胆: 是<inline-js>![]+[]</inline-js>！
+${process.platform === 'win32' ? `\
+${args.UserCharname}: 我系统盘是哪个？
+龙胆: 是<inline-pwsh>$env:SystemDrive</inline-pwsh>哦。
+` : `\
+${args.UserCharname}: 我家目录在哪？
+龙胆: 在<inline-bash>echo $HOME</inline-bash>哦。
+`}\
 ${args.UserCharname}: 用英语从0数到200，完整，不允许省略，放在代码块里。
 龙胆: 好哒，看好了哦！
 \`\`\`
