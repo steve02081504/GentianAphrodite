@@ -257,6 +257,8 @@ Step 2: <步骤2主题>
 						name: '龙胆',
 						role: 'char',
 						files: requestResult.files, // Include files if any were attached to the response
+						logContextBefore: [],
+						logContextAfter: [],
 						extension: {}
 					}
 
