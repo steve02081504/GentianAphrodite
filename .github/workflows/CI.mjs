@@ -187,17 +187,18 @@ CI.test('Timer', async () => {
 CI.test('Deep research', async () => {
 	const testFilePath = path.join(CI.context.workSpace.path, 'fount.txt')
 	const result = await CI.runOutput([
-		'<deep-research>What is fount made by steve02081504 and what is 2+2?</deep-research>',
-		'Plan:\nStep 1: Find the fount made by steve02081504.\nStep 2: Calculate 2+2.\nStep 3: make a file for fun.',
+		'<deep-research>What is fount made by steve02081504, what is 2+2 and what is the result of 5*8?</deep-research>',
+		'Plan:\nStep 1: Find the fount made by steve02081504.\nStep 2: Calculate 2+2.\nStep 3: Calculate 5*8.\nStep 4: make a file for fun.',
 		'<google-search>fount steve02081504</google-search>',
 		'The fount made by steve02081504 is fount.',
 		'<run-js>return 2+2</run-js>',
 		'The result of the calculation is 4.',
+		'The result of 5 * 8 is <inline-js>return 5 * 8;</inline-js>.',
 		process.platform === 'win32' ? `<run-pwsh>touch ${testFilePath}</run-pwsh>` : `<run-bash>touch ${testFilePath}</run-bash>`,
 		`File ${testFilePath} created.`,
-		'deep-research-answer: The fount is fount, and 2+2 equals 4.',
-		'The fount made by steve02081504 is fount, and the sum of 2 and 2 is 4.'
+		'deep-research-answer: The fount is fount, 2+2 equals 4, and the result of 5*8 is 40.',
+		'The fount made by steve02081504 is fount, the sum of 2 and 2 is 4, and the result of 5*8 is 40.'
 	])
-	CI.assert(result.content === 'The fount made by steve02081504 is fount, and the sum of 2 and 2 is 4.', 'Deep-research flow did not produce the correct final answer.')
+	CI.assert(result.content === 'The fount made by steve02081504 is fount, the sum of 2 and 2 is 4, and the result of 5*8 is 40.', 'Deep-research flow did not produce the correct final answer.')
 	CI.assert(fs.existsSync(testFilePath), 'File fount.txt was not created in the test workspace.')
 })
