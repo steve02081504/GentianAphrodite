@@ -17,7 +17,7 @@ import { constructLogicalChannelId } from './utils.mjs'
  * @param {PlatformAPI_t} telegramPlatformAPI
  */
 export function registerEventHandlers(bot, interfaceConfig, telegramPlatformAPI) {
-	bot.on('message', async (ctx) => {
+	bot.on('message', async ctx => {
 		if ('message' in ctx.update) {
 			const { message } = ctx.update
 			const fountEntry = await telegramMessageToFountChatLogEntry(ctx, message, interfaceConfig)
@@ -28,7 +28,7 @@ export function registerEventHandlers(bot, interfaceConfig, telegramPlatformAPI)
 		}
 	})
 
-	bot.on('edited_message', async (ctx) => {
+	bot.on('edited_message', async ctx => {
 		if ('edited_message' in ctx.update) {
 			const message = ctx.update.edited_message
 			const fountEntry = await telegramMessageToFountChatLogEntry(ctx, message, interfaceConfig)

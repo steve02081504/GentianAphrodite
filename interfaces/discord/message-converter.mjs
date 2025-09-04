@@ -72,7 +72,7 @@ export async function discordMessageToFountChatLogEntry(message, interfaceConfig
 
 		allFilePromises.push(async () => {
 			try {
-				const buffer = Buffer.from(await tryFewTimes(() => fetch(url).then((response) => response.arrayBuffer())))
+				const buffer = Buffer.from(await tryFewTimes(() => fetch(url).then(response => response.arrayBuffer())))
 				return {
 					name: `${emojiName}.${extension}`,
 					buffer,
@@ -102,7 +102,7 @@ export async function discordMessageToFountChatLogEntry(message, interfaceConfig
 
 		allFilePromises.push(async () => {
 			try {
-				const buffer = Buffer.from(await tryFewTimes(() => fetch(sticker.url).then((response) => response.arrayBuffer())))
+				const buffer = Buffer.from(await tryFewTimes(() => fetch(sticker.url).then(response => response.arrayBuffer())))
 				const fileName = sticker.url.split('/').pop() || `${sticker.name}.png`
 				return {
 					name: fileName,
@@ -134,7 +134,7 @@ export async function discordMessageToFountChatLogEntry(message, interfaceConfig
 
 		allFilePromises.push(async () => {
 			try {
-				const buffer = Buffer.from(await tryFewTimes(() => fetch(attachment.url).then((response) => response.arrayBuffer())))
+				const buffer = Buffer.from(await tryFewTimes(() => fetch(attachment.url).then(response => response.arrayBuffer())))
 				return {
 					name: attachment.name,
 					buffer,
@@ -161,7 +161,7 @@ export async function discordMessageToFountChatLogEntry(message, interfaceConfig
 
 			allFilePromises.push(async () => {
 				try {
-					const buffer = Buffer.from(await tryFewTimes(() => fetch(url).then((response) => response.arrayBuffer())))
+					const buffer = Buffer.from(await tryFewTimes(() => fetch(url).then(response => response.arrayBuffer())))
 					const fileName = url.split('/').pop()?.split('?')[0] || 'embedded_image.png'
 					return {
 						name: fileName,

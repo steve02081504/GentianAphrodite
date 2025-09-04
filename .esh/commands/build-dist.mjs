@@ -11,7 +11,7 @@ import { nicerWriteFileSync } from '../../scripts/tools.mjs'
 // 创建dist目录
 fs.mkdirSync('dist', { recursive: true })
 
-const charvar = await exec('git describe --tags --abbrev=0', { cwd: '.' }).then((result) => result.stdout.trim())
+const charvar = await exec('git describe --tags --abbrev=0', { cwd: '.' }).then(result => result.stdout.trim())
 
 const bundle = await rollup({
 	input: './main.mjs',

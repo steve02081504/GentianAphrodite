@@ -221,7 +221,7 @@ async function getAllWindows() {
 				if (code !== 0 || !wmctrlOut) return []
 
 				const lines = wmctrlOut.trim().split('\n')
-				const windowPromises = lines.map(async (line) => {
+				const windowPromises = lines.map(async line => {
 					// 使用正则表达式解析 wmctrl 的输出
 					const match = line.match(/^(\S+)\s+\S+\s+(\d+)\s+\S+\s+(.*)$/)
 					if (!match) return null

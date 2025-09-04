@@ -22,7 +22,7 @@ import { discordClientInstance, setResolvedOwnerId, discordUserIdToDisplayName, 
 export async function registerEventHandlers(interfaceConfig, discordPlatformAPI) {
 	const client = discordClientInstance
 
-	client.on(Events.MessageCreate, async (message) => {
+	client.on(Events.MessageCreate, async message => {
 		if (message.author.username === client.user.username) return
 		const fetchedMessage = await tryFewTimes(() => message.fetch().catch(e => {
 			if (e.code === 10008) return null
@@ -53,7 +53,7 @@ export async function registerEventHandlers(interfaceConfig, discordPlatformAPI)
 			await processMessageUpdate(fountEntry, discordPlatformAPI, fetchedNewMessage.channel.id)
 	})
 
-	client.on(Events.MessageDelete, async (message) => {
+	client.on(Events.MessageDelete, async message => {
 		if (!message.id || !message.channelId) {
 			console.warn('[DiscordInterface] Received MessageDelete event with missing id or channelId.')
 			return

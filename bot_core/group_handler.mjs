@@ -236,7 +236,7 @@ async function handleGroupCheck(group, platformAPI, ownerOverride = null) {
  */
 function setupOnGroupJoinHandler(platformAPI) {
 	if (platformAPI.onGroupJoin)
-		platformAPI.onGroupJoin(async (group) => {
+		platformAPI.onGroupJoin(async group => {
 			await handleGroupCheck(group, platformAPI)
 		})
 	else

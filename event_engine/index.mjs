@@ -15,7 +15,7 @@ const realityWorld = {
 	},
 	interfaces: {
 		chat: {
-			GetPrompt: (args) => {
+			GetPrompt: args => {
 				return {
 					text: [
 						{
@@ -66,7 +66,7 @@ const notify_plugin = {
 					]
 				}
 			},
-			ReplyHandler: async (result) => {
+			ReplyHandler: async result => {
 				const match = result.content.match(/<notify>(?<content>[\S\s]*?)<\/notify>/)
 				const content = match?.groups?.content?.trim?.() // Extract and trim the content
 
@@ -126,7 +126,7 @@ export function initRealityChannel() {
 `
 			}
 		],
-		AddChatLogEntry: (entry) => {
+		AddChatLogEntry: entry => {
 			console.dir(entry, { depth: null })
 			RealityChannel.chat_log.push(entry)
 		},

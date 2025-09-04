@@ -12,7 +12,7 @@ const DEFAULT_NAVIGATION_TIMEOUT = 13 * 1000 // 设置一个默认导航超时�
 export async function NewBrowserGener(path, name) {
 	// 返回一个函数，该函数接收配置并启动 Puppeteer
 	const puppeteer = await import('npm:puppeteer-core@^24.9.0').then(m => m.default)
-	return (configs) => puppeteer.launch({
+	return configs => puppeteer.launch({
 		...configs, // 合并传入的配置
 		browser: name,
 		product: name,
@@ -335,7 +335,7 @@ export async function getUrlMetadata(url) {
 
 	try {
 		// 统一处理不成功的响应
-		const handleFailedResponse = (response) => {
+		const handleFailedResponse = response => {
 			const metas = [`- status: ${response.status}`]
 			if (response.statusText) metas.push(`- statusText: ${response.statusText}`)
 			return metas

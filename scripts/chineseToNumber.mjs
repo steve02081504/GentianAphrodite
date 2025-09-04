@@ -43,11 +43,11 @@ const SimpleExprRegex = new RegExp(`(${NumberRegex.source}|${SimpleOperatorRegex
  * @type {Record<RegExp, (match: RegExpMatchArray) => string>}
  */
 const OperatorRuleMap = new Map([
-	[new RegExp(`的(?<num>${SimpleExprRegex.source})次方`, 'u'), (groups) => '**' + (groups?.num || 2)],
-	[new RegExp(`的(?<num>${SimpleExprRegex.source})次幂`, 'u'), (groups) => '**' + (groups?.num || 2)],
-	[new RegExp(`的(?<num>${SimpleExprRegex.source})倍`, 'u'), (groups) => '*' + (groups?.num || 2)],
-	[new RegExp(`(?<num1>${SimpleExprRegex.source})分之(?<num2>${SimpleExprRegex.source})`, 'u'), (groups) => '((' + groups.num2 + ')/(' + groups.num1 + '))'],
-	[new RegExp(`(?<num1>${SimpleExprRegex.source})比(?<num2>${SimpleExprRegex.source})`, 'u'), (groups) => groups.num1 + '/' + groups.num2],
+	[new RegExp(`的(?<num>${SimpleExprRegex.source})次方`, 'u'), groups => '**' + (groups?.num || 2)],
+	[new RegExp(`的(?<num>${SimpleExprRegex.source})次幂`, 'u'), groups => '**' + (groups?.num || 2)],
+	[new RegExp(`的(?<num>${SimpleExprRegex.source})倍`, 'u'), groups => '*' + (groups?.num || 2)],
+	[new RegExp(`(?<num1>${SimpleExprRegex.source})分之(?<num2>${SimpleExprRegex.source})`, 'u'), groups => '((' + groups.num2 + ')/(' + groups.num1 + '))'],
+	[new RegExp(`(?<num1>${SimpleExprRegex.source})比(?<num2>${SimpleExprRegex.source})`, 'u'), groups => groups.num1 + '/' + groups.num2],
 ])
 const OperatorRegex = new RegExp(`${BaseOperatorRegex.source}|${[...OperatorRuleMap.keys()].map(x => x.source).join('|')}`, 'u')
 const ExprRegex = new RegExp(`(${NumberRegex.source}|${OperatorRegex.source})+`, 'u')

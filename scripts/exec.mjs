@@ -23,15 +23,15 @@ async function base_exec(code, {
 		let stdout = ''
 		let stderr = ''
 		let stdall = ''
-		process.stdout?.on('data', (data) => {
+		process.stdout?.on('data', data => {
 			stdout += data
 			stdall += data
 		})
-		process.stderr?.on('data', (data) => {
+		process.stderr?.on('data', data => {
 			stderr += data
 			stdall += data
 		})
-		process.on('exit', (code) => {
+		process.on('exit', code => {
 			if (no_ansi_terminal_sequences) {
 				stdout = removeTerminalSequences(stdout)
 				stderr = removeTerminalSequences(stderr)

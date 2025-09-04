@@ -8,7 +8,7 @@ import { discordClientInstance } from './state.mjs'
  * @param {import('npm:discord.js').Message | undefined} message
  * @returns {import('../../../../../../../src/decl/pluginAPI.ts').pluginAPI_t}
  */
-export const get_discord_api_plugin = (message) => ({
+export const get_discord_api_plugin = message => ({
 	info: {
 		'zh-CN': {
 			name: 'discord插件',

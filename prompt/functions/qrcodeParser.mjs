@@ -24,7 +24,7 @@ export async function qrcodeParserPrompt(args, logical_results, prompt_struct, d
 			log.extension.decodedQRCodes = qrcodes
 			const decodedContents = qrcodes.flat()
 			const urls = decodedContents.flatMap(content => findUrlsInText(content))
-			const metas = (await Promise.all(urls.map(async (url) => {
+			const metas = (await Promise.all(urls.map(async url => {
 				const meta = await getUrlMetadata(url)
 				if (meta?.length) return `\`${url}\`：\n${meta.join('\n')}`
 			}))).filter(Boolean)

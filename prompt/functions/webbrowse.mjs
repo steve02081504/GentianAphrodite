@@ -32,7 +32,7 @@ export async function WebBrowsePrompt(args, logical_results, prompt_struct, deta
 		if (log.extension?.processedURLs) continue
 		const urls = findUrlsInText(log.content)
 
-		const all_metas = (await Promise.all(urls.map(async (url) => {
+		const all_metas = (await Promise.all(urls.map(async url => {
 			const metas = await getUrlMetadata(url)
 			if (metas?.length) return `\`${url}\`：\n${metas.join('\n')}`
 		}))).filter(Boolean)

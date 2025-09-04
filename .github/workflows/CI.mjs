@@ -115,7 +115,7 @@ CI.test('Web Browse', async () => {
 
 	const result = await CI.runOutput([
 		`<web-browse><url>${url}</url><question>What is in the paragraph?</question></web-browse>`,
-		(result) => {
+		result => {
 			CI.assert(result.prompt_single.includes('This is a test paragraph for the CI'), '<web-browse> failed to process web content.')
 			CI.assert(result.prompt_single.includes('What is in the paragraph?'), '<web-browse> failed to process question.')
 			return 'The paragraph says: This is a test paragraph for the CI.'

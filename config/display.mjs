@@ -123,7 +123,7 @@ loadPreview('vars/master-voice-reference.wav', audioPlayback, audioStatus, 'audi
 loadPreview('vars/master-photo-reference.png', imagePreview, photoStatus, 'photo')
 
 // --- Audio Processing ---
-const resampleAudio = async (webmBlob) => {
+const resampleAudio = async webmBlob => {
 	try {
 		const audioContext = new (window.AudioContext || window.webkitAudioContext)()
 		const decodedBuffer = await audioContext.decodeAudioData(await webmBlob.arrayBuffer())
@@ -244,7 +244,7 @@ photoInput.addEventListener('change', () => {
 	selectedPhotoFile = photoInput.files[0]
 	if (selectedPhotoFile) {
 		const reader = new FileReader()
-		reader.onload = (e) => {
+		reader.onload = e => {
 			imagePreview.src = e.target.result
 			imagePreview.classList.remove('hidden')
 			photoStatus.textContent = geti18n('GentianAphrodite.config.new_image_selected_click_upload_to_save')

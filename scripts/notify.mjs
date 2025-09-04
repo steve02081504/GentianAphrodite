@@ -26,7 +26,7 @@ function initBaseNotifyChannel() {
 		locales: localhostLocales,
 		time: new Date(),
 		chat_log: [],
-		AddChatLogEntry: (entry) => fount_notify(charname, entry.content),
+		AddChatLogEntry: entry => fount_notify(charname, entry.content),
 		other_chars: {},
 		plugins: {},
 		Update: () => {

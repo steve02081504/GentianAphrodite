@@ -360,7 +360,7 @@ export function buildPlatformAPI(interfaceConfig) {
 				telegrafInstance.stop('SIGINT')
 		},
 
-		getGroupDefaultChannel: async (chatId) => {
+		getGroupDefaultChannel: async chatId => {
 			if (!telegrafInstance) {
 				console.error('[TelegramInterface] getGroupDefaultChannel: Telegraf instance not available.')
 				return null
@@ -385,7 +385,7 @@ export function buildPlatformAPI(interfaceConfig) {
 			console.error('[TelegramInterface-PlatformAPI-Error]', error, contextMessage ? `Context: ${JSON.stringify(contextMessage)}` : '')
 		},
 
-		getPlatformSpecificPlugins: (messageEntry) => {
+		getPlatformSpecificPlugins: messageEntry => {
 			if (messageEntry?.extension?.telegram_message_obj)
 				return {
 					telegram_api: get_telegram_api_plugin(messageEntry.extension.telegram_message_obj),
@@ -396,9 +396,9 @@ export function buildPlatformAPI(interfaceConfig) {
 
 		getPlatformWorld: () => telegramWorld,
 
-		onGroupJoin: (onJoinCallback) => {
+		onGroupJoin: onJoinCallback => {
 			if (telegrafInstance)
-				telegrafInstance.on('my_chat_member', async (ctx) => {
+				telegrafInstance.on('my_chat_member', async ctx => {
 					const oldStatus = ctx.myChatMember.old_chat_member.status
 					const newStatus = ctx.myChatMember.new_chat_member.status
 					const { chat } = ctx.myChatMember
@@ -429,7 +429,7 @@ export function buildPlatformAPI(interfaceConfig) {
 			return Promise.resolve([])
 		},
 
-		getGroupMembers: async (chatId) => {
+		getGroupMembers: async chatId => {
 			console.warn('[TelegramInterface] getGroupMembers on Telegram primarily returns administrators or a limited set of members due to API restrictions.')
 			if (!telegrafInstance) {
 				console.error('[TelegramInterface] getGroupMembers: Telegraf instance not available.')
@@ -463,7 +463,7 @@ export function buildPlatformAPI(interfaceConfig) {
 			}
 		},
 
-		leaveGroup: async (chatId) => {
+		leaveGroup: async chatId => {
 			if (!telegrafInstance) {
 				console.error('[TelegramInterface] leaveGroup: Telegraf instance not available.')
 				return
@@ -480,13 +480,13 @@ export function buildPlatformAPI(interfaceConfig) {
 			return null
 		},
 
-		onOwnerLeaveGroup: (onLeaveCallback) => {
+		onOwnerLeaveGroup: onLeaveCallback => {
 			if (!telegrafInstance) {
 				console.error('[TelegramInterface] onOwnerLeaveGroup: Telegraf instance not initialized.')
 				return
 			}
 
-			telegrafInstance.on('chat_member', async (ctx) => {
+			telegrafInstance.on('chat_member', async ctx => {
 				const chatMemberUpdate = ctx.update.chat_member
 				if (!chatMemberUpdate || !chatMemberUpdate.chat || !chatMemberUpdate.new_chat_member || !chatMemberUpdate.old_chat_member) {
 					console.warn('[TelegramInterface] chat_member event triggered with incomplete data.')
@@ -508,7 +508,7 @@ export function buildPlatformAPI(interfaceConfig) {
 			})
 		},
 
-		sendDirectMessageToOwner: async (messageText) => {
+		sendDirectMessageToOwner: async messageText => {
 			if (!telegrafInstance) {
 				console.error('[TelegramInterface] sendDirectMessageToOwner: Telegraf instance not available.')
 				return

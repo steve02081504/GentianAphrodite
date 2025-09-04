@@ -105,9 +105,9 @@ let sentinelState = createInitialState()
 
 // --- 工具函数 (Utility Functions) ---
 
-const calculateRMS = (int16Array) => Math.sqrt(int16Array.reduce((sum, val) => sum + val * val, 0) / int16Array.length)
-const int16ToFloat32 = (int16Array) => Float32Array.from(int16Array, v => v / 32768)
-const calculateMean = (data) => data.reduce((sum, value) => sum + value, 0) / data.length
+const calculateRMS = int16Array => Math.sqrt(int16Array.reduce((sum, val) => sum + val * val, 0) / int16Array.length)
+const int16ToFloat32 = int16Array => Float32Array.from(int16Array, v => v / 32768)
+const calculateMean = data => data.reduce((sum, value) => sum + value, 0) / data.length
 const calculateStdDev = (data, mean) => Math.sqrt(calculateMean(data.map(value => (value - mean) ** 2)))
 
 function cosineSimilarity(vecA, vecB) {

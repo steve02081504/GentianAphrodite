@@ -233,7 +233,7 @@ export function buildPlatformAPI(interfaceConfig) {
 		 * @param {chatLogEntry_t_ext} messageEntry - 当前正在处理的消息条目。
 		 * @returns {Record<string, import('../../../../../../../src/decl/pluginAPI.ts').pluginAPI_t>}
 		 */
-		getPlatformSpecificPlugins: (messageEntry) => {
+		getPlatformSpecificPlugins: messageEntry => {
 			if (messageEntry?.extension?.discord_message_obj)
 				return {
 					discord_api: get_discord_api_plugin(messageEntry.extension.discord_message_obj),
@@ -249,8 +249,8 @@ export function buildPlatformAPI(interfaceConfig) {
 		 * (可选) 设置当主人离开群组时调用的回调函数。
 		 * @param {(groupId: string | number, userId: string | number) => Promise<void>} onLeaveCallback - 回调函数。
 		 */
-		onOwnerLeaveGroup: (onLeaveCallback) => {
-			client.on(Events.GuildMemberRemove, async (member) => {
+		onOwnerLeaveGroup: onLeaveCallback => {
+			client.on(Events.GuildMemberRemove, async member => {
 				if (!member || !member.guild) {
 					console.warn('[DiscordInterface] GuildMemberRemove event triggered with invalid member or guild data.')
 					return
@@ -267,8 +267,8 @@ export function buildPlatformAPI(interfaceConfig) {
 		 * (可选) 设置当机器人加入新群组/服务器时调用的回调函数。
 		 * @param {(group: import('../../bot_core/index.mjs').GroupObject) => Promise<void>} onJoinCallback - 回调函数。
 		 */
-		onGroupJoin: (onJoinCallback) => {
-			client.on(Events.GuildCreate, async (guild) => {
+		onGroupJoin: onJoinCallback => {
+			client.on(Events.GuildCreate, async guild => {
 				console.log(`[DiscordInterface] Joined new guild: ${guild.name} (ID: ${guild.id})`)
 				/** @type {import('../../bot_core/index.mjs').GroupObject} */
 				const groupObject = {
@@ -307,7 +307,7 @@ export function buildPlatformAPI(interfaceConfig) {
 		 * @param {string | number} guildId - 服务器的 ID。
 		 * @returns {Promise<import('../../bot_core/index.mjs').UserObject[]>}
 		 */
-		getGroupMembers: async (guildId) => {
+		getGroupMembers: async guildId => {
 			try {
 				const guild = client.guilds.cache.get(String(guildId))
 				if (!guild) {
@@ -376,7 +376,7 @@ export function buildPlatformAPI(interfaceConfig) {
 		 * @param {string | number} guildId - 服务器的 ID。
 		 * @returns {Promise<void>}
 		 */
-		leaveGroup: async (guildId) => {
+		leaveGroup: async guildId => {
 			try {
 				const guild = client.guilds.cache.get(String(guildId))
 				if (guild)
@@ -393,7 +393,7 @@ export function buildPlatformAPI(interfaceConfig) {
 		 * @param {string | number} guildId - 服务器的 ID。
 		 * @returns {Promise<import('../../bot_core/index.mjs').ChannelObject | null>}
 		 */
-		getGroupDefaultChannel: async (guildId) => {
+		getGroupDefaultChannel: async guildId => {
 			try {
 				const guild = client.guilds.cache.get(String(guildId))
 				if (!guild) {
@@ -472,7 +472,7 @@ export function buildPlatformAPI(interfaceConfig) {
 		 * @param {string} messageText - 要发送的消息文本。
 		 * @returns {Promise<void>}
 		 */
-		sendDirectMessageToOwner: async (messageText) => {
+		sendDirectMessageToOwner: async messageText => {
 			try {
 				if (!interfaceConfig.OwnerUserName && !resolvedOwnerId) {
 					console.error('[DiscordInterface] sendDirectMessageToOwner: OwnerUserName or resolved OwnerDiscordID is not configured.')

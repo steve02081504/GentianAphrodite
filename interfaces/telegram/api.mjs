@@ -8,7 +8,7 @@ import { telegrafInstance } from './state.mjs'
  * @param {import('npm:telegraf/typings/core/types/typegram').Message | undefined} triggeringMessage - 触发此操作的原始 Telegram 消息对象。
  * @returns {import('../../../../../../../src/decl/pluginAPI.ts').pluginAPI_t}
  */
-export const get_telegram_api_plugin = (triggeringMessage) => ({
+export const get_telegram_api_plugin = triggeringMessage => ({
 	info: {
 		'zh-CN': {
 			name: 'Telegram 插件',

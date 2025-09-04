@@ -6,8 +6,8 @@ export const is_dist = false
 export const chardir = import.meta.dirname
 export const charname = path.basename(chardir)
 export const charurl = `/chars/${encodeURIComponent(path.basename(chardir))}`
-export const charvar = await exec('git -C "." describe --tags', { cwd: chardir }).then((result) => result.stdout.trim()).catch(
-	() => exec('git -C "." rev-parse --short HEAD', { cwd: chardir }).then((result) => result.stdout.trim()).catch(
+export const charvar = await exec('git -C "." describe --tags', { cwd: chardir }).then(result => result.stdout.trim()).catch(
+	() => exec('git -C "." rev-parse --short HEAD', { cwd: chardir }).then(result => result.stdout.trim()).catch(
 		() => 'unknown'
 	)
 )

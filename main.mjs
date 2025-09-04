@@ -18,23 +18,21 @@ import { saveVars } from './scripts/vars.mjs'
 Object.assign(GentianAphrodite, {
 	info: await UpdateInfo(),
 
-	Init: async (stat) => { },
-	Load: async (stat) => {
+	Load: async stat => {
 		initCharBase(stat)
-		addPartLocaleData('GentianAphrodite', ['zh-CN', 'en-US'], (locale) => loadJsonFile(chardir + `/locales/${locale}.json`))
+		addPartLocaleData('GentianAphrodite', ['zh-CN', 'en-US'], locale => loadJsonFile(chardir + `/locales/${locale}.json`))
 		initializeOnIdleHandler()
 		initializeVoiceSentinel()
 		startClipboardListening()
 		setConfigEndpoints(stat.router)
 	},
-	Unload: async (reason) => {
+	Unload: async reason => {
 		stopIdleTimer()
 		stopVoiceSentinel()
 		stopClipboardListening()
 		await saveMemories()
 		saveVars()
 	},
-	Uninstall: (reason, from) => { },
 
 	interfaces: {
 		info: {
@@ -53,15 +51,15 @@ Object.assign(GentianAphrodite, {
 			GetReply,
 		},
 		discord: {
-			OnceClientReady: (client, config) => import('./interfaces/discord/index.mjs').then((mod) => mod.DiscordBotMain(client, config)),
-			GetBotConfigTemplate: () => import('./interfaces/discord/index.mjs').then((mod) => mod.GetBotConfigTemplate()),
+			OnceClientReady: (client, config) => import('./interfaces/discord/index.mjs').then(mod => mod.DiscordBotMain(client, config)),
+			GetBotConfigTemplate: () => import('./interfaces/discord/index.mjs').then(mod => mod.GetBotConfigTemplate()),
 		},
 		telegram: {
-			BotSetup: (bot, config) => import('./interfaces/telegram/index.mjs').then((mod) => mod.TelegramBotMain(bot, config)),
-			GetBotConfigTemplate: () => import('./interfaces/telegram/index.mjs').then((mod) => mod.GetBotConfigTemplate()),
+			BotSetup: (bot, config) => import('./interfaces/telegram/index.mjs').then(mod => mod.TelegramBotMain(bot, config)),
+			GetBotConfigTemplate: () => import('./interfaces/telegram/index.mjs').then(mod => mod.GetBotConfigTemplate()),
 		},
 		shellassist: {
-			Assist: async (args) => import('./interfaces/shellassist/index.mjs').then((mod) => mod.shellAssistMain(args))
+			Assist: async args => import('./interfaces/shellassist/index.mjs').then(mod => mod.shellAssistMain(args))
 		},
 		timers: {
 			TimerCallback: async (username, uid, callbackdata) => {
