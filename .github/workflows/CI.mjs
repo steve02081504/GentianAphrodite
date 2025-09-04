@@ -62,18 +62,28 @@ CI.test('File Operations', async () => {
 
 })
 CI.test('Code Runner', () => {
-	if (process.platform === 'win32')
+	if (process.platform === 'win32') {
 		CI.test('<run-pwsh>', async () => {
 			const testDir = path.join(CI.context.workSpace.path, 'pwsh_test_dir')
 			await CI.runOutput([`<run-pwsh>mkdir ${testDir}</run-pwsh>`, 'Directory created.'])
 			CI.assert(fs.existsSync(testDir), '<run-pwsh> failed to execute command.')
 		})
-	else
+		CI.test('<inline-pwsh>', async () => {
+			const result = await CI.runOutput('The result is <inline-pwsh>echo "hello from pwsh"</inline-pwsh>.')
+			CI.assert(result.content === 'The result is hello from pwsh.', '<inline-pwsh> failed to execute and replace content.')
+		})
+	}
+	else {
 		CI.test('<run-bash>', async () => {
 			const testDir = path.join(CI.context.workSpace.path, 'bash_test_dir')
 			await CI.runOutput([`<run-bash>mkdir ${testDir}</run-bash>`, 'Directory created.'])
 			CI.assert(fs.existsSync(testDir), '<run-bash> failed to execute command.')
 		})
+		CI.test('<inline-bash>', async () => {
+			const result = await CI.runOutput('The result is <inline-bash>echo "hello from bash"</inline-bash>.')
+			CI.assert(result.content === 'The result is hello from bash.', '<inline-bash> failed to execute and replace content.')
+		})
+	}
 
 	CI.test('<inline-js>', async () => {
 		const result = await CI.runOutput('The result of 5 * 8 is <inline-js>return 5 * 8;</inline-js>.')
@@ -130,6 +140,7 @@ CI.test('Long-Term Memory', async () => {
 	const result = await CI.runOutput([
 		'<add-long-term-memory><name>CI_Test_Memory</name><trigger>true</trigger><prompt-content>This is a test memory.</prompt-content></add-long-term-memory>',
 		'<list-long-term-memory></list-long-term-memory>',
+		'<update-long-term-memory><name>CI_Test_Memory</name><prompt-content>This is an updated test memory.</prompt-content></update-long-term-memory>',
 		'<delete-long-term-memory>CI_Test_Memory</delete-long-term-memory>',
 		'<list-long-term-memory></list-long-term-memory>',
 		'Memory test sequence complete.'
@@ -137,8 +148,9 @@ CI.test('Long-Term Memory', async () => {
 	const logs = result.logContextBefore.filter(log => log.role === 'tool')
 	CI.assert(logs[0].content.includes('已成功添加永久记忆'), 'add-long-term-memory failed.')
 	CI.assert(logs[1].content.includes('CI_Test_Memory'), 'list-long-term-memory failed to show new memory.')
-	CI.assert(logs[2].content.includes('已成功删除永久记忆'), 'delete-long-term-memory failed.')
-	CI.assert(!logs[3].content.includes('CI_Test_Memory'), 'list-long-term-memory showed memory after deletion.')
+	CI.assert(logs[2].content.includes('已成功更新永久记忆'), 'update-long-term-memory failed.')
+	CI.assert(logs[3].content.includes('已成功删除永久记忆'), 'delete-long-term-memory failed.')
+	CI.assert(!logs[4].content.includes('CI_Test_Memory'), 'list-long-term-memory showed memory after deletion.')
 })
 
 CI.test('Short-Term Memory', async () => {

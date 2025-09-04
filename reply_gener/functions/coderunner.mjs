@@ -270,7 +270,7 @@ export async function coderunner(result, args) {
 
 						if (pwshresult instanceof Error) throw pwshresult
 
-						if (pwshresult.exitCode !== 0)
+						if (pwshresult.code !== 0)
 							throw new Error('Powershell execution of code ' + pwshrunner + ' failed with exit code ' + pwshresult.exitCode + ':\n' + util.inspect(pwshresult))
 
 						return pwshresult.stdout.trim()
@@ -325,7 +325,7 @@ export async function coderunner(result, args) {
 
 						if (bashresult instanceof Error) throw bashresult
 
-						if (bashresult.exitCode !== 0)
+						if (bashresult.code !== 0)
 							throw new Error(`Bash execution of code '${bashrunner}' failed with exit code ${bashresult.exitCode}:\n${util.inspect(bashresult)}`)
 
 						return bashresult.stdout.trim()
