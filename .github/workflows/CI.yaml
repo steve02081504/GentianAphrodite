@@ -16,7 +16,10 @@ on:
 
 jobs:
   test-running:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: steve02081504/fount-charCI@master
         with:
