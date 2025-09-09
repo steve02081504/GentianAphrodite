@@ -42,16 +42,10 @@ async function base_exec(code, {
 	})
 }
 
-export function sh_exec(code, options) {
-	return base_exec(code, {
-		shell: '/bin/sh',
-		...options
-	})
-}
-function base_bash_exec(shellpath, code, options) {
+function base_sh_exec(shellpath, code, options) {
 	return base_exec(code, {
 		shell: shellpath,
-		...options,
+		...options
 	})
 }
 function base_pwsh_exec(shellpath, code, options) {
@@ -67,9 +61,9 @@ ${code}
 		...options
 	})
 }
-async function testBashPaths(paths) {
+async function testShPaths(paths) {
 	for (const path of paths)
-		if (await base_bash_exec(path, 'echo 1').catch(() => false))
+		if (await base_sh_exec(path, 'echo 1').catch(() => false))
 			return path
 }
 async function testPwshPaths(paths) {
@@ -83,11 +77,16 @@ const powershellPath = await testPwshPaths([
 	'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe',
 ])
 
+let shPath
 let bashPath
-export function bash_exec(code, options) {
-	return base_bash_exec(bashPath ?? '/bin/bash', code, options)
-}
 let pwshPath
+
+export function sh_exec(code, options) {
+	return base_sh_exec(shPath ?? '/bin/sh', code, options)
+}
+export function bash_exec(code, options) {
+	return base_sh_exec(bashPath ?? '/bin/bash', code, options)
+}
 export function powershell_exec(code, options) {
 	return base_pwsh_exec(powershellPath, code, options)
 }
@@ -100,7 +99,13 @@ export function where_command(command) {
 	else
 		return sh_exec(`which ${command}`).then(result => result.stdout.trim())
 }
-bashPath = await testBashPaths([
+shPath = await testShPaths([
+	'sh',
+	'sh.exe',
+	'/bin/sh',
+	await where_command('sh').catch(() => ''),
+].filter(x => x))
+bashPath = await testShPaths([
 	'bash',
 	'bash.exe',
 	'/bin/bash',
@@ -113,8 +118,23 @@ pwshPath = await testPwshPaths([
 	await where_command('pwsh').catch(() => ''),
 ].filter(x => x))
 
+export const available = {
+	pwsh: !!pwshPath,
+	powershell: !!powershellPath,
+	bash: !!bashPath,
+	sh: !!shPath,
+}
+
+export const shell_exec_map = {
+	pwsh: pwsh_exec,
+	powershell: powershell_exec,
+	bash: bash_exec,
+	sh: sh_exec,
+}
+
 export function exec(str, options) {
-	if (process.platform == 'win32')
-		return pwsh_exec(str, options)
-	else return bash_exec(str, options)
+	if (process.platform == 'win32') return pwsh_exec(str, options)
+	else if (bashPath) return bash_exec(str, options)
+	else if (shPath) return sh_exec(str, options)
+	else throw new Error('No shell available')
 }

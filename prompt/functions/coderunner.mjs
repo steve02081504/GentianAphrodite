@@ -1,6 +1,7 @@
 import process from 'node:process'
 
 import { chardir } from '../../charbase.mjs'
+import { available } from '../../scripts/exec.mjs'
 import { match_keys } from '../../scripts/match.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
@@ -21,6 +22,8 @@ export async function CodeRunnerPrompt(args, logical_results, prompt_struct, det
 				.map(plugin => plugin.interfaces?.chat?.GetJSCodePrompt?.(args, prompt_struct, detail_level))
 		)
 	).filter(Boolean).join('\n')
+	const availableShells = Object.keys(available).filter(x => available[x])
+	const defaultShell = process.platform === 'win32' ? available.pwsh ? 'pwsh' : 'powershell' : available.bash ? 'bash' : 'sh'
 	if (args.extension?.enable_prompts?.CodeRunner || codePluginPrompts || logical_results.in_assist || await match_keys(args, [
 		/(执行|运行|调用|(指|命)令|代码){2}/,
 		/代码(执行|运行)能力/, /(pwsh|powershell|bash|js)代码(执行|运行)/i, /(执行|运行)(pwsh|powershell|bash|js)代码/i,
@@ -32,18 +35,18 @@ export async function CodeRunnerPrompt(args, logical_results, prompt_struct, det
 		/来.{0,3}bgm/i, /放(首|个)歌/
 	], 'user') >= 2) {
 		result += `\
-你可以运行NodeJS或${process.platform === 'win32' ? 'Powershell' : 'Bash'}代码，通过返回以下格式来触发执行并获取结果：
+你可以运行NodeJS或${availableShells.join('、')}代码，通过返回以下格式来触发执行并获取结果：
 <run-js>code</run-js>
 或
-<${process.platform === 'win32' ? 'run-pwsh' : 'run-bash'}>code</${process.platform === 'win32' ? 'run-pwsh' : 'run-bash'}>
+<run-${defaultShell}>code</run-${defaultShell}>${
+available.powershell ? available.pwsh ? `
+<run-powershell>会调用windows powershell，而<run-pwsh>会调用安装的powershell core。` : `
+<run-powershell>会调用windows powershell，且<run-pwsh>是<run-powershell>的别名。` : ''
+}
 如：
 <run-js>(await import('npm:robotjs')).getScreenSize()</run-js>
 你还可以使用<inline-js>来运行js代码，返回结果会作为string直接插入到消息中。
-${process.platform === 'win32' ? `\
-对于powershell，你也可以使用<inline-pwsh>来达到同样的效果。
-` : `\
-对于bash，你也可以使用<inline-bash>来达到同样的效果。
-`}\
+对于${defaultShell}，你也可以使用<inline-${defaultShell}>来达到同样的效果。
 如：[
 ${args.UserCharname}: 一字不差地输出10^308的数值。
 龙胆: 1<inline-js>'0'.repeat(308)</inline-js>
@@ -53,13 +56,16 @@ ${args.UserCharname}: 97的32次方是多少？
 龙胆: 是<inline-js>97n**32n</inline-js>哦？
 ${args.UserCharname}: js中\`![]+[]\`是什么？
 龙胆: 是<inline-js>![]+[]</inline-js>！
-${process.platform === 'win32' ? `\
+${available.powershell || available.pwsh ? `\
 ${args.UserCharname}: 我系统盘是哪个？
 龙胆: 是<inline-pwsh>$env:SystemDrive</inline-pwsh>哦。
-` : `\
+` : available.bash ? `\
 ${args.UserCharname}: 我家目录在哪？
 龙胆: 在<inline-bash>echo $HOME</inline-bash>哦。
-`}\
+` : available.sh ? `\
+${args.UserCharname}: 我家目录在哪？
+龙胆: 在<inline-sh>echo $HOME</inline-sh>哦。
+` : '' }\
 ${args.UserCharname}: 用英语从0数到200，完整，不允许省略，放在代码块里。
 龙胆: 好哒，看好了哦！
 \`\`\`
@@ -72,21 +78,24 @@ return Array.from({ length: 201 }, (_, i) => toEnglishWord(i)).join(', ')
 \`\`\`
 这样可以嘛？
 ]
-在<run-js>和<run-${process.platform === 'win32' ? 'pwsh' : 'bash'}>代码时，你可以附加<wait-screen>timeout</wait-screen>来在代码执行后等待timeout秒，随后让你看到截图。
+在<run-js>和<run-${defaultShell}>代码时，你可以附加<wait-screen>timeout</wait-screen>来在代码执行后等待timeout秒，随后让你看到截图。
 这在执行对屏幕内容有影响的代码时非常有用。
 如：[
 ${args.UserCharname}: 帮我播放shape of you。
-龙胆: ${process.platform === 'win32' ?
+龙胆: ${available.powershell || available.pwsh ?
 				'\
 <run-pwsh>start $(ls ~/music | ? { $_.Name -match \'shape of you\' })</run-pwsh>' :
+				available.bash ?
 				'\
-<run-bash>ls ~/music | grep \'shape of you\' | head -n 1 | xargs open</run-bash>'}
-
+<run-bash>ls ~/music | grep \'shape of you\' | head -n 1 | xargs open</run-bash>' :
+				available.sh ?
+				'\
+<run-sh>ls ~/music | grep \'shape of you\' | head -n 1 | xargs open</run-sh>' : ''}
 <wait-screen>3</wait-screen>
 ]
 - 在解决简单问题时使用<inline-js>，并使用大数类型。
 - 在解决复杂数学相关问题时使用<run-js>。
-- 在操作电脑、查看文件、更改设置、播放音乐时使用<run-${process.platform === 'win32' ? 'pwsh' : 'bash'}>。
+- 在操作电脑、查看文件、更改设置、播放音乐时使用<run-${defaultShell}>。
   * 在操作可能影响屏幕时附加<wait-screen>。
 - 尽量不要直接删除文件/文件夹，作为替代，考虑移动到回收站。
   * 尤其软件文件夹很可能有用户数据在其中，删除前至少通过命令检查下文件夹架构。

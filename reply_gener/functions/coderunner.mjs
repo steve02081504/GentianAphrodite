@@ -1,10 +1,9 @@
 import { Buffer } from 'node:buffer'
-import process from 'node:process'
 import util from 'node:util'
 
 import { async_eval } from 'https://cdn.jsdelivr.net/gh/steve02081504/async-eval/deno.mjs'
 
-import { bash_exec, pwsh_exec } from '../../scripts/exec.mjs'
+import { available, shell_exec_map } from '../../scripts/exec.mjs'
 import { toFileObj } from '../../scripts/fileobj.mjs'
 import { newCharReplay, statisticDatas } from '../../scripts/statistics.mjs'
 import { captureScreen } from '../../scripts/tools.mjs'
@@ -154,51 +153,28 @@ export async function coderunner(result, args) {
 		result.extension.execed_codes[jsrunner] = coderesult
 		return true
 	}
-	if (process.platform === 'win32') {
-		const pwshrunner = result.content.match(/<run-pwsh>(?<code>[^]*?)<\/run-pwsh>/)?.groups?.code
-		if (pwshrunner) {
+	for (const shell_name in shell_exec_map) {
+		if (!available[shell_name]) continue
+		const runner_regex = new RegExp(`<run-${shell_name}>(?<code>[^]*?)<\\/run-${shell_name}>`)
+		const runner = result.content.match(runner_regex)?.groups?.code
+		if (runner) {
 			statisticDatas.toolUsage.codeRuns++
 			AddLongTimeLog({
 				name: '龙胆',
 				role: 'char',
-				content: '<run-pwsh>' + pwshrunner + '</run-pwsh>' + (wait_screen ? `\n<wait-screen>${wait_screen}</wait-screen>` : ''),
+				content: `<run-${shell_name}>` + runner + `</run-${shell_name}>` + (wait_screen ? `\n<wait-screen>${wait_screen}</wait-screen>` : ''),
 				files: []
 			})
-			console.info('AI运行的Powershell代码：', pwshrunner)
-			let pwshresult
-			try { pwshresult = await pwsh_exec(pwshrunner, { no_ansi_terminal_sequences: true }) } catch (err) { pwshresult = err }
-			result.extension.execed_codes[pwshrunner] = pwshresult
-			if (pwshresult.stdall) { pwshresult = { ...pwshresult }; delete pwshresult.stdout; delete pwshresult.stderr }
-			console.info('pwshresult', pwshresult)
+			console.info(`AI运行的${shell_name}代码：`, runner)
+			let shell_result
+			try { shell_result = await shell_exec_map[shell_name](runner, { no_ansi_terminal_sequences: true }) } catch (err) { shell_result = err }
+			result.extension.execed_codes[runner] = shell_result
+			if (shell_result.stdall) { shell_result = { ...shell_result }; delete shell_result.stdout; delete shell_result.stderr }
+			console.info(`${shell_name} result`, shell_result)
 			AddLongTimeLog({
 				name: 'coderunner',
 				role: 'tool',
-				content: '执行结果：\n' + util.inspect(pwshresult),
-				files: [await get_screen()].filter(Boolean)
-			})
-			return true
-		}
-	}
-	else {
-		const bashrunner = result.content.match(/<run-bash>(?<code>[^]*?)<\/run-bash>/)?.groups?.code
-		if (bashrunner) {
-			statisticDatas.toolUsage.codeRuns++
-			AddLongTimeLog({
-				name: '龙胆',
-				role: 'char',
-				content: '<run-bash>' + bashrunner + '</run-bash>' + (wait_screen ? `\n<wait-screen>${wait_screen}</wait-screen>` : ''),
-				files: []
-			})
-			console.info('AI运行的Bash代码：', bashrunner)
-			let bashresult
-			try { bashresult = await bash_exec(bashrunner, { no_ansi_terminal_sequences: true }) } catch (err) { bashresult = err }
-			result.extension.execed_codes[bashrunner] = bashresult
-			if (bashresult.stdall) { bashresult = { ...bashresult }; delete bashresult.stdout; delete bashresult.stderr }
-			console.info('bashresult', bashresult)
-			AddLongTimeLog({
-				name: 'coderunner',
-				role: 'tool',
-				content: '执行结果：\n' + util.inspect(bashresult),
+				content: '执行结果：\n' + util.inspect(shell_result),
 				files: [await get_screen()].filter(Boolean)
 			})
 			return true
@@ -253,27 +229,30 @@ export async function coderunner(result, args) {
 		return true
 	}
 
-	if (process.platform === 'win32') {
-		if (result.content.match(/<inline-pwsh>[^]*?<\/inline-pwsh>/)) try {
+	for (const shell_name in shell_exec_map) {
+		if (!available[shell_name]) continue
+		const runner_regex = new RegExp(`<inline-${shell_name}>[^]*?<\\/inline-${shell_name}>`)
+		if (result.content.match(runner_regex)) try {
 			const original = result.content
+			const runner_regex_g = new RegExp(`<inline-${shell_name}>(?<code>[^]*?)<\\/inline-${shell_name}>`, 'g')
 			const replacements = await Promise.all(
-				Array.from(result.content.matchAll(/<inline-pwsh>(?<code>[^]*?)<\/inline-pwsh>/g))
+				Array.from(result.content.matchAll(runner_regex_g))
 					.map(async match => {
-						const pwshrunner = match.groups.code.split('<inline-pwsh>').pop()
-						console.info('AI内联运行的Powershell代码：', pwshrunner)
-						let pwshresult
+						const runner = match.groups.code.split(`<inline-${shell_name}>`).pop()
+						console.info(`AI内联运行的${shell_name}代码：`, runner)
+						let shell_result
 						try {
-							pwshresult = await pwsh_exec(pwshrunner, { no_ansi_terminal_sequences: true })
+							shell_result = await shell_exec_map[shell_name](runner, { no_ansi_terminal_sequences: true })
 						} catch (err) {
-							pwshresult = err
+							shell_result = err
 						}
 
-						if (pwshresult instanceof Error) throw pwshresult
+						if (shell_result instanceof Error) throw shell_result
 
-						if (pwshresult.code !== 0)
-							throw new Error('Powershell execution of code ' + pwshrunner + ' failed with exit code ' + pwshresult.exitCode + ':\n' + util.inspect(pwshresult))
+						if (shell_result.code !== 0)
+							throw new Error(`${shell_name} execution of code '${runner}' failed with exit code ${shell_result.exitCode}:\n${util.inspect(shell_result)}`)
 
-						return pwshresult.stdout.trim()
+						return shell_result.stdout.trim()
 					})
 			)
 			let i = 0
@@ -286,13 +265,13 @@ export async function coderunner(result, args) {
 			}, {
 				name: 'coderunner',
 				role: 'tool',
-				content: '内联pwsh代码执行和替换完毕\n',
+				content: `内联${shell_name}代码执行和替换完毕\n`,
 				files: [],
 				charVisibility: [args.char_id],
 			})
-			result.content = result.content.replace(/<inline-pwsh>(?<code>[^]*?)<\/inline-pwsh>/g, () => replacements[i++])
+			result.content = result.content.replace(runner_regex_g, () => replacements[i++])
 		} catch (error) {
-			console.error('内联pwsh代码执行失败：', error)
+			console.error(`内联${shell_name}代码执行失败：`, error)
 			AddLongTimeLog({
 				name: '龙胆',
 				role: 'char',
@@ -302,66 +281,12 @@ export async function coderunner(result, args) {
 			AddLongTimeLog({
 				name: 'coderunner',
 				role: 'tool',
-				content: '内联pwsh代码执行失败：\n' + error.stack,
+				content: `内联${shell_name}代码执行失败：\n` + error.stack,
 				files: []
 			})
 			return true
 		}
 	}
-	else
-		if (result.content.match(/<inline-bash>[^]*?<\/inline-bash>/)) try {
-			const original = result.content
-			const replacements = await Promise.all(
-				Array.from(result.content.matchAll(/<inline-bash>(?<code>[^]*?)<\/inline-bash>/g))
-					.map(async match => {
-						const bashrunner = match.groups.code.split('<inline-bash>').pop()
-						console.info('AI内联运行的Bash代码：', bashrunner)
-						let bashresult
-						try {
-							bashresult = await bash_exec(bashrunner, { no_ansi_terminal_sequences: true })
-						} catch (err) {
-							bashresult = err
-						}
-
-						if (bashresult instanceof Error) throw bashresult
-
-						if (bashresult.code !== 0)
-							throw new Error(`Bash execution of code '${bashrunner}' failed with exit code ${bashresult.exitCode}:\n${util.inspect(bashresult)}`)
-
-						return bashresult.stdout.trim()
-					})
-			)
-			let i = 0
-			result.logContextBefore.push({
-				name: '龙胆',
-				role: 'char',
-				content: original,
-				files: result.files,
-				charVisibility: [args.char_id],
-			}, {
-				name: 'coderunner',
-				role: 'tool',
-				content: '内联bash代码执行和替换完毕\n',
-				files: [],
-				charVisibility: [args.char_id],
-			})
-			result.content = result.content.replace(/<inline-bash>(?<code>[^]*?)<\/inline-bash>/g, () => replacements[i++])
-		} catch (error) {
-			console.error('内联bash代码执行失败：', error)
-			AddLongTimeLog({
-				name: '龙胆',
-				role: 'char',
-				content: result.content,
-				files: result.files,
-			})
-			AddLongTimeLog({
-				name: 'coderunner',
-				role: 'tool',
-				content: '内联bash代码执行失败：\n' + error.stack,
-				files: []
-			})
-			return true
-		}
 
 	return false
 }
