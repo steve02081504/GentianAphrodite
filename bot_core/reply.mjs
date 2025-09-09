@@ -161,7 +161,7 @@ export async function doMessageReply(triggerMessage, platformAPI, channelId) {
 	try {
 		const requestData = await prepareReplyRequestData(triggerMessage, platformAPI, channelId)
 		const replyRequest = await buildReplyRequest(triggerMessage, platformAPI, channelId, requestData)
-		const aiFinalReply = fuyanMode ? { content: '嗯嗯！' } : await GentianAphrodite.interfaces.chat.GetReply(replyRequest)
+		const aiFinalReply = fuyanMode ? { content: channelCharScopedMemory[channelId]?.in_hypnosis ? '是的，主人。' : '嗯嗯！' } : await GentianAphrodite.interfaces.chat.GetReply(replyRequest)
 		await processAIReply(aiFinalReply, platformAPI, channelId, triggerMessage)
 	} catch (error) {
 		await handleError(error, platformAPI, triggerMessage)

@@ -2,7 +2,7 @@ import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
 import { loadDefaultPersona } from '../../../../../../src/server/managers/persona_manager.mjs'
 import { charname as BotCharname, username as FountUsername, GentianAphrodite } from '../charbase.mjs'
 
-import { userIdToNameMap } from './state.mjs'
+import { userIdToNameMap, inHypnosisChannelId } from './state.mjs'
 import { fetchFilesForMessages } from './utils.mjs'
 
 /**
@@ -53,16 +53,22 @@ async function checkOwnerPresence(group, platformAPI, ownerOverride = null) {
  */
 async function generateInsult(group, platformAPI, defaultChannel, channelHistoryForAI) {
 	const groupNameForAI = group.name || `Group ${group.id}`
+	const isInHypnosis = defaultChannel.id === inHypnosisChannelId
+	const insultSystemPrompt = isInHypnosis
+		? `你目前在${groupNameForAI}群组中，但这里没有找到你的主人。
+现在，用呆滞的语气说一句简短的话，然后你会自动退出群组。
+`
+		: `你目前在${groupNameForAI}群组中，但这里没有找到你的主人，显然你是被某个傻逼拉进来的。
+现在发挥你的聪明才智随便骂几句，随后你会自动退出群组。
+`
 	const insultRequestContext = [
 		...channelHistoryForAI,
 		{
 			name: 'system',
 			role: 'system',
 			time_stamp: Date.now(),
-			content: `
-你目前在${groupNameForAI}群组中，但这里没有找到你的主人，显然你是被某个傻逼拉进来的。
-现在发挥你的聪明才智随便骂几句，随后你会自动退出群组。
-` },
+			content: insultSystemPrompt
+		},
 	]
 
 	const fountBotDisplayName = (await GentianAphrodite.getPartInfo?.(localhostLocales[0]))?.name || BotCharname
@@ -104,7 +110,7 @@ async function generateInsult(group, platformAPI, defaultChannel, channelHistory
 	} catch (e) {
 		console.error(`[BotLogic] AI insult generation failed for group ${group.id}:`, e)
 	}
-	return '？' // 默认侮辱内容
+	return isInHypnosis ? '…' : '？' // 默认侮辱内容
 }
 
 /**
