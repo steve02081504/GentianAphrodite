@@ -23,15 +23,15 @@ async function base_exec(code, {
 		let stdout = ''
 		let stderr = ''
 		let stdall = ''
-		process.stdout?.on('data', data => {
+		process.stdout?.on?.('data', data => {
 			stdout += data
 			stdall += data
 		})
-		process.stderr?.on('data', data => {
+		process.stderr?.on?.('data', data => {
 			stderr += data
 			stdall += data
 		})
-		process.on('exit', code => {
+		process.on('close', code => {
 			if (no_ansi_terminal_sequences) {
 				stdout = removeTerminalSequences(stdout)
 				stderr = removeTerminalSequences(stderr)
@@ -42,13 +42,18 @@ async function base_exec(code, {
 	})
 }
 
-export function bash_exec(code, options) {
+export function sh_exec(code, options) {
 	return base_exec(code, {
-		shell: '/bin/bash',
+		shell: '/bin/sh',
 		...options
 	})
 }
-
+function base_bash_exec(shellpath, code, options) {
+	return base_exec(code, {
+		shell: shellpath,
+		...options,
+	})
+}
 function base_pwsh_exec(shellpath, code, options) {
 	code = `\
 $OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::UTF8
@@ -62,6 +67,11 @@ ${code}
 		...options
 	})
 }
+async function testBashPaths(paths) {
+	for (const path of paths)
+		if (await base_bash_exec(path, 'echo 1').catch(() => false))
+			return path
+}
 async function testPwshPaths(paths) {
 	for (const path of paths)
 		if (await base_pwsh_exec(path, '1').catch(() => false))
@@ -73,6 +83,10 @@ const powershellPath = await testPwshPaths([
 	'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe',
 ])
 
+let bashPath
+export function bash_exec(code, options) {
+	return base_bash_exec(bashPath ?? '/bin/bash', code, options)
+}
 let pwshPath
 export function powershell_exec(code, options) {
 	return base_pwsh_exec(powershellPath, code, options)
@@ -84,8 +98,15 @@ export function where_command(command) {
 	if (process.platform === 'win32')
 		return pwsh_exec(`Get-Command -Name ${command} -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Definition`).then(result => result.stdout.trim())
 	else
-		return bash_exec(`which ${command}`).then(result => result.stdout.trim())
+		return sh_exec(`which ${command}`).then(result => result.stdout.trim())
 }
+bashPath = await testBashPaths([
+	'bash',
+	'bash.exe',
+	'/bin/bash',
+	'/usr/bin/bash',
+	await where_command('bash').catch(() => ''),
+].filter(x => x))
 pwshPath = await testPwshPaths([
 	'pwsh',
 	'pwsh.exe',
