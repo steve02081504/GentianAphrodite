@@ -14,7 +14,9 @@ export async function update() {
 	return {
 		name: '龙胆',
 		avatar: `${charurl}/imgs/anime.avif`,
+		sfw_avatar: `${charurl}/imgs/sfw.avif`,
 		description: '一个要素爆表的合法萝莉老婆！',
+		sfw_description: '小龙胆能有什么坏心思呢？',
 		description_markdown: await FormatStr(file, {
 			charvar,
 			statisticDatas,
@@ -83,6 +85,7 @@ ${escapeHTML(mostFrequentChatName)}
 </details>
 ` : ''
 		}),
+		sfw_description_markdown: '小龙胆能有什么坏心思呢？',
 		version: charvar,
 		author: 'steve02081504',
 		home_page: '',
@@ -107,5 +110,13 @@ ${escapeHTML(mostFrequentChatName)}
 			'男性向',
 			'女性角色',
 		],
+		sfw_tags: [
+			'纯爱',
+			'恋爱',
+			'恋人',
+			'萝莉',
+			'合法萝莉',
+			'母性',
+		]
 	}
 }

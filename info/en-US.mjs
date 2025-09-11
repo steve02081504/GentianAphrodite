@@ -14,7 +14,9 @@ export async function update() {
 	return {
 		name: 'Gentian',
 		avatar: `${charurl}/imgs/anime.avif`,
+		sfw_avatar: `${charurl}/imgs/sfw.avif`,
 		description: 'A complex legal loli wife with a massive details & features!',
+		sfw_description: 'What harm could a little Gentian possibly do?',
 		description_markdown: await FormatStr(file, {
 			charvar,
 			statisticDatas,
@@ -83,6 +85,7 @@ ${escapeHTML(mostFrequentChatName)}
 `: ''}
 ` : ''
 		}),
+		sfw_description_markdown: 'What harm could a little Gentian possibly do?',
 		version: charvar,
 		author: 'steve02081504',
 		home_page: '',
@@ -106,6 +109,14 @@ ${escapeHTML(mostFrequentChatName)}
 			'character focus', // 纯人物
 			'male oriented', // 男性向
 			'female character', // 女性角色
+		],
+		sfw_tags: [
+			'pure love',
+			'romance',
+			'lovers',
+			'loli',
+			'legal loli',
+			'motherly',
 		]
 	}
 }
