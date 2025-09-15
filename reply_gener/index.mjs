@@ -2,7 +2,7 @@ import { inspect } from 'node:util'
 
 import { compareTwoStrings as string_similarity } from 'npm:string-similarity'
 
-import { buildPromptStruct } from '../../../../../../src/public/shells/chat/src/server/prompt_struct.mjs'
+import { buildPromptStruct } from '../../../../../../src/public/shells/chat/src/prompt_struct.mjs'
 import { noAISourceAvailable, OrderedAISourceCalling } from '../AISource/index.mjs'
 import { is_dist } from '../charbase.mjs'
 import { get_discord_api_plugin } from '../interfaces/discord/api.mjs'

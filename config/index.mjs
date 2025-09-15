@@ -47,6 +47,6 @@ export async function SetData(data) {
 }
 
 export async function setMyData(data) {
-	const { setPartData } = await import('../../../../../../src/public/shells/config/src/server/manager.mjs')
+	const { setPartData } = await import('../../../../../../src/public/shells/config/src/manager.mjs')
 	return setPartData(username, 'chars', charname, mergeTree(await GetData(), data))
 }

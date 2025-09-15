@@ -93,7 +93,7 @@ await bundle.close()
 
 console.log('Build completed successfully and written to dist/main.mjs')
 
-const copy_paths = ['info/description', 'imgs', 'README.md', 'fount.json', 'locales', 'config/display.html', 'config/display.mjs']
+const copy_paths = ['info/description', 'public', 'README.md', 'fount.json', 'locales', 'config/display.html', 'config/display.mjs']
 for (const path of copy_paths)
 	if (fs.statSync(path).isDirectory())
 		await exec(`robocopy ".\\${path}" ".\\dist\\${path}" /MIR /XD .git /XF .gitignore /XA:H /XA:S"`, { cwd: '.' }).catch(console.dir)

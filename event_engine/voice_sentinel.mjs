@@ -582,7 +582,7 @@ export async function checkVoiceSentinel() {
 	return isRunning
 }
 
-export function startVoiceSentinel() {
+function startVoiceSentinel() {
 	if (charConfig.disable_voice_sentinel) {
 		console.log('🎤 Audio sentinel is disabled by config.')
 		return
