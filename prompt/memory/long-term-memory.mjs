@@ -62,21 +62,22 @@ export async function LongTermMemoryPrompt(args, logical_results, prompt_struct,
 
 	let result = ''
 	const prompt_build_table = {
-		name: "记忆名称：",
-		prompt: "内容：",
-		createdAt: "创建于：",
-		updatedAt: "更新于：",
-		createdContext: "创建时上下文：\n",
-		updatedContext: "更新时上下文：\n"
+		name: '记忆名称：',
+		prompt: '内容：',
+		createdAt: '创建于：',
+		updatedAt: '更新于：',
+		createdContext: '创建时上下文：\n',
+		updatedContext: '更新时上下文：\n'
 	}
 	if (actived_memories.length > 0)
 		result = `\
 <long-term-memories>
 ${actived_memories.map(memory =>
-	Object.keys(prompt_build_table).map(key =>
-		`${prompt_build_table[key]}${memory[key]}`
+		Object.keys(prompt_build_table).map(key =>
+			`${prompt_build_table[key]}${memory[key]}`
+		).join('\n')
 	).join('\n')
-).join('\n')}
+}
 </long-term-memories>
 `
 	let enable_memory_prompt = false
