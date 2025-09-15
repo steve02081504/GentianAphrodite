@@ -13,6 +13,7 @@ AI被允许使用特殊返回格式进行永久记忆的删除或更新。
 */
 
 import { addLongTermMemory, deleteLongTermMemory, listLongTermMemory, updateLongTermMemory, testLongTermMemoryTrigger } from '../../prompt/memory/long-term-memory.mjs'
+import { createContextSnapshot } from '../../scripts/context.mjs'
 
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
@@ -60,11 +61,14 @@ export async function LongTermMemoryHandler(result, args) {
 		// Validate that all required fields were found
 		if (memoryTrigger && memoryName && memoryPromptContent)
 			try {
+				const contextSnapshot = createContextSnapshot(args.chat_log, 4)
 				// Create the memory object using the extracted values
 				const newMemory = {
 					trigger: memoryTrigger, // Store the trigger string
 					name: memoryName,
 					prompt: memoryPromptContent, // Use the correct prompt content
+					createdAt: Date.now(),
+					createdContext: contextSnapshot
 				}
 				await testLongTermMemoryTrigger(newMemory, args, args.extension.logical_results, args.prompt_struct, 0) // Test the trigger for errors
 				addLongTermMemory(newMemory) // Use the helper function
@@ -127,10 +131,13 @@ export async function LongTermMemoryHandler(result, args) {
 					if (memoryTrigger)
 						await testLongTermMemoryTrigger({ trigger: memoryTrigger, name: memoryName, prompt: '' }, args, args.extension.logical_results, args.prompt_struct, 0)
 
+					const contextSnapshot = createContextSnapshot(args.chat_log, 4)
 					updateLongTermMemory({
 						name: memoryName,
 						trigger: memoryTrigger,
-						prompt: memoryPromptContent
+						prompt: memoryPromptContent,
+						updatedAt: Date.now(),
+						updatedContext: contextSnapshot
 					})
 
 					AddLongTimeLog({

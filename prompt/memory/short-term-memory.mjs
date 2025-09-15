@@ -6,6 +6,7 @@ import { chardir } from '../../charbase.mjs'
 import jieba from '../../scripts/jieba.mjs'
 import { flatChatLog, match_keys, PreprocessChatLogEntry } from '../../scripts/match.mjs'
 import { findMostFrequentElement } from '../../scripts/tools.mjs'
+import { createContextSnapshot } from '../../scripts/context.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
@@ -386,9 +387,7 @@ ${args.UserCharname}: 给我把有关华为的记忆全忘掉。
 		memoryLogSlice.some(chatLogEntry => chatLogEntry.name == args.Charname)
 	) {
 		const newMemoryKeywords = await getKeyWords(memoryLogSlice)
-		const memoryText = flatChatLog(memoryLogSlice)
-			.map(entry => `${entry.name || '未知发言者'}: ${entry.content || ''}${entry.files?.length ? `\n(文件: ${entry.files.map(file => file.name).join(', ')})` : ''}`)
-			.join('\n')
+		const memoryText = createContextSnapshot(memoryLogSlice)
 
 		if (memoryText.trim())
 			chat_memories.push({

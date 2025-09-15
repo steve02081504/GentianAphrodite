@@ -61,13 +61,22 @@ export async function LongTermMemoryPrompt(args, logical_results, prompt_struct,
 			actived_memories.push(memory)
 
 	let result = ''
+	const prompt_build_table = {
+		name: "记忆名称：",
+		prompt: "内容：",
+		createdAt: "创建于：",
+		updatedAt: "更新于：",
+		createdContext: "创建时上下文：\n",
+		updatedContext: "更新时上下文：\n"
+	}
 	if (actived_memories.length > 0)
 		result = `\
 <long-term-memories>
-${actived_memories.map(memory => `\
-记忆名称：${memory.name}
-内容：${memory.prompt}
-`).join('')}
+${actived_memories.map(memory =>
+	Object.keys(prompt_build_table).map(key =>
+		`${prompt_build_table[key]}${memory[key]}`
+	).join('\n')
+).join('\n')}
 </long-term-memories>
 `
 	let enable_memory_prompt = false
@@ -141,7 +150,7 @@ export function addLongTermMemory(memory) {
 	saveLongTermMemory()
 }
 
-export function updateLongTermMemory({ name, trigger, prompt }) {
+export function updateLongTermMemory({ name, trigger, prompt, updatedAt, updatedContext }) {
 	const memoryIndex = LongTermMemories.findIndex(mem => mem.name === name)
 	if (memoryIndex === -1) throw new Error(`Memory with name "${name}" not found for update.`)
 
@@ -149,6 +158,8 @@ export function updateLongTermMemory({ name, trigger, prompt }) {
 
 	if (trigger !== undefined) memoryToUpdate.trigger = trigger
 	if (prompt !== undefined) memoryToUpdate.prompt = prompt
+	if (updatedAt !== undefined) memoryToUpdate.updatedAt = updatedAt
+	if (updatedContext !== undefined) memoryToUpdate.updatedContext = updatedContext
 
 	saveLongTermMemory()
 }
