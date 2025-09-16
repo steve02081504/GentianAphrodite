@@ -207,6 +207,7 @@ ${chat_log_snip}
 			...channel,
 			chat_log: [...channel.chat_log, logEntry],
 		})
+		if (!result) return
 		result.logContextBefore.push(logEntry)
 		await channel.AddChatLogEntry(result)
 		newCharReplay(result.content, platform || 'chat')

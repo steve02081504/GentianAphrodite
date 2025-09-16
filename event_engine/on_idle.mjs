@@ -70,6 +70,7 @@ ${randomTask.get_content()}
 			enable_prompts: randomTask.enable_prompts
 		}
 	})
+	if (!result) return
 	result.logContextBefore.push(logEntry)
 	await RealityChannel.AddChatLogEntry(result)
 }

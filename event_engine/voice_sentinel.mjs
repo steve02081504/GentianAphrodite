@@ -287,8 +287,10 @@ async function finishRecordingSession(now) {
 					}
 				}
 			})
-			result.logContextBefore.push(logEntry)
-			await RealityChannel.AddChatLogEntry(result)
+			if (result) {
+				result.logContextBefore.push(logEntry)
+				await RealityChannel.AddChatLogEntry(result)
+			}
 		} catch (err) {
 			console.error('🎤 Error during AI reply:', err)
 		}

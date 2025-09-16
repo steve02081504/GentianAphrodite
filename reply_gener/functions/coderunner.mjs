@@ -34,6 +34,7 @@ ${code}
 		new_req.chat_log = [...new_req.chat_log, feedback]
 		new_req.extension.from_callback = true
 		const reply = await GetReply(new_req)
+		if (!reply) return
 		reply.logContextBefore.push(feedback)
 		await logger(reply)
 		newCharReplay(reply.content, args.extension?.platform || 'chat')

@@ -118,13 +118,13 @@ ${args.screen}
 		chat_log
 	})
 	newUserMessage(args.command_now, 'shell')
-	newCharReplay(AIsuggestion.content, 'shell')
+	if (AIsuggestion) newCharReplay(AIsuggestion.content, 'shell')
 	return {
 		name: '龙胆',
-		recommend_command: AIsuggestion.recommend_command,
-		content: AIsuggestion.content,
+		recommend_command: AIsuggestion?.recommend_command,
+		content: AIsuggestion?.content,
 		chat_scoped_char_memory: args.chat_scoped_char_memory,
 		shellhistory: args.shellhistory,
-		extension: AIsuggestion.extension,
+		extension: AIsuggestion?.extension,
 	}
 }
