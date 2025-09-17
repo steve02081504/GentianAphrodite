@@ -209,7 +209,7 @@ ${chat_log_snip}
 		})
 		if (!result) return
 		result.logContextBefore.push(logEntry)
-		await channel.AddChatLogEntry(result)
+		await channel.AddChatLogEntry({ name: '龙胆', ...result })
 		newCharReplay(result.content, platform || 'chat')
 	})
 }

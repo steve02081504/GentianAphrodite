@@ -36,7 +36,7 @@ ${code}
 		const reply = await GetReply(new_req)
 		if (!reply) return
 		reply.logContextBefore.push(feedback)
-		await logger(reply)
+		await logger({ name: '龙胆', ...reply })
 		newCharReplay(reply.content, args.extension?.platform || 'chat')
 	}
 	catch (error) {

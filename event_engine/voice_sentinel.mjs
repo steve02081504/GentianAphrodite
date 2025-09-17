@@ -289,7 +289,7 @@ async function finishRecordingSession(now) {
 			})
 			if (result) {
 				result.logContextBefore.push(logEntry)
-				await RealityChannel.AddChatLogEntry(result)
+				await RealityChannel.AddChatLogEntry({ name: '龙胆', ...result })
 			}
 		} catch (err) {
 			console.error('🎤 Error during AI reply:', err)
