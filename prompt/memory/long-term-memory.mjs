@@ -60,7 +60,6 @@ export async function LongTermMemoryPrompt(args, logical_results, prompt_struct,
 		if (await runLongTermMemoryTrigger(memory, args, logical_results, prompt_struct, detail_level))
 			actived_memories.push(memory)
 
-	let result = ''
 	const prompt_build_table = {
 		name: '记忆名称：',
 		prompt: '内容：',
@@ -69,17 +68,36 @@ export async function LongTermMemoryPrompt(args, logical_results, prompt_struct,
 		createdContext: '创建时上下文：\n',
 		updatedContext: '更新时上下文：\n'
 	}
-	if (actived_memories.length > 0)
+
+	const formatMemory = (memory) => Object.entries(prompt_build_table).map(([key, prefix]) => {
+		const value = memory[key]
+		if (value == null) return null
+		return `${prefix}${value}`
+	}).filter(Boolean).join('\n')
+
+	const activated_memories_text = actived_memories.length ? `\
+<activated-memories>
+${actived_memories.map(formatMemory).join('\n')}
+</activated-memories>
+` : ''
+
+	const random_memories = getRandomNLongTermMemories(2)
+		.filter(rand_mem => !actived_memories.some(act_mem => act_mem.name === rand_mem.name))
+
+	const random_memories_text = random_memories.length ? `\
+<random-memories>
+${random_memories.map(formatMemory).join('\n')}
+</random-memories>
+` : ''
+
+	let result = ''
+	if (activated_memories_text || random_memories_text)
 		result = `\
 <long-term-memories>
-${actived_memories.map(memory =>
-		Object.keys(prompt_build_table).map(key =>
-			`${prompt_build_table[key]}${memory[key]}`
-		).join('\n')
-	).join('\n')
-}
+${[activated_memories_text, random_memories_text].filter(Boolean).join('\n')}
 </long-term-memories>
 `
+
 	let enable_memory_prompt = false
 	if (args.extension?.enable_prompts?.LongTermMemory || !logical_results.in_assist || await match_keys(args, ['记忆', '记住'], 'user'))
 		enable_memory_prompt = true
