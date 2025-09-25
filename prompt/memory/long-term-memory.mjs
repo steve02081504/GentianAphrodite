@@ -48,6 +48,25 @@ export async function testLongTermMemoryTrigger(memory, args, logical_results, p
 	if (result.error) throw result.error
 }
 
+const prompt_build_table = {
+	name: '记忆名称：',
+	prompt: '内容：',
+	createdAt: '创建于：',
+	updatedAt: '更新于：',
+	createdContext: '创建时上下文：\n',
+	updatedContext: '更新时上下文：\n'
+}
+
+export function formatLongTermMemory (memory) {
+	return Object.entries(prompt_build_table).map(([key, prefix]) => {
+		let value = memory[key]
+		if (value == null) return null
+		if (['createdContext', 'updatedContext'].includes(key) && value.length > 2048)
+			value = '...' + value.slice(-2048)
+		return `${prefix}${value}`
+	}).filter(Boolean).join('\n')
+}
+
 /**
  * @param {chatReplyRequest_t} args
  * @param {logical_results_t} logical_results
@@ -60,24 +79,9 @@ export async function LongTermMemoryPrompt(args, logical_results, prompt_struct,
 		if (await runLongTermMemoryTrigger(memory, args, logical_results, prompt_struct, detail_level))
 			actived_memories.push(memory)
 
-	const prompt_build_table = {
-		name: '记忆名称：',
-		prompt: '内容：',
-		createdAt: '创建于：',
-		updatedAt: '更新于：',
-		createdContext: '创建时上下文：\n',
-		updatedContext: '更新时上下文：\n'
-	}
-
-	const formatMemory = (memory) => Object.entries(prompt_build_table).map(([key, prefix]) => {
-		const value = memory[key]
-		if (value == null) return null
-		return `${prefix}${value}`
-	}).filter(Boolean).join('\n')
-
 	const activated_memories_text = actived_memories.length ? `\
 <activated-memories>
-${actived_memories.map(formatMemory).join('\n')}
+${actived_memories.map(formatLongTermMemory).join('\n')}
 </activated-memories>
 ` : ''
 
@@ -86,7 +90,7 @@ ${actived_memories.map(formatMemory).join('\n')}
 
 	const random_memories_text = random_memories.length ? `\
 <random-memories>
-${random_memories.map(formatMemory).join('\n')}
+${random_memories.map(formatLongTermMemory).join('\n')}
 </random-memories>
 ` : ''
 

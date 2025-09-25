@@ -1,7 +1,7 @@
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 
 import { charname } from '../charbase.mjs'
-import { getRandomNLongTermMemories } from '../prompt/memory/long-term-memory.mjs'
+import { formatLongTermMemory, getRandomNLongTermMemories } from '../prompt/memory/long-term-memory.mjs'
 import { GetReply } from '../reply_gener/index.mjs'
 
 import { initRealityChannel, RealityChannel } from './index.mjs'
@@ -26,7 +26,7 @@ const idleTasks = [
 		get_content: () => `\
 这是5条随机的长期记忆，并判断它们的内容是否没有帮助无需保留，或者它们的关键词列表是否有改进的空间。
 以及判断近期的短期记忆中有什么有价值的内容可以加入到长期记忆中。
-${util.inspect(getRandomNLongTermMemories(5), { depth: null })}
+${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 `,
 		enable_prompts: {
 			time: true,
