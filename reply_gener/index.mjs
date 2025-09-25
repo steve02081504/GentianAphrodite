@@ -12,6 +12,7 @@ import { addNotifyAbleChannel } from '../scripts/notify.mjs'
 import { newCharReplay, newUserMessage, saveStatisticDatas, statisticDatas } from '../scripts/statistics.mjs'
 
 import { handleError } from './error.mjs'
+import { browserIntegration } from './functions/browserIntegration.mjs'
 import { coderunner } from './functions/coderunner.mjs'
 import { deepResearch } from './functions/deep-research.mjs'
 import { file_change } from './functions/file-change.mjs'
@@ -131,7 +132,7 @@ export async function GetReply(args) {
 			/** @type {(import('../../../../../../src/decl/PluginAPI.ts').ReplyHandler_t)[]} */
 			const replyHandlers = [
 				coderunner, LongTermMemoryHandler, ShortTermMemoryHandler,
-				deepResearch, googlesearch, webbrowse, rolesettingfilter, file_change,
+				deepResearch, googlesearch, webbrowse, rolesettingfilter, file_change, browserIntegration,
 				args.supported_functions.add_message ? timer : null,
 				...Object.values(args.plugins).map(plugin => plugin.interfaces.chat?.ReplyHandler)
 			].filter(Boolean)

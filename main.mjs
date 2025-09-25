@@ -10,6 +10,7 @@ import { GetGreeting, GetGroupGreeting } from './greetings/index.mjs'
 import { UpdateInfo } from './info/index.mjs'
 import { GetPrompt, GetPromptForOther } from './prompt/index.mjs'
 import { saveMemories } from './prompt/memory/index.mjs'
+import { BrowserJsCallback } from './reply_gener/functions/browserIntegration.mjs'
 import { timerCallBack } from './reply_gener/functions/timer.mjs'
 import { GetReply } from './reply_gener/index.mjs'
 import { startClipboardListening, stopClipboardListening } from './scripts/clipboard.mjs'
@@ -60,6 +61,9 @@ Object.assign(GentianAphrodite, {
 		},
 		shellassist: {
 			Assist: async args => import('./interfaces/shellassist/index.mjs').then(mod => mod.shellAssistMain(args))
+		},
+		browserIntegration: {
+			BrowserJsCallback
 		},
 		timers: {
 			TimerCallback: async (username, uid, callbackdata) => {

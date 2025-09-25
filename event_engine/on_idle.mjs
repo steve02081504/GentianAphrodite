@@ -1,5 +1,4 @@
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
-import util from 'node:util'
 
 import { charname } from '../charbase.mjs'
 import { getRandomNLongTermMemories } from '../prompt/memory/long-term-memory.mjs'

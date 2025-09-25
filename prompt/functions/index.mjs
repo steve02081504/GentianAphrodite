@@ -1,6 +1,7 @@
 import { mergePrompt } from '../build.mjs'
 
 import { AutoCalcPrompt } from './autocalc.mjs'
+import { BrowserIntegrationPrompt } from './browserIntegration.mjs'
 import { CameraPrompt } from './camera.mjs'
 import { ChineseGrammarCorrectionPrompt } from './ChineseGrammarCorrection.mjs'
 import { CodeRunnerPrompt } from './coderunner.mjs'
@@ -55,6 +56,7 @@ export async function FunctionPrompt(args, logical_results, prompt_struct, detai
 	result.push(qrcodeParserPrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(RudePrompt(args, logical_results, prompt_struct, detail_level))
 	result.push(PromptReviewerPrompt(args, logical_results, prompt_struct, detail_level))
+	result.push(BrowserIntegrationPrompt(args, logical_results, prompt_struct, detail_level))
 	if (args.supported_functions.add_message)
 		result.push(TimerPrompt(args, logical_results, prompt_struct, detail_level))
 	return mergePrompt(...result)
