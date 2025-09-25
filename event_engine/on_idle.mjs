@@ -12,10 +12,11 @@ import { initRealityChannel, RealityChannel } from './index.mjs'
  */
 const idleTasks = [
 	{
-		get_content: () => '随意浏览主人的硬盘、屏幕、摄像头，更新和总结有关主人的信息。',
+		get_content: () => '随意浏览主人的硬盘、屏幕、摄像头等，更新和总结有关主人的信息。',
 		enable_prompts: {
 			time: true,
 			longTermMemory: true,
+			browserIntegration: { history: true },
 			CodeRunner: true,
 			camera: true,
 			screenshot: true,
@@ -38,6 +39,11 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 		enable_prompts: {
 			time: true,
 			longTermMemory: true,
+			browserIntegration: { history: true },
+			CodeRunner: true,
+			camera: true,
+			screenshot: true,
+			fileChange: true
 		}
 	}
 ]

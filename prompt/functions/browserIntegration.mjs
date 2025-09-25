@@ -16,7 +16,7 @@ import { match_keys } from '../../scripts/match.mjs'
 export async function BrowserIntegrationPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
-	if (args.extension?.enable_prompts?.browserIntegration || logical_results.in_assist || history_keywords_matched || await match_keys(args, [
+	if (args.extension?.enable_prompts?.browserIntegration || logical_results.in_assist || await match_keys(args, [
 		'browser', 'page', 'tab', '网页', '页面', '标签页', '浏览器',
 		'autorun', 'userscript', '自动运行', '用户脚本',
 		/<browser-.*>/i
@@ -40,7 +40,7 @@ export async function BrowserIntegrationPrompt(args, logical_results, prompt_str
 			console.warn('Failed to get browser integration pages info', err)
 			result += `获取出错：${err.stack ?? err.message}\n`
 		}
-		if (await match_keys(args, ['最常', '最近', '喜欢', '看过', '历史', 'history'], 'any')) {
+		if (args.extension?.enable_prompts?.browserIntegration?.history || await match_keys(args, ['最常', '最近', '喜欢', '看过', '历史', 'history'], 'any'))
 			try {
 				const history = getBrowseHistory(args.username)
 				if (history?.length) {
@@ -51,7 +51,7 @@ export async function BrowserIntegrationPrompt(args, logical_results, prompt_str
 			catch (err) {
 				console.warn('Failed to get browser history info', err)
 			}
-		}
+
 		result += `/
 ---
 通过返回以下XML格式的指令来触发相应功能：
