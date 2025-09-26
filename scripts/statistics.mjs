@@ -65,6 +65,8 @@ export const statisticDatas = getVar('statistics', {
 		webBrowses: 0,
 		timersSet: 0,
 		timerCallbacks: 0,
+		browserOperations: 0,
+		browserCallbacks: 0,
 	},
 
 	longestDailyChat: {

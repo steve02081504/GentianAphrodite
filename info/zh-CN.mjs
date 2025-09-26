@@ -60,6 +60,7 @@ ${escapeHTML(statisticDatas.firstInteraction.characterReplyContent)}
 - 📄 操作过${statisticDatas.toolUsage.fileOperations}次文件
 - 🔎 谷歌搜索过${statisticDatas.toolUsage.googleSearches}次
 - 🌐 浏览过${statisticDatas.toolUsage.webBrowses}次网页
+- 🖥️ 执行过${statisticDatas.toolUsage.browserOperations}次浏览器操作，累计收到${statisticDatas.toolUsage.browserCallbacks}次浏览器回调 💻
 - ⏰ 定时过${statisticDatas.toolUsage.timersSet}次定时器，累计呼唤你${statisticDatas.toolUsage.timerCallbacks}次 🔔
 
 ${statisticDatas.longestDailyChat.end - statisticDatas.longestDailyChat.start > parseDuration('48h') ? `\
