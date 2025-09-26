@@ -284,6 +284,7 @@ async function finishRecordingSession(now) {
 					enable_prompts: {
 						CodeRunner: true,
 						fileChange: true,
+						browserIntegration: true,
 					}
 				}
 			})
