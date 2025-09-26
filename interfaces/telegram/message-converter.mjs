@@ -248,13 +248,15 @@ async function processMessageFiles(message, ctx) {
 			if (sticker.is_video) {
 				fileName = `${sticker.file_unique_id}.webm`
 				mimeType = 'video/webm'
-			} else if (sticker.is_animated)
+			}
+			else if (sticker.is_animated)
 				if (sticker.thumb) {
 					fileIdToDownload = sticker.thumb.file_id
 					fileName = `animated_sticker_thumb_${sticker.file_unique_id}.jpg`
 					mimeType = 'image/jpeg'
 					description += ' (动画贴纸的缩略图)'
-				} else {
+				}
+				else {
 					console.warn(`[TelegramInterface] Animated sticker ${sticker.file_unique_id} has no thumbnail, skipping.`)
 					fileIdToDownload = null
 				}

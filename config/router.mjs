@@ -28,7 +28,8 @@ export function setConfigEndpoints(router) {
 
 			res.status(200).json({ message: 'File saved successfully' })
 			checkVoiceSentinel()
-		} catch (error) {
+		}
+		catch (error) {
 			console.error(error)
 			res.status(500).json({ message: 'Failed to save file', error: error.message })
 		}
@@ -45,7 +46,8 @@ export function setConfigEndpoints(router) {
 			await fs.writeFile(finalPath, buffer)
 
 			res.status(200).json({ message: 'File saved successfully' })
-		} catch (error) {
+		}
+		catch (error) {
 			console.error(error)
 			res.status(500).json({ message: 'Failed to save file', error: error.message })
 		}
@@ -61,7 +63,8 @@ export function setConfigEndpoints(router) {
 			const mimeType = mimetype.lookup(ext) || 'application/octet-stream'
 			res.setHeader('Content-Type', mimeType)
 			res.send(fileContent)
-		} catch (error) {
+		}
+		catch (error) {
 			if (error.code === 'ENOENT')
 				res.status(404).json({ message: 'File not found' })
 			else {

@@ -209,7 +209,8 @@ function loadReferenceMfcc() {
 		const { mtime } = statSync(refPath)
 		sentinelState.referenceFileMtime = mtime
 		return mfccs
-	} catch (err) {
+	}
+	catch (err) {
 		console.error(`❌ Failed to load reference audio: ${err.message}`)
 		return null
 	}
@@ -292,10 +293,12 @@ async function finishRecordingSession(now) {
 				result.logContextBefore.push(logEntry)
 				await RealityChannel.AddChatLogEntry({ name: '龙胆', ...result })
 			}
-		} catch (err) {
+		}
+		catch (err) {
 			console.error('🎤 Error during AI reply:', err)
 		}
-	} else {
+	}
+	else {
 		console.log('🎤 Voice not matched. Only recorded.')
 		await RealityChannel.AddChatLogEntry(logEntry)
 	}
@@ -413,8 +416,8 @@ function handleArmedState(frameData, now) {
 			console.log('💥 Detected continuous high volume! Starting recording...')
 			transitionToState('RECORDING', now)
 		}
-	} else
-		sentinelState.consecutiveLoudFrames = 0
+	}
+	else sentinelState.consecutiveLoudFrames = 0
 
 }
 
@@ -436,9 +439,9 @@ async function handleRecordingState(frameData, now) {
 			// 重置当前静音计数
 			stats.currentSilenceStreakFrames = 0
 		}
-	} else
-		// 还在静音中，累加计数
-		stats.currentSilenceStreakFrames++
+	}
+	// 还在静音中，累加计数
+	else stats.currentSilenceStreakFrames++
 
 
 	// --- 动态计算静音超时时长 ---
@@ -455,7 +458,8 @@ async function handleRecordingState(frameData, now) {
 	if (now - sentinelState.recordingStartTime >= CONFIG.timing.MAX_RECORDING_MS) {
 		console.log('🕒 Maximum recording duration reached.')
 		await finishRecordingSession(now)
-	} else if (now - sentinelState.lastLoudTime >= effectiveTimeoutMs) {
+	}
+	else if (now - sentinelState.lastLoudTime >= effectiveTimeoutMs) {
 		console.log(`🔇 Continuous silence detected (dynamic timeout: ${(effectiveTimeoutMs / 1000).toFixed(2)}s).`)
 		await finishRecordingSession(now)
 	}
@@ -473,7 +477,8 @@ async function restartRecorder() {
 		console.log('✅ Recorder restarted.')
 		sentinelState.recorderRetryCount = 0
 		return true
-	} catch (err) {
+	}
+	catch (err) {
 		console.error(`❌ Failed to restart recorder: ${err.message}.`)
 		sentinelState.recorderRetryCount++
 		return false
@@ -508,7 +513,8 @@ async function sentinelLoop() {
 				continue
 			}
 			frame = await sentinelState.recorder.read()
-		} catch (error) {
+		}
+		catch (error) {
 			if (!isRunning) return
 			console.error(`❌ Failed to read audio frame: ${error.message}.`)
 			if (sentinelState.recorderRetryCount < 5) {
@@ -516,7 +522,8 @@ async function sentinelLoop() {
 				await new Promise(resolve => setTimeout(resolve, 60 * 1000))
 				console.log('⏳ Attempting to restart recorder...')
 				if (!await restartRecorder()) continue
-			} else {
+			}
+			else {
 				console.error('❌ Recorder restart failed multiple times, stopping sentinel.')
 				isRunning = false
 			}
@@ -574,7 +581,8 @@ export async function checkVoiceSentinel() {
 				console.log('🔄 Detected voice reference file update, reloading features...')
 				sentinelState.referenceMfccs = loadReferenceMfcc() // This also updates the mtime in the state
 			}
-		} catch (err) {
+		}
+		catch (err) {
 			console.error('❌ Error checking voice reference file update, stopping sentinel:', err.message)
 			stopVoiceSentinel()
 		}
@@ -614,7 +622,8 @@ function startVoiceSentinel() {
 			console.error('❌ Sentinel main loop exited with error:', err)
 			stopVoiceSentinel()
 		})
-	} catch (err) {
+	}
+	catch (err) {
 		console.error(`❌ Failed to start recorder: ${err.message}`)
 		isRunning = false
 	}

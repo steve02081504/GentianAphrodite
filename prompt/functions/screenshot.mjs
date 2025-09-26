@@ -28,9 +28,7 @@ export async function ScreenshotPrompt(args, logical_results, prompt_struct, det
 		let qrcodes
 		try {
 			qrcodes = await decodeQrCodeFromBuffer(screenShot)
-		} catch (e) {
-			console.error(e)
-		}
+		} catch (e) { console.error(e) }
 		additional_chat_log.push({
 			name: 'system',
 			role: 'system',
@@ -50,9 +48,7 @@ export async function ScreenshotPrompt(args, logical_results, prompt_struct, det
 			}]
 		});
 		(((args.extension ??= {}).enable_prompts ??= {}).masterRecognize ??= {}).photo = true
-	} catch (e) {
-		console.error(e)
-	}
+	} catch (e) { console.error(e) }
 
 	return {
 		text: [],

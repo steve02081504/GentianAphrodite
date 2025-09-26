@@ -27,7 +27,8 @@ const saveFile = async (fileName, blob, statusElement) => {
 		statusElement.textContent = geti18n('GentianAphrodite.config.file_saved', { fileName })
 		console.log('File saved successfully', result)
 		return true
-	} catch (error) {
+	}
+	catch (error) {
 		console.error('Error saving file:', error)
 		statusElement.textContent = geti18n('GentianAphrodite.config.save_failed', { errorMessage: error.message })
 		return false
@@ -54,7 +55,8 @@ const saveRawAudio = async (fileName, audioBuffer, statusElement) => {
 		statusElement.textContent = geti18n('GentianAphrodite.config.file_saved', { fileName })
 		console.log('Audio file saved successfully', result)
 		return true
-	} catch (error) {
+	}
+	catch (error) {
 		console.error('Error saving audio file:', error)
 		statusElement.textContent = geti18n('GentianAphrodite.config.save_failed', { errorMessage: error.message })
 		return false
@@ -95,25 +97,29 @@ const loadPreview = async (filePath, element, statusElement, type) => {
 			if (type === 'audio') {
 				element.classList.remove('hidden')
 				statusElement.textContent = geti18n('GentianAphrodite.config.preview_loaded')
-			} else if (type === 'photo') {
+			}
+			else if (type === 'photo') {
 				element.classList.add('hidden') // Keep it hidden by default
 				statusElement.textContent = geti18n('GentianAphrodite.config.reference_photo_set_click_to_toggle')
 				statusElement.classList.add('cursor-pointer', 'hover:underline')
 				statusElement.onclick = () => element.classList.toggle('hidden')
-			} else
-				statusElement.textContent = geti18n('GentianAphrodite.config.preview_loaded')
+			}
+			else statusElement.textContent = geti18n('GentianAphrodite.config.preview_loaded')
 
-		} else if (response.status === 404) {
+		}
+		else if (response.status === 404) {
 			statusElement.textContent = geti18n('GentianAphrodite.config.no_reference_file_set')
 			if (type === 'photo') {
 				statusElement.classList.remove('cursor-pointer', 'hover:underline')
 				statusElement.onclick = null
 			}
-		} else {
+		}
+		else {
 			const error = await response.json()
 			throw new Error(error.message || `Failed to load ${type}`)
 		}
-	} catch (error) {
+	}
+	catch (error) {
 		console.error(`Error loading ${type}:`, error)
 		statusElement.textContent = geti18n('GentianAphrodite.config.load_preview_failed', { errorMessage: error.message })
 	}
@@ -134,7 +140,8 @@ const resampleAudio = async webmBlob => {
 		source.connect(offlineContext.destination)
 		source.start(0)
 		return await offlineContext.startRendering()
-	} catch (error) {
+	}
+	catch (error) {
 		console.error('Failed to process audio:', error)
 		throw new Error(geti18n('GentianAphrodite.config.audio_processing_failed', { errorMessage: error.message }))
 	}
@@ -165,10 +172,12 @@ recordButton.addEventListener('click', async () => {
 					loadPreview('vars/master-voice-reference.wav', audioPlayback, audioStatus, 'audio')
 					audioStatus.textContent = geti18n('GentianAphrodite.config.new_reference_voice_saved_and_loaded')
 				}
-			} catch (error) {
+			}
+			catch (error) {
 				console.error('Error processing or saving recording:', error)
 				recordingStatus.textContent = geti18n('GentianAphrodite.config.processing_failed', { errorMessage: error.message })
-			} finally {
+			}
+			finally {
 				audioChunks = []
 				stream.getTracks().forEach(track => track.stop())
 			}
@@ -179,7 +188,8 @@ recordButton.addEventListener('click', async () => {
 		recordButton.classList.add('hidden')
 		stopButton.classList.remove('hidden')
 		recordingStatus.textContent = geti18n('GentianAphrodite.config.recording_in_progress')
-	} catch (error) {
+	}
+	catch (error) {
 		console.error('Error starting recording:', error)
 		recordingStatus.textContent = geti18n('GentianAphrodite.config.cannot_start_recording', { errorMessage: error.message })
 		if (stream)
@@ -216,7 +226,8 @@ cameraButton.addEventListener('click', async () => {
 		videoElement.srcObject = videoStream
 		cameraView.classList.remove('hidden')
 		uploadStatus.textContent = geti18n('GentianAphrodite.config.camera_on')
-	} catch (error) {
+	}
+	catch (error) {
 		console.error('Error accessing camera:', error)
 		uploadStatus.textContent = geti18n('GentianAphrodite.config.cannot_access_camera', { errorMessage: error.message })
 	}

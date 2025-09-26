@@ -228,7 +228,8 @@ export async function browserIntegration(result, args) {
 			commands_called.push(match[0])
 			try {
 				await processor.handler(match)
-			} catch (err) {
+			}
+			catch (err) {
 				handleError(err, processor.name)
 			}
 		}
@@ -276,7 +277,8 @@ ${util.inspect(data, { depth: null })}
 			result.logContextBefore.push(logEntry)
 			await channel.AddChatLogEntry({ name: '龙胆', ...result })
 			newCharReplay(result.content, channel.extension?.platform || 'chat')
-		} catch (error) {
+		}
+		catch (error) {
 			console.error('Error processing browser callback:', error)
 			await channel.AddChatLogEntry({
 				name: 'system',

@@ -163,7 +163,8 @@ export async function GetReply(args) {
 			}
 		}
 		return result
-	} catch (error) {
+	}
+	catch (error) {
 		console.error(`[ReplyGener] Error in GetReply for chat "${args.chat_name}":`, error)
 		return handleError(error, args)
 	}

@@ -99,7 +99,8 @@ async function onClipboardChange() {
 			lastContent = content
 			addToHistory({ type: 'text', content, timestamp: Date.now() })
 		}
-	} catch (error) {
+	}
+	catch (error) {
 		lastContent = '' // 如果剪贴板内容不是文本，则重置
 	}
 }

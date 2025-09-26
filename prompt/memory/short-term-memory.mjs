@@ -251,7 +251,8 @@ export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct
 			finalTopRelevant.push(candidateMemory)
 			allSelectedRelevantMemories.push(candidateMemory)
 			selectedIndices.add(candidateMemory.index)
-		} else if (finalNextRelevant.length < MAX_NEXT_RELEVANT) {
+		}
+		else if (finalNextRelevant.length < MAX_NEXT_RELEVANT) {
 			finalNextRelevant.push(candidateMemory)
 			allSelectedRelevantMemories.push(candidateMemory)
 			selectedIndices.add(candidateMemory.index)
@@ -310,7 +311,8 @@ export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct
 			finalRandomFlashback.push(selectedRandomItem)
 			// 从 *主* 候选池中移除该项，防止下次迭代再次选中
 			availableForRandomPool = availableForRandomPool.filter(item => item.index !== selectedRandomItem.index)
-		} else {
+		}
+		else {
 			// 如果 selectOneWeightedRandom 返回 null (理论上权重>0时不应发生，除非 currentCandidates 为空)，也停止
 			console.warn('[Memory] Failed to select a weighted random item, stopping random selection.')
 			break

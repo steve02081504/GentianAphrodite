@@ -24,7 +24,8 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 	try {
 		const botInfo = await tryFewTimes(() => bot.telegram.getMe())
 		setTelegramBotInfo(botInfo)
-	} catch (error) {
+	}
+	catch (error) {
 		console.error('[TelegramInterface] Could not get bot info (getMe):', error)
 		throw new Error('Bot initialization failed: Could not connect to Telegram or get bot info.')
 	}

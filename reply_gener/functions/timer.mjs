@@ -76,7 +76,8 @@ export async function timer(result, args) {
 					const timeInMs = parseDuration(timestr)
 					if (repeat) finalTrigger = `Date.now() - ${Date.now() + timeInMs} % ${timeInMs} <= 1000`
 					else finalTrigger = `Date.now() >= ${Date.now() + timeInMs}`
-				} catch (e) {
+				}
+				catch (e) {
 					systemLogContent += `跳过错误条目 (原因: ${reason}): 时间="${timestr}" 解析失败: ${e.message}\n`
 					console.warn('解析定时器时间时出错:', timestr, e)
 					continue
@@ -109,15 +110,16 @@ export async function timer(result, args) {
 						repeat: data.repeat,
 					})
 					successCount++
-				} catch (error) {
+				}
+				catch (error) {
 					systemLogContent += `设置定时器“${data.reason}”失败: ${error.stack}\n`
 					console.error(`设置定时器“${data.reason}”时出错：`, error)
 				}
 
 			systemLogContent += `已设置${successCount}个定时器。\n`
 			systemLogContent += '届时将触发新回复，现在你可以继续当前对话。\n'
-		} else
-			systemLogContent += '未找到有效的定时器条目进行设置。\n'
+		}
+		else systemLogContent += '未找到有效的定时器条目进行设置。\n'
 
 		AddLongTimeLog({
 			name: 'timer',
@@ -164,7 +166,8 @@ export async function timer(result, args) {
 				try {
 					removeTimer(args.username, 'chars', args.char_id, timerUid)
 					systemLogContent += `已成功删除定时器：“${reason}”\n`
-				} catch (error) {
+				}
+				catch (error) {
 					systemLogContent += `删除定时器“${reason}”失败: ${error.stack}\n`
 					console.error('删除定时器时出错:', error)
 				}

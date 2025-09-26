@@ -158,7 +158,8 @@ async function calculateNonOwnerTriggerIncrement(fountEntry, content, platformAP
 		if (isInFavor) possible += 90
 		else possible += 40
 		if (base_match_keys(content, [/[午安早晚]安/])) possible += 100
-	} else if (fountEntry.extension?.mentions_bot) {
+	}
+	else if (fountEntry.extension?.mentions_bot) {
 		possible += 40
 		if (base_match_keys(content, [/\?|？/, '怎么', '什么', '吗', /(大|小)还是/, /(还是|哪个)(大|小)/])) possible += 100
 		if (base_match_keys(content, rude_words))
@@ -225,13 +226,12 @@ async function calculateTriggerPossibility(fountEntry, platformAPI, channelId, c
 
 		// 如果主人取消了静音，isMutedChannel 可能已变为 false，若未被主人明确静音，则根据全局状态重新评估
 		isMutedChannel = (Date.now() - (channelMuteStartTimes[channelId] || 0)) < currentConfig.MuteDurationMs
-
-	} else { // 非主人消息
+	}
+	else { // 非主人消息
 		const nonOwnerResult = await calculateNonOwnerTriggerIncrement(fountEntry, content, platformAPI, possible, isInFavor, mentionedWithoutAt)
 		possible = nonOwnerResult.newPossible
 		if (nonOwnerResult.fuyanExit)  // 如果处于敷衍模式且遇到粗鲁言辞
 			return { possibility: 0, isMutedChannel, mentionedWithoutAt }
-
 	}
 
 	if (fountEntry.extension?.mentions_owner || base_match_keys(content, fountEntry.extension.OwnerNameKeywords)) {
@@ -463,7 +463,8 @@ export async function processNextMessageInQueue(myQueue, currentChannelLog, plat
 		const triggerResult = await checkQueueMessageTrigger(currentMessageToProcess, currentChannelLog, platformAPI, channelId)
 		if (triggerResult === TriggerResultType.EXIT) return 1
 		if (triggerResult === TriggerResultType.TRIGGER_REPLY) triggered = true
-	} else {
+	}
+	else {
 		const actualLastLogEntry = lastLogEntry
 		do {
 			const triggerResultForCurrent = await checkQueueMessageTrigger(currentMessageToProcess, currentChannelLog, platformAPI, channelId)

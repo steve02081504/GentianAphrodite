@@ -32,7 +32,8 @@ export async function ShortTermMemoryHandler(result, { AddLongTimeLog }) {
 				content: `短期记忆删除成功，删除了${num}条有关${keyword}的短期记忆，占比${num}/${all}=${(num / all * 100).toFixed(2)}%`,
 				files: []
 			})
-		} catch (e) {
+		}
+		catch (e) {
 			AddLongTimeLog({
 				name: 'short-term-memory',
 				role: 'tool',

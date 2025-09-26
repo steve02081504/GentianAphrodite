@@ -32,7 +32,8 @@ export async function discordMessageToFountChatLogEntry(message, interfaceConfig
 		try {
 			const fetchedUser = await message.author.fetch()
 			discordUserCache[message.author.id] = fetchedUser
-		} catch (fetchError) {
+		}
+		catch (fetchError) {
 			console.warn(`[DiscordInterface] Failed to fetch user info for ${message.author.id}:`, fetchError.message)
 		}
 
@@ -80,7 +81,8 @@ export async function discordMessageToFountChatLogEntry(message, interfaceConfig
 					mime_type: mimeType,
 					extension: { is_from_vision: true },
 				}
-			} catch (error) {
+			}
+			catch (error) {
 				console.error(`[DiscordInterface] Failed to download custom emoji ${emojiName}:`, error)
 				return null
 			}
@@ -111,7 +113,8 @@ export async function discordMessageToFountChatLogEntry(message, interfaceConfig
 					mime_type: await mimetypeFromBufferAndName(buffer, fileName),
 					extension: { is_from_vision: true },
 				}
-			} catch (error) {
+			}
+			catch (error) {
 				console.error(`[DiscordInterface] Failed to download sticker ${sticker.name}:`, error)
 				return null
 			}
@@ -141,7 +144,8 @@ export async function discordMessageToFountChatLogEntry(message, interfaceConfig
 					description: attachment.description || '',
 					mime_type: attachment.contentType || await mimetypeFromBufferAndName(buffer, attachment.name)
 				}
-			} catch (error) {
+			}
+			catch (error) {
 				console.error(`[DiscordInterface] Failed to download attachment ${attachment.name}:`, error)
 				return null
 			}
@@ -170,7 +174,8 @@ export async function discordMessageToFountChatLogEntry(message, interfaceConfig
 						mime_type: await mimetypeFromBufferAndName(buffer, fileName) || 'image/png',
 						extension: { is_from_vision: true }
 					}
-				} catch (error) {
+				}
+				catch (error) {
 					console.error(`[DiscordInterface] Failed to download embedded image from ${url}:`, error)
 					return null
 				}

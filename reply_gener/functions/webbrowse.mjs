@@ -63,7 +63,8 @@ ${question}
 				name: 'web-browse',
 				role: 'tool'
 			})
-		} catch (err) {
+		}
+		catch (err) {
 			AddLongTimeLog({
 				name: 'web-browse',
 				role: 'tool',

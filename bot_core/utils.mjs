@@ -88,7 +88,8 @@ export function mergeChatLogEntries(logEntries, mergeMessagePeriodMs) {
 					...currentEntry.extension?.platform_message_ids || []
 				]))
 			}
-		} else {
+		}
+		else {
 			newLog.push(lastEntry)
 			lastEntry = { ...currentEntry, extension: { ...currentEntry.extension, platform_message_ids: [...currentEntry.extension?.platform_message_ids || []] } }
 		}

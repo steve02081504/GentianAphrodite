@@ -78,9 +78,7 @@ export async function coderunner(result, args) {
 			const errors = []
 			for (const pathOrFileObj of pathOrFileObjs) try {
 				view_files.push(await toFileObj(pathOrFileObj))
-			} catch (e) {
-				errors.push(e)
-			}
+			} catch (e) { errors.push(e) }
 			if (!view_files_flag)
 				AddLongTimeLog(view_files_flag = {
 					role: 'tool',
@@ -98,9 +96,7 @@ export async function coderunner(result, args) {
 				const errors = []
 				for (const pathOrFileObj of pathOrFileObjs) try {
 					result.files.push(await toFileObj(pathOrFileObj))
-				} catch (e) {
-					errors.push(e)
-				}
+				} catch (e) { errors.push(e) }
 				if (!sent_files)
 					AddLongTimeLog(sent_files = {
 						role: 'tool',
@@ -271,7 +267,8 @@ export async function coderunner(result, args) {
 				charVisibility: [args.char_id],
 			})
 			result.content = result.content.replace(runner_regex_g, () => replacements[i++])
-		} catch (error) {
+		}
+		catch (error) {
 			console.error(`内联${shell_name}代码执行失败：`, error)
 			AddLongTimeLog({
 				name: '龙胆',

@@ -58,7 +58,8 @@ export async function googlesearch(result, { AddLongTimeLog }) {
 						if (item.description)
 							searchResults += `${item.description}\n`
 					})
-				} else searchResults = '未找到相关搜索结果。\n'
+				}
+				else searchResults = '未找到相关搜索结果。\n'
 
 				// Prepend query if multiple queries were issued
 				if (searchQueries.length > 1)

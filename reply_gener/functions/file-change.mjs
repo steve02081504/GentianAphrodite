@@ -24,8 +24,8 @@ export async function file_change(result, { AddLongTimeLog }) {
 			if (!tool_calling_log.content) {
 				tool_calling_log.content += logContent
 				AddLongTimeLog(tool_calling_log) // Add log only once if it wasn't added before
-			} else
-				tool_calling_log.content += logContent // Append if already added
+			}
+			else tool_calling_log.content += logContent // Append if already added
 
 			console.info('AI查看的文件：', paths)
 			const files = []
@@ -41,7 +41,8 @@ export async function file_change(result, { AddLongTimeLog }) {
 						files.push(fileObj)
 						file_content += `文件：${path}读取成功，放置于附件。\n`
 					}
-				} catch (err) {
+				}
+				catch (err) {
 					file_content += `读取文件失败：${path}\n\`\`\`\n${err.stack}\n\`\`\`\n`
 				}
 
@@ -62,8 +63,8 @@ export async function file_change(result, { AddLongTimeLog }) {
 		if (!tool_calling_log.content) {
 			tool_calling_log.content += logContent
 			AddLongTimeLog(tool_calling_log)
-		} else
-			tool_calling_log.content += logContent
+		}
+		else tool_calling_log.content += logContent
 
 		const replace_files_data = [] // Structure to hold data compatible with old logic
 
@@ -107,7 +108,8 @@ export async function file_change(result, { AddLongTimeLog }) {
 
 			if (replace_files_data.length === 0)
 				throw new Error('解析<replace-file>标签后，未找到任何有效的<file>或<replacement>操作。')
-		} catch (err) {
+		}
+		catch (err) {
 			console.error('Error parsing replace-file content with regex:', err)
 			AddLongTimeLog({
 				name: 'file-change',
@@ -127,7 +129,8 @@ export async function file_change(result, { AddLongTimeLog }) {
 			let originalContent
 			try {
 				originalContent = await fs.promises.readFile(resolvePath(path), 'utf-8')
-			} catch (err) {
+			}
+			catch (err) {
 				AddLongTimeLog({
 					name: 'file-change',
 					role: 'tool',
@@ -146,7 +149,8 @@ export async function file_change(result, { AddLongTimeLog }) {
 					const before = modifiedContent
 					modifiedContent = modifiedContent.replace(replaceRegex, replace)
 					if (before != modifiedContent) replace_count++
-				} catch (err) {
+				}
+				catch (err) {
 					console.error(`Replacement failed for path ${path}, search "${search}", regex: ${regex}:`, err)
 					failed_replaces.push({ ...rep, error: err.message || String(err) })
 				}
@@ -157,8 +161,8 @@ export async function file_change(result, { AddLongTimeLog }) {
 				system_content = `文件 ${path} 内容已修改，应用了 ${replacements.length} 项替换`
 				if (replace_count > 0) system_content += `，其中 ${replace_count} 个替换成功。\n`
 				else system_content += '，但内容未发生实际变化。\n'
-			} else
-				system_content = `文件 ${path} 内容未发生变化（尝试了 ${replacements.length} 项替换规则）。\n`
+			}
+			else system_content = `文件 ${path} 内容未发生变化（尝试了 ${replacements.length} 项替换规则）。\n`
 
 			if (failed_replaces.length) {
 				system_content += `以下 ${failed_replaces.length} 处替换操作失败：\n`
@@ -169,12 +173,13 @@ export async function file_change(result, { AddLongTimeLog }) {
 				system_content += `\n最终文件内容：\n\`\`\`\n${modifiedContent}\n\`\`\`\n若和你的预期不一致，考虑重新替换或使用override-file覆写修正。`
 				try {
 					await fs.promises.writeFile(resolvePath(path), modifiedContent, 'utf-8')
-				} catch (err) {
+				}
+				catch (err) {
 					system_content = `写入文件失败：${path}\n\`\`\`\n${err.stack}\n\`\`\`\n`
 				}
-			} else if (failed_replaces.length === 0)
-				// If content didn't change AND no errors, explicitly state that
-				system_content += '所有替换规则均未匹配到内容或未导致文件变化。'
+			}
+			// If content didn't change AND no errors, explicitly state that
+			else if (failed_replaces.length === 0) system_content += '所有替换规则均未匹配到内容或未导致文件变化。'
 
 			AddLongTimeLog({
 				name: 'file-change',
@@ -194,8 +199,8 @@ export async function file_change(result, { AddLongTimeLog }) {
 		if (!tool_calling_log.content) {
 			tool_calling_log.content += logContent
 			AddLongTimeLog(tool_calling_log)
-		} else
-			tool_calling_log.content += logContent
+		}
+		else tool_calling_log.content += logContent
 
 		console.info('AI写入的文件：', path, content)
 		try {
@@ -206,7 +211,8 @@ export async function file_change(result, { AddLongTimeLog }) {
 				content: `文件 ${path} 已写入`,
 				files: []
 			})
-		} catch (err) {
+		}
+		catch (err) {
 			AddLongTimeLog({
 				name: 'file-change',
 				role: 'tool',

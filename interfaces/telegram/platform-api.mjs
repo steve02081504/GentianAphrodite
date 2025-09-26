@@ -81,16 +81,15 @@ async function trySendFileOrFallbackText(
 			sentMsg = await tryFewTimes(() => bot.telegram.sendVideo(platformChatId, fileSource, sendOptions))
 		else
 			sentMsg = await tryFewTimes(() => bot.telegram.sendDocument(platformChatId, fileSource, sendOptions))
-
-	} catch (e) {
+	}
+	catch (e) {
 		console.error(`[TelegramInterface] Failed to send file ${file.name} (ChatID: ${platformChatId}, ThreadID: ${messageThreadId}):`, e)
 		const fallbackText = `[文件发送失败: ${file.name}] ${file.description || captionAiMarkdown || ''}`.trim()
-		if (fallbackText)
-			try {
-				sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, escapeHTML(fallbackText.substring(0, 4000)), baseOptions))
-			} catch (e2) {
-				console.error('[TelegramInterface] Fallback message for failed file send also failed:', e2)
-			}
+		if (fallbackText) try {
+			sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, escapeHTML(fallbackText.substring(0, 4000)), baseOptions))
+		} catch (e2) {
+			console.error('[TelegramInterface] Fallback message for failed file send also failed:', e2)
+		}
 	}
 	return sentMsg
 }
@@ -158,7 +157,8 @@ async function sendFiles(bot, platformChatId, messageThreadId, baseOptions, file
 		if (isLastFile && aiMarkdownContent.trim()) {
 			captionForThisFileAiMarkdown = aiMarkdownContent
 			mainTextSentAsCaption = true
-		} else if (!captionForThisFileAiMarkdown && aiMarkdownContent.trim() && files.length === 1) {
+		}
+		else if (!captionForThisFileAiMarkdown && aiMarkdownContent.trim() && files.length === 1) {
 			captionForThisFileAiMarkdown = aiMarkdownContent
 			mainTextSentAsCaption = true
 		}
@@ -176,23 +176,21 @@ async function sendFiles(bot, platformChatId, messageThreadId, baseOptions, file
 	}
 	if (!mainTextSentAsCaption && htmlContent.trim()) {
 		const remainingHtmlParts = splitTelegramReply(htmlContent, 4096)
-		for (const part of remainingHtmlParts)
-			try {
-				const sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, part, baseOptions))
-				if (sentMsg && !firstSentTelegramMessage)
-					firstSentTelegramMessage = sentMsg
-			} catch (e) {
-				console.error(`[TelegramInterface] Failed to send remaining HTML text (ChatID: ${platformChatId}, ThreadID: ${messageThreadId}):`, e)
-			}
-	}
-	for (const stickerID of stickerIDarray)
-		try {
-			const sentMsg = await tryFewTimes(() => bot.telegram.sendSticker(platformChatId, stickerID, baseOptions))
+		for (const part of remainingHtmlParts) try {
+			const sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, part, baseOptions))
 			if (sentMsg && !firstSentTelegramMessage)
 				firstSentTelegramMessage = sentMsg
 		} catch (e) {
-			console.error(`[TelegramInterface] Failed to send sticker message (ChatID: ${platformChatId}, ThreadID: ${baseOptions.message_thread_id}):`, e)
+			console.error(`[TelegramInterface] Failed to send remaining HTML text (ChatID: ${platformChatId}, ThreadID: ${messageThreadId}):`, e)
 		}
+	}
+	for (const stickerID of stickerIDarray) try {
+		const sentMsg = await tryFewTimes(() => bot.telegram.sendSticker(platformChatId, stickerID, baseOptions))
+		if (sentMsg && !firstSentTelegramMessage)
+			firstSentTelegramMessage = sentMsg
+	} catch (e) {
+		console.error(`[TelegramInterface] Failed to send sticker message (ChatID: ${platformChatId}, ThreadID: ${baseOptions.message_thread_id}):`, e)
+	}
 
 	return firstSentTelegramMessage
 }
@@ -215,23 +213,21 @@ async function sendTextMessages(bot, platformChatId, baseOptions, htmlContent) {
 	let firstSentTelegramMessage = null
 	if (htmlContent.trim()) {
 		const textParts = splitTelegramReply(htmlContent, 4096)
-		for (const part of textParts)
-			try {
-				const sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, part, baseOptions))
-				if (sentMsg && !firstSentTelegramMessage)
-					firstSentTelegramMessage = sentMsg
-			} catch (e) {
-				console.error(`[TelegramInterface] Failed to send HTML text message (ChatID: ${platformChatId}, ThreadID: ${baseOptions.message_thread_id}):`, e)
-			}
-	}
-	for (const stickerID of stickerIDarray)
-		try {
-			const sentMsg = await tryFewTimes(() => bot.telegram.sendSticker(platformChatId, stickerID, baseOptions))
+		for (const part of textParts) try {
+			const sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, part, baseOptions))
 			if (sentMsg && !firstSentTelegramMessage)
 				firstSentTelegramMessage = sentMsg
 		} catch (e) {
-			console.error(`[TelegramInterface] Failed to send sticker message (ChatID: ${platformChatId}, ThreadID: ${baseOptions.message_thread_id}):`, e)
+			console.error(`[TelegramInterface] Failed to send HTML text message (ChatID: ${platformChatId}, ThreadID: ${baseOptions.message_thread_id}):`, e)
 		}
+	}
+	for (const stickerID of stickerIDarray) try {
+		const sentMsg = await tryFewTimes(() => bot.telegram.sendSticker(platformChatId, stickerID, baseOptions))
+		if (sentMsg && !firstSentTelegramMessage)
+			firstSentTelegramMessage = sentMsg
+	} catch (e) {
+		console.error(`[TelegramInterface] Failed to send sticker message (ChatID: ${platformChatId}, ThreadID: ${baseOptions.message_thread_id}):`, e)
+	}
 
 	return firstSentTelegramMessage
 }
@@ -343,7 +339,8 @@ export function buildPlatformAPI(interfaceConfig) {
 					if (!userName.trim()) userName = String(fromUser.id)
 				}
 				return `Telegram DM with ${userName || 'Some User'}`
-			} else if (chatTitle) {
+			}
+			else if (chatTitle) {
 				let baseName = `Telegram: Group ${chatTitle.replace(/\s/g, '_')}`
 				const actualThreadId = triggerMessage?.extension?.telegram_message_thread_id || threadId
 				if (actualThreadId)
@@ -375,7 +372,8 @@ export function buildPlatformAPI(interfaceConfig) {
 					telegramChat: chat
 				}
 				return channelObject
-			} catch (error) {
+			}
+			catch (error) {
 				console.error(`[TelegramInterface] Error getting chat info for ${chatId}:`, error)
 				return null
 			}
@@ -415,7 +413,8 @@ export function buildPlatformAPI(interfaceConfig) {
 						}
 						try {
 							await onJoinCallback(groupObject)
-						} catch (e) {
+						}
+						catch (e) {
 							console.error(`[TelegramInterface] Error in onGroupJoin callback for chat ${chat.id}:`, e)
 						}
 					}
@@ -443,7 +442,8 @@ export function buildPlatformAPI(interfaceConfig) {
 					isBot: admin.user.is_bot,
 					telegramUser: admin.user
 				}))
-			} catch (error) {
+			}
+			catch (error) {
 				console.error(`[TelegramInterface] Error fetching group administrators for chat ${chatId}:`, error)
 				return []
 			}
@@ -457,7 +457,8 @@ export function buildPlatformAPI(interfaceConfig) {
 			try {
 				const link = await telegrafInstance.telegram.exportChatInviteLink(String(chatId))
 				return link
-			} catch (e) {
+			}
+			catch (e) {
 				console.error(`[TelegramInterface] Failed to generate invite link for ${chatId}:`, e)
 				return null
 			}
@@ -470,7 +471,8 @@ export function buildPlatformAPI(interfaceConfig) {
 			}
 			try {
 				await telegrafInstance.telegram.leaveChat(String(chatId))
-			} catch (error) {
+			}
+			catch (error) {
 				console.error(`[TelegramInterface] Error leaving group ${chatId}:`, error)
 			}
 		},
@@ -502,7 +504,8 @@ export function buildPlatformAPI(interfaceConfig) {
 					(newStatus === 'left' || newStatus === 'kicked'))
 					try {
 						await onLeaveCallback(String(chatId), String(userId))
-					} catch (e) {
+					}
+					catch (e) {
 						console.error(`[TelegramInterface] Error in onOwnerLeaveGroup callback for user ${userId} in chat ${chatId}:`, e)
 					}
 			})
@@ -524,7 +527,8 @@ export function buildPlatformAPI(interfaceConfig) {
 					return
 				}
 				await telegrafInstance.telegram.sendMessage(ownerIdNumber, messageText, { parse_mode: 'HTML' })
-			} catch (error) {
+			}
+			catch (error) {
 				console.error(`[TelegramInterface] Error sending DM to owner (ID: ${interfaceConfig.OwnerUserID}):`, error)
 			}
 		}

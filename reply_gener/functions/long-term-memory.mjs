@@ -79,7 +79,8 @@ export async function LongTermMemoryHandler(result, args) {
 					files: []
 				})
 				processed = true
-			} catch (err) {
+			}
+			catch (err) {
 				console.error(`Error adding long-term memory "${memoryName}":`, err)
 				AddLongTimeLog({
 					name: 'long-term-memory',
@@ -147,7 +148,8 @@ export async function LongTermMemoryHandler(result, args) {
 						files: []
 					})
 					processed = true
-				} catch (err) {
+				}
+				catch (err) {
 					console.error(`Error updating long-term memory "${memoryName}":`, err)
 					AddLongTimeLog({
 						name: 'long-term-memory',
@@ -166,7 +168,8 @@ export async function LongTermMemoryHandler(result, args) {
 				})
 				processed = true // Processed the tag, but it was invalid
 			}
-		} else {
+		}
+		else {
 			AddLongTimeLog({
 				name: 'long-term-memory',
 				role: 'tool',
@@ -199,7 +202,8 @@ export async function LongTermMemoryHandler(result, args) {
 				})
 
 				processed = true
-			} catch (err) {
+			}
+			catch (err) {
 				console.error(`Error deleting long-term memory "${memoryName}":`, err)
 				AddLongTimeLog({
 					name: 'long-term-memory',
@@ -243,7 +247,8 @@ export async function LongTermMemoryHandler(result, args) {
 				files: []
 			})
 			processed = true
-		} catch (err) {
+		}
+		catch (err) {
 			console.error('Error listing long-term memories:', err)
 			AddLongTimeLog({
 				name: 'long-term-memory',

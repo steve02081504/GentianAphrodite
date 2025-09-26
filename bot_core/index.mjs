@@ -126,10 +126,12 @@ async function handleMessageQueue(channelId, platformAPI) {
 
 	try {
 		await processQueue(myQueue, currentChannelLog, platformAPI, channelId)
-	} catch (error) {
+	}
+	catch (error) {
 		const contextMessage = myQueue.length > 0 ? myQueue[myQueue.length - 1] : currentChannelLog?.slice(-1)[0]
 		await handleError(error, platformAPI, contextMessage)
-	} finally {
+	}
+	finally {
 		if (channelMessageQueues[channelId]?.length === 0)
 			delete channelHandlers[channelId]
 	}
@@ -187,7 +189,8 @@ export async function processIncomingMessage(fountEntry, platformAPI, channelId)
 		channelMessageQueues[channelId].push(fountEntry)
 
 		ensureChannelHandlerIsRunning(channelId, platformAPI, fountEntry)
-	} catch (error) {
+	}
+	catch (error) {
 		await handleError(error, platformAPI, fountEntry)
 	}
 }

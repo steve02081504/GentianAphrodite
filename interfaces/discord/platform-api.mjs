@@ -57,23 +57,22 @@ export function buildPlatformAPI(interfaceConfig) {
 			}
 
 			let repliedToDiscordMessage
-			if (originalMessageEntry?.extension?.platform_message_ids?.length)
-				try {
-					const originalMessage = await /** @type {DiscordTextChannel | DiscordDMChannel} */ channel.messages.fetch(originalMessageEntry.extension.platform_message_ids.slice(-1)[0])
-					const mentionArray = [
-						`<@${originalMessage.author.id}>`,
-						`<@!${originalMessage.author.id}>`,
-						`@${originalMessage.author.username}`,
-						`@${originalMessage.author.displayName} (${originalMessage.author.username})`,
-						`@${originalMessage.author.displayName}`,
-					]
-					for (const mention of mentionArray)
-						if (fountReplyPayload.content.startsWith(mention)) {
-							repliedToDiscordMessage = originalMessage
-							fountReplyPayload.content = fountReplyPayload.content.slice(mention.length)
-							break
-						}
-				} catch { /* 原始消息可能已被删除，静默处理，后续发送时不使用 .reply() */ }
+			if (originalMessageEntry?.extension?.platform_message_ids?.length) try {
+				const originalMessage = await /** @type {DiscordTextChannel | DiscordDMChannel} */ channel.messages.fetch(originalMessageEntry.extension.platform_message_ids.slice(-1)[0])
+				const mentionArray = [
+					`<@${originalMessage.author.id}>`,
+					`<@!${originalMessage.author.id}>`,
+					`@${originalMessage.author.username}`,
+					`@${originalMessage.author.displayName} (${originalMessage.author.username})`,
+					`@${originalMessage.author.displayName}`,
+				]
+				for (const mention of mentionArray)
+					if (fountReplyPayload.content.startsWith(mention)) {
+						repliedToDiscordMessage = originalMessage
+						fountReplyPayload.content = fountReplyPayload.content.slice(mention.length)
+						break
+					}
+			} catch { /* 原始消息可能已被删除，静默处理，后续发送时不使用 .reply() */ }
 
 			const textContent = fountReplyPayload.content || ''
 			const filesToSend = (fountReplyPayload.files || []).map(f => ({
@@ -88,17 +87,16 @@ export function buildPlatformAPI(interfaceConfig) {
 			let firstSentDiscordMessage = null
 			const guildMembersMap = new Map()
 
-			if (channel.type !== ChannelType.DM && textContent.includes('@'))
-				try {
-					const guild = client.guilds.cache.get(channel.guildId)
-					if (guild) {
-						const membersCollection = guild.members.cache
-						membersCollection.forEach(member => {
-							guildMembersMap.set(member.user.username.toLowerCase(), member.id)
-							if (member.displayName) guildMembersMap.set(member.displayName.toLowerCase(), member.id)
-						})
-					}
-				} catch (err) { /* 静默处理，获取成员缓存失败通常不关键 */ }
+			if (channel.type !== ChannelType.DM && textContent.includes('@')) try {
+				const guild = client.guilds.cache.get(channel.guildId)
+				if (guild) {
+					const membersCollection = guild.members.cache
+					membersCollection.forEach(member => {
+						guildMembersMap.set(member.user.username.toLowerCase(), member.id)
+						if (member.displayName) guildMembersMap.set(member.displayName.toLowerCase(), member.id)
+					})
+				}
+			} catch (err) { /* 静默处理，获取成员缓存失败通常不关键 */ }
 
 			if (splitTexts.length === 0 && filesToSend.length > 0)
 				try {
@@ -107,24 +105,23 @@ export function buildPlatformAPI(interfaceConfig) {
 						: await /** @type {DiscordTextChannel | DiscordDMChannel} */ channel.send({ files: filesSplit[0] })
 					firstSentDiscordMessage = sentMsg
 				} catch (e) { console.error('[DiscordInterface] Failed to send file-only message:', e) }
-			else
-				for (let i = 0; i < splitTexts.length; i++) {
-					const textPart = formatEmbedMentions(splitTexts[i], guildMembersMap)
-					const isLastPart = i === splitTexts.length - 1
-					try {
-						const messageOptions = {
-							content: textPart,
-							files: isLastPart ? filesSplit[0] : [],
-							allowedMentions: { parse: ['users', 'roles'], repliedUser: !!repliedToDiscordMessage }
-						}
-						const sentMsg = repliedToDiscordMessage && i === 0
-							? await repliedToDiscordMessage.reply(messageOptions)
-							: await /** @type {DiscordTextChannel | DiscordDMChannel} */ channel.send(messageOptions)
+			else for (let i = 0; i < splitTexts.length; i++) {
+				const textPart = formatEmbedMentions(splitTexts[i], guildMembersMap)
+				const isLastPart = i === splitTexts.length - 1
+				try {
+					const messageOptions = {
+						content: textPart,
+						files: isLastPart ? filesSplit[0] : [],
+						allowedMentions: { parse: ['users', 'roles'], repliedUser: !!repliedToDiscordMessage }
+					}
+					const sentMsg = repliedToDiscordMessage && i === 0
+						? await repliedToDiscordMessage.reply(messageOptions)
+						: await /** @type {DiscordTextChannel | DiscordDMChannel} */ channel.send(messageOptions)
 
-						if (i === 0) firstSentDiscordMessage = sentMsg
-						if (repliedToDiscordMessage && i === 0) repliedToDiscordMessage = undefined
-					} catch (e) { console.error(`[DiscordInterface] Failed to send message segment ${i + 1}:`, e); break }
-				}
+					if (i === 0) firstSentDiscordMessage = sentMsg
+					if (repliedToDiscordMessage && i === 0) repliedToDiscordMessage = undefined
+				} catch (e) { console.error(`[DiscordInterface] Failed to send message segment ${i + 1}:`, e); break }
+			}
 
 			filesSplit.shift()
 			while (filesSplit.length) {
@@ -150,10 +147,9 @@ export function buildPlatformAPI(interfaceConfig) {
 		 */
 		async sendTyping(channelId) {
 			const channel = client.channels.cache.get(String(channelId))
-			if (channel?.isTextBased())
-				try {
-					await /** @type {DiscordTextChannel | DiscordDMChannel} */ channel.sendTyping()
-				} catch (e) { /* 发送 typing 状态失败通常不关键，静默处理 */ }
+			if (channel?.isTextBased()) try {
+				await /** @type {DiscordTextChannel | DiscordDMChannel} */ channel.sendTyping()
+			} catch (e) { /* 发送 typing 状态失败通常不关键，静默处理 */ }
 		},
 
 		/**
@@ -172,7 +168,8 @@ export function buildPlatformAPI(interfaceConfig) {
 					messages.map(msg => discordMessageToFountChatLogEntry(msg, interfaceConfig))
 				)).filter(Boolean).reverse()
 				return fountEntries
-			} catch (e) {
+			}
+			catch (e) {
 				console.error(`[DiscordInterface] Failed to fetch channel ${channelId} history:`, e)
 				return []
 			}
@@ -257,7 +254,8 @@ export function buildPlatformAPI(interfaceConfig) {
 				}
 				try {
 					await onLeaveCallback(member.guild.id, String(member.id))
-				} catch (e) {
+				}
+				catch (e) {
 					console.error(`[DiscordInterface] Error in onOwnerLeaveGroup callback for user ${member.id} in guild ${member.guild.id}:`, e)
 				}
 			})
@@ -278,7 +276,8 @@ export function buildPlatformAPI(interfaceConfig) {
 				}
 				try {
 					await onJoinCallback(groupObject)
-				} catch (e) {
+				}
+				catch (e) {
 					console.error(`[DiscordInterface] Error in onGroupJoin callback for guild ${guild.id}:`, e)
 				}
 			})
@@ -296,7 +295,8 @@ export function buildPlatformAPI(interfaceConfig) {
 					name: guild.name,
 					discordGuild: guild
 				}))
-			} catch (error) {
+			}
+			catch (error) {
 				console.error('[DiscordInterface] Error fetching joined groups:', error)
 				return []
 			}
@@ -322,7 +322,8 @@ export function buildPlatformAPI(interfaceConfig) {
 					isBot: member.user.bot,
 					discordMember: member
 				}))
-			} catch (error) {
+			}
+			catch (error) {
 				console.error(`[DiscordInterface] Error fetching group members for guild ${guildId}:`, error)
 				return []
 			}
@@ -361,11 +362,13 @@ export function buildPlatformAPI(interfaceConfig) {
 				if (targetChannel) {
 					const invite = await targetChannel.createInvite({ maxAge: 0, maxUses: 0 })
 					return invite.url
-				} else {
+				}
+				else {
 					console.warn(`[DiscordInterface] generateInviteLink: No suitable text channel found to create invite for guild ${guildId} with CreateInstantInvite permission.`)
 					return null
 				}
-			} catch (error) {
+			}
+			catch (error) {
 				console.error(`[DiscordInterface] Error generating invite link for guild ${guildId}:`, error)
 				return null
 			}
@@ -383,7 +386,8 @@ export function buildPlatformAPI(interfaceConfig) {
 					await guild.leave()
 				else
 					console.warn(`[DiscordInterface] leaveGroup: Guild not found: ${guildId}`)
-			} catch (error) {
+			}
+			catch (error) {
 				console.error(`[DiscordInterface] Error leaving guild ${guildId}:`, error)
 			}
 		},
@@ -420,7 +424,8 @@ export function buildPlatformAPI(interfaceConfig) {
 
 				console.warn(`[DiscordInterface] getGroupDefaultChannel: No suitable text channel found in guild ${guildId}`)
 				return null
-			} catch (error) {
+			}
+			catch (error) {
 				console.error(`[DiscordInterface] Error getting default channel for guild ${guildId}:`, error)
 				return null
 			}
@@ -454,12 +459,10 @@ export function buildPlatformAPI(interfaceConfig) {
 				}
 				try {
 					const ownerMember = await guild.members.fetch(ownerIdToUse).catch(() => null)
-					if (ownerMember)
-						groupsWithOwner.push(groupObject)
-					else
-						groupsWithoutOwner.push(groupObject)
-
-				} catch (e) {
+					if (ownerMember) groupsWithOwner.push(groupObject)
+					else groupsWithoutOwner.push(groupObject)
+				}
+				catch (e) {
 					console.warn(`[DiscordInterface] Error checking owner presence in guild ${guild.name} (ID: ${guild.id}): ${e.message}. Assuming owner not present.`)
 					groupsWithoutOwner.push(groupObject)
 				}
@@ -488,25 +491,23 @@ export function buildPlatformAPI(interfaceConfig) {
 
 				if (!ownerUser && interfaceConfig.OwnerUserName) {
 					console.warn(`[DiscordInterface] Owner user "${interfaceConfig.OwnerUserName}" not in cache/by ID, attempting to fetch across all guilds...`)
-					for (const guild of client.guilds.cache.values())
-						try {
-							const members = await guild.members.fetch()
-							const ownerMember = members.find(member => member.user.username === interfaceConfig.OwnerUserName)
-							if (ownerMember) {
-								ownerUser = ownerMember.user
-								break
-							}
-						} catch (guildFetchError) {
-							console.warn(`[DiscordInterface] Could not fetch members for guild ${guild.id} while searching for owner:`, guildFetchError.message)
+					for (const guild of client.guilds.cache.values()) try {
+						const members = await guild.members.fetch()
+						const ownerMember = members.find(member => member.user.username === interfaceConfig.OwnerUserName)
+						if (ownerMember) {
+							ownerUser = ownerMember.user
+							break
 						}
+					}
+					catch (guildFetchError) {
+						console.warn(`[DiscordInterface] Could not fetch members for guild ${guild.id} while searching for owner:`, guildFetchError.message)
+					}
 				}
 
-				if (ownerUser)
-					await ownerUser.send(messageText)
-				else
-					console.error(`[DiscordInterface] sendDirectMessageToOwner: Owner user ${interfaceConfig.OwnerUserName || resolvedOwnerId} not found.`)
-
-			} catch (error) {
+				if (ownerUser) await ownerUser.send(messageText)
+				else console.error(`[DiscordInterface] sendDirectMessageToOwner: Owner user ${interfaceConfig.OwnerUserName || resolvedOwnerId} not found.`)
+			}
+			catch (error) {
 				console.error('[DiscordInterface] Error sending DM to owner:', error)
 			}
 		}

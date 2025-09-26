@@ -170,7 +170,8 @@ Step 2: <步骤2主题>
 					name: '龙胆',
 					role: 'char',
 				})
-			} else {
+			}
+			else {
 				console.warn(`Deep-research: Initial Plan Failed or Malformed (Attempt ${retries}/${initial_plan_max_retries}). Received:\n${planText}`)
 				thinking_prompt_struct.chat_log.push({
 					content: planText,
@@ -197,7 +198,8 @@ Step 2: <步骤2主题>
 			})
 			return true
 		}
-	} catch (error) {
+	}
+	catch (error) {
 		console.error('Deep-research: Error during initial plan generation:', error)
 		AddLongTimeLog({
 			content: `在生成初始计划时遇到错误: ${error.message}. 思考中止。`,
@@ -361,7 +363,8 @@ ${!isFinalCycle ? `
 						role: 'tool',
 					})
 					return true // Finished successfully
-				} else if (summary.startsWith('deep-research-failed:')) {
+				}
+				else if (summary.startsWith('deep-research-failed:')) {
 					const endTime = Date.now()
 					const thinkingTime = (endTime - startTime) / 1000
 					const reason = summary.substring('deep-research-failed:'.length).trim()
@@ -372,7 +375,8 @@ ${!isFinalCycle ? `
 						role: 'tool',
 					})
 					return true // Finished with failure
-				} else if (!isFinalCycle && summary.startsWith('deep-research-replan:')) {
+				}
+				else if (!isFinalCycle && summary.startsWith('deep-research-replan:')) {
 					const replanContent = summary.substring('deep-research-replan:'.length).trim()
 					const newPlan = parsePlan(replanContent) // Attempt to parse new plan using the tolerant parser
 
@@ -382,7 +386,8 @@ ${!isFinalCycle ? `
 						console.info(`Deep-research: Cycle ${planningCycles}, Replanning successful. New Plan:\n${newPlan.map(p => `Step ${p.step}: ${p.topic}`).join('\n')}`)
 						plan = newPlan // Adopt the new plan (results are reset by parsePlan)
 						continue replan // Start the next planning cycle with the new plan
-					} else {
+					}
+					else {
 						console.warn(`Deep-research: Replan requested, but plan format invalid or missing in response (Attempt ${summaryRetries}/${summary_max_retries}). Content:\n${replanContent}`)
 						// Add specific retry message explaining the required replan format
 						thinking_prompt_struct.chat_log.push({
@@ -441,7 +446,8 @@ ${summaryRaw}
 			role: 'tool',
 		})
 		return true
-	} catch (error) {
+	}
+	catch (error) {
 		console.error('Deep-research: Error during planning/execution cycle:', error)
 		const endTime = Date.now()
 		const thinkingTime = (endTime - startTime) / 1000

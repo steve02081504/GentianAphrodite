@@ -76,7 +76,8 @@ CPU信息：
 					}
 				}
 			})
-		} else if (process.platform === 'linux') {
+		}
+		else if (process.platform === 'linux') {
 			// linux 平台使用 df 命令获取磁盘信息
 			const disks = (await exec('df -h')).stdout
 			disks.split('\n').slice(1).forEach(line => {
@@ -121,7 +122,8 @@ ${w.isActive ? `当前活跃窗口
 路径：${w.path}
 `).join('\n')}
 `
-	} catch (e) {
+	}
+	catch (e) {
 		result += `\
 无法获取当前打开的窗口信息：${e.message}
 `
@@ -139,9 +141,8 @@ ${w.isActive ? `当前活跃窗口
 					content = entry.content
 					if (content.length > 1024)
 						content = content.substring(0, 1024) + '...（已因过长而截断，如需详细内容请自行获取）'
-
-				} else if (entry.type === 'image')
-					content = '[图片内容]'
+				}
+				else if (entry.type === 'image') content = '[图片内容]'
 
 				result += `\
 ${index + 1}. 类型: ${entry.type}, 时间: ${new Date(entry.timestamp).toLocaleString()}

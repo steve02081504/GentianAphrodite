@@ -58,9 +58,7 @@ export async function CameraPrompt(args, logical_results, prompt_struct, detail_
 		let qrcodes
 		try {
 			qrcodes = await decodeQrCodeFromBuffer(screenShot)
-		} catch (e) {
-			console.error(e)
-		}
+		} catch (e) { console.error(e) }
 		additional_chat_log.push({
 			name: 'system',
 			role: 'system',
@@ -80,9 +78,7 @@ export async function CameraPrompt(args, logical_results, prompt_struct, detail_
 			}]
 		});
 		(((args.extension ??= {}).enable_prompts ??= {}).masterRecognize ??= {}).photo = true
-	} catch (e) {
-		console.error(e)
-	}
+	} catch (e) { console.error(e) }
 
 	return {
 		text: [],

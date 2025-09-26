@@ -105,7 +105,8 @@ async function getAISuggestionForError(error, errorMessageForRecord, platformAPI
 			extension: { platform: contextMessage?.extension?.platform || 'unknown' }
 		}
 		return await GentianAphrodite.interfaces.chat.GetReply(selfRepairRequest)
-	} catch (anotherError) {
+	}
+	catch (anotherError) {
 		const anotherErrorStack = anotherError.stack || anotherError.message
 		const currentChannelId = contextMessage?.extension?.platform_channel_id
 		const isHypnosisContextForError = !!(inHypnosisChannelId && currentChannelId && currentChannelId === inHypnosisChannelId)
@@ -129,10 +130,9 @@ async function sendErrorReport(fullReplyContent, platformAPI, originalError, con
 	try {
 		if (contextMessage?.extension?.platform_channel_id)
 			await sendAndLogReply({ content: fullReplyContent }, platformAPI, contextMessage.extension.platform_channel_id, undefined)
-		else
-			platformAPI.logError(new Error('[BotLogic] Error occurred (no context channel to reply): ' + fullReplyContent.substring(0, 1000) + '...'), undefined)
-
-	} catch (sendError) {
+		else platformAPI.logError(new Error('[BotLogic] Error occurred (no context channel to reply): ' + fullReplyContent.substring(0, 1000) + '...'), undefined)
+	}
+	catch (sendError) {
 		platformAPI.logError(sendError, contextMessage)
 		console.error('[BotLogic] Failed to send error notification. Original error:', originalError, 'Send error:', sendError)
 	}

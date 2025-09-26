@@ -10,7 +10,8 @@ async function bufferToImageData(buffer) {
 			width: image.width(),
 			height: image.height()
 		}
-	} catch (error) {
+	}
+	catch (error) {
 		console.error('Failed to load image buffer:', error)
 		return null
 	}
@@ -60,15 +61,13 @@ export async function decodeQrCodeFromBuffer(buffer) {
 					decodedContents.push(decoded.content) // 收集解码成功的内容
 
 				succeed = true // 标记成功，有助于优化探测器后续查找
-			} catch (decodeError) {
-				// 解码失败，忽略这个区域，继续查找下一个
-				// console.debug('QR Code decode failed for one region, skipping...');
-			}
+			} catch (decodeError) { /* 解码失败，忽略这个区域，继续查找下一个 */ }
 
 			// 继续查找下一个可能的区域，并告知探测器上一个是否成功
 			current = detected.next(succeed)
 		}
-	} catch (error) {
+	}
+	catch (error) {
 		// 处理灰度化、二值化或探测过程中的错误
 		console.error('Error during QR code processing:', error)
 	}

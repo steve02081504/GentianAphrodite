@@ -50,7 +50,8 @@ export function telegramEntitiesToAiMarkdown(text, entities, botInfo, replyToMes
 			const isTruncated = repliedTextContent.length > maxLength
 			const previewText = repliedTextContent.substring(0, maxLength) + (isTruncated ? '...' : '')
 			repliedPreview = telegramEntitiesToAiMarkdown(previewText, repliedEntities, undefined, undefined)
-		} else if (replyToMessage.photo)
+		}
+		else if (replyToMessage.photo)
 			repliedPreview = '[图片]'
 		else if (replyToMessage.video)
 			repliedPreview = '[视频]'
@@ -192,7 +193,8 @@ export function aiMarkdownToTelegramHtml(aiMarkdownText) {
 				inBlockquote = true
 			}
 			processedLines.push(quoteContent)
-		} else {
+		}
+		else {
 			if (inBlockquote) {
 				processedLines.push('</blockquote>')
 				inBlockquote = false
@@ -225,7 +227,8 @@ export function splitTelegramReply(reply, split_length = 4096) {
 		if (currentMessage.length + (currentMessage ? 1 : 0) + line.length <= split_length) {
 			if (currentMessage) currentMessage += '\n'
 			currentMessage += line
-		} else {
+		}
+		else {
 			if (currentMessage) messages.push(currentMessage)
 			currentMessage = line
 
@@ -234,8 +237,8 @@ export function splitTelegramReply(reply, split_length = 4096) {
 				if (parts.length > 1) {
 					messages.push(...parts.slice(0, -1))
 					currentMessage = parts[parts.length - 1]
-				} else if (parts.length === 1)
-					currentMessage = parts[0]
+				}
+				else if (parts.length === 1) currentMessage = parts[0]
 			}
 		}
 

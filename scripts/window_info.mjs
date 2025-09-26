@@ -98,7 +98,8 @@ return $windowpid
 					// 对于尚不支持的 Wayland 桌面环境，打印警告信息。
 					console.warn(`Cannot get active window: your Wayland desktop environment ("${desktop || 'unknown'}") is not yet supported.`)
 					return null
-				} else { // X11 session
+				}
+				else { // X11 session
 					const xpropPath = await where_command('xprop')
 					if (!xpropPath) {
 						console.warn('xprop command not found, cannot get active window on this X11 session.')
@@ -115,7 +116,8 @@ return $windowpid
 			default:
 				return null
 		}
-	} catch (e) {
+	}
+	catch (e) {
 		// 捕获并记录执行过程中发生的任何错误。
 		console.error('Error getting active window identifier:', e instanceof Error ? e.message : String(e))
 		return null
@@ -157,32 +159,33 @@ async function getAllWindows() {
 			// 直接输出 JSON 格式可以有效避免手动解析字符串的复杂性和潜在错误，
 			// 尤其是在窗口标题包含特殊字符时。
 			const command = `osascript -l JavaScript -e '
-    function run() {
-        const systemEvents = Application("System Events");
-        const procs = systemEvents.processes.whose({
-            backgroundOnly: false,
-            name: {"<>": "Finder"} // 排除 Finder 自身
-        });
+function run() {
+	const systemEvents = Application("System Events")
+	const procs = systemEvents.processes.whose({
+		backgroundOnly: false,
+		name: {"<>": "Finder"} // 排除 Finder 自身
+	})
 
-        const windows = [];
-        for (let i = 0; i < procs.length; i++) {
-            const p = procs[i];
-            try {
-                if (p.windows.length > 0) {
-                    windows.push({
-                        pid: p.unixId(),
-                        processName: p.name(),
-                        path: p.applicationFile().posixPath(),
-                        title: p.windows[0].name(),
-                        identifier: p.unixId()
-                    });
-                }
-            } catch (e) {
-                // 忽略无法访问的进程 (例如权限不足)
-            }
-        }
-        return JSON.stringify(windows);
-    }
+	const windows = []
+	for (let i = 0; i < procs.length; i++) {
+		const p = procs[i]
+		try {
+			if (p.windows.length > 0) {
+				windows.push({
+					pid: p.unixId(),
+					processName: p.name(),
+					path: p.applicationFile().posixPath(),
+					title: p.windows[0].name(),
+					identifier: p.unixId()
+				})
+			}
+		}
+		catch (e) {
+			// 忽略无法访问的进程 (例如权限不足)
+		}
+	}
+	return JSON.stringify(windows)
+}
 '`
 			const { stdout, stderr, code } = await bash_exec(command)
 			if (code !== 0 || !stdout)
@@ -213,7 +216,8 @@ async function getAllWindows() {
 					'Support for GNOME/KDE is planned for a future update. ' +
 					'Currently, only sway/hyprland are supported.'
 				)
-			} else { // X11 session
+			}
+			else { // X11 session
 				const wmctrlPath = await where_command('wmctrl')
 				if (!wmctrlPath) throw new Error('wmctrl is required but not found for this X11 session.')
 
@@ -252,7 +256,8 @@ async function getAllWindows() {
 							title: title.trim(),
 							identifier: windowId,
 						}
-					} catch (e) {
+					}
+					catch (e) {
 						// 捕获在处理单个 PID 过程中可能发生的意外错误。
 						console.error(`An unexpected error occurred while processing PID ${pid}:`, e)
 						return null

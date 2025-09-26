@@ -59,7 +59,8 @@ export async function NewBrowser(configs) {
 			console.info('Successfully launched browser: Edge')
 			return browser
 		}
-	} catch (error) {
+	}
+	catch (error) {
 		console.warn(`Failed to launch Edge: ${error.stack}.`)
 	}
 
@@ -116,7 +117,8 @@ export async function MarkdownWebFetch(url) {
 						const style = window.getComputedStyle(el)
 						if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0')
 							el.remove()
-					} catch (e) {
+					}
+					catch (e) {
 						// 忽略获取样式的错误 (例如，对于某些特殊元素)
 					}
 				})
@@ -237,7 +239,8 @@ export function getUrlFilename(url, contentDisposition) {
 			try {
 				const filename = decodeURIComponent(filenameStarMatch[2])
 				return path.basename(filename) // 清理以移除潜在的路径组件
-			} catch (e) {
+			}
+			catch (e) {
 				console.warn(`从 Content-Disposition 解码 filename* 失败: '${filenameStarMatch[2]}'`, e)
 				// 继续尝试 filename=
 			}
@@ -268,16 +271,13 @@ export function getUrlFilename(url, contentDisposition) {
 
 				const lastSlashIndex = pathname.lastIndexOf('/')
 				// 检查是否找到了 lastSlashIndex 并且其后有内容
-				if (lastSlashIndex !== -1 && lastSlashIndex < pathname.length - 1) {
-					const filenameSegment = pathname.substring(lastSlashIndex + 1)
-					// URL.pathname 的组件已经是百分比解码的。
-					// path.basename() 用于最终清理 (例如，移除可能存在的 . 和 ..)
-					return path.basename(filenameSegment)
-				} else if (lastSlashIndex === -1 && pathname)
-					// pathname 中没有斜杠，所以 pathname 本身就是文件名 (例如，从 "http://host/file.txt" 得到 "file.txt")
-					return path.basename(pathname)
+				if (lastSlashIndex !== -1 && lastSlashIndex < pathname.length - 1)
+					return path.basename(pathname.substring(lastSlashIndex + 1))
+				// pathname 中没有斜杠，所以 pathname 本身就是文件名 (例如，从 "http://host/file.txt" 得到 "file.txt")
+				else if (lastSlashIndex === -1 && pathname) return path.basename(pathname)
 			}
-		} catch (e) {
+		}
+		catch (e) {
 			console.warn(`使用 new URL() 解析 URL 出错: '${url}'`, e)
 			// 对于 new URL() 可能无法处理的 URL (例如，格式错误) 的回退方案
 			let pathPart = url
@@ -298,7 +298,8 @@ export function getUrlFilename(url, contentDisposition) {
 					try {
 						// 解码 URI 组件，然后使用 path.basename 进行清理
 						return path.basename(decodeURIComponent(filenameFromPath))
-					} catch (decodeError) {
+					}
+					catch (decodeError) {
 						// 如果解码失败，尝试返回原始段 (如果它很简单且不包含有问题字符)
 						if (!/[\0-\x1f"%*:<>?\\|\x7f]/.test(filenameFromPath))
 							return path.basename(filenameFromPath) // 即使未解码也进行清理
@@ -388,7 +389,8 @@ export async function getUrlMetadata(url) {
 				try {
 					const absoluteFaviconUrl = new URL(favicon, url).href
 					addMeta('favicon', absoluteFaviconUrl)
-				} catch (e) {
+				}
+				catch (e) {
 					console.warn(`无法解析favicon的URL: ${favicon}`, e)
 				}
 
@@ -418,7 +420,8 @@ export async function getUrlMetadata(url) {
 		else
 			console.warn(`Failed to get metadata for ${url}:`, e)
 		return null
-	} finally {
+	}
+	finally {
 		clearTimeout(timeoutId)
 	}
 }

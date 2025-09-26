@@ -48,7 +48,8 @@ export async function SimplifiyContent(content) {
 			try {
 				content = (await translate(content, { from: 'auto', to: 'zh-CN' })).text
 				break
-			} catch (e) {
+			}
+			catch (e) {
 				if (e.name == 'TooManyRequestsError') {
 					console.info('Translate API rate limit exceeded, waiting 5 second before retrying')
 					await new Promise(resolve => setTimeout(resolve, 5000))

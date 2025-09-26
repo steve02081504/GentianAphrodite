@@ -64,7 +64,8 @@ async function getAISuggestionForError(error, errorMessageForRecord, originalArg
 		}
 
 		return await GentianAphrodite.interfaces.chat.GetReply(selfRepairRequest)
-	} catch (anotherError) {
+	}
+	catch (anotherError) {
 		const anotherErrorStack = anotherError.stack || anotherError.message
 		const isHypnosisContextForError = !!originalArgs.chat_scoped_char_memory?.in_hypnosis
 

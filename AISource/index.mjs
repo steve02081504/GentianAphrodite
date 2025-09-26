@@ -95,7 +95,8 @@ export async function OrderedAISourceCalling(name, caller, trytimes = 3, error_l
 			try {
 				console.info('OrderedAISourceCalling', name, (await getPartInfo(last_used_AIsource = source))?.name)
 				return await caller(source)
-			} catch (err) {
+			}
+			catch (err) {
 				await error_logger(lastErr = err)
 			}
 

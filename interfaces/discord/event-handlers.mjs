@@ -81,11 +81,13 @@ export async function registerEventHandlers(interfaceConfig, discordPlatformAPI)
 		resolvedOwnerId = interfaceConfig.OwnerDiscordID
 		try {
 			await client.users.fetch(resolvedOwnerId)
-		} catch (e) {
+		}
+		catch (e) {
 			console.error(`[DiscordInterface] Failed to fetch owner user by OwnerDiscordID ${resolvedOwnerId}. Ensure the ID is correct.`, e)
 			resolvedOwnerId = null
 		}
-	} else if (interfaceConfig.OwnerUserName) {
+	}
+	else if (interfaceConfig.OwnerUserName) {
 		let found = false
 		for (const guild of client.guilds.cache.values())
 			try {
@@ -96,15 +98,15 @@ export async function registerEventHandlers(interfaceConfig, discordPlatformAPI)
 					found = true
 					break
 				}
-			} catch (e) {
+			}
+			catch (e) {
 				console.warn(`[DiscordInterface] Error fetching members for guild ${guild.name} while resolving OwnerID: ${e.message}. This might be expected for some guilds due to permissions.`)
 			}
 
-		if (!found)
-			console.warn(`[DiscordInterface] Could not resolve OwnerID for UserName "${interfaceConfig.OwnerUserName}" from shared guilds. Owner-specific features might be limited.`)
+		if (!found) console.warn(`[DiscordInterface] Could not resolve OwnerID for UserName "${interfaceConfig.OwnerUserName}" from shared guilds. Owner-specific features might be limited.`)
 
-	} else
-		console.warn('[DiscordInterface] Neither OwnerDiscordID nor OwnerUserName are configured. Owner-specific features will not work.')
+	}
+	else console.warn('[DiscordInterface] Neither OwnerDiscordID nor OwnerUserName are configured. Owner-specific features will not work.')
 
 	setResolvedOwnerId(resolvedOwnerId)
 }

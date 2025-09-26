@@ -34,10 +34,9 @@ async function checkOwnerPresence(group, platformAPI, ownerOverride = null) {
 				String(member.id) === String(ownerIdToCompare) ||
 				(member.username && ownerUsernameToCompare && member.username.toLowerCase() === ownerUsernameToCompare.toLowerCase())
 			)
-
 		console.warn(`[BotLogic] Could not retrieve members for group ${group.id} on ${platformAPI.name}. Assuming owner is present to avoid leaving due to network issues.`)
-	} else
-		console.warn(`[BotLogic] getGroupMembers not implemented for platform ${platformAPI.name}. Cannot check owner presence in group ${group.id}. Skipping.`)
+	}
+	else console.warn(`[BotLogic] getGroupMembers not implemented for platform ${platformAPI.name}. Cannot check owner presence in group ${group.id}. Skipping.`)
 
 	return true // 如果检查失败，默认主人存在（防止网络波动时乱退群）
 }
@@ -103,11 +102,11 @@ async function generateInsult(group, platformAPI, defaultChannel, channelHistory
 
 	try {
 		const aiInsultReply = await GentianAphrodite.interfaces.chat.GetReply(insultRequest)
-		if (aiInsultReply && aiInsultReply.content)
-			return aiInsultReply.content
+		if (aiInsultReply && aiInsultReply.content) return aiInsultReply.content
 
 		console.warn('[BotLogic] AI did not generate insult content, using default.')
-	} catch (e) {
+	}
+	catch (e) {
 		console.error(`[BotLogic] AI insult generation failed for group ${group.id}:`, e)
 	}
 	return isInHypnosis ? '…' : '？' // 默认侮辱内容
@@ -140,14 +139,13 @@ async function sendOwnerInviteNotifications(group, platformAPI, defaultChannel, 
 				if (otherGroupDefaultChannel && platformAPI.sendMessage)
 					try {
 						await platformAPI.sendMessage(otherGroupDefaultChannel.id, { content: `@${ownerUsernameToCompare} ` + inviteMessage })
-					} catch (e) {
+					}
+					catch (e) {
 						console.error(`[BotLogic] Failed to send invite message to owner in group ${otherGroup.name}:`, e)
 					}
-
 			})
-
-	} else
-		console.warn(`[BotLogic] Could not generate or use invite link for group ${group.id}. InviteLink:`, inviteLink)
+	}
+	else console.warn(`[BotLogic] Could not generate or use invite link for group ${group.id}. InviteLink:`, inviteLink)
 
 }
 
@@ -168,7 +166,8 @@ async function sendInsultAndLeaveGroup(group, platformAPI, defaultChannel) {
 	if (platformAPI.sendMessage && insultMessageContent)
 		try {
 			await platformAPI.sendMessage(defaultChannel.id, { content: insultMessageContent })
-		} catch (e) {
+		}
+		catch (e) {
 			console.error(`[BotLogic] Failed to send insult to group ${group.id}:`, e)
 		}
 
@@ -231,7 +230,8 @@ async function handleGroupCheck(group, platformAPI, ownerOverride = null) {
 			return
 		}
 		await handleOwnerNotInGroup(group, platformAPI, defaultChannel)
-	} catch (error) {
+	}
+	catch (error) {
 		console.error(`[BotLogic] Error in handleGroupCheck for group ${group.id} on ${platformAPI.name}:`, error)
 	}
 }
@@ -266,12 +266,11 @@ async function performInitialGroupOwnerCheck(platformAPI) {
 						await new Promise(resolve => setTimeout(resolve, 2000)) // 错开检查
 						await handleGroupCheck(group, platformAPI)
 					}
-
 				usedOptimizedCheck = true
-			} else
-				console.warn(`[BotLogic] Optimized owner presence check returned null for ${platformAPI.name}. Falling back if alternative is available.`)
-
-		} catch (e) {
+			}
+			else console.warn(`[BotLogic] Optimized owner presence check returned null for ${platformAPI.name}. Falling back if alternative is available.`)
+		}
+		catch (e) {
 			console.error(`[BotLogic] Error calling getOwnerPresenceInGroups for ${platformAPI.name}:`, e)
 		}
 
@@ -283,8 +282,8 @@ async function performInitialGroupOwnerCheck(platformAPI) {
 					await new Promise(resolve => setTimeout(resolve, 2000)) // 错开检查
 					await handleGroupCheck(group, platformAPI)
 				}
-
-		} catch (e) {
+		}
+		catch (e) {
 			console.error(`[BotLogic] Error fetching joined groups for ${platformAPI.name} fallback check:`, e)
 		}
 	else if (!usedOptimizedCheck)
@@ -303,10 +302,10 @@ function setupOnOwnerLeaveGroupHandler(platformAPI) {
 			if (ownerIdForPlatform && String(leftUserId) === String(ownerIdForPlatform))
 				try {
 					await platformAPI.leaveGroup?.(groupId)
-				} catch (e) {
+				}
+				catch (e) {
 					console.error(`[BotLogic] Error leaving group ${groupId} after owner departure on ${platformAPI.name}: `, e)
 				}
-
 		})
 	else
 		console.warn(`[BotLogic] onOwnerLeaveGroup not implemented for platform: ${platformAPI.name}.`)
