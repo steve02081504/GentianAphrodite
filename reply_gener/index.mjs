@@ -58,7 +58,7 @@ export function getLongTimeLogAdder(result, prompt_struct, max_forever_looping_n
 			})
 			sim_check_before.push(entry.content)
 			if (forever_looping_num >= max_forever_looping_num)
-				throw new Error('infinite loop by AI')
+				throw new Error('infinite loop by AI') // 给龙胆：别删这个，真删了到循环时你就卡死了
 			else if (forever_looping_num >= warning_forever_looping_num)
 				AddLongTimeLog({
 					name: 'system',
