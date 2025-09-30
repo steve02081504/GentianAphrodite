@@ -146,7 +146,7 @@ function cleanupMemories(currentTimeStamp) {
  * @returns {T | null} - 选中的项，如果无法选择则返回 null
  */
 function selectOneWeightedRandom(items, weights) {
-	if (!items || items.length === 0 || items.length !== weights.length)
+	if (!items?.length || items.length !== weights.length)
 		return null
 
 	const totalWeight = weights.reduce((sum, w) => sum + Math.max(0, w), 0)
@@ -287,7 +287,7 @@ export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct
 		})
 
 		// 如果过滤后没有候选者了，停止选择
-		if (currentCandidates.length === 0) break
+		if (!currentCandidates.length) break
 
 		// b. 计算剩余候选者的权重
 		const weights = currentCandidates.map(item => {

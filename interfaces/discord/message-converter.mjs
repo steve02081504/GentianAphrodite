@@ -183,7 +183,7 @@ export async function discordMessageToFountChatLogEntry(message, interfaceConfig
 		}
 	})
 
-	if (!content && allFilePromises.length === 0) return null
+	if (!content && !allFilePromises.length) return null
 
 	const isDirectMessage = message.channel.type === ChannelType.DM
 	const isFromOwner = message.author.username === interfaceConfig.OwnerUserName

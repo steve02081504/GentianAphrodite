@@ -163,7 +163,7 @@ recordButton.addEventListener('click', async () => {
 			recordingStatus.textContent = geti18n('GentianAphrodite.config.processing_recording')
 			try {
 				const webmBlob = new Blob(audioChunks, { type: 'audio/webm' })
-				if (webmBlob.size === 0) throw new Error(geti18n('GentianAphrodite.config.empty_recording_file'))
+				if (!webmBlob.size) throw new Error(geti18n('GentianAphrodite.config.empty_recording_file'))
 
 				const renderedBuffer = await resampleAudio(webmBlob)
 				const success = await saveRawAudio('vars/master-voice-reference.wav', renderedBuffer, recordingStatus)

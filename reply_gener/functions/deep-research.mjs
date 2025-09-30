@@ -48,7 +48,7 @@ function parsePlan(text) {
 		})
 	}
 
-	if (plan.length === 0)
+	if (!plan.length)
 		console.warn('parsePlan: No lines matching the \'Step <number>:\' pattern were found in the text.')
 
 	return plan
@@ -154,7 +154,7 @@ Step 2: <步骤2主题>
 		})
 
 		let retries = 0
-		while (plan.length === 0 && retries < initial_plan_max_retries) {
+		while (!plan.length && retries < initial_plan_max_retries) {
 			retries++
 			console.info(`Deep-research: Requesting initial plan (Attempt ${retries}/${initial_plan_max_retries})...`)
 
@@ -189,7 +189,7 @@ Step 2: <步骤2主题>
 			}
 		}
 
-		if (plan.length === 0) {
+		if (!plan.length) {
 			console.error(`Deep-research: Failed to generate a valid initial plan after maximum retries (${initial_plan_max_retries}).`)
 			AddLongTimeLog({
 				content: `无法生成有效的初始计划，已达到最大重试次数 (${initial_plan_max_retries})。思考中止。`,

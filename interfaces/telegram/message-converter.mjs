@@ -334,7 +334,7 @@ export async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, messa
 
 	const files = await processMessageFiles(message, ctx)
 
-	if (!content.trim() && files.length === 0)
+	if (!content.trim() && !files.length)
 		return null
 
 	const isDirectMessage = chat.type === 'private'

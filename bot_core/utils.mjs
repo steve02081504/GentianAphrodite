@@ -66,7 +66,7 @@ export function updateBotNameMapping(platformAPI) {
  * @returns {chatLogEntry_t_ext[]} 合并后的聊天记录条目数组。
  */
 export function mergeChatLogEntries(logEntries, mergeMessagePeriodMs) {
-	if (!logEntries || logEntries.length === 0) return []
+	if (!logEntries?.length) return []
 	const newLog = []
 	let lastEntry = { ...logEntries[0], extension: { ...logEntries[0].extension, platform_message_ids: [...logEntries[0].extension?.platform_message_ids || []] } }
 
@@ -75,7 +75,7 @@ export function mergeChatLogEntries(logEntries, mergeMessagePeriodMs) {
 		if (
 			lastEntry.name === currentEntry.name &&
 			currentEntry.time_stamp - lastEntry.time_stamp < mergeMessagePeriodMs &&
-			(lastEntry.files || []).length === 0
+			!lastEntry.files?.length
 		) {
 			lastEntry.content += '\n' + currentEntry.content
 			lastEntry.files = currentEntry.files

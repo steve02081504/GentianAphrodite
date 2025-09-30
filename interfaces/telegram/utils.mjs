@@ -69,7 +69,7 @@ export function telegramEntitiesToAiMarkdown(text, entities, botInfo, replyToMes
 	if (!text) return aiMarkdown.trim()
 
 	const textChars = Array.from(text)
-	if (!entities || entities.length === 0)
+	if (!entities?.length)
 		return aiMarkdown + text
 
 	const parts = []

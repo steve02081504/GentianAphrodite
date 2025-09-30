@@ -132,7 +132,7 @@ async function handleMessageQueue(channelId, platformAPI) {
 		await handleError(error, platformAPI, contextMessage)
 	}
 	finally {
-		if (channelMessageQueues[channelId]?.length === 0)
+		if (!channelMessageQueues[channelId]?.length)
 			delete channelHandlers[channelId]
 	}
 }
@@ -144,7 +144,7 @@ async function handleMessageQueue(channelId, platformAPI) {
  * @param {PlatformAPI_t} platformAPI - 平台 API。
  */
 async function initializeChannelLogIfEmpty(channelId, platformAPI) {
-	if (!channelChatLogs[channelId] || channelChatLogs[channelId].length === 0) {
+	if (!channelChatLogs[channelId]?.length) {
 		const historicalMessages = await platformAPI.fetchChannelHistory(channelId, currentConfig.DefaultMaxFetchCount)
 		const mergedHistoricalLog = mergeChatLogEntries(historicalMessages.sort((a, b) => a.time_stamp - b.time_stamp).slice(0, -1), currentConfig.MergeMessagePeriodMs)
 		channelChatLogs[channelId] = mergedHistoricalLog
@@ -166,7 +166,7 @@ function ensureChannelHandlerIsRunning(channelId, platformAPI, fountEntry) {
 				handleError(err, platformAPI, fountEntry)
 			})
 			.finally(() => {
-				if (channelMessageQueues[channelId]?.length === 0)
+				if (!channelMessageQueues[channelId]?.length)
 					delete channelHandlers[channelId]
 				else if (!channelHandlers[channelId])
 					console.warn(`[BotLogic] Channel handler for ${channelId} was cleared, but queue is not empty. Not auto-restarting immediately.`)

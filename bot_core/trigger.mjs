@@ -286,8 +286,8 @@ function isMessageMergeable(lastLogEntry, currentMessageToProcess) {
 	return lastLogEntry && currentMessageToProcess &&
 		lastLogEntry.name === currentMessageToProcess.name &&
 		currentMessageToProcess.time_stamp - lastLogEntry.time_stamp < currentConfig.MergeMessagePeriodMs &&
-		(lastLogEntry.files || []).length === 0 &&
-		(lastLogEntry.logContextAfter || []).length === 0 &&
+		!lastLogEntry.files?.length &&
+		!lastLogEntry.logContextAfter?.length &&
 		lastLogEntry.extension?.platform_message_ids &&
 		currentMessageToProcess.extension?.platform_message_ids
 }

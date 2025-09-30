@@ -217,13 +217,12 @@ export async function getMessageFullContent(message, client) {
  * @returns {string} 格式化后的文本。
  */
 export function formatEmbedMentions(text, guildMembersMap) {
-	if (!text || !guildMembersMap || guildMembersMap.size === 0)
+	if (!text || !guildMembersMap?.size)
 		return text
 
 	const sortedNames = Array.from(guildMembersMap.keys()).sort((a, b) => b.length - a.length)
 
-	if (sortedNames.length === 0)
-		return text
+	if (!sortedNames.length) return text
 
 	const mentionRegex = new RegExp(`@(${sortedNames.map(name => escapeRegExp(name)).join('|')})(?!\\w)`, 'gi')
 

@@ -119,7 +119,7 @@ function cosineSimilarity(vecA, vecB) {
 		normA += vecA[i] ** 2
 		normB += vecB[i] ** 2
 	}
-	return normA === 0 || normB === 0 ? 0 : dotProduct / (Math.sqrt(normA) * Math.sqrt(normB))
+	return !normA || !normB ? 0 : dotProduct / (Math.sqrt(normA) * Math.sqrt(normB))
 }
 
 /**
@@ -128,7 +128,7 @@ function cosineSimilarity(vecA, vecB) {
  * @returns {boolean} - 是否符合音色
  */
 function isFrameMatchingVoice(frame) {
-	if (!sentinelState.referenceMfccs || sentinelState.referenceMfccs.length === 0) return false
+	if (!sentinelState.referenceMfccs?.length) return false
 	const frameFloat = int16ToFloat32(frame)
 	const mfcc = Meyda.extract('mfcc', frameFloat)
 	if (!mfcc) return false
@@ -182,7 +182,7 @@ function loadReferenceMfcc() {
 			frames.push({ buffer, rms: calculateRMS(buffer) })
 		}
 
-		if (frames.length === 0) {
+		if (!frames.length) {
 			console.error('❌ Reference audio file contains no valid audio frames (file might be too short).')
 			return null
 		}
@@ -201,7 +201,7 @@ function loadReferenceMfcc() {
 				if (mfcc) mfccs.push(mfcc)
 			}
 
-		if (mfccs.length === 0) {
+		if (!mfccs.length) {
 			console.error('❌ Failed to extract MFCC from reference audio. Please check file content and volume (file might be too quiet or only contains noise).')
 			return null
 		}

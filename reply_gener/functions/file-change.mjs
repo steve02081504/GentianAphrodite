@@ -106,7 +106,7 @@ export async function file_change(result, { AddLongTimeLog }) {
 					replace_files_data.push(fileData)
 			}
 
-			if (replace_files_data.length === 0)
+			if (!replace_files_data.length)
 				throw new Error('解析<replace-file>标签后，未找到任何有效的<file>或<replacement>操作。')
 		}
 		catch (err) {
@@ -179,7 +179,7 @@ export async function file_change(result, { AddLongTimeLog }) {
 				}
 			}
 			// If content didn't change AND no errors, explicitly state that
-			else if (failed_replaces.length === 0) system_content += '所有替换规则均未匹配到内容或未导致文件变化。'
+			else if (!failed_replaces.length) system_content += '所有替换规则均未匹配到内容或未导致文件变化。'
 
 			AddLongTimeLog({
 				name: 'file-change',

@@ -232,7 +232,7 @@ function run() {
 
 					const [, windowId, pidStr, title] = match
 					const pid = parseInt(pidStr, 10)
-					if (isNaN(pid) || pid === 0) return null // 过滤无效PID
+					if (!pid) return null // 过滤无效PID
 
 					try {
 						// 并行查询每个窗口 PID 对应的可执行文件路径和进程名。
@@ -285,7 +285,7 @@ export async function getWindowInfos() {
 		getAllWindows()
 	])
 
-	if (!allWindows || allWindows.length === 0) return []
+	if (!allWindows?.length) return []
 
 	return allWindows.map(window => {
 		const { identifier, ...windowInfo } = window

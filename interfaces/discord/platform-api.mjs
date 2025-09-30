@@ -98,7 +98,7 @@ export function buildPlatformAPI(interfaceConfig) {
 				}
 			} catch (err) { /* 静默处理，获取成员缓存失败通常不关键 */ }
 
-			if (splitTexts.length === 0 && filesToSend.length > 0)
+			if (!splitTexts.length && filesToSend.length > 0)
 				try {
 					const sentMsg = repliedToDiscordMessage
 						? await repliedToDiscordMessage.reply({ files: filesSplit[0], allowedMentions: { repliedUser: true } })
@@ -114,12 +114,14 @@ export function buildPlatformAPI(interfaceConfig) {
 						files: isLastPart ? filesSplit[0] : [],
 						allowedMentions: { parse: ['users', 'roles'], repliedUser: !!repliedToDiscordMessage }
 					}
-					const sentMsg = repliedToDiscordMessage && i === 0
+					const sentMsg = repliedToDiscordMessage && !i
 						? await repliedToDiscordMessage.reply(messageOptions)
 						: await /** @type {DiscordTextChannel | DiscordDMChannel} */ channel.send(messageOptions)
 
-					if (i === 0) firstSentDiscordMessage = sentMsg
-					if (repliedToDiscordMessage && i === 0) repliedToDiscordMessage = undefined
+					if (!i) {
+						firstSentDiscordMessage = sentMsg
+						repliedToDiscordMessage = undefined
+					}
 				} catch (e) { console.error(`[DiscordInterface] Failed to send message segment ${i + 1}:`, e); break }
 			}
 

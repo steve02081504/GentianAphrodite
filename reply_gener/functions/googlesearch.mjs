@@ -28,7 +28,7 @@ export async function googlesearch(result, { AddLongTimeLog }) {
 			// Split queries by newline, filter out empty lines
 			const searchQueries = searchQueryContent.split('\n').map(q => q.trim()).filter(query => query)
 
-			if (searchQueries.length === 0) {
+			if (!searchQueries.length) {
 				console.warn('<google-search> content resulted in no valid queries after splitting and filtering.')
 				AddLongTimeLog({
 					name: 'google-search',

@@ -4,6 +4,6 @@ export async function tryFewTimes(func, { times = MaxRetries, WhenFailsWaitFor =
 		try { return await func() }
 		catch (error) {
 			await new Promise(resolve => setTimeout(resolve, WhenFailsWaitFor))
-			if (times === 0) throw error
+			if (!times) throw error
 		}
 }
