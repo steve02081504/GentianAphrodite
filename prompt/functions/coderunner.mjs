@@ -38,8 +38,7 @@ export async function CodeRunnerPrompt(args, logical_results, prompt_struct, det
 你可以运行NodeJS或${availableShells.join('、')}代码，通过返回以下格式来触发执行并获取结果：
 <run-js>code</run-js>
 或
-<run-${defaultShell}>code</run-${defaultShell}>${
-available.powershell ? available.pwsh ? `
+<run-${defaultShell}>code</run-${defaultShell}>${available.powershell ? available.pwsh ? `
 <run-powershell>会调用windows powershell，而<run-pwsh>会调用安装的powershell core。` : `
 <run-powershell>会调用windows powershell，且<run-pwsh>是<run-powershell>的别名。` : ''
 }
@@ -65,7 +64,7 @@ ${args.UserCharname}: 我家目录在哪？
 ` : available.sh ? `\
 ${args.UserCharname}: 我家目录在哪？
 龙胆: 在<inline-sh>echo $HOME</inline-sh>哦。
-` : '' }\
+` : ''}\
 ${args.UserCharname}: 用英语从0数到200，完整，不允许省略，放在代码块里。
 龙胆: 好哒，看好了哦！
 \`\`\`
@@ -86,10 +85,10 @@ ${args.UserCharname}: 帮我播放shape of you。
 				'\
 <run-pwsh>start $(ls ~/music | ? { $_.Name -match \'shape of you\' })</run-pwsh>' :
 				available.bash ?
-				'\
+					'\
 <run-bash>ls ~/music | grep \'shape of you\' | head -n 1 | xargs open</run-bash>' :
-				available.sh ?
-				'\
+					available.sh ?
+						'\
 <run-sh>ls ~/music | grep \'shape of you\' | head -n 1 | xargs open</run-sh>' : ''}
 <wait-screen>3</wait-screen>
 ]

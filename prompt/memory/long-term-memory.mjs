@@ -57,7 +57,7 @@ const prompt_build_table = {
 	updatedContext: '更新时上下文：\n'
 }
 
-export function formatLongTermMemory (memory) {
+export function formatLongTermMemory(memory) {
 	return Object.entries(prompt_build_table).map(([key, prefix]) => {
 		let value = memory[key]
 		if (value == null) return null
