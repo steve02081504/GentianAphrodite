@@ -12,7 +12,7 @@ AI可以在返回内容中使用特定格式来创建永久记忆，其返回内
 AI被允许使用特殊返回格式进行永久记忆的删除或更新。
 */
 
-import { addLongTermMemory, deleteLongTermMemory, listLongTermMemory, updateLongTermMemory, testLongTermMemoryTrigger } from '../../prompt/memory/long-term-memory.mjs'
+import { addLongTermMemory, deleteLongTermMemory, listLongTermMemory, updateLongTermMemory, testLongTermMemoryTrigger, getLongTermMemoryByName, formatLongTermMemoryContext } from '../../prompt/memory/long-term-memory.mjs'
 import { createContextSnapshot } from '../../scripts/context.mjs'
 
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatReplyRequest_t} chatReplyRequest_t */
@@ -257,6 +257,51 @@ export async function LongTermMemoryHandler(result, args) {
 				files: []
 			})
 			processed = true // Still processed, even if failed
+		}
+	}
+
+	// --- Handle <view-long-term-memory-context> ---
+	const viewContextMatch = result.content.match(/<view-long-term-memory-context>(?<name>.*?)<\/view-long-term-memory-context>/s)
+	if (viewContextMatch?.groups?.name) {
+		const memoryName = viewContextMatch.groups.name.trim()
+
+		const logEntry = `<view-long-term-memory-context>${viewContextMatch.groups.name}</view-long-term-memory-context>\n`
+		tool_calling_log.content += logEntry
+		if (!log_content_added) AddLongTimeLog(tool_calling_log)
+		log_content_added = true
+		console.info('AI请求查看永久记忆上下文:', memoryName)
+
+		if (memoryName)
+			try {
+				const memory = getLongTermMemoryByName(memoryName)
+				const formattedContext = formatLongTermMemoryContext(memory)
+
+				AddLongTimeLog({
+					name: 'long-term-memory',
+					role: 'tool',
+					content: formattedContext,
+					files: []
+				})
+				processed = true
+			}
+			catch (err) {
+				console.error(`Error viewing context for long-term memory "${memoryName}":`, err)
+				AddLongTimeLog({
+					name: 'long-term-memory',
+					role: 'tool',
+					content: `查看永久记忆 "${memoryName}" 的上下文时出错：\n${err.message || err}`,
+					files: []
+				})
+				processed = true // Still processed, even if failed
+			}
+		else {
+			AddLongTimeLog({
+				name: 'long-term-memory',
+				role: 'tool',
+				content: '查看永久记忆上下文失败：<view-long-term-memory-context> 标签内容为空。',
+				files: []
+			})
+			processed = true // Processed the tag, but it was invalid
 		}
 	}
 

@@ -48,21 +48,39 @@ export async function testLongTermMemoryTrigger(memory, args, logical_results, p
 	if (result.error) throw result.error
 }
 
-const prompt_build_table = {
-	name: '记忆名称：',
-	prompt: '内容：',
-	createdAt: '创建于：',
-	updatedAt: '更新于：',
+export function getLongTermMemoryByName(name) {
+	return LongTermMemories.find(mem => mem.name === name)
+}
+
+const context_prompt_build_table = {
 	createdContext: '创建时上下文：\n',
 	updatedContext: '更新时上下文：\n'
 }
 
+export function formatLongTermMemoryContext(memory) {
+	if (!memory) return '找不到指定的记忆。'
+	const context_parts = Object.entries(context_prompt_build_table).map(([key, prefix]) => {
+		const value = memory[key]
+		if (!value) return null
+		return `${prefix}${value}`
+	}).filter(Boolean)
+
+	if (context_parts.length === 0) return `记忆 "${memory.name}" 没有附带任何上下文信息。`
+
+	return `记忆 "${memory.name}" 的上下文信息：\n${context_parts.join('\n')}`
+}
+
+const prompt_build_table = {
+	name: '记忆名称：',
+	prompt: '内容：',
+	createdAt: '创建于：',
+	updatedAt: '更新于：'
+}
+
 export function formatLongTermMemory(memory) {
 	return Object.entries(prompt_build_table).map(([key, prefix]) => {
-		let value = memory[key]
-		if (value == null) return null
-		if (['createdContext', 'updatedContext'].includes(key) && value.length > 2048)
-			value = '...' + value.slice(-2048)
+		const value = memory[key]
+		if (!value) return null
 		return `${prefix}${value}`
 	}).filter(Boolean).join('\n')
 }
@@ -158,6 +176,8 @@ trigger的关键词应容易触发并涵盖大部分情况，鼓励使用或\`||
 <delete-long-term-memory>名称</delete-long-term-memory>
 列出永久记忆：
 <list-long-term-memory></list-long-term-memory>
+查看永久记忆相关场景：
+<view-long-term-memory-context>名称</view-long-term-memory-context>
 
 鼓励你对聊天记录中有关主人的事情追加和维护永久记忆，不要记录已经在prompt中的内容。
 鼓励你及时修正错误的永久记忆。
