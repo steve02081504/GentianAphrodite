@@ -28,8 +28,8 @@ import { createContextSnapshot } from '../../scripts/context.mjs'
 export async function LongTermMemoryHandler(result, args) {
 	const { AddLongTimeLog } = args
 	let processed = false // Flag to indicate if any LTM command was handled
-	const tool_calling_log = { // Accumulate AI commands for a single log entry
-		name: '龙胆', // Assuming this is the character name
+	const tool_calling_log = {
+		name: '龙胆',
 		role: 'char',
 		content: '',
 		files: []
@@ -305,7 +305,6 @@ export async function LongTermMemoryHandler(result, args) {
 		}
 	}
 
-	tool_calling_log.content = tool_calling_log.content.trim()
 
 	// Return true if any LTM command was found and processed
 	return processed
