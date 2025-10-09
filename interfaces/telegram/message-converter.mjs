@@ -4,7 +4,7 @@ import { charname as BotFountCharname } from '../../charbase.mjs'
 import { mimetypeFromBufferAndName } from '../../scripts/mimetype.mjs'
 import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
 
-import { telegrafInstance, telegramBotInfo, telegramUserCache, telegramUserIdToDisplayName, telegramDisplayNameToId, aiReplyObjectCacheTg } from './state.mjs'
+import { telegrafInstance, telegramBotInfo, telegramUserCache, telegramUserIdToDisplayName, telegramDisplayNameToId, aiReplyObjectCache } from './state.mjs'
 import { telegramEntitiesToAiMarkdown } from './utils.mjs'
 
 /**
@@ -32,46 +32,6 @@ function checkIfBotIsMentioned(rawText, message) {
 	if (message.reply_to_message?.from?.id === telegramBotInfo.id)
 		return true
 	return false
-}
-
-/**
- * 填充 Fount 聊天日志条目的 extension 对象。
- * @param {object} params
- * @param {TelegramMessageType} params.message
- * @param {TelegramInterfaceConfig_t} params.interfaceConfig
- * @param {TelegramMessageType['chat']} params.chat
- * @param {TelegramUser} params.fromUser
- * @param {string} params.content
- * @param {boolean} params.isDirectMessage
- * @param {boolean} params.isFromOwner
- * @param {boolean} params.mentionsBot
- * @param {boolean} params.mentionsOwner
- * @param {object | undefined} params.cachedAiReplyExtension
- * @returns {object}
- */
-function populateFountEntryExtension({
-	message, interfaceConfig, chat, fromUser, content,
-	isDirectMessage, isFromOwner, mentionsBot, mentionsOwner,
-	cachedAiReplyExtension
-}) {
-	return {
-		platform: 'telegram',
-		OwnerNameKeywords: interfaceConfig.OwnerNameKeywords,
-		platform_message_ids: [message.message_id],
-		content_parts: [content],
-		platform_channel_id: chat.id,
-		platform_user_id: fromUser.id,
-		platform_chat_type: chat.type,
-		platform_chat_title: chat.type !== 'private' ? chat.title : undefined,
-		is_direct_message: isDirectMessage,
-		is_from_owner: isFromOwner,
-		mentions_bot: mentionsBot,
-		mentions_owner: mentionsOwner,
-		telegram_message_obj: message,
-		...message.message_thread_id && { telegram_message_thread_id: message.message_thread_id },
-		...message.reply_to_message && { telegram_reply_to_message_id: message.reply_to_message.message_id },
-		...cachedAiReplyExtension,
-	}
 }
 
 /**
@@ -344,17 +304,31 @@ export async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, messa
 
 	/** @type {chatLogEntry_t_ext} */
 	const fountEntry = {
+		...aiReplyObjectCache[message.message_id],
 		time_stamp: message.edit_date ? message.edit_date * 1000 : message.date * 1000,
 		role: isFromOwner ? 'user' : 'char',
 		name: senderName,
 		content,
 		files,
-		extension: populateFountEntryExtension({
-			message, interfaceConfig, chat, fromUser, content,
-			isDirectMessage, isFromOwner, mentionsBot, mentionsOwner,
-			cachedAiReplyExtension: aiReplyObjectCacheTg[message.message_id]?.extension
-		})
+		extension: {
+			platform: 'telegram',
+			OwnerNameKeywords: interfaceConfig.OwnerNameKeywords,
+			platform_message_ids: [message.message_id],
+			content_parts: [content],
+			platform_channel_id: chat.id,
+			platform_user_id: fromUser.id,
+			platform_chat_type: chat.type,
+			platform_chat_title: chat.type !== 'private' ? chat.title : undefined,
+			is_direct_message: isDirectMessage,
+			is_from_owner: isFromOwner,
+			mentions_bot: mentionsBot,
+			mentions_owner: mentionsOwner,
+			telegram_message_obj: message,
+			...message.message_thread_id && { telegram_message_thread_id: message.message_thread_id },
+			...message.reply_to_message && { telegram_reply_to_message_id: message.reply_to_message.message_id },
+			...aiReplyObjectCache[message.message_id]?.extension,
+		}
 	}
-	delete aiReplyObjectCacheTg[message.message_id]
+	delete aiReplyObjectCache[message.message_id]
 	return fountEntry
 }

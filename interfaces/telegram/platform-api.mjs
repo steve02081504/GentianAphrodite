@@ -5,7 +5,7 @@ import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
 
 import { get_telegram_api_plugin } from './api.mjs'
 import { telegramMessageToFountChatLogEntry } from './message-converter.mjs'
-import { telegrafInstance, telegramBotInfo, telegramUserIdToDisplayName, aiReplyObjectCacheTg } from './state.mjs'
+import { telegrafInstance, telegramBotInfo, telegramUserIdToDisplayName, aiReplyObjectCache } from './state.mjs'
 import { splitTelegramReply, aiMarkdownToTelegramHtml, parseLogicalChannelId } from './utils.mjs'
 import { telegramWorld } from './world.mjs'
 
@@ -292,7 +292,7 @@ export function buildPlatformAPI(interfaceConfig) {
 
 			if (firstSentTelegramMessage) {
 				if (fountReplyPayload && (fountReplyPayload.content || fountReplyPayload.files?.length))
-					aiReplyObjectCacheTg[firstSentTelegramMessage.message_id] = fountReplyPayload
+					aiReplyObjectCache[firstSentTelegramMessage.message_id] = fountReplyPayload
 
 				return await telegramMessageToFountChatLogEntry(telegrafInstance, firstSentTelegramMessage, interfaceConfig)
 			}

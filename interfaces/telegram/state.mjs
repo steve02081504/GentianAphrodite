@@ -55,4 +55,4 @@ export const telegramDisplayNameToId = {}
  * 键为第一条成功发送的 Telegram 消息的 ID (number)，值为原始的 {@link FountChatReply_t} 对象。
  * @type {Record<number, FountChatReply_t>}
  */
-export const aiReplyObjectCacheTg = {}
+export const aiReplyObjectCache = {}
