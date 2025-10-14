@@ -44,7 +44,8 @@ async function checkMessageTrigger(fountEntry, platformAPI, channelId, env = {})
 	const content = (fountEntry.content || '').trim().replace(/^@\S+(?:\s+@\S+)*\s*/, '')
 	const isFromOwner = fountEntry.extension?.is_from_owner === true
 
-	if (fountEntry.extension?.is_direct_message) return isFromOwner
+	if (fountEntry.extension?.is_direct_message)
+		return isFromOwner || (channelChatLogs[channelId] || []).some(msg => msg.extension?.platform_user_id == platformAPI.getBotUserId())
 	if (inHypnosisChannelId && inHypnosisChannelId === channelId && !isFromOwner) return false
 
 	const { possibility, isMutedChannel, mentionedWithoutAt } = await calculateTriggerPossibility(fountEntry, platformAPI, channelId, content, env)
