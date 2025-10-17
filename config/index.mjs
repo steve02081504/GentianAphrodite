@@ -3,7 +3,7 @@ import path from 'node:path'
 
 import { getAISourceData, setAISourceData } from '../AISource/index.mjs'
 import { chardir, charname, username } from '../charbase.mjs'
-import { resetIdleTimer, stopIdleTimer } from '../event_engine/on_idle.mjs'
+import { resetIdleTimer } from '../event_engine/on_idle.mjs'
 import { checkVoiceSentinel, stopVoiceSentinel } from '../event_engine/voice_sentinel.mjs'
 import { mergeTree } from '../scripts/tools.mjs'
 
@@ -38,8 +38,7 @@ export async function SetData(data) {
 	Object.assign(config.deep_research, data.deep_research)
 
 	config.disable_idle_event = data.disable_idle_event
-	if (config.disable_idle_event) stopIdleTimer()
-	else resetIdleTimer()
+	resetIdleTimer()
 
 	config.disable_voice_sentinel = data.disable_voice_sentinel
 	if (config.disable_voice_sentinel) stopVoiceSentinel()

@@ -1,6 +1,7 @@
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 
 import { charname } from '../charbase.mjs'
+import { config } from '../config/index.mjs'
 import { formatLongTermMemory, getRandomNLongTermMemories } from '../prompt/memory/long-term-memory.mjs'
 import { GetReply } from '../reply_gener/index.mjs'
 
@@ -84,11 +85,14 @@ const IDLE_INTERVAL_MS = 15 * 60 * 1000 // 15 minutes
 let idleID = null
 
 export function resetIdleTimer() {
-	if (idleID) clearInterval(idleID)
+	stopIdleTimer()
+	if (config.disable_idle_event) return
 	idleID = setInterval(onIdleCallback, IDLE_INTERVAL_MS)
 }
 export function stopIdleTimer() {
-	if (idleID) clearInterval(idleID)
+	if (!idleID) return
+	clearInterval(idleID)
+	idleID = null
 }
 
 /**
