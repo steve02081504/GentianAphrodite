@@ -67,7 +67,7 @@ export async function LongTermMemoryHandler(result, args) {
 					trigger: memoryTrigger, // Store the trigger string
 					name: memoryName,
 					prompt: memoryPromptContent, // Use the correct prompt content
-					createdAt: Date.now(),
+					createdAt: new Date(),
 					createdContext: contextSnapshot
 				}
 				await testLongTermMemoryTrigger(newMemory, args, args.extension.logical_results, args.prompt_struct, 0) // Test the trigger for errors
@@ -137,7 +137,7 @@ export async function LongTermMemoryHandler(result, args) {
 						name: memoryName,
 						trigger: memoryTrigger,
 						prompt: memoryPromptContent,
-						updatedAt: Date.now(),
+						updatedAt: new Date(),
 						updatedContext: contextSnapshot
 					})
 

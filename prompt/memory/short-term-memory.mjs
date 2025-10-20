@@ -47,7 +47,7 @@ const MAX_RANDOM_FLASHBACK = 2 // 最多选几条随机
 
 /**
  * @typedef {{
- * 	time_stamp: number, // 记录时间戳
+ * 	time_stamp: Date, // 记录时间戳
  * 	text: string,      // 原始对话文本片段 (最近10条)
  * 	keywords: KeywordInfo[], // 关键词及权重
  * 	score: number,     // 记忆分数
@@ -57,6 +57,8 @@ const MAX_RANDOM_FLASHBACK = 2 // 最多选几条随机
 
 /** @type {MemoryEntry[]} */
 let chat_memories = loadJsonFileIfExists(path.join(chardir, 'memory/short-term-memory.json'), [])
+for (const mem of chat_memories)
+	mem.time_stamp = new Date(mem.time_stamp)
 let lastCleanupTime = new Date().getTime()
 
 export function getMostFrequentChatName() {
@@ -331,7 +333,7 @@ export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct
 
 	// --- 6. 格式化选中的记忆以加入Prompt (使用最终列表) ---
 	function formatMemory(memoryItem) {
-		const dateStr = new Date(memoryItem.memory.time_stamp).toLocaleString()
+		const dateStr = memoryItem.memory.time_stamp.toLocaleString()
 		return `\
 记忆来自 ${memoryItem.memory.chat_name}, ${dateStr}：
 ${memoryItem.memory.text}

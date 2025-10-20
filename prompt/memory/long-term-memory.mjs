@@ -14,10 +14,18 @@ import { match_keys, match_keys_all } from '../../scripts/match.mjs'
  * @type {{
  * 	trigger: string,
  * 	prompt: string,
- * 	name: string
+ * 	name: string,
+ * 	createdAt: Date,
+ * 	createdContext: string,
+ * 	updatedAt?: Date,
+ * 	updatedContext?: string
  * }[]}
  */
 const LongTermMemories = loadJsonFileIfExists(path.join(chardir, 'memory/long-term-memory.json'), [])
+for (const memory of LongTermMemories) {
+	if (memory.createdAt) memory.createdAt = new Date(memory.createdAt)
+	if (memory.updatedAt) memory.updatedAt = new Date(memory.updatedAt)
+}
 
 /**
  * @param {object} memory
@@ -62,7 +70,7 @@ export function formatLongTermMemoryContext(memory) {
 	const context_parts = Object.entries(context_prompt_build_table).map(([key, prefix]) => {
 		const value = memory[key]
 		if (!value) return null
-		return `${prefix}${value}`
+		return `${prefix}${value?.toLocaleString?.() || value}`
 	}).filter(Boolean)
 
 	if (!context_parts.length) return `记忆 "${memory.name}" 没有附带任何上下文信息。`
