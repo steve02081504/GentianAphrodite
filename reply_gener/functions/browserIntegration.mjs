@@ -234,7 +234,7 @@ export async function browserIntegration(result, args) {
 			}
 		}
 
-	if (commands_called.length > 0)
+	if (commands_called.length)
 		AddLongTimeLog({
 			name: '龙胆',
 			role: 'char',

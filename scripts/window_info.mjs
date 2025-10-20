@@ -170,7 +170,7 @@ function run() {
 	for (let i = 0; i < procs.length; i++) {
 		const p = procs[i]
 		try {
-			if (p.windows.length > 0) {
+			if (p.windows.length) {
 				windows.push({
 					pid: p.unixId(),
 					processName: p.name(),

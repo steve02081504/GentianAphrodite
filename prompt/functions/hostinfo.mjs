@@ -131,7 +131,7 @@ ${w.isActive ? `当前活跃窗口
 
 	try {
 		const clipboardHistory = getHistory().slice(0, 7)
-		if (clipboardHistory.length > 0) {
+		if (clipboardHistory.length) {
 			result += `\
 最近的剪贴板内容：
 `

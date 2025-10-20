@@ -248,7 +248,7 @@ export function splitTelegramReply(reply, split_length = 4096) {
 		else
 			messages.push(currentMessage)
 
-	return messages.filter(msg => msg.trim().length > 0)
+	return messages.filter(msg => msg.trim().length)
 }
 
 /**
@@ -279,7 +279,7 @@ function splitHtmlAware(longString, maxLength) {
 		remainingString = remainingString.substring(splitPos)
 	}
 
-	if (remainingString.length > 0)
+	if (remainingString.length)
 		chunks.push(remainingString)
 
 	return chunks

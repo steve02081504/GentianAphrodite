@@ -412,7 +412,7 @@ export async function getUrlMetadata(url) {
 		}
 
 		// 步骤 3: 统一返回结果
-		return metas.length > 0 ? metas : null
+		return metas.length ? metas : null
 	}
 	catch (e) {
 		if (e.name === 'AbortError')

@@ -163,7 +163,7 @@ Step 2: <步骤2主题>
 
 			plan = parsePlan(planText) // Use the tolerant parser
 
-			if (plan.length > 0) {
+			if (plan.length) {
 				console.info(`Deep-research: Initial Plan Generated (Attempt ${retries}):\n${plan.map(p => `Step ${p.step}: ${p.topic}`).join('\n')}`)
 				thinking_prompt_struct.chat_log.push({
 					content: 'Plan:\n' + plan.map(p => `Step ${p.step}: ${p.topic}`).join('\n') + '\n',
@@ -382,7 +382,7 @@ ${!isFinalCycle ? `
 
 					await sleep(thinking_interval) // Small delay before potentially starting next cycle
 
-					if (newPlan.length > 0) {
+					if (newPlan.length) {
 						console.info(`Deep-research: Cycle ${planningCycles}, Replanning successful. New Plan:\n${newPlan.map(p => `Step ${p.step}: ${p.topic}`).join('\n')}`)
 						plan = newPlan // Adopt the new plan (results are reset by parsePlan)
 						continue replan // Start the next planning cycle with the new plan

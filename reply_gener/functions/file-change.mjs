@@ -102,7 +102,7 @@ export async function file_change(result, { AddLongTimeLog }) {
 					})
 				}
 
-				if (fileData.replacements.length > 0)
+				if (fileData.replacements.length)
 					replace_files_data.push(fileData)
 			}
 

@@ -65,8 +65,7 @@ export function formatLongTermMemoryContext(memory) {
 		return `${prefix}${value}`
 	}).filter(Boolean)
 
-	if (context_parts.length === 0) return `记忆 "${memory.name}" 没有附带任何上下文信息。`
-
+	if (!context_parts.length) return `记忆 "${memory.name}" 没有附带任何上下文信息。`
 	return `记忆 "${memory.name}" 的上下文信息：\n${context_parts.join('\n')}`
 }
 

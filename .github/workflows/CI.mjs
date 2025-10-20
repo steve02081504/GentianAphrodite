@@ -11,7 +11,7 @@ await CI.test('noAI Fallback', async () => {
 
 await CI.test('Setup AI Source', async () => {
 	await CI.char.interfaces.config.SetData({
-		AIsources: { 'CI': 'CI' },
+		AIsources: { CI: 'CI' },
 		disable_idle_event: true
 	})
 })

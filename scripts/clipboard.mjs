@@ -15,7 +15,7 @@ const state = {
 }
 
 function addToHistory(entry) {
-	if (state.history.length > 0) {
+	if (state.history.length) {
 		const lastEntry = state.history[0]
 		if (lastEntry.type === entry.type) {
 			if (entry.type === 'text' && lastEntry.content === entry.content)
@@ -23,7 +23,6 @@ function addToHistory(entry) {
 
 			if (entry.type === 'image' && lastEntry.content.equals(entry.content))
 				return
-
 		}
 	}
 

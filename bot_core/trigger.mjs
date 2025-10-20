@@ -455,7 +455,7 @@ export async function processNextMessageInQueue(myQueue, currentChannelLog, plat
 		return
 	}
 
-	const lastLogEntry = currentChannelLog.length > 0 ? currentChannelLog[currentChannelLog.length - 1] : null
+	const lastLogEntry = currentChannelLog.length ? currentChannelLog[currentChannelLog.length - 1] : null
 	let triggered = false
 
 	if (!isMessageMergeable(lastLogEntry, currentMessageToProcess)) {

@@ -105,7 +105,7 @@ export { configure, registerGroupHandlers as registerPlatformAPI }
  * @param {string | number} channelId - 频道 ID。
  */
 async function processQueue(myQueue, currentChannelLog, platformAPI, channelId) {
-	while (myQueue.length > 0)
+	while (myQueue.length)
 		if (await processNextMessageInQueue(myQueue, currentChannelLog, platformAPI, channelId)) return
 }
 
@@ -128,7 +128,7 @@ async function handleMessageQueue(channelId, platformAPI) {
 		await processQueue(myQueue, currentChannelLog, platformAPI, channelId)
 	}
 	catch (error) {
-		const contextMessage = myQueue.length > 0 ? myQueue[myQueue.length - 1] : currentChannelLog?.slice(-1)[0]
+		const contextMessage = myQueue.length ? myQueue[myQueue.length - 1] : currentChannelLog?.slice(-1)[0]
 		await handleError(error, platformAPI, contextMessage)
 	}
 	finally {

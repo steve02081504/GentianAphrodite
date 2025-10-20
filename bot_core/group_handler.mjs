@@ -131,7 +131,7 @@ async function sendOwnerInviteNotifications(group, platformAPI, defaultChannel, 
 
 		const ownerPresenceResult = await platformAPI.getOwnerPresenceInGroups?.()
 		const ownerUsernameToCompare = platformAPI.getOwnerUserName?.()
-		if (ownerPresenceResult?.groupsWithOwner?.length > 0)
+		if (ownerPresenceResult?.groupsWithOwner?.length)
 			ownerPresenceResult.groupsWithOwner.forEach(async otherGroup => {
 				if (otherGroup.id === group.id) return
 
@@ -261,7 +261,7 @@ async function performInitialGroupOwnerCheck(platformAPI) {
 		try {
 			const presenceResult = await platformAPI.getOwnerPresenceInGroups()
 			if (presenceResult) {
-				if (presenceResult.groupsWithoutOwner.length > 0)
+				if (presenceResult.groupsWithoutOwner.length)
 					for (const group of presenceResult.groupsWithoutOwner) {
 						await new Promise(resolve => setTimeout(resolve, 2000)) // 错开检查
 						await handleGroupCheck(group, platformAPI)
@@ -277,7 +277,7 @@ async function performInitialGroupOwnerCheck(platformAPI) {
 	if (!usedOptimizedCheck && platformAPI.getJoinedGroups)
 		try {
 			const allGroups = await platformAPI.getJoinedGroups()
-			if (allGroups && allGroups.length > 0)
+			if (allGroups?.length)
 				for (const group of allGroups) {
 					await new Promise(resolve => setTimeout(resolve, 2000)) // 错开检查
 					await handleGroupCheck(group, platformAPI)

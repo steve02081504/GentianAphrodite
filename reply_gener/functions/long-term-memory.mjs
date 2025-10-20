@@ -235,7 +235,7 @@ export async function LongTermMemoryHandler(result, args) {
 		try {
 			const memoryNames = listLongTermMemory() // Use the helper function
 			let listContent = '当前的永久记忆列表：\n'
-			if (memoryNames.length > 0)
+			if (memoryNames.length)
 				listContent += memoryNames.map(name => `- ${name}`).join('\n')
 			else
 				listContent += '(无)'

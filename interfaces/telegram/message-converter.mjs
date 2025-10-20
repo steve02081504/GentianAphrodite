@@ -250,7 +250,7 @@ async function processMessageFiles(message, ctx) {
 			fileDownloadPromises.push(addFile(video.file_id, video.file_name || `${video.file_unique_id}.${video.mime_type?.split('/')[1] || 'mp4'}`, video.mime_type, message.caption || '视频文件'))
 		}
 
-		if (fileDownloadPromises.length > 0)
+		if (fileDownloadPromises.length)
 			await Promise.all(fileDownloadPromises)
 	} catch (error) {
 		console.error(`[TelegramInterface:processMessageFiles] Top-level error occurred during file processing (MessageID ${message.message_id}):`, error)

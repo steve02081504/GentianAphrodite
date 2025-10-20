@@ -50,7 +50,7 @@ export async function googlesearch(result, { AddLongTimeLog }) {
 				const organicResults = queryResult.filter(item => !item.isAd).slice(0, 5)
 
 				let searchResults = ''
-				if (organicResults.length > 0) {
+				if (organicResults.length) {
 					searchResults += '搜索结果：\n'
 					organicResults.forEach((item, index) => {
 						const source = item.source ? `[${item.source}] ` : ''

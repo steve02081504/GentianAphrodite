@@ -98,7 +98,7 @@ export function buildPlatformAPI(interfaceConfig) {
 				}
 			} catch (err) { /* 静默处理，获取成员缓存失败通常不关键 */ }
 
-			if (!splitTexts.length && filesToSend.length > 0)
+			if (!splitTexts.length && filesToSend.length)
 				try {
 					const sentMsg = repliedToDiscordMessage
 						? await repliedToDiscordMessage.reply({ files: filesSplit[0], allowedMentions: { repliedUser: true } })

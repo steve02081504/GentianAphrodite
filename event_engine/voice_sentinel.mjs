@@ -391,7 +391,7 @@ function handleArmedState(frameData, now) {
 	sentinelState.activityLog.push({ timestamp: now, isLoud })
 	const windowStart = now - CONFIG.timing.LOUD_ACTIVITY_WINDOW_MS
 	// 清理超出时间窗口的旧数据
-	while (sentinelState.activityLog.length > 0 && sentinelState.activityLog[0].timestamp < windowStart)
+	while (sentinelState.activityLog.length && sentinelState.activityLog[0].timestamp < windowStart)
 		sentinelState.activityLog.shift()
 
 	// 仅在有足够时间跨度的数据时才进行计算，避免窗口初期误判

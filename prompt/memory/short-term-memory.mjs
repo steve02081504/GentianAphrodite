@@ -152,7 +152,7 @@ function selectOneWeightedRandom(items, weights) {
 	const totalWeight = weights.reduce((sum, w) => sum + Math.max(0, w), 0)
 	if (totalWeight <= 0)
 		// 如果总权重为0，随机选一个（或返回null，这里选择随机选一个）
-		if (items.length > 0)
+		if (items.length)
 			return items[Math.floor(Math.random() * items.length)]
 		else
 			return null
@@ -267,7 +267,7 @@ export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct
 		.filter(item => !selectedIndices.has(item.index))
 
 	// 迭代选择随机记忆，每次选择一个，并进行过滤
-	for (let i = 0; i < MAX_RANDOM_FLASHBACK && availableForRandomPool.length > 0; i++) {
+	for (let i = 0; i < MAX_RANDOM_FLASHBACK && availableForRandomPool.length; i++) {
 		// a. 过滤当前候选池
 		const currentCandidates = availableForRandomPool.filter(candidate => {
 			const isFromSameChat = candidate.memory.chat_name === currentChatName
@@ -339,17 +339,17 @@ ${memoryItem.memory.text}
 	}
 
 	let result = '<memories>\n'
-	if (finalTopRelevant.length > 0)
+	if (finalTopRelevant.length)
 		result += `\
 高相关
 ${finalTopRelevant.map(formatMemory).join('\n')}
 `
-	if (finalNextRelevant.length > 0)
+	if (finalNextRelevant.length)
 		result += `\
 次相关：
 ${finalNextRelevant.map(formatMemory).join('\n')}
 `
-	if (finalRandomFlashback.length > 0)
+	if (finalRandomFlashback.length)
 		result += `\
 随机：
 ${finalRandomFlashback.map(formatMemory).join('\n')}

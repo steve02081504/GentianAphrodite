@@ -246,7 +246,7 @@ async function dispatchMessageSender(
 	bot, platformChatId, messageThreadId, baseOptions,
 	files, aiMarkdownContent, htmlContent
 ) {
-	if (files.length > 0)
+	if (files.length)
 		return await sendFiles(bot, platformChatId, messageThreadId, baseOptions, files, aiMarkdownContent, htmlContent)
 	else if (htmlContent.trim())
 		return await sendTextMessages(bot, platformChatId, baseOptions, htmlContent)
