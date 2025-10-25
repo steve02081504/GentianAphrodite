@@ -52,7 +52,7 @@ export async function BrowserIntegrationPrompt(args, logical_results, prompt_str
 				console.warn('Failed to get browser history info', err)
 			}
 
-		result += `/
+		result += `\
 ---
 通过返回以下XML格式的指令来触发相应功能：
 
