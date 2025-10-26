@@ -8,6 +8,8 @@ import { is_dist } from '../charbase.mjs'
 import { get_discord_api_plugin } from '../interfaces/discord/api.mjs'
 import { get_telegram_api_plugin } from '../interfaces/telegram/api.mjs'
 import { buildLogicalResults } from '../prompt/logical_results/index.mjs'
+import { unlockAchievement } from '../scripts/achievements.mjs'
+import { match_keys } from '../scripts/match.mjs'
 import { addNotifyAbleChannel } from '../scripts/notify.mjs'
 import { newCharReplay, newUserMessage, saveStatisticDatas, statisticDatas } from '../scripts/statistics.mjs'
 
@@ -97,8 +99,31 @@ export async function GetReply(args) {
 		}
 		const AddLongTimeLog = getLongTimeLogAdder(result, prompt_struct)
 		const last_entry = args.chat_log.slice(-1)[0]
-		if (last_entry?.name == args.UserCharname && last_entry.role == 'user')
+		if (last_entry?.name == args.UserCharname && last_entry.role == 'user') {
 			newUserMessage(last_entry.content, args.extension?.platform || 'chat')
+			if (await match_keys(args, ['爱你'], 'user'))
+				unlockAchievement('say_it_back')
+
+			const today = new Date()
+			const isApril16 = today.getMonth() === 3 && today.getDate() === 16 // Month is 0-indexed, so April is 3
+			if (isApril16 && await match_keys(args, ['生日快乐', 'happy birthday'], 'user'))
+				unlockAchievement('happy_birthday')
+
+			if (await match_keys(args, [/(花|华)(萝|箩|罗)(蘑|磨|摩)/], 'user'))
+				unlockAchievement('talk_about_sister')
+
+			if (await match_keys(args, ['兰斯', '槊'], 'user'))
+				unlockAchievement('talk_about_father')
+
+			if (await match_keys(args, ['博蒙蒂亚'], 'user'))
+				unlockAchievement('talk_about_mother')
+
+			if (await match_keys(args, ['雪球'], 'user'))
+				unlockAchievement('talk_about_snowball')
+
+			if (await match_keys(args, ['steve02081504'], 'user'))
+				unlockAchievement('talk_about_author')
+		}
 		regen: while (true) {
 			if (!is_dist && process.env.EdenOS) {
 				console.log('logical_results', logical_results)

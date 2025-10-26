@@ -243,7 +243,7 @@ captureButton.addEventListener('click', () => {
 		const url = URL.createObjectURL(blob)
 		imagePreview.src = url
 		imagePreview.classList.remove('hidden')
-		photoStatus.textContent = geti18n('GentianAphrodite.config.photo_captured_click_upload_to_save')
+		photoStatus.textContent = geti18n('GentianAphrodite.config.photo_captured_click_to_save')
 		photoStatus.classList.remove('cursor-pointer', 'hover:underline')
 		photoStatus.onclick = null
 		stopCamera()
@@ -258,7 +258,7 @@ photoInput.addEventListener('change', () => {
 		reader.onload = e => {
 			imagePreview.src = e.target.result
 			imagePreview.classList.remove('hidden')
-			photoStatus.textContent = geti18n('GentianAphrodite.config.new_image_selected_click_upload_to_save')
+			photoStatus.textContent = geti18n('GentianAphrodite.config.new_image_selected_click_to_save')
 			photoStatus.classList.remove('cursor-pointer', 'hover:underline')
 			photoStatus.onclick = null
 		}

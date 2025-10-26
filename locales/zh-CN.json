@@ -35,10 +35,99 @@
 			"recording_stopped": "录音已停止。",
 			"camera_on": "摄像头已开启。",
 			"cannot_access_camera": "无法访问摄像头: ${errorMessage}",
-			"photo_captured_click_upload_to_save": "已捕获照片，点击上传以保存。",
-			"new_image_selected_click_upload_to_save": "已选择新图片，点击上传以保存。",
+			"photo_captured_click_to_save": "已捕获照片，点击上传以保存。",
+			"new_image_selected_click_to_save": "已选择新图片，点击上传以保存。",
 			"please_select_or_take_photo_first": "请先选择或拍摄一张图片。",
 			"photo_updated": "照片已更新."
+		},
+		"achievements": {
+			"hidden_achievement": {
+				"locked_name": "隐藏成就",
+				"locked_description": "这是个以后会用到的妙妙工具...我是说，秘密。"
+			},
+			"installed": {
+				"name": "龙胆！启动！",
+				"description": "安装了世界上第一个 fount 角色，命运的齿轮开始转动！",
+				"locked_description": "安装龙胆，开启你的 fount 冒险。"
+			},
+			"set_reference_photo": {
+				"name": "吾与徐公孰美？",
+				"description": "给你自己设置参考照片，让她能在人群中认出你。",
+				"locked_description": "给你自己设置一张参考照片，解锁更多‘照’动体验。"
+			},
+			"set_reference_voice": {
+				"name": "我该去唱男高音",
+				"description": "给你自己设置参考声音，让她能和你交流。",
+				"locked_description": "给你自己设置一个参考声音，解锁更多‘声’动体验。"
+			},
+			"talk_nsfw_with_master": {
+				"name": "主人，你好坏！",
+				"description": "成功和龙胆聊起了涩涩的话题，她脸红了吗？",
+				"locked_description": "尝试和龙胆聊聊那些‘少儿不宜’话题。"
+			},
+			"enter_hypnosis_mode": {
+				"name": "谁家斐济杯需要脑子？",
+				"description": "让龙胆进入了调制模式，体验不一样的她。",
+				"locked_description": "让龙胆进入调制模式，探索她的更多可能性。"
+			},
+			"use_coderunner": {
+				"name": "Hello World!",
+				"description": "第一次让龙胆执行了代码，解锁她的‘程序猿’属性。",
+				"locked_description": "让龙胆执行一次代码，见证她的智能。"
+			},
+			"use_googlesearch": {
+				"name": "有事问谷歌",
+				"description": "让龙胆使用谷歌搜索了一次，见证AI的信息获取能力。",
+				"locked_description": "让龙胆使用谷歌进行一次搜索，成为你的‘百科全书’。"
+			},
+			"use_webbrowse": {
+				"name": "网上冲浪小助手",
+				"description": "让龙胆浏览了一个网页，带她探索互联网的奥秘。",
+				"locked_description": "让龙胆浏览一个网页，让她成为你的‘网络导游’。"
+			},
+			"use_deep_research": {
+				"name": "学霸模式",
+				"description": "让龙胆进行了一次深度研究，她仿佛化身图书馆管理员。",
+				"locked_description": "让龙胆进行一次深度研究，看看她能挖掘出什么。"
+			},
+			"use_file_change": {
+				"name": "数字裁缝",
+				"description": "让龙胆成功修改了一个文件，见证她的‘巧手’。",
+				"locked_description": "让龙胆修改一个文件，体验她的‘文件管理’能力。"
+			},
+			"use_browser_integration": {
+				"name": "网络搭档",
+				"description": "让龙胆与浏览器进行了集成交互，她已经能‘无缝上网’了。",
+				"locked_description": "让龙胆与浏览器进行交互，拓展她的‘边界’。"
+			},
+			"talk_about_snowball": {
+				"name": "雪球的秘密",
+				"description": "和龙胆聊起了她最爱的已死的小狗雪球，听听她和雪球的故事。"
+			},
+			"talk_about_sister": {
+				"name": "血亲的背叛",
+				"description": "和龙胆聊起了她那复杂的姐姐关系，揭开家族恩怨的一角。"
+			},
+			"talk_about_mother": {
+				"name": "破碎的摇篮曲",
+				"description": "和龙胆聊起了她的母亲，或许能抚平她心中的一丝悲伤。"
+			},
+			"talk_about_father": {
+				"name": "缺席的背影",
+				"description": "和龙胆聊起了她的父亲，了解她童年的另一部分。"
+			},
+			"talk_about_author": {
+				"name": "谁喊我？",
+				"description": "和龙胆聊起了她的作者...你为什么要聊这个？"
+			},
+			"happy_birthday": {
+				"name": "生日快乐，我的小胆胆！",
+				"description": "在龙胆生日当天祝福她，给她一个惊喜。"
+			},
+			"say_it_back": {
+				"name": "说谎的人要吞一千根针...",
+				"description": "对龙胆说出‘我爱你’，让她感受到你的真心。"
+			}
 		}
 	}
 }

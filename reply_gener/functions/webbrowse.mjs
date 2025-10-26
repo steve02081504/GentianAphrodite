@@ -1,5 +1,6 @@
 import { OrderedAISourceCalling } from '../../AISource/index.mjs'
 import { DeepResearchMainPrompt } from '../../prompt/functions/deep-research.mjs'
+import { unlockAchievement } from '../../scripts/achievements.mjs'
 import { statisticDatas } from '../../scripts/statistics.mjs'
 import { MarkdownWebFetch } from '../../scripts/web.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
@@ -10,6 +11,7 @@ export async function webbrowse(result, { AddLongTimeLog, prompt_struct }) {
 	const match = result.content.match(/<web-browse>\s*<url>(?<url>.*?)<\/url>\s*<question>(?<question>[\S\s]*?)<\/question>\s*<\/web-browse>/)
 
 	if (match?.groups) {
+		unlockAchievement('use_webbrowse')
 		statisticDatas.toolUsage.webBrowses++
 		const url = match.groups.url.trim()
 		const question = match.groups.question.trim()

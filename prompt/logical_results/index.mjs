@@ -1,3 +1,4 @@
+import { unlockAchievement } from '../../scripts/achievements.mjs'
 import { findChineseExprsAndNumbers } from '../../scripts/chineseToNumber.mjs'
 import { lewd_words } from '../../scripts/dict.mjs'
 import { is_PureChinese } from '../../scripts/langdetect.mjs'
@@ -110,6 +111,9 @@ export async function buildLogicalResults(args, prompt_struct, detail_level) {
 		await PreprocessChatLogEntry(args.chat_log[args.chat_log.length - 1]).then(x => x[0].length <= 16) &&
 		!await match_keys(args, ['还有', '接下来', '然后', '所以', '接着'], 'any', 1))
 		result.in_assist = false
+
+	if (result.in_nsfw && args.extension?.is_from_owner) unlockAchievement('talk_nsfw_with_master')
+	if (result.in_hypnosis) unlockAchievement('enter_hypnosis_mode')
 
 	return result
 }

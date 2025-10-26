@@ -14,6 +14,7 @@ import {
 	updateAutoRunScript
 } from '../../../../../../../src/public/shells/browserIntegration/src/api.mjs'
 import { charname } from '../../charbase.mjs'
+import { unlockAchievement } from '../../scripts/achievements.mjs'
 import { UseNofityAbleChannel } from '../../scripts/notify.mjs'
 import { statisticDatas, newCharReplay } from '../../scripts/statistics.mjs'
 import { GetReply } from '../index.mjs'
@@ -224,6 +225,7 @@ export async function browserIntegration(result, args) {
 	for (const processor of commandProcessors)
 		for (const match of result.content.matchAll(processor.regex)) {
 			processed = true
+			unlockAchievement('use_browser_integration')
 			statisticDatas.toolUsage.browserOperations = (statisticDatas.toolUsage.browserOperations || 0) + 1
 			commands_called.push(match[0])
 			try {

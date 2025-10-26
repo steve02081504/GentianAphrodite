@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 
+import { unlockAchievement } from '../../scripts/achievements.mjs'
 import { getFileObjFormPathOrUrl, resolvePath } from '../../scripts/fileobj.mjs'
 import { statisticDatas } from '../../scripts/statistics.mjs'
 import { escapeRegExp, parseRegexFromString } from '../../scripts/tools.mjs'
@@ -20,6 +21,7 @@ export async function file_change(result, { AddLongTimeLog }) {
 	if (view_files_match) {
 		const paths = view_files_match.split('\n').map(p => p.trim()).filter(path => path)
 		if (paths.length) {
+			unlockAchievement('use_file_change')
 			const logContent = '<view-file>\n' + paths.join('\n') + '\n</view-file>\n'
 			if (!tool_calling_log.content) {
 				tool_calling_log.content += logContent
@@ -59,6 +61,7 @@ export async function file_change(result, { AddLongTimeLog }) {
 
 	const replace_file_content = result.content.match(/<replace-file>(?<content>[^]*?)<\/replace-file>/)?.groups?.content
 	if (replace_file_content) {
+		unlockAchievement('use_file_change')
 		const logContent = '<replace-file>' + replace_file_content + '</replace-file>\n'
 		if (!tool_calling_log.content) {
 			tool_calling_log.content += logContent
@@ -194,6 +197,7 @@ export async function file_change(result, { AddLongTimeLog }) {
 
 	const override_file_match = result.content.match(/<override-file\s+path="(?<path>[^"]+)">(?<content>[^]*?)<\/override-file>/)?.groups
 	if (override_file_match) {
+		unlockAchievement('use_file_change')
 		const { path, content } = override_file_match
 		const logContent = `<override-file path="${path}">` + content + '</override-file>\n'
 		if (!tool_calling_log.content) {

@@ -14,6 +14,7 @@ export async function update() {
 	return {
 		name: '龙胆',
 		avatar: `${charurl}/imgs/anime.avif`,
+		icon: 'https://api.iconify.design/game-icons/flower-pot.svg',
 		sfw_avatar: `${charurl}/imgs/sfw.avif`,
 		description: '一个要素爆表的合法萝莉老婆！',
 		sfw_description: '小龙胆能有什么坏心思呢？',

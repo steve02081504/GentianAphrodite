@@ -1,3 +1,4 @@
+import { unlockAchievement } from '../../scripts/achievements.mjs'
 import { statisticDatas } from '../../scripts/statistics.mjs'
 import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
@@ -9,6 +10,7 @@ export async function googlesearch(result, { AddLongTimeLog }) {
 	let searchQueryContent = result.content.match(/<google-search>(?<query>[^]*?)<\/google-search>/)?.groups?.query
 	if (searchQueryContent) {
 		const { search, OrganicResult } = await import('npm:google-sr@^6.0.0')
+		unlockAchievement('use_googlesearch')
 		statisticDatas.toolUsage.googleSearches++
 		searchQueryContent = searchQueryContent.trim()
 		if (!searchQueryContent) {

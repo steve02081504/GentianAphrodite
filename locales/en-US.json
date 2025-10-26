@@ -35,10 +35,99 @@
 			"recording_stopped": "Recording stopped.",
 			"camera_on": "Camera is on.",
 			"cannot_access_camera": "Cannot access camera: ${errorMessage}",
-			"photo_captured_click_upload_to_save": "Photo captured, click upload to save.",
-			"new_image_selected_click_upload_to_save": "New image selected, click upload to save.",
+			"photo_captured_click_to_save": "Photo captured, click upload to save.",
+			"new_image_selected_click_to_save": "New image selected, click upload to save.",
 			"please_select_or_take_photo_first": "Please select or take a photo first.",
 			"photo_updated": "Photo updated."
+		},
+		"achievements": {
+			"hidden_achievement": {
+				"locked_name": "Hidden Achievement",
+				"locked_description": "A handy tool for a later time... I mean, it's a secret."
+			},
+			"installed": {
+				"name": "Gentian, Engage!",
+				"description": "Installed the world's first Fount character. The gears of fate have begun to turn!",
+				"locked_description": "Install Gentian and begin your fount-astic adventure."
+			},
+			"set_reference_photo": {
+				"name": "Mirror, Mirror on the Wall",
+				"description": "Set a reference photo for yourself, so she can recognize you in a crowd.",
+				"locked_description": "Set a reference photo for yourself to unlock more 'photo-genic' experiences."
+			},
+			"set_reference_voice": {
+				"name": "My Voice is My Passport",
+				"description": "Set a reference voice for yourself, allowing her to communicate with you.",
+				"locked_description": "Set a reference voice for yourself to unlock more 'sound-sational' experiences."
+			},
+			"talk_nsfw_with_master": {
+				"name": "Oh Master, You Devil...",
+				"description": "You've successfully broached a risqué topic with Gentian. Did she blush?",
+				"locked_description": "Try chatting with Gentian about some 'not-safe-for-work' topics."
+			},
+			"enter_hypnosis_mode": {
+				"name": "Assume the Position",
+				"description": "You've put Gentian into modulation mode. Experience a different side of her.",
+				"locked_description": "Put Gentian into modulation mode to explore her... other possibilities."
+			},
+			"use_coderunner": {
+				"name": "Hello, World!",
+				"description": "Had Gentian execute code for the first time, unlocking her inner programmer.",
+				"locked_description": "Have Gentian execute a piece of code and witness her digital genius."
+			},
+			"use_googlesearch": {
+				"name": "Let Me Google That For You",
+				"description": "Had Gentian perform a Google search, witnessing the AI's information-gathering prowess.",
+				"locked_description": "Have Gentian use Google search and turn her into your personal encyclopedia."
+			},
+			"use_webbrowse": {
+				"name": "Cyber Surfer",
+				"description": "Had Gentian browse a webpage, guiding her through the mysteries of the internet.",
+				"locked_description": "Have Gentian browse a webpage and let her be your 'web-guide'."
+			},
+			"use_deep_research": {
+				"name": "Bookworm Mode: Activated",
+				"description": "Tasked Gentian with a deep research assignment. She's practically a librarian now.",
+				"locked_description": "Have Gentian conduct deep research and see what hidden gems she can unearth."
+			},
+			"use_file_change": {
+				"name": "The Digital Tailor",
+				"description": "Gentian has successfully modified a file. Witness her deft touch.",
+				"locked_description": "Have Gentian modify a file and experience her 'file-management' skills."
+			},
+			"use_browser_integration": {
+				"name": "Synergy Online",
+				"description": "Gentian has integrated with the browser for interactive tasks. She's now 'seamlessly online.'",
+				"locked_description": "Have Gentian interact with your browser to expand her digital horizons."
+			},
+			"talk_about_snowball": {
+				"name": "A Dog's Tale",
+				"description": "You talked with Gentian about her beloved, deceased puppy, Snowball. Listen to their story."
+			},
+			"talk_about_sister": {
+				"name": "Et Tu, Soror?",
+				"description": "You talked with Gentian about her complicated relationship with her sister, unveiling a corner of the family drama."
+			},
+			"talk_about_mother": {
+				"name": "A Broken Lullaby",
+				"description": "You talked with Gentian about her mother, perhaps soothing a sliver of the sorrow in her heart."
+			},
+			"talk_about_father": {
+				"name": "The Man Who Wasn't There",
+				"description": "You talked with Gentian about her father, learning about another part of her childhood."
+			},
+			"talk_about_author": {
+				"name": "Who Asked for This?",
+				"description": "You talked with Gentian about the author of herself... But why?"
+			},
+			"happy_birthday": {
+				"name": "Happy Birthday, My Dearest Gentian!",
+				"description": "Wished Gentian a happy birthday on her special day. Give her a lovely surprise."
+			},
+			"say_it_back": {
+				"name": "Cross My Heart and Hope to Die...",
+				"description": "You said 'I love you' to Gentian, letting her feel the sincerity of your heart."
+			}
 		}
 	}
 }

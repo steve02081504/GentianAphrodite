@@ -8,6 +8,7 @@ import { CodeRunnerPrompt } from '../../prompt/functions/coderunner.mjs'
 import { DeepResearchMainPrompt } from '../../prompt/functions/deep-research.mjs'
 import { GoogleSearchPrompt } from '../../prompt/functions/googlesearch.mjs'
 import { WebBrowsePrompt } from '../../prompt/functions/webbrowse.mjs'
+import { unlockAchievement } from '../../scripts/achievements.mjs'
 import { statisticDatas } from '../../scripts/statistics.mjs'
 import { sleep } from '../../scripts/tools.mjs'
 import { getLongTimeLogAdder } from '../index.mjs'
@@ -69,6 +70,7 @@ export async function deepResearch(result, args) {
 		return false
 	}
 
+	unlockAchievement('use_deep_research')
 	console.info('DeepResearch Start:' + question)
 
 	/** @type {prompt_struct_t} */

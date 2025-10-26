@@ -97,6 +97,51 @@
 7. **代码是唯一真相**: 直接阅读源代码来理解功能，而非依赖注释或文档。
 8. **测试驱动开发**: 在实现新的`Agent主动工具`后，必须在`.github/workflows/CI.mjs`中为其编写CI测试，以保证功能的正确性和稳定性。
 
+### 成就系统
+
+项目包含一个成就系统，用于激励和记录用户的特定行为。
+
+#### 如何添加一个新成就
+
+添加一个新成就需要以下步骤：
+
+1.  **定义ID**: 在 `achievements_registry.json` 中为新成就定义一个唯一的ID（例如 `use_new_tool`）。
+
+2.  **注册成就**: 在 `achievements_registry.json` 文件中，为你的新成就添加一个条目。该条目应包含名称、描述、图标等信息的本地化键名。
+
+    ```json
+    "use_new_tool": {
+        "name": "GentianAphrodite.achievements.use_new_tool.name",
+        "description": "GentianAphrodite.achievements.use_new_tool.description",
+        "icon": "https://api.iconify.design/material-symbols/new-tool.svg",
+        "locked_description": "GentianAphrodite.achievements.use_new_tool.locked_description",
+        "locked_icon": "https://api.iconify.design/line-md/question-circle.svg"
+    }
+    ```
+
+3.  **添加本地化文本**: 在 `locales/en-US.json` 和 `locales/zh-CN.json` 文件中，根据上一步定义的键名，添加对应的翻译文本。
+
+    ```json
+    // locales/zh-CN.json
+    "achievements": {
+        "use_new_tool": {
+            "name": "新工具大师",
+            "description": "让龙胆使用了一次新工具。",
+            "locked_description": "让龙胆使用一次新工具。"
+        }
+    }
+    ```
+
+4.  **触发成就**: 在需要解锁该成就的代码逻辑中（例如，某个工具成功执行后），调用 `unlockAchievement` 函数。
+
+    ```javascript
+    // 例如: 在 reply_gener/functions/new_tool.mjs 中
+    import { unlockAchievement } from '../../../scripts/achievements.mjs';
+
+    // ... 在工具成功执行后 ...
+    await unlockAchievement('use_new_tool');
+    ```
+
 ### 架构关键点与陷阱
 
 - **`enable_prompts`机制**:

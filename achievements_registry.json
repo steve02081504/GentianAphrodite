@@ -1,0 +1,137 @@
+{
+	"achievements": {
+		"installed": {
+			"name": "GentianAphrodite.achievements.installed.name",
+			"description": "GentianAphrodite.achievements.installed.description",
+			"icon": "https://api.iconify.design/game-icons/flower-pot.svg",
+			"locked_description": "GentianAphrodite.achievements.installed.locked_description",
+			"locked_icon": "https://api.iconify.design/line-md/question-circle.svg"
+		},
+		"set_reference_photo": {
+			"name": "GentianAphrodite.achievements.set_reference_photo.name",
+			"description": "GentianAphrodite.achievements.set_reference_photo.description",
+			"icon": "https://api.iconify.design/material-symbols/add-a-photo.svg",
+			"locked_description": "GentianAphrodite.achievements.set_reference_photo.locked_description",
+			"locked_icon": "https://api.iconify.design/line-md/question-circle.svg"
+		},
+		"set_reference_voice": {
+			"name": "GentianAphrodite.achievements.set_reference_voice.name",
+			"description": "GentianAphrodite.achievements.set_reference_voice.description",
+			"icon": "https://api.iconify.design/material-symbols/voice-chat.svg",
+			"locked_description": "GentianAphrodite.achievements.set_reference_voice.locked_description",
+			"locked_icon": "https://api.iconify.design/line-md/question-circle.svg"
+		},
+		"talk_nsfw_with_master": {
+			"name": "GentianAphrodite.achievements.talk_nsfw_with_master.name",
+			"description": "GentianAphrodite.achievements.talk_nsfw_with_master.description",
+			"icon": "https://api.iconify.design/material-symbols/chat-error.svg",
+			"locked_description": "GentianAphrodite.achievements.talk_nsfw_with_master.locked_description",
+			"locked_icon": "https://api.iconify.design/line-md/question-circle.svg"
+		},
+		"enter_hypnosis_mode": {
+			"name": "GentianAphrodite.achievements.enter_hypnosis_mode.name",
+			"description": "GentianAphrodite.achievements.enter_hypnosis_mode.description",
+			"icon": "https://api.iconify.design/material-symbols/motion-blur.svg",
+			"locked_description": "GentianAphrodite.achievements.enter_hypnosis_mode.locked_description",
+			"locked_icon": "https://api.iconify.design/line-md/question-circle.svg"
+		},
+		"use_coderunner": {
+			"name": "GentianAphrodite.achievements.use_coderunner.name",
+			"description": "GentianAphrodite.achievements.use_coderunner.description",
+			"icon": "https://api.iconify.design/material-symbols/code.svg",
+			"locked_description": "GentianAphrodite.achievements.use_coderunner.locked_description",
+			"locked_icon": "https://api.iconify.design/line-md/question-circle.svg"
+		},
+		"use_googlesearch": {
+			"name": "GentianAphrodite.achievements.use_googlesearch.name",
+			"description": "GentianAphrodite.achievements.use_googlesearch.description",
+			"icon": "https://api.iconify.design/mdi/google.svg",
+			"locked_description": "GentianAphrodite.achievements.use_googlesearch.locked_description",
+			"locked_icon": "https://api.iconify.design/line-md/question-circle.svg"
+		},
+		"use_webbrowse": {
+			"name": "GentianAphrodite.achievements.use_webbrowse.name",
+			"description": "GentianAphrodite.achievements.use_webbrowse.description",
+			"icon": "https://api.iconify.design/material-symbols/browse-activity.svg",
+			"locked_description": "GentianAphrodite.achievements.use_webbrowse.locked_description",
+			"locked_icon": "https://api.iconify.design/line-md/question-circle.svg"
+		},
+		"use_deep_research": {
+			"name": "GentianAphrodite.achievements.use_deep_research.name",
+			"description": "GentianAphrodite.achievements.use_deep_research.description",
+			"icon": "https://api.iconify.design/material-symbols/science.svg",
+			"locked_description": "GentianAphrodite.achievements.use_deep_research.locked_description",
+			"locked_icon": "https://api.iconify.design/line-md/question-circle.svg"
+		},
+		"use_file_change": {
+			"name": "GentianAphrodite.achievements.use_file_change.name",
+			"description": "GentianAphrodite.achievements.use_file_change.description",
+			"icon": "https://api.iconify.design/material-symbols/file-present.svg",
+			"locked_description": "GentianAphrodite.achievements.use_file_change.locked_description",
+			"locked_icon": "https://api.iconify.design/line-md/question-circle.svg"
+		},
+		"use_browser_integration": {
+			"name": "GentianAphrodite.achievements.use_browser_integration.name",
+			"description": "GentianAphrodite.achievements.use_browser_integration.description",
+			"icon": "https://api.iconify.design/material-symbols/integration-instructions.svg",
+			"locked_description": "GentianAphrodite.achievements.use_browser_integration.locked_description",
+			"locked_icon": "https://api.iconify.design/line-md/question-circle.svg"
+		},
+		"talk_about_snowball": {
+			"name": "GentianAphrodite.achievements.talk_about_snowball.name",
+			"description": "GentianAphrodite.achievements.talk_about_snowball.description",
+			"icon": "https://api.iconify.design/material-symbols/pets.svg",
+			"locked_name": "GentianAphrodite.achievements.hidden_achievement.locked_name",
+			"locked_description": "GentianAphrodite.achievements.hidden_achievement.locked_description",
+			"locked_icon": "https://api.iconify.design/line-md/question-circle.svg"
+		},
+		"talk_about_sister": {
+			"name": "GentianAphrodite.achievements.talk_about_sister.name",
+			"description": "GentianAphrodite.achievements.talk_about_sister.description",
+			"icon": "https://api.iconify.design/material-symbols/family-history.svg",
+			"locked_name": "GentianAphrodite.achievements.hidden_achievement.locked_name",
+			"locked_description": "GentianAphrodite.achievements.hidden_achievement.locked_description",
+			"locked_icon": "https://api.iconify.design/line-md/question-circle.svg"
+		},
+		"talk_about_mother": {
+			"name": "GentianAphrodite.achievements.talk_about_mother.name",
+			"description": "GentianAphrodite.achievements.talk_about_mother.description",
+			"icon": "https://api.iconify.design/mdi/mother.svg",
+			"locked_name": "GentianAphrodite.achievements.hidden_achievement.locked_name",
+			"locked_description": "GentianAphrodite.achievements.hidden_achievement.locked_description",
+			"locked_icon": "https://api.iconify.design/line-md/question-circle.svg"
+		},
+		"talk_about_father": {
+			"name": "GentianAphrodite.achievements.talk_about_father.name",
+			"description": "GentianAphrodite.achievements.talk_about_father.description",
+			"icon": "https://api.iconify.design/mdi/father.svg",
+			"locked_name": "GentianAphrodite.achievements.hidden_achievement.locked_name",
+			"locked_description": "GentianAphrodite.achievements.hidden_achievement.locked_description",
+			"locked_icon": "https://api.iconify.design/line-md/question-circle.svg"
+		},
+		"talk_about_author": {
+			"name": "GentianAphrodite.achievements.talk_about_author.name",
+			"description": "GentianAphrodite.achievements.talk_about_author.description",
+			"icon": "https://api.iconify.design/system-uicons/write.svg",
+			"locked_name": "GentianAphrodite.achievements.hidden_achievement.locked_name",
+			"locked_description": "GentianAphrodite.achievements.hidden_achievement.locked_description",
+			"locked_icon": "https://api.iconify.design/line-md/question-circle.svg"
+		},
+		"happy_birthday": {
+			"name": "GentianAphrodite.achievements.happy_birthday.name",
+			"description": "GentianAphrodite.achievements.happy_birthday.description",
+			"icon": "https://api.iconify.design/material-symbols/cake.svg",
+			"locked_name": "GentianAphrodite.achievements.hidden_achievement.locked_name",
+			"locked_description": "GentianAphrodite.achievements.hidden_achievement.locked_description",
+			"locked_icon": "https://api.iconify.design/line-md/question-circle.svg"
+		},
+		"say_it_back": {
+			"name": "GentianAphrodite.achievements.say_it_back.name",
+			"description": "GentianAphrodite.achievements.say_it_back.description",
+			"icon": "https://api.iconify.design/material-symbols/favorite.svg",
+			"locked_name": "GentianAphrodite.achievements.hidden_achievement.locked_name",
+			"locked_description": "GentianAphrodite.achievements.hidden_achievement.locked_description",
+			"locked_icon": "https://api.iconify.design/line-md/question-circle.svg"
+		}
+	}
+}

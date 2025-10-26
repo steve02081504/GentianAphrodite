@@ -3,6 +3,7 @@ import util from 'node:util'
 
 import { async_eval } from 'https://cdn.jsdelivr.net/gh/steve02081504/async-eval/deno.mjs'
 
+import { unlockAchievement } from '../../scripts/achievements.mjs'
 import { available, shell_exec_map } from '../../scripts/exec.mjs'
 import { toFileObj } from '../../scripts/fileobj.mjs'
 import { newCharReplay, statisticDatas } from '../../scripts/statistics.mjs'
@@ -131,6 +132,7 @@ export async function coderunner(result, args) {
 
 	const jsrunner = result.content.match(/<run-js>(?<code>[^]*?)<\/run-js>/)?.groups?.code?.split?.('<run-js>')?.pop?.()
 	if (jsrunner) {
+		unlockAchievement('use_coderunner')
 		statisticDatas.toolUsage.codeRuns++
 		AddLongTimeLog({
 			name: '龙胆',
@@ -155,6 +157,7 @@ export async function coderunner(result, args) {
 		const runner_regex = new RegExp(`<run-${shell_name}>(?<code>[^]*?)<\\/run-${shell_name}>`)
 		const runner = result.content.match(runner_regex)?.groups?.code
 		if (runner) {
+			unlockAchievement('use_coderunner')
 			statisticDatas.toolUsage.codeRuns++
 			AddLongTimeLog({
 				name: '龙胆',
@@ -181,6 +184,7 @@ export async function coderunner(result, args) {
 	// inline js code
 	// 这个和其他的不一样，我们需要执行js代码并将结果以string替换代码块
 	if (result.content.match(/<inline-js>[^]*?<\/inline-js>/)) try {
+		unlockAchievement('use_coderunner')
 		const original = result.content
 		const replacements = await Promise.all(
 			Array.from(result.content.matchAll(/<inline-js>(?<code>[^]*?)<\/inline-js>/g))
@@ -230,6 +234,7 @@ export async function coderunner(result, args) {
 		if (!available[shell_name]) continue
 		const runner_regex = new RegExp(`<inline-${shell_name}>[^]*?<\\/inline-${shell_name}>`)
 		if (result.content.match(runner_regex)) try {
+			unlockAchievement('use_coderunner')
 			const original = result.content
 			const runner_regex_g = new RegExp(`<inline-${shell_name}>(?<code>[^]*?)<\\/inline-${shell_name}>`, 'g')
 			const replacements = await Promise.all(

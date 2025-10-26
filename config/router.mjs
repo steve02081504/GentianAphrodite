@@ -7,6 +7,7 @@ import wavefile from 'npm:wavefile'
 
 import { chardir, charname } from '../charbase.mjs'
 import { checkVoiceSentinel } from '../event_engine/voice_sentinel.mjs'
+import { unlockAchievement } from '../scripts/achievements.mjs'
 
 export function setConfigEndpoints(router) {
 	router.post(`/api/chars/${charname}/saveAudioFile`, async (req, res) => {
@@ -28,6 +29,7 @@ export function setConfigEndpoints(router) {
 
 			res.status(200).json({ message: 'File saved successfully' })
 			checkVoiceSentinel()
+			unlockAchievement('set_reference_voice')
 		}
 		catch (error) {
 			console.error(error)
@@ -46,6 +48,7 @@ export function setConfigEndpoints(router) {
 			await fs.writeFile(finalPath, buffer)
 
 			res.status(200).json({ message: 'File saved successfully' })
+			unlockAchievement('set_reference_photo')
 		}
 		catch (error) {
 			console.error(error)
