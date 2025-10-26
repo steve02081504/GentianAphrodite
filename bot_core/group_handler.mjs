@@ -11,7 +11,7 @@ import { fetchFilesForMessages } from './utils.mjs'
  */
 
 /**
- * 扩展的 Fount 聊天日志条目类型，包含平台特定信息。
+ * 扩展的 fount 聊天日志条目类型，包含平台特定信息。
  * @typedef {import('./state.mjs').chatLogEntry_t_ext} chatLogEntry_t_ext
  */
 

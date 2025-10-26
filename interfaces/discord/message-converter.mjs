@@ -20,11 +20,11 @@ import { getMessageFullContent } from './utils.mjs'
  */
 
 /**
- * 将 Discord 消息对象转换为 Bot 逻辑层可以理解的 Fount 聊天日志条目格式。
+ * 将 Discord 消息对象转换为 Bot 逻辑层可以理解的 fount 聊天日志条目格式。
  * @async
  * @param {DiscordMessage} message - 从 Discord 收到的原始消息对象。
  * @param {DiscordInterfaceConfig_t} interfaceConfig - 当前 Discord 接口的配置对象。
- * @returns {Promise<chatLogEntry_t_ext | null>} 转换后的 Fount 聊天日志条目。如果消息无效或不应处理 (如系统消息)，则返回 null。
+ * @returns {Promise<chatLogEntry_t_ext | null>} 转换后的 fount 聊天日志条目。如果消息无效或不应处理 (如系统消息)，则返回 null。
  */
 export async function discordMessageToFountChatLogEntry(message, interfaceConfig) {
 	const author = discordUserCache[message.author.id] || message.author

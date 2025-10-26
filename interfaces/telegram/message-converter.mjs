@@ -259,7 +259,7 @@ async function processMessageFiles(message, ctx) {
 }
 
 /**
- * 将 Telegram 消息上下文转换为 Bot 逻辑层可以理解的 Fount 聊天日志条目格式。
+ * 将 Telegram 消息上下文转换为 Bot 逻辑层可以理解的 fount 聊天日志条目格式。
  * @async
  * @param {TelegrafContext | import('npm:telegraf').Telegraf} ctxOrBotInstance
  * @param {TelegramMessageType} message

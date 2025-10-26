@@ -7,32 +7,32 @@ import { mergeChatLogEntries, updateBotNameMapping, updateUserCache } from './ut
 export { configure, registerGroupHandlers as registerPlatformAPI }
 
 /**
- * Fount 基础聊天日志条目类型。
+ * fount 基础聊天日志条目类型。
  * @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} FountChatLogEntryBase
  */
 
 /**
- * Fount 聊天回复对象类型。
+ * fount 聊天回复对象类型。
  * @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReply_t} FountChatReply_t
  */
 
 /**
- * Fount 聊天回复请求对象类型。
+ * fount 聊天回复请求对象类型。
  * @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReplyRequest_t} FountChatReplyRequest_t
  */
 
 /**
- * Fount 插件 API 对象类型。
+ * fount 插件 API 对象类型。
  * @typedef {import('../../../../../../src/decl/pluginAPI.ts').pluginAPI_t} pluginAPI_t
  */
 
 /**
- * Fount 世界观 API 对象类型。
+ * fount 世界观 API 对象类型。
  * @typedef {import('../../../../../../src/decl/WorldAPI.ts').WorldAPI_t} WorldAPI_t
  */
 
 /**
- * 扩展的 Fount 聊天日志条目类型，包含平台特定信息。
+ * 扩展的 fount 聊天日志条目类型，包含平台特定信息。
  * @typedef {import('./state.mjs').chatLogEntry_t_ext} chatLogEntry_t_ext
  */
 
@@ -176,7 +176,7 @@ function ensureChannelHandlerIsRunning(channelId, platformAPI, fountEntry) {
 /**
  * 处理从接入层传入的新消息。
  * @async
- * @param {chatLogEntry_t_ext} fountEntry - 已经由接入层转换为 Fount 格式的平台消息条目。
+ * @param {chatLogEntry_t_ext} fountEntry - 已经由接入层转换为 fount 格式的平台消息条目。
  * @param {PlatformAPI_t} platformAPI - 当前平台的 API 对象。
  * @param {string | number} channelId - 消息所在的频道 ID。
  */
@@ -198,7 +198,7 @@ export async function processIncomingMessage(fountEntry, platformAPI, channelId)
 /**
  * 处理从接入层传入的消息更新事件 (例如，消息被编辑)。
  * @async
- * @param {chatLogEntry_t_ext} updatedFountEntry - 包含更新信息的新的 Fount 格式消息条目。
+ * @param {chatLogEntry_t_ext} updatedFountEntry - 包含更新信息的新的 fount 格式消息条目。
  * @param {PlatformAPI_t} platformAPI - 当前平台的 API 对象。
  * @param {string | number} channelId - 消息所在的频道 ID。
  */

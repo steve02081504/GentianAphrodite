@@ -7,12 +7,12 @@ import { channelChatLogs, channelLastSendMessageTime, channelCharScopedMemory, u
 import { fetchFilesForMessages, updateBotNameMapping } from './utils.mjs'
 
 /**
- * Fount 聊天回复对象类型。
+ * fount 聊天回复对象类型。
  * @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReply_t} FountChatReply_t
  */
 
 /**
- * Fount 聊天回复请求对象类型。
+ * fount 聊天回复请求对象类型。
  * @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReplyRequest_t} FountChatReplyRequest_t
  */
 
@@ -22,7 +22,7 @@ import { fetchFilesForMessages, updateBotNameMapping } from './utils.mjs'
  */
 
 /**
- * 扩展的 Fount 聊天日志条目类型，包含平台特定信息。
+ * 扩展的 fount 聊天日志条目类型，包含平台特定信息。
  * @typedef {import('./state.mjs').chatLogEntry_t_ext} chatLogEntry_t_ext
  */
 
@@ -179,7 +179,7 @@ export async function doMessageReply(triggerMessage, platformAPI, channelId) {
  * @param {PlatformAPI_t} platformAPI - 当前平台的 API 对象。
  * @param {string | number} channelId - 目标频道 ID。
  * @param {chatLogEntry_t_ext | undefined} repliedToMessageEntry - (可选) 被回复的原始消息条目。
- * @returns {Promise<chatLogEntry_t_ext | null>} 返回第一条成功发送的消息对应的 Fount Entry，如果发送失败或无内容则返回 null。
+ * @returns {Promise<chatLogEntry_t_ext | null>} 返回第一条成功发送的消息对应的 fount Entry，如果发送失败或无内容则返回 null。
  */
 export async function sendAndLogReply(replyToSend, platformAPI, channelId, repliedToMessageEntry) {
 	if (!replyToSend.content && !replyToSend.files?.length) {

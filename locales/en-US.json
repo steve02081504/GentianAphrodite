@@ -47,7 +47,7 @@
 			},
 			"installed": {
 				"name": "Gentian, Engage!",
-				"description": "Installed the world's first Fount character. The gears of fate have begun to turn!",
+				"description": "Installed the world's first fount character. The gears of fate have begun to turn!",
 				"locked_description": "Install Gentian and begin your fount-astic adventure."
 			},
 			"set_reference_photo": {
@@ -117,8 +117,8 @@
 				"description": "You talked with Gentian about her father, learning about another part of her childhood."
 			},
 			"talk_about_author": {
-				"name": "Who Asked for This?",
-				"description": "You talked with Gentian about the author of herself... But why?"
+				"name": "Who's Calling My Name?",
+				"description": "You talked with Gentian about her author... But why?"
 			},
 			"happy_birthday": {
 				"name": "Happy Birthday, My Dearest Gentian!",

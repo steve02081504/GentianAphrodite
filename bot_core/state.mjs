@@ -1,10 +1,10 @@
 /**
- * Fount 基础聊天日志条目类型。
+ * fount 基础聊天日志条目类型。
  * @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} FountChatLogEntryBase
  */
 
 /**
- * 扩展的 Fount 聊天日志条目类型，包含平台特定信息。
+ * 扩展的 fount 聊天日志条目类型，包含平台特定信息。
  * @typedef {FountChatLogEntryBase & {
  *  extension?: {
  *      platform: string,

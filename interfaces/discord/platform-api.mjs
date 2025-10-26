@@ -45,9 +45,9 @@ export function buildPlatformAPI(interfaceConfig) {
 		/**
 		 * 发送消息到指定的 Discord 频道。
 		 * @param {string | number} channelId - 目标 Discord 频道的 ID。
-		 * @param {FountChatReply_t} fountReplyPayload - 由 Bot 逻辑层生成的、包含回复内容的 Fount 回复对象。
+		 * @param {FountChatReply_t} fountReplyPayload - 由 Bot 逻辑层生成的、包含回复内容的 fount 回复对象。
 		 * @param {chatLogEntry_t_ext} [originalMessageEntry] - (可选) 触发此次回复的原始消息条目，用于在 Discord 上下文显示为“回复”。
-		 * @returns {Promise<chatLogEntry_t_ext | null>} 如果发送成功，则返回代表第一条已发送消息的 Fount 日志条目；否则返回 null。
+		 * @returns {Promise<chatLogEntry_t_ext | null>} 如果发送成功，则返回代表第一条已发送消息的 fount 日志条目；否则返回 null。
 		 */
 		async sendMessage(channelId, fountReplyPayload, originalMessageEntry) {
 			const channel = await client.channels.fetch(String(channelId)).catch(() => null)
@@ -158,7 +158,7 @@ export function buildPlatformAPI(interfaceConfig) {
 		 * 获取指定 Discord 频道的历史消息。
 		 * @param {string | number} channelId - 目标 Discord 频道的 ID。
 		 * @param {number} limit - 要获取的消息数量上限。
-		 * @returns {Promise<chatLogEntry_t_ext[]>} 转换后的 Fount 聊天日志条目数组 (按时间从旧到新排序)。
+		 * @returns {Promise<chatLogEntry_t_ext[]>} 转换后的 fount 聊天日志条目数组 (按时间从旧到新排序)。
 		 */
 		async fetchChannelHistory(channelId, limit) {
 			const channel = await client.channels.fetch(String(channelId)).catch(() => null)

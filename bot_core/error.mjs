@@ -7,12 +7,12 @@ import { sendAndLogReply } from './reply.mjs'
 import { errorRecord, userIdToNameMap, inHypnosisChannelId } from './state.mjs'
 
 /**
- * Fount 聊天回复对象类型。
+ * fount 聊天回复对象类型。
  * @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReply_t} FountChatReply_t
  */
 
 /**
- * Fount 聊天回复请求对象类型。
+ * fount 聊天回复请求对象类型。
  * @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReplyRequest_t} FountChatReplyRequest_t
  */
 
@@ -22,7 +22,7 @@ import { errorRecord, userIdToNameMap, inHypnosisChannelId } from './state.mjs'
  */
 
 /**
- * 扩展的 Fount 聊天日志条目类型，包含平台特定信息。
+ * 扩展的 fount 聊天日志条目类型，包含平台特定信息。
  * @typedef {import('./state.mjs').chatLogEntry_t_ext} chatLogEntry_t_ext
  */
 

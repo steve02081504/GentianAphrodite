@@ -27,14 +27,14 @@ const TriggerResultType = Object.freeze({
  */
 
 /**
- * 扩展的 Fount 聊天日志条目类型，包含平台特定信息。
+ * 扩展的 fount 聊天日志条目类型，包含平台特定信息。
  * @typedef {import('./state.mjs').chatLogEntry_t_ext} chatLogEntry_t_ext
  */
 
 /**
  * 检查传入的消息是否应该触发机器人回复。
  * @async
- * @param {chatLogEntry_t_ext} fountEntry - 当前正在处理的 Fount 格式消息条目。
+ * @param {chatLogEntry_t_ext} fountEntry - 当前正在处理的 fount 格式消息条目。
  * @param {PlatformAPI_t} platformAPI - 当前平台的 API 对象。
  * @param {string | number} channelId - 消息所在的频道 ID。
  * @param {{has_other_gentian_bot?: boolean}} [env={}] - 环境信息对象，例如是否检测到其他机器人。
