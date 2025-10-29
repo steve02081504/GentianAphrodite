@@ -21,12 +21,12 @@ export function SimplifyChinese(content) {
 	return chT2S(content)
 }
 /**
- * A simpler version of SimplifiyContent that does not do any translation.
+ * A simpler version of SimplifyContent that does not do any translation.
  * @param {string} content
  * @returns {[string, string, string]} The input, its simplified chinese version, and its normalized fancy text version
  */
 /**
- * 一个更简单的 SimplifiyContent 版本，不执行任何翻译。
+ * 一个更简单的 SimplifyContent 版本，不执行任何翻译。
  * @param {string} content - 要简化的内容。
  * @returns {[string, string, string]} - 输入、其简体中文版本及其标准化的花式文本版本。
  */
@@ -41,7 +41,7 @@ function SimpleSimplify(content) {
  * @param {string} content - 要简化的内容。
  * @returns {Promise<[string, string, string]>} - 一个数组，包含原始输入、简体中文版本和标准化花式文本版本。
  */
-export async function SimplifiyContent(content) {
+export async function SimplifyContent(content) {
 	content = remove_kaomoji(content)
 	if (!content.trim()) return [content]
 	/** @type {string} */
@@ -81,7 +81,7 @@ export async function SimplifiyContent(content) {
  */
 export async function PreprocessContent(content, extension = {}) {
 	extension ||= {}
-	extension.SimplifiedContents ??= await SimplifiyContent(content)
+	extension.SimplifiedContents ??= await SimplifyContent(content)
 
 	return extension
 }

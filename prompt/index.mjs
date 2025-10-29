@@ -5,10 +5,10 @@ import { buildLogicalResults } from './logical_results/index.mjs'
 
 /**
  * 获取完整的 prompt。
- * @param {object} args - 生成 prompt 所需的参数。
- * @param {object} prompt_struct - prompt 的结构。
+ * @param {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReplyRequest_t} args - 生成 prompt 所需的参数。
+ * @param {import('../../../../../../../src/decl/prompt_struct.ts').prompt_struct_t} prompt_struct - prompt 的结构。
  * @param {number} detail_level - prompt 的详细程度。
- * @returns {Promise<object>} 返回生成的 prompt。
+ * @returns {Promise<{text: {content: string, important: number}[]}>} 返回生成的 prompt。
  */
 export async function GetPrompt(args, prompt_struct, detail_level) {
 	const logical_results = await buildLogicalResults(args, prompt_struct, detail_level)
@@ -20,10 +20,10 @@ export async function GetPrompt(args, prompt_struct, detail_level) {
 
 /**
  * 获取用于其他角色的 prompt。
- * @param {object} args - 生成 prompt 所需的参数。
- * @param {object} prompt_struct - prompt 的结构。
+ * @param {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReplyRequest_t} args - 生成 prompt 所需的参数。
+ * @param {import('../../../../../../../src/decl/prompt_struct.ts').prompt_struct_t} prompt_struct - prompt 的结构。
  * @param {number} detail_level - prompt 的详细程度。
- * @returns {Promise<object>} 返回生成的 prompt。
+ * @returns {Promise<{text: {content: string, important: number}[]}>} 返回生成的 prompt。
  */
 export async function GetPromptForOther(args, prompt_struct, detail_level) {
 	return {

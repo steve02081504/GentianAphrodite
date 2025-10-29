@@ -19,6 +19,37 @@ import { GetReply } from '../reply_gener/index.mjs'
 
 import { initRealityChannel, RealityChannel } from './index.mjs'
 
+/**
+ * @typedef {object} RecordingStats
+ * @property {number} totalRms
+ * @property {number} frameCount
+ * @property {number} totalLoudFrames
+ * @property {number} matchingLoudFrames
+ * @property {number} longestInternalSilenceFrames
+ * @property {number} currentSilenceStreakFrames
+ */
+
+/**
+ * @typedef {object} VoiceSentinelState
+ * @property {string} state
+ * @property {PvRecorder | null} recorder
+ * @property {number[][] | null} referenceMfccs
+ * @property {Date | null} referenceFileMtime
+ * @property {{quiet: number, loud: number}} dynamicThresholds
+ * @property {number[]} initRmsList
+ * @property {number | null} quietStartTime
+ * @property {number | null} lastLoudTime
+ * @property {any[]} armingBuffer
+ * @property {any[]} recordingBuffer
+ * @property {number | null} recordingStartTime
+ * @property {number} consecutiveLoudFrames
+ * @property {number} lastValidationCheckTime
+ * @property {any[]} activityLog
+ * @property {RecordingStats} currentRecordingStats
+ * @property {number} recorderRetryCount
+ * @property {number} avgEnvRms
+ */
+
 const CONFIG = {
 	// --- 阈值与触发器 (Thresholds & Triggers) ---
 	thresholds: {
@@ -69,7 +100,7 @@ const CONFIG = {
 
 /**
  * 创建并返回一个用于跟踪单次录音统计数据的初始对象。
- * @returns {{totalRms: number, frameCount: number, totalLoudFrames: number, matchingLoudFrames: number, longestInternalSilenceFrames: number, currentSilenceStreakFrames: number}}
+ * @returns {RecordingStats}
  */
 function createInitialRecordingStats() {
 	return {
@@ -81,7 +112,7 @@ function createInitialRecordingStats() {
 
 /**
  * 创建并返回语音哨兵的完整初始状态对象。
- * @returns {{state: string, recorder: PvRecorder | null, referenceMfccs: number[][] | null, referenceFileMtime: Date | null, dynamicThresholds: {quiet: number, loud: number}, initRmsList: number[], quietStartTime: number | null, lastLoudTime: number | null, armingBuffer: any[], recordingBuffer: any[], recordingStartTime: number | null, consecutiveLoudFrames: number, lastValidationCheckTime: number, activityLog: any[], currentRecordingStats: {totalRms: number, frameCount: number, totalLoudFrames: number, matchingLoudFrames: number, longestInternalSilenceFrames: number, currentSilenceStreakFrames: number}, recorderRetryCount: number, avgEnvRms: number}}
+ * @returns {VoiceSentinelState}
  */
 function createInitialState() {
 	return {
@@ -108,6 +139,7 @@ function createInitialState() {
 	}
 }
 
+/** @type {VoiceSentinelState} */
 let sentinelState = createInitialState()
 
 // --- 工具函数 (Utility Functions) ---

@@ -11,7 +11,7 @@ import { match_keys, match_keys_all } from '../../scripts/match.mjs'
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
- * @type {{
+ * @typedef {{
  * 	trigger: string,
  * 	prompt: string,
  * 	name: string,
@@ -19,7 +19,11 @@ import { match_keys, match_keys_all } from '../../scripts/match.mjs'
  * 	createdContext: string,
  * 	updatedAt?: Date,
  * 	updatedContext?: string
- * }[]}
+ * }} LongTermMemory
+ */
+
+/**
+ * @type {LongTermMemory[]}
  */
 const LongTermMemories = loadJsonFileIfExists(path.join(chardir, 'memory/long-term-memory.json'), [])
 for (const memory of LongTermMemories) {
@@ -28,7 +32,7 @@ for (const memory of LongTermMemories) {
 }
 
 /**
- * @param {object} memory 记忆
+ * @param {LongTermMemory} memory 记忆
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
  * @param {prompt_struct_t} prompt_struct 提示结构
@@ -43,7 +47,7 @@ async function runLongTermMemoryTrigger(memory, args, logical_results, prompt_st
 }
 
 /**
- * @param {object} memory 记忆
+ * @param {LongTermMemory} memory 记忆
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
  * @param {prompt_struct_t} prompt_struct 提示结构
@@ -59,7 +63,7 @@ export async function testLongTermMemoryTrigger(memory, args, logical_results, p
 
 /**
  * @param {string} name 记忆名称
- * @returns {object} 记忆
+ * @returns {LongTermMemory}
  */
 export function getLongTermMemoryByName(name) {
 	return LongTermMemories.find(mem => mem.name === name)
@@ -71,7 +75,7 @@ const context_prompt_build_table = {
 }
 
 /**
- * @param {object} memory 记忆
+ * @param {LongTermMemory} memory 记忆
  * @returns {string} 格式化的记忆上下文
  */
 export function formatLongTermMemoryContext(memory) {
@@ -94,7 +98,7 @@ const prompt_build_table = {
 }
 
 /**
- * @param {object} memory 记忆
+ * @param {LongTermMemory} memory 记忆
  * @returns {string} 格式化的记忆
  */
 export function formatLongTermMemory(memory) {
@@ -208,7 +212,7 @@ trigger的关键词应容易触发并涵盖大部分情况，鼓励使用或\`||
 }
 
 /**
- * @param {object} memory 记忆
+ * @param {LongTermMemory} memory 记忆
  */
 export function addLongTermMemory(memory) {
 	if (LongTermMemories.find(mem => mem.name === memory.name))
@@ -251,7 +255,7 @@ export function listLongTermMemory() {
 
 /**
  * @param {number} n 数量
- * @returns {object[]} 记忆列表
+ * @returns {LongTermMemory[]} 随机的n个记忆
  */
 export function getRandomNLongTermMemories(n) {
 	return LongTermMemories.sort(() => 0.5 - Math.random()).slice(0, n)
