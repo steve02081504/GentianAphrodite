@@ -195,13 +195,13 @@ export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct
 	const currentChatLog = args.chat_log
 	const currentChatName = args.chat_name // 缓存当前聊天名称
 
+	/**
+	 * @param {chatLogEntry_t[]} chat_log
+	 * @returns {Promise<KeywordInfo[]>}
+	 */
 	async function getKeyWords(chat_log) {
 		const keywordMap = {}
 
-		/**
-		 * @param {chatLogEntry_t[]} chat_log
-		 * @returns {Promise<KeywordInfo[]>}
-		 */
 		for (const entry of chat_log) {
 			const text = entry.extension?.SimplifiedContents?.[0] || entry.content
 			if (!text.trim()) continue
