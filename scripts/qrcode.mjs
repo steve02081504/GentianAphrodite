@@ -18,9 +18,9 @@ async function bufferToImageData(buffer) {
 }
 
 /**
- * 从图像 Buffer 中解码二维码内容
- * @param {Buffer} buffer - 图像的 Buffer 数据
- * @returns {Promise<string[]>} - 返回解码到的所有二维码内容字符串数组
+ * 从图像 Buffer 中解码二维码内容。
+ * @param {Buffer} buffer - 图像的 Buffer 数据。
+ * @returns {Promise<string[]>} - 返回解码到的所有二维码内容字符串数组。
  */
 export async function decodeQrCodeFromBuffer(buffer) {
 	const decodedContents = []

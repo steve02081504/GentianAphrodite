@@ -195,6 +195,12 @@ function formatMessageContent(message) {
 	return content
 }
 
+/**
+ * 获取消息的完整内容，包括 embeds、附件、转发和提及。
+ * @param {import('npm:discord.js').Message} message - Discord 消息对象。
+ * @param {import('npm:discord.js').Client} client - Discord 客户端实例。
+ * @returns {Promise<string>} - 格式化后的完整消息内容。
+ */
 export async function getMessageFullContent(message, client) {
 	let fullContent = formatMessageContent(message)
 
@@ -211,7 +217,7 @@ export async function getMessageFullContent(message, client) {
 }
 
 /**
- * 格式化文本中的提及，将 @用户名 转换为 <@用户ID>。
+ * 格式化文本中的提及，将 `@用户名` 转换为 `<@用户ID>`。
  * @param {string} text - 原始文本。
  * @param {Map<string, string>} [guildMembersMap] - (可选) 一个 Map 对象，键为小写的用户名或显示名，值为用户ID。
  * @returns {string} 格式化后的文本。

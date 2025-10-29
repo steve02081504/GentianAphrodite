@@ -20,6 +20,10 @@ import { saveVars } from './scripts/vars.mjs'
 Object.assign(GentianAphrodite, {
 	info: await UpdateInfo(),
 
+	/**
+	 * 加载角色时执行的初始化操作。
+	 * @param {object} stat - 包含初始化状态的对象。
+	 */
 	Load: async stat => {
 		initCharBase(stat)
 		addPartLocaleData(username, 'chars', 'GentianAphrodite', ['zh-CN', 'en-US'], locale => loadJsonFile(chardir + `/locales/${locale}.json`))
@@ -29,6 +33,10 @@ Object.assign(GentianAphrodite, {
 		setConfigEndpoints(stat.router)
 		unlockAchievement('installed')
 	},
+	/**
+	 * 卸载角色时执行的清理操作。
+	 * @param {string} reason - 卸载的原因。
+	 */
 	Unload: async reason => {
 		stopIdleTimer()
 		stopVoiceSentinel()

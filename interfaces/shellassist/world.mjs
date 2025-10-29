@@ -1,8 +1,14 @@
 
+/**
+ * 获取特定于 shell 环境的世界观（World）对象。
+ * 这个世界观对象会根据当前的 shell 类型（如 bash, powershell）为 AI 提供上下文和行为准则。
+ * @param {string} shelltype - 当前 shell 的类型。
+ * @returns {import('../../../../../../../src/decl/WorldAPI.ts').WorldAPI_t} - 构建的世界观对象。
+ */
 export function GetShellWorld(shelltype) {
 	/**
-	* @type {import('../../../../../../../src/decl/WorldAPI.ts').WorldAPI_t}
-	*/
+	 * @type {import('../../../../../../../src/decl/WorldAPI.ts').WorldAPI_t}
+	 */
 	const world = {
 		info: {
 			'zh-CN': {

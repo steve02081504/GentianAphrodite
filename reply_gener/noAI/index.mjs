@@ -1,8 +1,10 @@
 /** @typedef {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReplyRequest_t} chatReplyRequest_t */
 
 /**
- * @param {chatReplyRequest_t} args
- * @returns
+ * 在未配置AI源时生成预设的回复。
+ * 这不是由AI生成的，而是一个静态的、基于规则的回复，用于引导用户设置AI源。
+ * @param {chatReplyRequest_t} args - 聊天回复请求的参数，包含聊天记录和地区设置。
+ * @returns {{content: string}} 一个包含预设回复内容的对象。
  */
 export function noAIreply(args) {
 	const last_role = args.chat_log[args.chat_log.length - 1]?.role

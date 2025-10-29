@@ -12,6 +12,13 @@ import { GetReply } from '../index.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
+/**
+ * 处理被执行代码的回调。
+ * @param {object} args - 来自原始回复处理程序的参数。
+ * @param {string} reason - 回调的原因。
+ * @param {string} code - 被执行的代码。
+ * @param {any} result - 回调的结果。
+ */
 async function callback_handler(args, reason, code, result) {
 	let logger = args.AddChatLogEntry
 	const feedback = {
@@ -47,7 +54,10 @@ ${code}
 	}
 }
 
-/** @type {import("../../../../../../../src/decl/pluginAPI.ts").ReplyHandler_t} */
+/**
+ * 处理来自 AI 的代码执行请求。
+ * @type {import("../../../../../../../src/decl/pluginAPI.ts").ReplyHandler_t}
+ */
 export async function coderunner(result, args) {
 	const { AddLongTimeLog } = args
 	result.extension.execed_codes ??= {}

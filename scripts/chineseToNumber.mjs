@@ -53,9 +53,11 @@ const OperatorRegex = new RegExp(`${BaseOperatorRegex.source}|${[...OperatorRule
 const ExprRegex = new RegExp(`(${NumberRegex.source}|${OperatorRegex.source})+`, 'u')
 
 /**
- * 将中文数字转换为阿拉伯数字
- * @param {string} str - 中文数字字符串，可能有其他字符混合
- * @returns {string} - 阿拉伯数字字符串，视输入可能包含其他字符
+ * 将包含中文数字的字符串转换为主要由阿拉伯数字组成的字符串。
+ * 这个函数会处理常见的中文数字、单位以及一些特殊词（如“半”、“两”）。
+ * 它能够处理整数、小数，以及与非数字字符混合的字符串。
+ * @param {string} str - 包含中文数字的输入字符串。
+ * @returns {string} - 转换后的字符串，其中中文数字被替换为阿拉伯数字。
  */
 export function chineseToNumber(str) {
 	for (const Number of Object.keys(NumberMap))
@@ -130,9 +132,10 @@ export function chineseToNumber(str) {
 }
 
 /**
- * 将中文表达式转换为阿拉伯数字表达式
- * @param {string} str - 中文表达式字符串
- * @returns {string} - 阿拉伯数字表达式字符串
+ * 将包含中文数字和运算符的表达式字符串转换为纯阿拉伯数字和标准运算符的数学表达式。
+ * 例如，“三加五” 会被转换为 “3+5”。
+ * @param {string} str - 中文数学表达式字符串。
+ * @returns {string} - 转换后的标准数学表达式字符串。
  */
 export function chineseToExpr(str) {
 	if (NormalExprRegex.test(str)) return str
@@ -146,9 +149,10 @@ export function chineseToExpr(str) {
 }
 
 /**
- * 查找字符串中的中文表达式
- * @param {string} str - 字符串
- * @returns {Object.<string, bigfloat>} - 表达式及其对应的值
+ * 在给定的字符串中查找所有有效的中文数学表达式，并计算它们的值。
+ * 该函数会忽略不含单位的纯数字。
+ * @param {string} str - 要在其中搜索表达式的输入字符串。
+ * @returns {Object.<string, bigfloat>} - 一个对象，其键是找到的中文表达式，值是它们对应的 `bigfloat` 计算结果。
  */
 export function findChineseExprs(str) {
 	const exprs = {}
@@ -164,9 +168,9 @@ export function findChineseExprs(str) {
 	return exprs
 }
 /**
- * 查找字符串中的中文表达式和数字
- * @param {string} str - 字符串
- * @returns {Object.<string, bigfloat>} - 表达式及其对应的值
+ * 在给定的字符串中查找所有有效的中文数学表达式和数字，并计算它们的值。
+ * @param {string} str - 要在其中搜索表达式和数字的输入字符串。
+ * @returns {Object.<string, bigfloat>} - 一个对象，其键是找到的中文表达式或数字，值是它们对应的 `bigfloat` 计算结果。
  */
 export function findChineseExprsAndNumbers(str) {
 	const exprs = {}

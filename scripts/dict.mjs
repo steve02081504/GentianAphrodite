@@ -29,6 +29,11 @@ export const Kaomoji_list = [
 	'(^・ω・^)', '(=´ω`=)', 'ଲ(’ω’ଲ)'
 ]
 
+/**
+ * 从文本中移除所有预定义的颜文字。
+ * @param {string} text - 要处理的文本。
+ * @returns {string} - 移除了颜文字的文本。
+ */
 export function remove_kaomoji(text) {
 	for (const kaomoji of Kaomoji_list)
 		text = text.replaceAll(kaomoji, '')

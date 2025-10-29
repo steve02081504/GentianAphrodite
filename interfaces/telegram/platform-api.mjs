@@ -255,8 +255,11 @@ async function dispatchMessageSender(
 }
 
 /**
- * @param {TelegramInterfaceConfig_t} interfaceConfig
- * @returns {PlatformAPI_t}
+ * 构建并返回一个实现了 PlatformAPI_t 接口的对象，用于 Telegram 平台。
+ * 该对象封装了所有与 Telegram API 交互的底层细节，
+ * 为机器人核心逻辑提供了一套标准化的函数，如 sendMessage、sendTyping 等。
+ * @param {TelegramInterfaceConfig_t} interfaceConfig - 此 Telegram 接口的配置对象。
+ * @returns {PlatformAPI_t} - 实现了 PlatformAPI_t 接口的对象实例。
  */
 export function buildPlatformAPI(interfaceConfig) {
 	/** @type {PlatformAPI_t} */

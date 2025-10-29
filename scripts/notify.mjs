@@ -39,6 +39,11 @@ function initBaseNotifyChannel() {
 	})
 }
 
+/**
+ * 使用一个可用的通知渠道执行一个函数。
+ * @param {Function} func - 要执行的函数，它将接收一个更新后的渠道对象作为参数。
+ * @returns {Promise<any>} - 函数的返回值。
+ */
 export async function UseNofityAbleChannel(func) {
 	initBaseNotifyChannel()
 	for (const channel of [...notifyAbleChannels, baseNotifyChannel]) try {
@@ -49,6 +54,10 @@ export async function UseNofityAbleChannel(func) {
 	}
 }
 
+/**
+ * 添加一个新的可通知渠道。
+ * @param {object} channel - 要添加的渠道对象。
+ */
 export function addNotifyAbleChannel(channel) {
 	if (notifyAbleChannels.some(c => c.chat_name === channel.chat_name))
 		notifyAbleChannels = notifyAbleChannels.filter(c => c.chat_name !== channel.chat_name)

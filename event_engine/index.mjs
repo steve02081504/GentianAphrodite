@@ -80,6 +80,10 @@ const notify_plugin = {
 }
 
 export const RealityChannel = {}
+
+/**
+ * 初始化真实世界频道。
+ */
 export function initRealityChannel() {
 	if (RealityChannel.chat_name) return
 	Object.assign(RealityChannel, {
