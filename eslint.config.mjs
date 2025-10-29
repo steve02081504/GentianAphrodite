@@ -2,6 +2,7 @@ import babel from 'npm:@babel/eslint-parser'
 import destructuringMerge from 'npm:eslint-plugin-destructuring-merge'
 import html from 'npm:eslint-plugin-html'
 import importPlugin from 'npm:eslint-plugin-import'
+import jsdoc from 'npm:eslint-plugin-jsdoc'
 import optimizeRegex from 'npm:eslint-plugin-optimize-regex'
 import removeDuplicates from 'npm:eslint-plugin-remove-duplicates'
 import UnusedImports from 'npm:eslint-plugin-unused-imports'
@@ -14,9 +15,35 @@ const commonPlugins = {
 	'destructuring-merge': destructuringMerge,
 	'remove-duplicates': removeDuplicates,
 	import: importPlugin,
+	jsdoc,
+	'typescript-eslint': tseslint
 }
 
 const commonRules = {
+	'jsdoc/require-jsdoc': ['error', {
+		require: {
+			FunctionDeclaration: true, // function foo() {}
+			MethodDefinition: true,    // class A { foo() {} }
+			ClassDeclaration: true,    // class A {}
+			ArrowFunctionExpression: true, // const foo = () => {}
+			FunctionExpression: true, // const foo = function() {}
+		},
+		contexts: [
+			'ExportNamedDeclaration',
+			'ExportDefaultDeclaration'
+		]
+	}],
+	'jsdoc/require-param': 'error',
+	'jsdoc/require-param-description': 'error',
+	'jsdoc/require-param-name': 'error',
+	'jsdoc/require-param-type': 'error',
+	'jsdoc/require-returns': 'error',
+	'jsdoc/require-returns-type': 'error',
+	'jsdoc/require-returns-description': 'error',
+
+	'jsdoc/check-syntax': 'error',
+	'jsdoc/check-tag-names': 'error',
+
 	'remove-duplicates/remove-array-duplicates': ['error'],
 	'import/order': [
 		'error',
