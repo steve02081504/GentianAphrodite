@@ -252,7 +252,9 @@ export async function browserIntegration(result, args) {
 
 /**
  * 处理来自浏览器 JavaScript 的回调。
- * @param {{data: any, pageId: number, script: string}} params
+ * @param {any} data - 浏览器脚本返回的数据。
+ * @param {number} pageId - 发生回调的页面ID。
+ * @param {string} script - 触发回调的原始脚本。
  */
 export function BrowserJsCallback({ data, pageId, script }) {
 	statisticDatas.toolUsage.browserCallbacks = (statisticDatas.toolUsage.browserCallbacks || 0) + 1
