@@ -345,6 +345,10 @@ export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct
 	})
 
 	// --- 6. 格式化选中的记忆以加入Prompt (使用最终列表) ---
+	/**
+	 * @param {{memory: MemoryEntry, relevance: number, index: number}} memoryItem
+	 * @returns {string}
+	 */
 	function formatMemory(memoryItem) {
 		const dateStr = memoryItem.memory.time_stamp.toLocaleString()
 		return `\
@@ -355,10 +359,6 @@ ${memoryItem.memory.text}
 
 	let result = '<memories>\n'
 	if (finalTopRelevant.length)
-		/**
-		 * @param {{memory: MemoryEntry, relevance: number, index: number}} memoryItem
-		 * @returns {string}
-		 */
 		result += `\
 高相关
 ${finalTopRelevant.map(formatMemory).join('\n')}
