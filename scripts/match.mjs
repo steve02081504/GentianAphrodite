@@ -25,6 +25,11 @@ export function SimplifyChinese(content) {
  * @param {string} content
  * @returns {[string, string, string]} The input, its simplified chinese version, and its normalized fancy text version
  */
+/**
+ * 一个更简单的 SimplifiyContent 版本，不执行任何翻译。
+ * @param {string} content - 要简化的内容。
+ * @returns {[string, string, string]} - 输入、其简体中文版本及其标准化的花式文本版本。
+ */
 function SimpleSimplify(content) {
 	const base_content = SimplifyChinese(content)
 	return [content, base_content, normalizeFancyText(base_content)]

@@ -2,6 +2,13 @@ import { francAll } from 'npm:franc'
 
 import { base_match_keys } from './match.mjs'
 
+/**
+ * 使用 franc 判断文本是否为指定语言，并检查置信度是否达到阈值。
+ * @param {string} text - 要检测的文本。
+ * @param {string} lang - 语言代码。
+ * @param {number} [threshold=0.9] - 置信度阈值。
+ * @returns {boolean} - 如果是指定语言且置信度达到阈值则返回 true，否则返回 false。
+ */
 function is_Franc_threshold(text, lang, threshold = 0.9) {
 	if (text.length < 13) return false
 	const result = francAll(text, { minLength: 0 })

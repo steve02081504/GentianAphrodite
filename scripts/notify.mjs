@@ -2,10 +2,21 @@ import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
 import { notify as fount_notify } from '../../../../../../src/scripts/notify.mjs'
 import { charname, username, GentianAphrodite } from '../charbase.mjs'
 
+/**
+ * 可通知渠道的数组。
+ * @type {any[]}
+ */
 let notifyAbleChannels = []
 
+/**
+ * 基础通知渠道。
+ * @type {any}
+ */
 const baseNotifyChannel = {}
 
+/**
+ * 初始化基础通知渠道。
+ */
 function initBaseNotifyChannel() {
 	if (baseNotifyChannel.chat_name) return
 	Object.assign(baseNotifyChannel, {
@@ -26,9 +37,15 @@ function initBaseNotifyChannel() {
 		locales: localhostLocales,
 		time: new Date(),
 		chat_log: [],
+		/**
+		 * @param {any} entry
+		 */
 		AddChatLogEntry: entry => fount_notify(charname, entry.content),
 		other_chars: {},
 		plugins: {},
+		/**
+		 * @returns {any}
+		 */
 		Update: () => {
 			baseNotifyChannel.time = new Date()
 			baseNotifyChannel.chat_log = []

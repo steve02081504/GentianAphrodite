@@ -6,6 +6,9 @@ import { registerEventHandlers } from './event-handlers.mjs'
 import { buildPlatformAPI } from './platform-api.mjs'
 import { setTelegrafInstance, setTelegramBotInfo, telegramBotInfo, telegramUserIdToDisplayName, telegramDisplayNameToId } from './state.mjs'
 
+/**
+ * @typedef {import('./config.mjs').GetBotConfigTemplate} GetBotConfigTemplate
+ */
 export { GetBotConfigTemplate } from './config.mjs'
 
 /**

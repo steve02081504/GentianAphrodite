@@ -28,11 +28,12 @@ for (const memory of LongTermMemories) {
 }
 
 /**
- * @param {object} memory
- * @param {chatReplyRequest_t} args
- * @param {logical_results_t} logical_results
- * @param {prompt_struct_t} prompt_struct
- * @param {number} detail_level
+ * @param {object} memory 记忆
+ * @param {chatReplyRequest_t} args 用户输入参数
+ * @param {logical_results_t} logical_results 逻辑结果
+ * @param {prompt_struct_t} prompt_struct 提示结构
+ * @param {number} detail_level 细节等级
+ * @returns {Promise<boolean>} 是否触发
  */
 async function runLongTermMemoryTrigger(memory, args, logical_results, prompt_struct, detail_level) {
 	return (await async_eval(memory.trigger, {
@@ -42,11 +43,11 @@ async function runLongTermMemoryTrigger(memory, args, logical_results, prompt_st
 }
 
 /**
- * @param {object} memory
- * @param {chatReplyRequest_t} args
- * @param {logical_results_t} logical_results
- * @param {prompt_struct_t} prompt_struct
- * @param {number} detail_level
+ * @param {object} memory 记忆
+ * @param {chatReplyRequest_t} args 用户输入参数
+ * @param {logical_results_t} logical_results 逻辑结果
+ * @param {prompt_struct_t} prompt_struct 提示结构
+ * @param {number} detail_level 细节等级
  */
 export async function testLongTermMemoryTrigger(memory, args, logical_results, prompt_struct, detail_level) {
 	const result = await async_eval(memory.trigger, {
@@ -56,6 +57,10 @@ export async function testLongTermMemoryTrigger(memory, args, logical_results, p
 	if (result.error) throw result.error
 }
 
+/**
+ * @param {string} name 记忆名称
+ * @returns {object} 记忆
+ */
 export function getLongTermMemoryByName(name) {
 	return LongTermMemories.find(mem => mem.name === name)
 }
@@ -65,6 +70,10 @@ const context_prompt_build_table = {
 	updatedContext: '更新时上下文：\n'
 }
 
+/**
+ * @param {object} memory 记忆
+ * @returns {string} 格式化的记忆上下文
+ */
 export function formatLongTermMemoryContext(memory) {
 	if (!memory) return '找不到指定的记忆。'
 	const context_parts = Object.entries(context_prompt_build_table).map(([key, prefix]) => {
@@ -84,6 +93,10 @@ const prompt_build_table = {
 	updatedAt: '更新于：'
 }
 
+/**
+ * @param {object} memory 记忆
+ * @returns {string} 格式化的记忆
+ */
 export function formatLongTermMemory(memory) {
 	return Object.entries(prompt_build_table).map(([key, prefix]) => {
 		const value = memory[key]
@@ -93,10 +106,11 @@ export function formatLongTermMemory(memory) {
 }
 
 /**
- * @param {chatReplyRequest_t} args
- * @param {logical_results_t} logical_results
- * @param {prompt_struct_t} prompt_struct
- * @param {number} detail_level
+ * @param {chatReplyRequest_t} args 用户输入参数
+ * @param {logical_results_t} logical_results 逻辑结果
+ * @param {prompt_struct_t} prompt_struct 提示结构
+ * @param {number} detail_level 细节等级
+ * @returns {Promise<prompt_struct_t>} 返回的提示结构
  */
 export async function LongTermMemoryPrompt(args, logical_results, prompt_struct, detail_level) {
 	const actived_memories = []
@@ -193,6 +207,9 @@ trigger的关键词应容易触发并涵盖大部分情况，鼓励使用或\`||
 	}
 }
 
+/**
+ * @param {object} memory 记忆
+ */
 export function addLongTermMemory(memory) {
 	if (LongTermMemories.find(mem => mem.name === memory.name))
 		LongTermMemories.splice(LongTermMemories.findIndex(mem => mem.name === memory.name), 1)
@@ -200,6 +217,9 @@ export function addLongTermMemory(memory) {
 	saveLongTermMemory()
 }
 
+/**
+ * @param {object} memory 记忆
+ */
 export function updateLongTermMemory({ name, trigger, prompt, updatedAt, updatedContext }) {
 	const memoryIndex = LongTermMemories.findIndex(mem => mem.name === name)
 	if (memoryIndex === -1) throw new Error(`Memory with name "${name}" not found for update.`)
@@ -214,19 +234,32 @@ export function updateLongTermMemory({ name, trigger, prompt, updatedAt, updated
 	saveLongTermMemory()
 }
 
+/**
+ * @param {string} name 记忆名称
+ */
 export function deleteLongTermMemory(name) {
 	LongTermMemories.splice(LongTermMemories.findIndex(mem => mem.name === name), 1)
 	saveLongTermMemory()
 }
 
+/**
+ * @returns {string[]} 记忆名称列表
+ */
 export function listLongTermMemory() {
 	return LongTermMemories.map(mem => mem.name)
 }
 
+/**
+ * @param {number} n 数量
+ * @returns {object[]} 记忆列表
+ */
 export function getRandomNLongTermMemories(n) {
 	return LongTermMemories.sort(() => 0.5 - Math.random()).slice(0, n)
 }
 
+/**
+ * 保存长期记忆
+ */
 export function saveLongTermMemory() {
 	fs.mkdirSync(path.join(chardir, 'memory'), { recursive: true })
 	saveJsonFile(path.join(chardir, 'memory/long-term-memory.json'), LongTermMemories)

@@ -84,6 +84,10 @@ export function chineseToNumber(str) {
 	}
 
 	let last_slice = null, math_array = [], result = []
+	/**
+	 * 合并数学数组中的所有元素。
+	 * @returns {bigfloat | null} 返回合并后的 bigfloat，如果数组为空则返回 null。
+	 */
 	function marge_math_array() {
 		const result = [...math_array, last_slice].filter(s => s !== null).map(bigfloat).reduce((a, b) => (a || bigfloat(0)).add(b), null)
 		math_array = []

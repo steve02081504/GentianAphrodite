@@ -1,3 +1,8 @@
+/**
+ * 将 Buffer 转换为 ImageData。
+ * @param {Buffer} buffer - 图像的 Buffer 数据。
+ * @returns {Promise<{imageData: ImageData, width: number, height: number} | null>} - 返回包含 ImageData、宽度和高度的对象，如果失败则返回 null。
+ */
 async function bufferToImageData(buffer) {
 	try {
 		const { createCanvas, loadImage } = await import('https://deno.land/x/canvas/mod.ts')

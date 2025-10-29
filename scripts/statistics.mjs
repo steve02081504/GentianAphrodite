@@ -5,10 +5,19 @@ import { resetIdleTimer } from '../event_engine/on_idle.mjs'
 import { parseDuration } from './tools.mjs'
 import { getVar, saveVar } from './vars.mjs'
 
+/**
+ * 使用 mistral-tokenizer-js 对 prompt 进行分词。
+ * @param {string} prompt - 要分词的 prompt。
+ * @returns {number[]} - 返回分词后的 token ID 数组。
+ */
 function tokenize(prompt) {
 	return Tokenizer.encode(prompt)
 }
 
+/**
+ * 统计数据。
+ * @type {object}
+ */
 export const statisticDatas = getVar('statistics', {
 	firstInteraction: {
 		time: undefined,
@@ -136,8 +145,8 @@ export function newCharReplay(str, platform) {
  * 返回给定字符串中的语句数。
  * 语句是以!、.、?、或,结尾的句子。
  * 该函数还会删除任何代码块（三反引号之间的文本）。
- * @param {string} str
- * @returns {number}
+ * @param {string} str - 要计算语句数的字符串。
+ * @returns {number} - 语句数。
  */
 export function getStatementsNum(str) {
 	str = str.replace(/```+.*\n[^]*?```+/g, '')

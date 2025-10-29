@@ -67,6 +67,10 @@ const CONFIG = {
 
 // --- 状态管理中心 (State Management) ---
 
+/**
+ * 创建并返回一个用于跟踪单次录音统计数据的初始对象。
+ * @returns {{totalRms: number, frameCount: number, totalLoudFrames: number, matchingLoudFrames: number, longestInternalSilenceFrames: number, currentSilenceStreakFrames: number}}
+ */
 function createInitialRecordingStats() {
 	return {
 		totalRms: 0, frameCount: 0, totalLoudFrames: 0, matchingLoudFrames: 0,
@@ -75,6 +79,10 @@ function createInitialRecordingStats() {
 	}
 }
 
+/**
+ * 创建并返回语音哨兵的完整初始状态对象。
+ * @returns {{state: string, recorder: PvRecorder | null, referenceMfccs: number[][] | null, referenceFileMtime: Date | null, dynamicThresholds: {quiet: number, loud: number}, initRmsList: number[], quietStartTime: number | null, lastLoudTime: number | null, armingBuffer: any[], recordingBuffer: any[], recordingStartTime: number | null, consecutiveLoudFrames: number, lastValidationCheckTime: number, activityLog: any[], currentRecordingStats: object, recorderRetryCount: number, avgEnvRms: number}}
+ */
 function createInitialState() {
 	return {
 		state: 'INITIALIZING', // INITIALIZING, MONITORING_QUIET, ARMED, RECORDING

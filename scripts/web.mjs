@@ -10,6 +10,12 @@ const DEFAULT_NAVIGATION_TIMEOUT = 13 * 1000 // 设置一个默认导航超时�
  * @param {string} name - 浏览器名称 ('firefox', 'chrome', etc.)。
  * @returns {Promise<Function>} - 返回一个接受配置并启动 Puppeteer 的函数。
  */
+/**
+ * 根据浏览器可执行文件路径创建一个 Puppeteer 启动器函数。
+ * @param {string} path - 浏览器可执行文件的路径。
+ * @param {string} name - 浏览器名称 ('firefox', 'chrome', etc.)。
+ * @returns {Promise<Function>} - 返回一个接受配置并启动 Puppeteer 的函数。
+ */
 export async function NewBrowserGener(path, name) {
 	// 返回一个函数，该函数接收配置并启动 Puppeteer
 	const puppeteer = await import('npm:puppeteer-core@^24.9.0').then(m => m.default)
@@ -21,6 +27,11 @@ export async function NewBrowserGener(path, name) {
 	})
 }
 
+/**
+ * 根据浏览器名称创建一个 Puppeteer 启动器函数。
+ * @param {string} name - 浏览器名称 ('firefox', 'chrome', etc.)。
+ * @returns {Promise<Function|null>} - 返回一个接受配置并启动 Puppeteer 的函数，如果找不到浏览器则返回 null。
+ */
 /**
  * 根据浏览器名称创建一个 Puppeteer 启动器函数。
  * @param {string} name - 浏览器名称 ('firefox', 'chrome', etc.)。
@@ -343,6 +354,11 @@ export async function getUrlMetadata(url) {
 
 	try {
 		// 统一处理不成功的响应
+		/**
+		 * 处理失败的响应。
+		 * @param {Response} response - 响应对象。
+		 * @returns {string[]} - 包含状态码和状态文本的元数据数组。
+		 */
 		const handleFailedResponse = response => {
 			const metas = [`- status: ${response.status}`]
 			if (response.statusText) metas.push(`- statusText: ${response.statusText}`)
@@ -366,6 +382,11 @@ export async function getUrlMetadata(url) {
 			const root = parse(html)
 
 			const metadataMap = new Map()
+			/**
+			 * 将元数据添加到映射中。
+			 * @param {string} key - 元数据的键。
+			 * @param {string} value - 元数据的值。
+			 */
 			const addMeta = (key, value) => {
 				// 检查 value 是否存在且不为空字符串
 				if (value && value.trim() && !metadataMap.has(key))

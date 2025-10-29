@@ -61,11 +61,19 @@ ${code}
 export async function coderunner(result, args) {
 	const { AddLongTimeLog } = args
 	result.extension.execed_codes ??= {}
+	/**
+	 * 获取 JS 代码执行的上下文。
+	 * @param {string} code - 要执行的代码。
+	 * @returns {Promise<object>} - 返回 JS 代码执行的上下文。
+	 */
 	async function get_js_eval_context(code) {
 		const js_eval_context = {
 			workspace: args.chat_scoped_char_memory.coderunner_workspace ??= {},
 			chat_log: args.chat_log,
 		}
+		/**
+		 * 清空工作区。
+		 */
 		function clear_workspace() {
 			js_eval_context.workspace = args.chat_scoped_char_memory.coderunner_workspace = {}
 			js_eval_context.workspace.clear = clear_workspace
@@ -123,11 +131,20 @@ export async function coderunner(result, args) {
 			Object.values(args.plugins).map(plugin => plugin.interfaces?.chat?.GetJSCodeContext?.(args, args.prompt_struct))
 		)).filter(Boolean))
 	}
+	/**
+	 * 为 AI 运行 JS 代码。
+	 * @param {string} code - 要运行的代码。
+	 * @returns {Promise<any>} - 返回代码执行的结果。
+	 */
 	async function run_jscode_for_AI(code) {
 		return async_eval(code, await get_js_eval_context(code))
 	}
 	// 解析wait-screen
 	const wait_screen = Number(result.content.match(/<wait-screen>(?<timeout>\d*?)<\/wait-screen>/)?.groups?.timeout?.trim?.() || 0)
+	/**
+	 * 获取屏幕截图。
+	 * @returns {Promise<{name: string, buffer: Buffer, mime_type: string} | undefined>} - 返回一个包含屏幕截图信息的对象，如果 `wait_screen` 为 0 则返回 undefined。
+	 */
 	async function get_screen() {
 		if (!wait_screen) return
 		await new Promise(resolve => setTimeout(resolve, wait_screen * 1000))

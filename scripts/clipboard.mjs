@@ -14,6 +14,10 @@ const state = {
 	maxSize: 50,
 }
 
+/**
+ * 将条目添加到剪贴板历史记录中。
+ * @param {{type: 'text'|'image', content: string | Buffer, timestamp: number}} entry - 要添加的条目。
+ */
 function addToHistory(entry) {
 	if (state.history.length) {
 		const lastEntry = state.history[0]
@@ -92,6 +96,9 @@ export function setMaxHistorySize(size) {
 
 let lastContent = ''
 
+/**
+ * 剪贴板变化事件的回调函数。
+ */
 async function onClipboardChange() {
 	try {
 		const content = await clipboard.read()

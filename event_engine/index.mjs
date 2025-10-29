@@ -2,6 +2,10 @@ import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
 import { notify } from '../../../../../../src/scripts/notify.mjs'
 import { charname, GentianAphrodite, username } from '../charbase.mjs'
 
+/**
+ * Fount 世界观对象，定义了 AI 角色在“真实世界”中的行为准则和能力。
+ * @type {import('../../../../../../src/decl/WorldAPI.ts').WorldAPI_t}
+ */
 const realityWorld = {
 	info: {
 		'zh-CN': {
@@ -32,6 +36,10 @@ const realityWorld = {
 	}
 }
 
+/**
+ * Fount 插件，为 AI 角色提供通过系统通知与用户进行带外通信的能力。
+ * @type {import('../../../../../../src/decl/pluginAPI.ts').pluginAPI_t}
+ */
 const notify_plugin = {
 	info: {
 		'zh-CN': {

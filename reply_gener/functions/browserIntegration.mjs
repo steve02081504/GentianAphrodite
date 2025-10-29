@@ -31,6 +31,12 @@ export async function browserIntegration(result, args) {
 	let processed = false
 	const commands_called = []
 
+	/**
+	 * 处理浏览器集成命令执行期间发生的错误。
+	 * @param {Error} err - 抛出的错误对象。
+	 * @param {string} command - 尝试执行的命令的名称。
+	 * @param {string} [details=''] - 有关错误的任何其他详细信息。
+	 */
 	const handleError = (err, command, details = '') => {
 		console.error(`Error executing browser integration command "${command}"${details}:`, err)
 		AddLongTimeLog({
@@ -41,6 +47,11 @@ export async function browserIntegration(result, args) {
 		})
 	}
 
+	/**
+	 * 将页面 ID（可能是 'focused'）解析为数字 ID。
+	 * @param {string} pageIdRaw - 原始页面 ID 字符串。
+	 * @returns {number} - 解析后的数字页面 ID。
+	 */
 	const resolvePageId = (pageIdRaw) => {
 		if (pageIdRaw.toLowerCase() === 'focused') {
 			const focusedPage = getFocusedPageInfo(username)
@@ -50,6 +61,9 @@ export async function browserIntegration(result, args) {
 		return Number(pageIdRaw)
 	}
 
+	/**
+	 * @type {Array<{name: string, regex: RegExp, handler: (match: RegExpMatchArray) => Promise<void>}>}
+	 */
 	const commandProcessors = [
 		{
 			name: 'get-connected-pages',

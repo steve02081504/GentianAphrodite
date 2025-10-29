@@ -4,6 +4,9 @@ import { dict, idf } from 'npm:@node-rs/jieba/dict.js'
 const jieba = Jieba.withDict(dict)
 const tfIdf = TfIdf.withDict(idf)
 
+/**
+ * @namespace jieba
+ */
 export default {
 	/**
 	 * 从文本中提取关键词。

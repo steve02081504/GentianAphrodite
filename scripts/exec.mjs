@@ -11,6 +11,17 @@ export function removeTerminalSequences(str) {
 	return str.replace(/\x1B\[[\d;]*[Km]/g, '')
 }
 
+/**
+ * 执行命令的基础函数。
+ * @param {string} code - 要执行的代码。
+ * @param {object} options - 选项。
+ * @param {string} options.shell - shell 的路径。
+ * @param {string} [options.cmdswitch='-c'] - shell 的命令行开关。
+ * @param {string[]} [options.args=[]] - shell 的参数。
+ * @param {string} [options.cwd=undefined] - 工作目录。
+ * @param {boolean} [options.no_ansi_terminal_sequences=false] - 是否移除 ANSI 终端序列。
+ * @returns {Promise<{code: number, stdout: string, stderr: string, stdall: string}>} - 执行结果。
+ */
 async function base_exec(code, {
 	shell,
 	cmdswitch = '-c',
@@ -47,12 +58,26 @@ async function base_exec(code, {
 	})
 }
 
+/**
+ * 使用 sh 执行命令的基础函数。
+ * @param {string} shellpath - sh 的路径。
+ * @param {string} code - 要执行的代码。
+ * @param {object} options - 选项。
+ * @returns {Promise<{code: number, stdout: string, stderr: string, stdall: string}>} - 执行结果。
+ */
 function base_sh_exec(shellpath, code, options) {
 	return base_exec(code, {
 		shell: shellpath,
 		...options
 	})
 }
+/**
+ * 使用 pwsh 执行命令的基础函数。
+ * @param {string} shellpath - pwsh 的路径。
+ * @param {string} code - 要执行的代码。
+ * @param {object} options - 选项。
+ * @returns {Promise<{code: number, stdout: string, stderr: string, stdall: string}>} - 执行结果。
+ */
 function base_pwsh_exec(shellpath, code, options) {
 	code = `\
 $OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::UTF8
@@ -66,11 +91,21 @@ ${code}
 		...options
 	})
 }
+/**
+ * 测试 sh 路径是否可用。
+ * @param {string[]} paths - 要测试的路径数组。
+ * @returns {Promise<string | undefined>} - 可用的路径，如果没有则返回 undefined。
+ */
 async function testShPaths(paths) {
 	for (const path of paths)
 		if (await base_sh_exec(path, 'echo 1').catch(() => false))
 			return path
 }
+/**
+ * 测试 pwsh 路径是否可用。
+ * @param {string[]} paths - 要测试的路径数组。
+ * @returns {Promise<string | undefined>} - 可用的路径，如果没有则返回 undefined。
+ */
 async function testPwshPaths(paths) {
 	for (const path of paths)
 		if (await base_pwsh_exec(path, '1').catch(() => false))
@@ -152,6 +187,10 @@ pwshPath = await testPwshPaths([
 	await where_command('pwsh').catch(() => ''),
 ].filter(x => x))
 
+/**
+ * 一个对象，指示哪些 shell 可用。
+ * @type {{pwsh: boolean, powershell: boolean, bash: boolean, sh: boolean}}
+ */
 export const available = {
 	pwsh: !!pwshPath,
 	powershell: !!powershellPath,
@@ -159,6 +198,10 @@ export const available = {
 	sh: !!shPath,
 }
 
+/**
+ * 一个将 shell 名称映射到其执行函数的对象。
+ * @type {Record<string, Function>}
+ */
 export const shell_exec_map = {
 	pwsh: pwsh_exec,
 	powershell: powershell_exec,

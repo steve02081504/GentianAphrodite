@@ -30,4 +30,7 @@ export async function DiscordBotMain(client, interfaceConfig) {
 	return discordPlatformAPI
 }
 
+/**
+ * @typedef {import('./config.mjs').GetBotConfigTemplate} GetBotConfigTemplate
+ */
 export { GetBotConfigTemplate } from './config.mjs'

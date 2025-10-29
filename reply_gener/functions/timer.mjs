@@ -188,6 +188,13 @@ export async function timer(result, args) {
 
 	return processed
 }
+/**
+ * 定时器回调函数。
+ * @param {object} callbackdata - 回调数据。
+ * @param {string} callbackdata.reason - 定时器的原因。
+ * @param {string} callbackdata.chat_log_snip - 聊天记录片段。
+ * @param {string} callbackdata.platform - 平台。
+ */
 export function timerCallBack(callbackdata) {
 	const { reason, chat_log_snip, platform } = callbackdata
 	statisticDatas.toolUsage.timerCallbacks++

@@ -128,11 +128,19 @@ ${randomTask.get_content()}
 const IDLE_INTERVAL_MS = 15 * 60 * 1000 // 15 minutes
 let idleID = null
 
+/**
+ * 重置闲置计时器。
+ * 首先会停止任何现有的计时器，然后根据配置决定是否启动新的计时器。
+ */
 export function resetIdleTimer() {
 	stopIdleTimer()
 	if (config.disable_idle_event) return
 	idleID = setInterval(onIdleCallback, IDLE_INTERVAL_MS)
 }
+/**
+ * 停止当前的闲置计时器。
+ * 如果存在正在运行的计时器，则清除它。
+ */
 export function stopIdleTimer() {
 	if (!idleID) return
 	clearInterval(idleID)

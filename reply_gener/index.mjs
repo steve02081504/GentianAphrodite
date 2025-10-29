@@ -38,16 +38,15 @@ import { noAIreply } from './noAI/index.mjs'
  * @param {number} [max_forever_looping_num=6] - 判断为无限循环的最大相似回复次数。
  * @param {number} [warning_forever_looping_num=4] - 发出无限循环警告的相似回复次数阈值。
  * @param {number} [similarity_threshold=0.9] - 用于判断回复是否相似的阈值。
- * @returns {(entry: chatLogEntry_t) => void} - 一个函数，接受一个日志条目并将其添加到长时间日志中。
+ * @returns {(entry: chatLogEntry_t) => void} 一个函数，接受一个日志条目并将其添加到长时间日志中。
  */
 export function getLongTimeLogAdder(result, prompt_struct, max_forever_looping_num = 6, warning_forever_looping_num = 4, similarity_threshold = 0.9) {
 	const sim_check_before = []
 	let forever_looping_num = 0
 	/**
-	 * @description
-	 * This function is used to add a log entry to the character's additional chat log.
-	 * It will also check if the AI has entered an infinite loop, and if so, throw an error and end the conversation.
-	 * @param {chatLogEntry_t} entry The log entry to add.
+	 * 将日志条目添加到角色的附加聊天日志中。
+	 * 同时会检查AI是否进入无限循环，如果是，则抛出错误并结束对话。
+	 * @param {chatLogEntry_t} entry - 要添加的日志条目。
 	 */
 	function AddLongTimeLog(entry) {
 		entry.charVisibility = [prompt_struct.char_id]

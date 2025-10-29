@@ -1,3 +1,7 @@
+/**
+ * @file
+ * 该模块提供了用于解锁角色成就的功能。
+ */
 import { unlockAchievement as base } from '../../../../../../src/public/shells/achievements/src/api.mjs'
 import { charname, username } from '../charbase.mjs'
 
