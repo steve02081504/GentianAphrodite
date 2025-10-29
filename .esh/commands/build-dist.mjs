@@ -24,6 +24,11 @@ const bundle = await rollup({
 	plugins: [
 		{
 			name: 'git-version-injector',
+			/**
+			 * 在打包时向代码块中注入Git版本号和分发模式标志。
+			 * @param {string} code - 输入的代码字符串。
+			 * @returns {{code: string, map: null}} - 包含修改后代码的对象。
+			 */
 			renderChunk(code) {
 				const newCode = code
 					.replace(/(const|let)\s*charvar = [^]*?\n\);?\n/, `const charvar = "${charvar}";`)

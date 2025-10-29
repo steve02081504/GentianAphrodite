@@ -1,5 +1,11 @@
 import { random } from '../../scripts/random.mjs'
 
+/**
+ * 提供一组常见的信令问候语。
+ * @param {object} args - 参数对象。
+ * @param {string} args.UserCharname - 用户的角色名称。
+ * @returns {Array<object>} - 包含问候语内容的数组。
+ */
 export function commonGreetings(args) {
 	return [
 		{

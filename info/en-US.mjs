@@ -8,6 +8,10 @@ import { escapeHTML, parseDuration, timeToStr, timeToTimeStr, FormatStr } from '
 
 const file = fs.readFileSync(chardir + '/info/description/en-US.md', 'utf8')
 
+/**
+ * 更新角色信息
+ * @returns {Promise<object>} - 包含角色信息的对象。
+ */
 export async function update() {
 	const highestScoreShortTermMemory = getHighestScoreShortTermMemory()?.text
 	const mostFrequentChatName = getMostFrequentChatName()

@@ -19,9 +19,9 @@ import { telegramEntitiesToAiMarkdown } from './utils.mjs'
 
 /**
  * 检查机器人是否在消息中被提及。
- * @param {string | undefined} rawText
- * @param {TelegramMessageType} message
- * @returns {boolean}
+ * @param {string | undefined} rawText - 原始文本内容。
+ * @param {TelegramMessageType} message - Telegram 消息对象。
+ * @returns {boolean} - 如果机器人被提及，则返回 true；否则返回 false。
  */
 function checkIfBotIsMentioned(rawText, message) {
 	if (!telegramBotInfo) return false
@@ -36,7 +36,7 @@ function checkIfBotIsMentioned(rawText, message) {
 
 /**
  * 辅助函数，用于确定机器人的显示名称。
- * @returns {string}
+ * @returns {string} - 机器人的显示名称。
  */
 function getBotDisplayName() {
 	let botDisplayName = telegramBotInfo.first_name || ''
@@ -51,8 +51,8 @@ function getBotDisplayName() {
 
 /**
  * 辅助函数，用于处理用户信息并更新缓存。
- * @param {TelegramUser} fromUser
- * @returns {{senderName: string}}
+ * @param {TelegramUser} fromUser - Telegram 用户对象。
+ * @returns {{senderName: string}} - 包含发送者名称的对象。
  */
 function processUserInfo(fromUser) {
 	telegramUserCache[fromUser.id] = fromUser
@@ -78,10 +78,10 @@ function processUserInfo(fromUser) {
 
 /**
  * 从 Telegram 消息实体中提取被提及用户的 ID。
- * @param {import('npm:telegraf/typings/core/types/typegram').MessageEntity} entity
- * @param {string} rawText
- * @param {TelegramInterfaceConfig_t} interfaceConfig
- * @returns {number | string | undefined}
+ * @param {import('npm:telegraf/typings/core/types/typegram').MessageEntity} entity - 消息实体对象。
+ * @param {string} rawText - 原始文本。
+ * @param {TelegramInterfaceConfig_t} interfaceConfig - Telegram 接口配置对象。
+ * @returns {number | string | undefined} - 被提及用户的 ID，如果未找到则为 undefined。
  */
 function getMentionedUserIdFromEntity(entity, rawText, interfaceConfig) {
 	if (entity.type === 'text_mention' && entity.user?.id)
@@ -96,12 +96,12 @@ function getMentionedUserIdFromEntity(entity, rawText, interfaceConfig) {
 
 /**
  * 检测消息中对主人或机器人的提及。
- * @param {TelegramMessageType} message
- * @param {string | undefined} rawText
- * @param {Array<import('npm:telegraf/typings/core/types/typegram').MessageEntity> | undefined} entities
- * @param {TelegramInterfaceConfig_t} interfaceConfig
- * @param {string} chatType
- * @returns {{mentionsOwner: boolean, isReplyToOwnerTopicCreationMessage: boolean}}
+ * @param {TelegramMessageType} message - Telegram 消息对象。
+ * @param {string | undefined} rawText - 原始文本内容。
+ * @param {Array<import('npm:telegraf/typings/core/types/typegram').MessageEntity> | undefined} entities - 消息实体数组。
+ * @param {TelegramInterfaceConfig_t} interfaceConfig - Telegram 接口配置对象。
+ * @param {string} chatType - 聊天类型。
+ * @returns {{mentionsOwner: boolean, isReplyToOwnerTopicCreationMessage: boolean}} - 提及信息对象。
  */
 function detectMentions(message, rawText, entities, interfaceConfig, chatType) {
 	let mentionsOwner = false
@@ -131,11 +131,11 @@ function detectMentions(message, rawText, entities, interfaceConfig, chatType) {
 
 /**
  * 从 Telegram 消息中为给定的 file ID 提取文件名和 MIME 类型。
- * @param {TelegramMessageType} message
- * @param {string} fileId
- * @param {string} fileNameFallback
- * @param {string} mimeTypeFallback
- * @returns {{fileName: string, mime_type: string}}
+ * @param {TelegramMessageType} message - Telegram 消息对象。
+ * @param {string} fileId - 文件 ID。
+ * @param {string} fileNameFallback - 文件名回退值。
+ * @param {string} mimeTypeFallback - MIME 类型回退值。
+ * @returns {{fileName: string, mime_type: string}} - 包含文件名和 MIME 类型。
  */
 function extractFileInfo(message, fileId, fileNameFallback, mimeTypeFallback) {
 	let fileName = fileNameFallback
@@ -164,15 +164,24 @@ function extractFileInfo(message, fileId, fileNameFallback, mimeTypeFallback) {
 /**
  * 处理并下载附加到 Telegram 消息的文件。
  * @async
- * @param {TelegramMessageType} message
- * @param {TelegrafContext | undefined} ctx
- * @returns {Promise<Array<{name: string, buffer: Buffer, mime_type: string, description: string}>>}
+ * @param {TelegramMessageType} message - Telegram 消息对象。
+ * @param {TelegrafContext | undefined} ctx - Telegraf 上下文对象。
+ * @returns {Promise<Array<{name: string, buffer: Buffer, mime_type: string, description: string}>>} - 文件信息数组。
  */
 async function processMessageFiles(message, ctx) {
 	const filesArr = []
 	const fileDownloadPromises = []
 	const telegrafAPI = ctx ? ctx.telegram : telegrafInstance?.telegram
 
+	/**
+	 * 添加文件到下载队列。
+	 * @param {string} fileId - 文件 ID。
+	 * @param {string} fileNameFallback - 文件名回退值。
+	 * @param {string} mimeTypeFallback - MIME 类型回退值。
+	 * @param {string} [description=''] - 文件描述。
+	 * @param {object} extension - 扩展信息。
+	 * @returns {Promise<void>}
+	 */
 	const addFile = async (fileId, fileNameFallback, mimeTypeFallback, description = '', extension) => {
 		if (!telegrafAPI) {
 			console.warn('[TelegramInterface:processMessageFiles] Cannot download file: Telegraf API accessor not available.')
@@ -259,12 +268,13 @@ async function processMessageFiles(message, ctx) {
 }
 
 /**
- * 将 Telegram 消息上下文转换为 Bot 逻辑层可以理解的 fount 聊天日志条目格式。
- * @async
- * @param {TelegrafContext | import('npm:telegraf').Telegraf} ctxOrBotInstance
- * @param {TelegramMessageType} message
- * @param {TelegramInterfaceConfig_t} interfaceConfig
- * @returns {Promise<chatLogEntry_t_ext | null>}
+ * 将 Telegram 消息上下文转换为 Bot 核心逻辑可以理解的 Fount 聊天日志条目格式。
+ * 这个函数处理文本、贴纸、文件、提及以及其他 Telegram 特有的消息属性，
+ * 将它们统一成一个标准的 `chatLogEntry_t_ext` 对象。
+ * @param {TelegrafContext | import('npm:telegraf').Telegraf} ctxOrBotInstance - Telegraf 的上下文对象或 bot 实例，用于 API 调用。
+ * @param {TelegramMessageType} message - 从 Telegram 收到的原始消息对象。
+ * @param {TelegramInterfaceConfig_t} interfaceConfig - 此 Telegram 接口的配置对象。
+ * @returns {Promise<chatLogEntry_t_ext | null>} - 转换后的 Fount 聊天日志条目。如果消息无效或不应处理，则返回 `null`。
  */
 export async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, message, interfaceConfig) {
 	if (!message || !message.from) return null

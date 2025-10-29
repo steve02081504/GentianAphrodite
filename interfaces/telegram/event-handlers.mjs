@@ -12,9 +12,12 @@ import { constructLogicalChannelId } from './utils.mjs'
 /** @typedef {import('npm:telegraf').Telegraf} TelegrafInstance */
 
 /**
- * @param {TelegrafInstance} bot
- * @param {TelegramInterfaceConfig_t} interfaceConfig
- * @param {PlatformAPI_t} telegramPlatformAPI
+ * 注册 Telegram bot 的核心事件处理器。
+ * 此函数会为接收新消息和编辑消息等事件设置监听器，
+ * 并将这些事件传递给机器人核心逻辑进行处理。
+ * @param {TelegrafInstance} bot - Telegraf bot 实例。
+ * @param {TelegramInterfaceConfig_t} interfaceConfig - 此 Telegram 接口的配置对象。
+ * @param {PlatformAPI_t} telegramPlatformAPI - 用于与机器人核心逻辑通信的平台 API。
  */
 export function registerEventHandlers(bot, interfaceConfig, telegramPlatformAPI) {
 	bot.on('message', async ctx => {

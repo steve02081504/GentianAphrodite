@@ -30,8 +30,8 @@ import { discordWorld } from './world.mjs'
 
 /**
  * 构建并返回一个实现了 {@link PlatformAPI_t} 接口的对象。
- * @param {DiscordInterfaceConfig_t} interfaceConfig
- * @returns {PlatformAPI_t}
+ * @param {DiscordInterfaceConfig_t} interfaceConfig - Discord 接口配置对象。
+ * @returns {PlatformAPI_t} - 实现了 PlatformAPI_t 接口的对象。
  */
 export function buildPlatformAPI(interfaceConfig) {
 	const client = discordClientInstance
@@ -177,15 +177,30 @@ export function buildPlatformAPI(interfaceConfig) {
 			}
 		},
 
-		/** 获取机器人自身的 Discord 用户 ID。 */
+		/**
+		 * 获取机器人自身的 Discord 用户 ID。
+		 * @returns {string} - 机器人自身的 Discord 用户 ID。
+		 */
 		getBotUserId: () => client.user?.id || '',
-		/** 获取机器人自身的 Discord 用户名。 */
+		/**
+		 * 获取机器人自身的 Discord 用户名。
+		 * @returns {string} - 机器人自身的 Discord 用户名。
+		 */
 		getBotUsername: () => client.user?.username || BotFountCharname,
-		/** 获取主人的 Discord 用户名。 */
+		/**
+		 * 获取主人的 Discord 用户名。
+		 * @returns {string} - 主人的 Discord 用户名。
+		 */
 		getOwnerUserName: () => interfaceConfig.OwnerUserName,
-		/** 获取主人的 Discord 用户 ID。 */
+		/**
+		 * 获取主人的 Discord 用户 ID。
+		 * @returns {string} - 主人的 Discord 用户 ID。
+		 */
 		getOwnerUserId: () => resolvedOwnerId,
-		/** 获取机器人自身的 Discord 显示名称 (服务器昵称或全局显示名)。 */
+		/**
+		 * 获取机器人自身的 Discord 显示名称 (服务器昵称或全局显示名)。
+		 * @returns {string} - 机器人自身的 Discord 显示名称。
+		 */
 		getBotDisplayName: () => client.user?.displayName || client.user?.globalName || client.user?.username || BotFountCharname,
 
 		/**
@@ -230,7 +245,7 @@ export function buildPlatformAPI(interfaceConfig) {
 		/**
 		 * 获取特定于 Discord 平台和当前消息上下文的插件列表。
 		 * @param {chatLogEntry_t_ext} messageEntry - 当前正在处理的消息条目。
-		 * @returns {Record<string, import('../../../../../../../src/decl/pluginAPI.ts').pluginAPI_t>}
+		 * @returns {Record<string, import('../../../../../../../src/decl/pluginAPI.ts').pluginAPI_t>} - 包含特定于 Discord 平台的插件对象。
 		 */
 		getPlatformSpecificPlugins: messageEntry => {
 			if (messageEntry?.extension?.discord_message_obj)
@@ -241,12 +256,16 @@ export function buildPlatformAPI(interfaceConfig) {
 			return {}
 		},
 
-		/** 获取特定于 Discord 平台的世界观配置。 */
+		/**
+		 * 获取特定于 Discord 平台的世界观配置。
+		 * @returns {object} - Discord 平台的世界观配置。
+		 */
 		getPlatformWorld: () => discordWorld,
 
 		/**
 		 * (可选) 设置当主人离开群组时调用的回调函数。
 		 * @param {(groupId: string | number, userId: string | number) => Promise<void>} onLeaveCallback - 回调函数。
+		 * @returns {void}
 		 */
 		onOwnerLeaveGroup: onLeaveCallback => {
 			client.on(Events.GuildMemberRemove, async member => {
@@ -266,6 +285,7 @@ export function buildPlatformAPI(interfaceConfig) {
 		/**
 		 * (可选) 设置当机器人加入新群组/服务器时调用的回调函数。
 		 * @param {(group: import('../../bot_core/index.mjs').GroupObject) => Promise<void>} onJoinCallback - 回调函数。
+		 * @returns {void}
 		 */
 		onGroupJoin: onJoinCallback => {
 			client.on(Events.GuildCreate, async guild => {
@@ -287,7 +307,7 @@ export function buildPlatformAPI(interfaceConfig) {
 
 		/**
 		 * (可选) 获取机器人当前所在的所有群组/服务器列表。
-		 * @returns {Promise<import('../../bot_core/index.mjs').GroupObject[]>}
+		 * @returns {Promise<import('../../bot_core/index.mjs').GroupObject[]>} - 机器人当前所在的所有群组/服务器列表。
 		 */
 		getJoinedGroups: async () => {
 			if (!client.guilds) return []
@@ -307,7 +327,7 @@ export function buildPlatformAPI(interfaceConfig) {
 		/**
 		 * (可选) 获取特定群组/服务器的成员列表。
 		 * @param {string | number} guildId - 服务器的 ID。
-		 * @returns {Promise<import('../../bot_core/index.mjs').UserObject[]>}
+		 * @returns {Promise<import('../../bot_core/index.mjs').UserObject[]>} - 特定群组/服务器的成员列表。
 		 */
 		getGroupMembers: async guildId => {
 			try {
@@ -397,7 +417,7 @@ export function buildPlatformAPI(interfaceConfig) {
 		/**
 		 * (可选) 获取群组/服务器的默认或合适的首选频道。
 		 * @param {string | number} guildId - 服务器的 ID。
-		 * @returns {Promise<import('../../bot_core/index.mjs').ChannelObject | null>}
+		 * @returns {Promise<import('../../bot_core/index.mjs').ChannelObject | null>} - 群组/服务器的默认或合适的首选频道。
 		 */
 		getGroupDefaultChannel: async guildId => {
 			try {
@@ -435,7 +455,7 @@ export function buildPlatformAPI(interfaceConfig) {
 
 		/**
 		 * (可选) 优化方法：一次性获取主人在哪些群组中、不在哪些群组中。
-		 * @returns {Promise<{groupsWithOwner: import('../../bot_core/index.mjs').GroupObject[], groupsWithoutOwner: import('../../bot_core/index.mjs').GroupObject[]} | null>}
+		 * @returns {Promise<{groupsWithOwner: import('../../bot_core/index.mjs').GroupObject[], groupsWithoutOwner: import('../../bot_core/index.mjs').GroupObject[]} | null>} - 包含主人所在群组和不在群组的列表。
 		 */
 		getOwnerPresenceInGroups: async () => {
 			if (!client.user) {

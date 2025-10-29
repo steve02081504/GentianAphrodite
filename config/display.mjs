@@ -1,12 +1,30 @@
 /* global geti18n, partType, partName, element */
 // Common elements
-const blobToBase64 = blob => new Promise((resolve, reject) => {
-	const reader = new FileReader()
-	reader.onloadend = () => resolve(reader.result)
-	reader.onerror = reject
-	reader.readAsDataURL(blob)
-})
+/**
+ * 将 Blob 对象转换为 Base64 编码的 Data URL 字符串。
+ * @param {Blob} blob - 要转换的 Blob 对象。
+ * @returns {Promise<string>} - 包含 Base64 编码数据 URL 的 Promise。
+ */
+function blobToBase64(blob) {
+	return new Promise((resolve, reject) => {
+		const reader = new FileReader()
+		/**
+		 * 处理文件读取完成事件。
+		 * @returns {void}
+		 */
+		reader.onloadend = () => resolve(reader.result)
+		reader.onerror = reject
+		reader.readAsDataURL(blob)
+	})
+};
 
+/**
+ * 将 Blob 数据保存到服务器。
+ * @param {string} fileName - 要保存的文件名。
+ * @param {Blob} blob - 要保存的 Blob 数据。
+ * @param {HTMLElement} statusElement - 用于显示状态的 HTML 元素。
+ * @returns {Promise<boolean>} - 如果保存成功则返回 true，否则返回 false。
+ */
 const saveFile = async (fileName, blob, statusElement) => {
 	const base64Data = await blobToBase64(blob)
 	statusElement.textContent = geti18n('GentianAphrodite.config.saving')
@@ -35,6 +53,13 @@ const saveFile = async (fileName, blob, statusElement) => {
 	}
 }
 
+/**
+ * 将原始音频数据保存到服务器。
+ * @param {string} fileName - 要保存的文件名。
+ * @param {AudioBuffer} audioBuffer - 包含音频数据的 AudioBuffer。
+ * @param {HTMLElement} statusElement - 用于显示状态的 HTML 元素。
+ * @returns {Promise<boolean>} - 如果保存成功则返回 true，否则返回 false。
+ */
 const saveRawAudio = async (fileName, audioBuffer, statusElement) => {
 	const samples = audioBuffer.getChannelData(0)
 	statusElement.textContent = geti18n('GentianAphrodite.config.saving')
@@ -71,6 +96,45 @@ const audioPlayback = document.getElementById('audioPlayback')
 const audioStatus = document.getElementById('audioStatus')
 let mediaRecorder
 let audioChunks = []
+let audioStream = null
+
+/**
+ * 处理 MediaRecorder 的数据可用事件，将音频数据块添加到 audioChunks 数组。
+ * @param {BlobEvent} event - 包含音频数据块的事件对象。
+ */
+function handleRecorderDataAvailable(event) {
+	audioChunks.push(event.data)
+}
+
+/**
+ * 处理 MediaRecorder 的停止事件，处理录制的音频数据并保存。
+ * @async
+ * @returns {Promise<void>}
+ */
+async function handleRecorderStop() {
+	recordingStatus.textContent = geti18n('GentianAphrodite.config.processing_recording')
+	try {
+		const webmBlob = new Blob(audioChunks, { type: 'audio/webm' })
+		if (!webmBlob.size) throw new Error(geti18n('GentianAphrodite.config.empty_recording_file'))
+
+		const renderedBuffer = await resampleAudio(webmBlob)
+		const success = await saveRawAudio('vars/master-voice-reference.wav', renderedBuffer, recordingStatus)
+
+		if (success) {
+			loadPreview('vars/master-voice-reference.wav', audioPlayback, audioStatus, 'audio')
+			audioStatus.textContent = geti18n('GentianAphrodite.config.new_reference_voice_saved_and_loaded')
+		}
+	}
+	catch (error) {
+		console.error('Error processing or saving recording:', error)
+		recordingStatus.textContent = geti18n('GentianAphrodite.config.processing_failed', { errorMessage: error.message })
+	}
+	finally {
+		audioChunks = []
+		if (audioStream)
+			audioStream.getTracks().forEach(track => track.stop())
+	}
+}
 
 // --- Photo Section ---
 const photoInput = document.getElementById('photoInput')
@@ -85,7 +149,14 @@ const captureButton = document.getElementById('captureButton')
 let selectedPhotoFile = null
 let videoStream = null
 
-// --- Initial Load ---
+/**
+ * 从服务器加载并显示文件预览。
+ * @param {string} filePath - 要加载的文件的路径。
+ * @param {HTMLImageElement|HTMLAudioElement} element - 用于显示预览的 HTML 元素。
+ * @param {HTMLElement} statusElement - 用于显示状态的 HTML 元素。
+ * @param {'audio'|'photo'} type - 文件类型。
+ * @returns {Promise<void>}
+ */
 const loadPreview = async (filePath, element, statusElement, type) => {
 	statusElement.textContent = geti18n('GentianAphrodite.config.loading_preview')
 	try {
@@ -102,6 +173,10 @@ const loadPreview = async (filePath, element, statusElement, type) => {
 				element.classList.add('hidden') // Keep it hidden by default
 				statusElement.textContent = geti18n('GentianAphrodite.config.reference_photo_set_click_to_toggle')
 				statusElement.classList.add('cursor-pointer', 'hover:underline')
+				/**
+				 * 点击状态元素时切换图片预览的可见性。
+				 * @returns {void}
+				 */
 				statusElement.onclick = () => element.classList.toggle('hidden')
 			}
 			else statusElement.textContent = geti18n('GentianAphrodite.config.preview_loaded')
@@ -128,7 +203,11 @@ const loadPreview = async (filePath, element, statusElement, type) => {
 loadPreview('vars/master-voice-reference.wav', audioPlayback, audioStatus, 'audio')
 loadPreview('vars/master-photo-reference.png', imagePreview, photoStatus, 'photo')
 
-// --- Audio Processing ---
+/**
+ * 对音频 Blob进行重采样。
+ * @param {Blob} webmBlob - 要重采样的 WebM 音频 Blob。
+ * @returns {Promise<AudioBuffer>} - 重采样后的 AudioBuffer。
+ */
 const resampleAudio = async webmBlob => {
 	try {
 		const audioContext = new (window.AudioContext || window.webkitAudioContext)()
@@ -148,40 +227,22 @@ const resampleAudio = async webmBlob => {
 }
 
 // --- Audio Logic ---
-recordButton.addEventListener('click', async () => {
-	let stream
+recordButton.addEventListener('click', handleRecordButtonClick)
+
+/**
+ * 处理录制按钮的点击事件，开始录音。
+ * @async
+ * @returns {Promise<void>}
+ */
+async function handleRecordButtonClick() {
 	try {
-		stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-		const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' })
+		audioStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+		const recorder = new MediaRecorder(audioStream, { mimeType: 'audio/webm' })
 		mediaRecorder = recorder // for stopButton to access
 
-		recorder.ondataavailable = event => {
-			audioChunks.push(event.data)
-		}
+		recorder.ondataavailable = handleRecorderDataAvailable
 
-		recorder.onstop = async () => {
-			recordingStatus.textContent = geti18n('GentianAphrodite.config.processing_recording')
-			try {
-				const webmBlob = new Blob(audioChunks, { type: 'audio/webm' })
-				if (!webmBlob.size) throw new Error(geti18n('GentianAphrodite.config.empty_recording_file'))
-
-				const renderedBuffer = await resampleAudio(webmBlob)
-				const success = await saveRawAudio('vars/master-voice-reference.wav', renderedBuffer, recordingStatus)
-
-				if (success) {
-					loadPreview('vars/master-voice-reference.wav', audioPlayback, audioStatus, 'audio')
-					audioStatus.textContent = geti18n('GentianAphrodite.config.new_reference_voice_saved_and_loaded')
-				}
-			}
-			catch (error) {
-				console.error('Error processing or saving recording:', error)
-				recordingStatus.textContent = geti18n('GentianAphrodite.config.processing_failed', { errorMessage: error.message })
-			}
-			finally {
-				audioChunks = []
-				stream.getTracks().forEach(track => track.stop())
-			}
-		}
+		recorder.onstop = handleRecorderStop
 
 		audioChunks = []
 		recorder.start()
@@ -192,22 +253,31 @@ recordButton.addEventListener('click', async () => {
 	catch (error) {
 		console.error('Error starting recording:', error)
 		recordingStatus.textContent = geti18n('GentianAphrodite.config.cannot_start_recording', { errorMessage: error.message })
-		if (stream)
-			stream.getTracks().forEach(track => track.stop())
+		if (audioStream)
+			audioStream.getTracks().forEach(track => track.stop())
 
 	}
-})
+}
 
-stopButton.addEventListener('click', () => {
+stopButton.addEventListener('click', handleStopButtonClick)
+
+/**
+ * 处理停止按钮的点击事件，停止录音。
+ */
+function handleStopButtonClick() {
 	if (mediaRecorder && mediaRecorder.state !== 'inactive')
 		mediaRecorder.stop()
 
 	recordButton.classList.remove('hidden')
 	stopButton.classList.add('hidden')
 	recordingStatus.textContent = geti18n('GentianAphrodite.config.recording_stopped')
-})
+}
 
 // --- Photo Logic ---
+/**
+ * 停止摄像头视频流并隐藏摄像头视图。
+ * @returns {void}
+ */
 const stopCamera = () => {
 	if (videoStream) {
 		videoStream.getTracks().forEach(track => track.stop())
@@ -250,11 +320,20 @@ captureButton.addEventListener('click', () => {
 	}, 'image/png')
 })
 
-photoInput.addEventListener('change', () => {
+photoInput.addEventListener('change', handlePhotoInputChange)
+
+/**
+ * 处理照片输入框的 change 事件，预览选定的照片。
+ */
+function handlePhotoInputChange() {
 	stopCamera()
 	selectedPhotoFile = photoInput.files[0]
 	if (selectedPhotoFile) {
 		const reader = new FileReader()
+		/**
+		 * 处理文件读取完成事件。
+		 * @param {ProgressEvent<FileReader>} e - 文件读取事件对象。
+		 */
 		reader.onload = e => {
 			imagePreview.src = e.target.result
 			imagePreview.classList.remove('hidden')
@@ -264,7 +343,7 @@ photoInput.addEventListener('change', () => {
 		}
 		reader.readAsDataURL(selectedPhotoFile)
 	}
-})
+}
 
 savePhotoButton.addEventListener('click', async () => {
 	if (!selectedPhotoFile) {

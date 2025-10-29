@@ -4,6 +4,11 @@ import { MemoriesPrompt } from './memory/index.mjs'
 import { RoleSettingsPrompt } from './role_settings/index.mjs'
 import { SystemPrompt } from './system/index.mjs'
 
+/**
+ * 合并多个 Prompt 对象。
+ * @param {...object} prompts - 多个 Prompt 对象。
+ * @returns {Promise<object>} - 合并后的 Prompt 对象。
+ */
 export async function mergePrompt(...prompts) {
 	prompts = await Promise.all(prompts.filter(Boolean))
 	const result = {
@@ -21,6 +26,14 @@ export async function mergePrompt(...prompts) {
 	return result
 }
 
+/**
+ * 构建最终的 Prompt。
+ * @param {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} args - 聊天回复请求参数。
+ * @param {import("./logical_results/index.mjs").logical_results_t} logical_results - 逻辑结果。
+ * @param {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct - Prompt 结构。
+ * @param {number} detail_level - 详细级别。
+ * @returns {Promise<object>} - 构建后的 Prompt 对象。
+ */
 export async function buildPrompt(args, logical_results, prompt_struct, detail_level) {
 	return mergePrompt(
 		MemoriesPrompt(args, logical_results, prompt_struct, detail_level),

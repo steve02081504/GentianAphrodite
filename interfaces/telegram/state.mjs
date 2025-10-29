@@ -10,7 +10,9 @@
 export let telegrafInstance = null
 
 /**
- * @param {TelegrafInstance} instance
+ * 设置 Telegraf 实例。
+ * @param {TelegrafInstance} instance - Telegraf 实例。
+ * @returns {void}
  */
 export function setTelegrafInstance(instance) {
 	telegrafInstance = instance
@@ -23,7 +25,9 @@ export function setTelegrafInstance(instance) {
 export let telegramBotInfo = null
 
 /**
- * @param {TelegramBotInfo} info
+ * 设置 Telegram 机器人信息。
+ * @param {TelegramBotInfo} info - Telegram 机器人信息对象。
+ * @returns {void}
  */
 export function setTelegramBotInfo(info) {
 	telegramBotInfo = info

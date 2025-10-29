@@ -6,7 +6,7 @@ import { telegrafInstance } from './state.mjs'
 /**
  * 获取 Telegram API 插件。
  * @param {import('npm:telegraf/typings/core/types/typegram').Message | undefined} triggeringMessage - 触发此操作的原始 Telegram 消息对象。
- * @returns {import('../../../../../../../src/decl/pluginAPI.ts').pluginAPI_t}
+ * @returns {import('../../../../../../../src/decl/pluginAPI.ts').pluginAPI_t} - 插件API对象。
  */
 export const get_telegram_api_plugin = triggeringMessage => ({
 	info: {
@@ -18,6 +18,13 @@ export const get_telegram_api_plugin = triggeringMessage => ({
 	},
 	interfaces: {
 		chat: {
+			/**
+			 * 获取用于生成 JS 代码的 Prompt。
+			 * @param {object} args - 参数对象。
+			 * @param {object} result - 结果对象。
+			 * @param {number} detail_level - 详细级别。
+			 * @returns {string | undefined} - JS 代码 Prompt 字符串或 undefined。
+			 */
 			GetJSCodePrompt: async (args, result, detail_level) => {
 				if (
 					await match_keys(args, rude_words, 'any', 6) ||
@@ -43,6 +50,13 @@ telegram_client: 你的Telegraf Bot实例
 `
 				}
 			},
+			/**
+			 * 获取 JS 代码执行的上下文。
+			 * @param {object} args - 参数对象。
+			 * @param {object} result - 结果对象。
+			 * @param {number} detail_level - 详细级别。
+			 * @returns {object | undefined} - JS 代码上下文对象或 undefined。
+			 */
 			GetJSCodeContext: async (args, result, detail_level) => {
 				if (triggeringMessage)
 					return {

@@ -32,22 +32,21 @@ import { noAIreply } from './noAI/index.mjs'
 /** @typedef {import("../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
- *
- * @param {chatReply_t} result
- * @param {prompt_struct_t} prompt_struct
- * @param {number} max_forever_looping_num
- * @param {number} warning_forever_looping_num
- * @param {number} similarity_threshold
- * @returns {(entry: chatLogEntry_t) => void}
+ * 获取一个用于添加长时间日志的函数，同时检测并防止AI无限循环。
+ * @param {chatReply_t} result - 当前的聊天回复对象，日志条目将被添加到此对象。
+ * @param {prompt_struct_t} prompt_struct - Prompt结构体，其中包含角色的附加聊天日志。
+ * @param {number} [max_forever_looping_num=6] - 判断为无限循环的最大相似回复次数。
+ * @param {number} [warning_forever_looping_num=4] - 发出无限循环警告的相似回复次数阈值。
+ * @param {number} [similarity_threshold=0.9] - 用于判断回复是否相似的阈值。
+ * @returns {(entry: chatLogEntry_t) => void} 一个函数，接受一个日志条目并将其添加到长时间日志中。
  */
 export function getLongTimeLogAdder(result, prompt_struct, max_forever_looping_num = 6, warning_forever_looping_num = 4, similarity_threshold = 0.9) {
 	const sim_check_before = []
 	let forever_looping_num = 0
 	/**
-	 * @description
-	 * This function is used to add a log entry to the character's additional chat log.
-	 * It will also check if the AI has entered an infinite loop, and if so, throw an error and end the conversation.
-	 * @param {chatLogEntry_t} entry The log entry to add.
+	 * 将日志条目添加到角色的附加聊天日志中。
+	 * 同时会检查AI是否进入无限循环，如果是，则抛出错误并结束对话。
+	 * @param {chatLogEntry_t} entry - 要添加的日志条目。
 	 */
 	function AddLongTimeLog(entry) {
 		entry.charVisibility = [prompt_struct.char_id]
@@ -76,8 +75,10 @@ export function getLongTimeLogAdder(result, prompt_struct, max_forever_looping_n
 }
 
 /**
- * @param {chatReplyRequest_t} args
- * @returns {Promise<chatReply_t>}
+ * 主回复生成函数。
+ * 接收聊天请求，构建prompt，调用AI，处理AI返回的函数调用，并返回最终的聊天回复。
+ * @param {chatReplyRequest_t} args - 聊天回复请求的参数。
+ * @returns {Promise<chatReply_t>} - 一个包含生成回复的对象。
  */
 export async function GetReply(args) {
 	if (noAISourceAvailable()) return noAIreply(args)

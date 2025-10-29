@@ -397,7 +397,18 @@ async function checkQueueMessageTrigger(currentMessageToProcess, currentChannelL
 		// 复读检查
 		const repetCheckLog = currentChannelLog.slice(-10)
 		const nameMap = {}
+		/**
+		 * 辅助函数，用于生成文件列表的摘要字符串。
+		 * @param {any[]} files - 文件数组。
+		 * @returns {string} 文件摘要字符串。
+		 */
 		let summaryFiles = files => files.length
+		/**
+		 * 辅助函数，用于生成消息的摘要字符串，用于重复消息检测。
+		 * @param {chatLogEntry_t_ext} message - 消息条目。
+		 * @param {boolean} [name_diff=true] - 是否在摘要中包含名称差异信息。
+		 * @returns {string} 消息的摘要字符串。
+		 */
 		function summary(message, name_diff = true) {
 			let result = ''
 			if (name_diff) {
@@ -418,6 +429,11 @@ async function checkQueueMessageTrigger(currentMessageToProcess, currentChannelL
 		) {
 			// 通过，fetch后重新计算复读内容
 			await fetchFilesForMessages(repetCheckLog)
+			/**
+			 * 重新定义 summaryFiles，用于在获取文件内容后生成更详细的摘要。
+			 * @param {any[]} files - 文件数组。
+			 * @returns {string} 文件摘要字符串。
+			 */
 			summaryFiles = files => files.filter(file => !file.extension?.is_from_vision).map(file => file.buffer instanceof Buffer ? file.buffer.toString('hex') : String(file.buffer)).join('\n')
 			repet = findMostFrequentElement(repetCheckLog, summary)
 			if (

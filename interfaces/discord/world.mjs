@@ -14,6 +14,10 @@ export const discordWorld = {
 	},
 	interfaces: {
 		chat: {
+			/**
+			 * 获取 Discord 世界观的 Prompt。
+			 * @returns {object} - 包含 Prompt 文本的对象。
+			 */
 			GetPrompt: () => {
 				return {
 					text: [

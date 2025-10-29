@@ -5,14 +5,19 @@ import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
- * @param {chatReplyRequest_t} args
- * @param {logical_results_t} logical_results
- * @param {prompt_struct_t} prompt_struct
- * @param {number} detail_level
+ * @param {chatReplyRequest_t} args 用户输入参数
+ * @param {logical_results_t} logical_results 逻辑结果
+ * @param {prompt_struct_t} prompt_struct 提示结构
+ * @param {number} detail_level 细节等级
+ * @returns {Promise<prompt_struct_t>} 返回的提示结构
  */
 export async function AutoCalcPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
 
+	/**
+	 * 获取聊天日志。
+	 * @returns {string} - 聊天日志内容。
+	 */
 	const getLog = () => getScopedChatLog(args, 'any').map(x => x.content).join()
 	if (args.extension?.enable_prompts?.autocalc || await match_keys(args, [/((哪|那)个|谁)(最|)(大|小)/, /(大|小)还是/], 'any')) {
 		const str = getLog().replace(/(:|@\w*|\/)\b\d+(?:\.\d+)?\b/g, '')

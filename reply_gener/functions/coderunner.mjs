@@ -12,6 +12,13 @@ import { GetReply } from '../index.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
+/**
+ * 处理被执行代码的回调。
+ * @param {object} args - 来自原始回复处理程序的参数。
+ * @param {string} reason - 回调的原因。
+ * @param {string} code - 被执行的代码。
+ * @param {any} result - 回调的结果。
+ */
 async function callback_handler(args, reason, code, result) {
 	let logger = args.AddChatLogEntry
 	const feedback = {
@@ -47,15 +54,28 @@ ${code}
 	}
 }
 
-/** @type {import("../../../../../../../src/decl/pluginAPI.ts").ReplyHandler_t} */
+/**
+ * 处理来自 AI 的代码执行请求。
+ * @param {prompt_struct_t} result - 包含AI回复内容和扩展信息的对象。
+ * @param {object} args - 包含处理回复所需参数的对象。
+ * @type {import("../../../../../../../src/decl/pluginAPI.ts").ReplyHandler_t}
+ */
 export async function coderunner(result, args) {
 	const { AddLongTimeLog } = args
 	result.extension.execed_codes ??= {}
+	/**
+	 * 获取 JS 代码执行的上下文。
+	 * @param {string} code - 要执行的代码。
+	 * @returns {Promise<object>} - 返回 JS 代码执行的上下文。
+	 */
 	async function get_js_eval_context(code) {
 		const js_eval_context = {
 			workspace: args.chat_scoped_char_memory.coderunner_workspace ??= {},
 			chat_log: args.chat_log,
 		}
+		/**
+		 * 清空工作区。
+		 */
 		function clear_workspace() {
 			js_eval_context.workspace = args.chat_scoped_char_memory.coderunner_workspace = {}
 			js_eval_context.workspace.clear = clear_workspace
@@ -63,18 +83,29 @@ export async function coderunner(result, args) {
 		js_eval_context.clear_workspace = clear_workspace
 		if (args.supported_functions.add_message)
 			/**
-			 * @param {string} reason
-			 * @param {Promise<any>} promise
+			 * @param {string} reason - 回调原因。
+			 * @param {Promise<any>} promise - 相关的 Promise 对象。
+			 * @returns {void}
 			 */
 			js_eval_context.callback = (reason, promise) => {
 				if (!js_eval_context.eval_result && !(promise instanceof Promise))
 					throw new Error('callback函数的第二个参数必须是一个Promise对象')
+				/**
+				 *
+				 * @param {any} _ - 占位符参数。
+				 * @returns {void}
+				 */
 				const _ = _ => callback_handler(args, reason, code, _)
 				Promise.resolve(promise).then(_, _)
 				return 'callback已注册'
 			}
 		const view_files = []
 		let view_files_flag = false
+		/**
+		 *
+		 * @param {...any} pathOrFileObjs - 文件路径或文件对象。
+		 * @returns {Promise<void>}
+		 */
 		js_eval_context.view_files = async (...pathOrFileObjs) => {
 			const errors = []
 			for (const pathOrFileObj of pathOrFileObjs) try {
@@ -93,6 +124,11 @@ export async function coderunner(result, args) {
 		}
 		let sent_files
 		if (args.supported_functions.files)
+			/**
+			 *
+			 * @param {...any} pathOrFileObjs - 文件路径或文件对象。
+			 * @returns {Promise<void>}
+			 */
 			js_eval_context.add_files = async (...pathOrFileObjs) => {
 				const errors = []
 				for (const pathOrFileObj of pathOrFileObjs) try {
@@ -113,11 +149,20 @@ export async function coderunner(result, args) {
 			Object.values(args.plugins).map(plugin => plugin.interfaces?.chat?.GetJSCodeContext?.(args, args.prompt_struct))
 		)).filter(Boolean))
 	}
+	/**
+	 * 为 AI 运行 JS 代码。
+	 * @param {string} code - 要运行的代码。
+	 * @returns {Promise<any>} - 返回代码执行的结果。
+	 */
 	async function run_jscode_for_AI(code) {
 		return async_eval(code, await get_js_eval_context(code))
 	}
 	// 解析wait-screen
 	const wait_screen = Number(result.content.match(/<wait-screen>(?<timeout>\d*?)<\/wait-screen>/)?.groups?.timeout?.trim?.() || 0)
+	/**
+	 * 获取屏幕截图。
+	 * @returns {Promise<{name: string, buffer: Buffer, mime_type: string} | undefined>} - 返回一个包含屏幕截图信息的对象，如果 `wait_screen` 为 0 则返回 undefined。
+	 */
 	async function get_screen() {
 		if (!wait_screen) return
 		await new Promise(resolve => setTimeout(resolve, wait_screen * 1000))

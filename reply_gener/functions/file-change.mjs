@@ -7,7 +7,10 @@ import { escapeRegExp, parseRegexFromString } from '../../scripts/tools.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
-/** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
+/**
+ * 处理来自 AI 的文件更改请求。
+ * @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t}
+ */
 export async function file_change(result, { AddLongTimeLog }) {
 	const view_files_match = result.content.match(/<view-file>(?<paths>[^]*?)<\/view-file>/)?.groups?.paths
 	let regen = false

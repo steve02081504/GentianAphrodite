@@ -1,3 +1,8 @@
+/**
+ * 将 Buffer 转换为 ImageData。
+ * @param {Buffer} buffer - 图像的 Buffer 数据。
+ * @returns {Promise<{imageData: ImageData, width: number, height: number} | null>} - 返回包含 ImageData、宽度和高度的对象，如果失败则返回 null。
+ */
 async function bufferToImageData(buffer) {
 	try {
 		const { createCanvas, loadImage } = await import('https://deno.land/x/canvas/mod.ts')
@@ -18,9 +23,9 @@ async function bufferToImageData(buffer) {
 }
 
 /**
- * 从图像 Buffer 中解码二维码内容
- * @param {Buffer} buffer - 图像的 Buffer 数据
- * @returns {Promise<string[]>} - 返回解码到的所有二维码内容字符串数组
+ * 从图像 Buffer 中解码二维码内容。
+ * @param {Buffer} buffer - 图像的 Buffer 数据。
+ * @returns {Promise<string[]>} - 返回解码到的所有二维码内容字符串数组。
  */
 export async function decodeQrCodeFromBuffer(buffer) {
 	const decodedContents = []

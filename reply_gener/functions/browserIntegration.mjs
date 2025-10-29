@@ -22,12 +22,23 @@ import { GetReply } from '../index.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
-/** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
+/**
+ * 处理浏览器集成命令。
+ * @param {prompt_struct_t} result - 包含AI回复内容和扩展信息的对象。
+ * @param {object} args - 包含处理回复所需参数的对象。
+ * @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t}
+ */
 export async function browserIntegration(result, args) {
 	const { AddLongTimeLog, username, char_id } = args
 	let processed = false
 	const commands_called = []
 
+	/**
+	 * 处理浏览器集成命令执行期间发生的错误。
+	 * @param {Error} err - 抛出的错误对象。
+	 * @param {string} command - 尝试执行的命令的名称。
+	 * @param {string} [details=''] - 有关错误的任何其他详细信息。
+	 */
 	const handleError = (err, command, details = '') => {
 		console.error(`Error executing browser integration command "${command}"${details}:`, err)
 		AddLongTimeLog({
@@ -38,6 +49,11 @@ export async function browserIntegration(result, args) {
 		})
 	}
 
+	/**
+	 * 将页面 ID（可能是 'focused'）解析为数字 ID。
+	 * @param {string} pageIdRaw - 原始页面 ID 字符串。
+	 * @returns {number} - 解析后的数字页面 ID。
+	 */
 	const resolvePageId = (pageIdRaw) => {
 		if (pageIdRaw.toLowerCase() === 'focused') {
 			const focusedPage = getFocusedPageInfo(username)
@@ -47,10 +63,16 @@ export async function browserIntegration(result, args) {
 		return Number(pageIdRaw)
 	}
 
+	/**
+	 * @type {Array<{name: string, regex: RegExp, handler: (match: RegExpMatchArray) => Promise<void>}>}
+	 */
 	const commandProcessors = [
 		{
 			name: 'get-connected-pages',
 			regex: /<browser-get-connected-pages>\s*<\/browser-get-connected-pages>/g,
+			/**
+			 * 处理获取已连接页面列表的命令。
+			 */
 			handler: async () => {
 				const pages = getConnectedPages(username)
 				AddLongTimeLog({
@@ -64,6 +86,9 @@ export async function browserIntegration(result, args) {
 		{
 			name: 'get-focused-page-info',
 			regex: /<browser-get-focused-page-info>\s*<\/browser-get-focused-page-info>/g,
+			/**
+			 * 处理获取焦点页面信息的命令。
+			 */
 			handler: async () => {
 				const page = getFocusedPageInfo(username)
 				AddLongTimeLog({
@@ -77,6 +102,9 @@ export async function browserIntegration(result, args) {
 		{
 			name: 'get-browse-history',
 			regex: /<browser-get-browse-history>\s*<\/browser-get-browse-history>/g,
+			/**
+			 * 处理获取浏览历史的命令。
+			 */
 			handler: async () => {
 				const history = getBrowseHistory(username)
 				AddLongTimeLog({
@@ -90,6 +118,10 @@ export async function browserIntegration(result, args) {
 		{
 			name: 'get-page-html',
 			regex: /<browser-get-page-html><pageId>(.*?)<\/pageId>\s*<\/browser-get-page-html>/gs,
+			/**
+			 *
+			 * @param {RegExpMatchArray} match - 匹配对象，包含捕获组。
+			 */
 			handler: async (match) => {
 				const pageId = resolvePageId(match[1].trim())
 				const html = await getPageHtml(username, pageId)
@@ -104,6 +136,10 @@ export async function browserIntegration(result, args) {
 		{
 			name: 'get-visible-html',
 			regex: /<browser-get-visible-html><pageId>(.*?)<\/pageId>\s*<\/browser-get-visible-html>/gs,
+			/**
+			 *
+			 * @param {RegExpMatchArray} match - 匹配对象，包含捕获组。
+			 */
 			handler: async (match) => {
 				const pageId = resolvePageId(match[1].trim())
 				const html = await getVisibleHtml(username, pageId)
@@ -118,6 +154,10 @@ export async function browserIntegration(result, args) {
 		{
 			name: 'run-js-on-page',
 			regex: /<browser-run-js-on-page>(?<content>[\s\S]*?)<\/browser-run-js-on-page>/g,
+			/**
+			 *
+			 * @param {RegExpMatchArray} match - 匹配对象，包含捕获组。
+			 */
 			handler: async (match) => {
 				const content = match.groups.content
 				const pageIdMatch = content.match(/<pageId>\s*(.*?)\s*<\/pageId>/s)
@@ -139,6 +179,10 @@ export async function browserIntegration(result, args) {
 		{
 			name: 'add-autorun-script',
 			regex: /<browser-add-autorun-script>(?<content>[\s\S]*?)<\/browser-add-autorun-script>/g,
+			/**
+			 *
+			 * @param {RegExpMatchArray} match - 匹配对象，包含捕获组。
+			 */
 			handler: async (match) => {
 				const content = match.groups.content
 				const urlRegexMatch = content.match(/<urlRegex>([\s\S]*?)<\/urlRegex>/)
@@ -163,6 +207,10 @@ export async function browserIntegration(result, args) {
 		{
 			name: 'update-autorun-script',
 			regex: /<browser-update-autorun-script>(?<content>[\s\S]*?)<\/browser-update-autorun-script>/g,
+			/**
+			 *
+			 * @param {RegExpMatchArray} match - 匹配对象，包含捕获组。
+			 */
 			handler: async (match) => {
 				const content = match.groups.content
 				const idMatch = content.match(/<id>([\s\S]*?)<\/id>/s)
@@ -194,6 +242,10 @@ export async function browserIntegration(result, args) {
 		{
 			name: 'remove-autorun-script',
 			regex: /<browser-remove-autorun-script><id>(.*?)<\/id>\s*<\/browser-remove-autorun-script>/gs,
+			/**
+			 *
+			 * @param {RegExpMatchArray} match - 匹配对象，包含捕获组。
+			 */
 			handler: async (match) => {
 				const id = match[1].trim()
 				console.info(`AI请求删除自动运行脚本, id: ${id}`)
@@ -209,6 +261,9 @@ export async function browserIntegration(result, args) {
 		{
 			name: 'list-autorun-scripts',
 			regex: /<browser-list-autorun-scripts>\s*<\/browser-list-autorun-scripts>/g,
+			/**
+			 * 处理列出自动运行脚本的命令。
+			 */
 			handler: async () => {
 				console.info('AI请求列出自动运行脚本')
 				const scripts = listAutoRunScripts(username)
@@ -247,6 +302,13 @@ export async function browserIntegration(result, args) {
 	return processed
 }
 
+/**
+ * 处理来自浏览器 JavaScript 的回调。
+ * @param {object} options - 包含回调数据的对象。
+ * @param {any} options.data - 浏览器脚本返回的数据。
+ * @param {number} options.pageId - 发生回调的页面ID。
+ * @param {string} options.script - 触发回调的原始脚本。
+ */
 export function BrowserJsCallback({ data, pageId, script }) {
 	statisticDatas.toolUsage.browserCallbacks = (statisticDatas.toolUsage.browserCallbacks || 0) + 1
 	const logEntry = {

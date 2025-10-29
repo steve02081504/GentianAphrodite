@@ -27,9 +27,9 @@ const CAPTION_LENGTH_LIMIT = 1024 // Telegram 的说明文字长度限制
 
 /**
  * 如果说明文字过长，则尝试多种策略进行截断。
- * @param {string | undefined} captionAiMarkdown
- * @param {string} fileNameForDebug
- * @returns {string | undefined}
+ * @param {string | undefined} captionAiMarkdown - AI Markdown 格式的说明文字。
+ * @param {string} fileNameForDebug - 用于调试的文件名。
+ * @returns {string | undefined} - 截断后的 HTML 格式说明文字或 undefined。
  */
 function truncateCaption(captionAiMarkdown, fileNameForDebug) {
 	if (!captionAiMarkdown) return undefined
@@ -57,15 +57,15 @@ function truncateCaption(captionAiMarkdown, fileNameForDebug) {
 
 /**
  * 尝试根据 MIME 类型使用各种 Telegram 方法发送文件。
- * @param {import('npm:telegraf').Telegraf} bot
- * @param {string | number} platformChatId
- * @param {{source: Buffer, filename: string}} fileSource
- * @param {object} sendOptions
- * @param {{name: string, mime_type?: string, description?: string}} file
- * @param {string | undefined} captionAiMarkdown
- * @param {object} baseOptions
- * @param {number | undefined} messageThreadId
- * @returns {Promise<TelegramMessageType | undefined>}
+ * @param {import('npm:telegraf').Telegraf} bot - Telegraf 机器人实例。
+ * @param {string | number} platformChatId - 平台聊天 ID。
+ * @param {{source: Buffer, filename: string}} fileSource - 文件源对象。
+ * @param {object} sendOptions - 发送选项。
+ * @param {{name: string, mime_type?: string, description?: string}} file - 文件信息对象。
+ * @param {string | undefined} captionAiMarkdown - AI Markdown 格式的说明文字。
+ * @param {object} baseOptions - 基础选项。
+ * @param {number | undefined} messageThreadId - 消息线程 ID。
+ * @returns {Promise<TelegramMessageType | undefined>} - 发送的 Telegram 消息对象或 undefined。
  */
 async function trySendFileOrFallbackText(
 	bot, platformChatId, fileSource, sendOptions,
@@ -96,10 +96,10 @@ async function trySendFileOrFallbackText(
 
 /**
  * 为回复消息准备参数，调整内容和选项。
- * @param {chatLogEntry_t_ext | undefined} originalMessageEntry
- * @param {string} aiMarkdownContent
- * @param {object} baseOptions
- * @returns {{aiMarkdownContent: string, baseOptions: object}}
+ * @param {chatLogEntry_t_ext | undefined} originalMessageEntry - 原始消息条目。
+ * @param {string} aiMarkdownContent - AI Markdown 格式的内容。
+ * @param {object} baseOptions - 基础选项。
+ * @returns {{aiMarkdownContent: string, baseOptions: object}} - 包含更新后的 AI Markdown 内容和基础选项。
  */
 function prepareReplyParameters(originalMessageEntry, aiMarkdownContent, baseOptions) {
 	let updatedAiMarkdownContent = aiMarkdownContent
@@ -125,19 +125,27 @@ function prepareReplyParameters(originalMessageEntry, aiMarkdownContent, baseOpt
 }
 
 /**
- * @param {import('npm:telegraf').Telegraf} bot
- * @param {string | number} platformChatId
- * @param {number | undefined} messageThreadId
- * @param {object} baseOptions
- * @param {any[]} files
- * @param {string} aiMarkdownContent
- * @param {string} htmlContent
- * @returns {Promise<TelegramMessageType | null>}
+ * 发送文件到 Telegram。
+ * @param {import('npm:telegraf').Telegraf} bot - Telegraf 机器人实例。
+ * @param {string | number} platformChatId - 平台聊天 ID。
+ * @param {number | undefined} messageThreadId - 消息线程 ID。
+ * @param {object} baseOptions - 基础选项。
+ * @param {any[]} files - 文件数组。
+ * @param {string} aiMarkdownContent - AI Markdown 格式的内容。
+ * @param {string} htmlContent - HTML 格式的内容。
+ * @returns {Promise<TelegramMessageType | null>} - 发送的 Telegram 消息对象或 null。
  */
 async function sendFiles(bot, platformChatId, messageThreadId, baseOptions, files, aiMarkdownContent, htmlContent) {
 	let firstSentTelegramMessage = null
 	let mainTextSentAsCaption = false
 
+	/**
+	 * 发送带说明文字的文件。
+	 * @param {object} file - 文件对象。
+	 * @param {string | undefined} captionAiMarkdown - AI Markdown 格式的说明文字。
+	 * @param {boolean} isLastFile - 是否是最后一个文件。
+	 * @returns {Promise<TelegramMessageType | undefined>} - 发送的 Telegram 消息对象或 undefined。
+	 */
 	const sendFileWithCaption = async (file, captionAiMarkdown, isLastFile) => {
 		const fileSource = { source: file.buffer, filename: file.name }
 		const finalCaptionHtml = truncateCaption(captionAiMarkdown, file.name)
@@ -196,11 +204,12 @@ async function sendFiles(bot, platformChatId, messageThreadId, baseOptions, file
 }
 
 /**
- * @param {import('npm:telegraf').Telegraf} bot
- * @param {string | number} platformChatId
- * @param {object} baseOptions
- * @param {string} htmlContent
- * @returns {Promise<TelegramMessageType | null>}
+ * 发送文本消息到 Telegram。
+ * @param {import('npm:telegraf').Telegraf} bot - Telegraf 机器人实例。
+ * @param {string | number} platformChatId - 平台聊天 ID。
+ * @param {object} baseOptions - 基础选项。
+ * @param {string} htmlContent - HTML 格式的内容。
+ * @returns {Promise<TelegramMessageType | null>} - 发送的 Telegram 消息对象或 null。
  */
 async function sendTextMessages(bot, platformChatId, baseOptions, htmlContent) {
 	const stickerRegex = /&lt;:([^:]+):[^:]*:[^>]*&gt;\s*/g
@@ -233,14 +242,15 @@ async function sendTextMessages(bot, platformChatId, baseOptions, htmlContent) {
 }
 
 /**
- * @param {import('npm:telegraf').Telegraf} bot
- * @param {string | number} platformChatId
- * @param {number | undefined} messageThreadId
- * @param {object} baseOptions
- * @param {any[]} files
- * @param {string} aiMarkdownContent
- * @param {string} htmlContent
- * @returns {Promise<TelegramMessageType | null>}
+ * 分派消息发送器，根据消息内容发送文件或文本。
+ * @param {import('npm:telegraf').Telegraf} bot - Telegraf 机器人实例。
+ * @param {string | number} platformChatId - 平台聊天 ID。
+ * @param {number | undefined} messageThreadId - 消息线程 ID。
+ * @param {object} baseOptions - 基础选项。
+ * @param {any[]} files - 文件数组。
+ * @param {string} aiMarkdownContent - AI Markdown 格式的内容。
+ * @param {string} htmlContent - HTML 格式的内容。
+ * @returns {Promise<TelegramMessageType | null>} - 发送的 Telegram 消息对象或 null。
  */
 async function dispatchMessageSender(
 	bot, platformChatId, messageThreadId, baseOptions,
@@ -255,8 +265,11 @@ async function dispatchMessageSender(
 }
 
 /**
- * @param {TelegramInterfaceConfig_t} interfaceConfig
- * @returns {PlatformAPI_t}
+ * 构建并返回一个实现了 PlatformAPI_t 接口的对象，用于 Telegram 平台。
+ * 该对象封装了所有与 Telegram API 交互的底层细节，
+ * 为机器人核心逻辑提供了一套标准化的函数，如 sendMessage、sendTyping 等。
+ * @param {TelegramInterfaceConfig_t} interfaceConfig - 此 Telegram 接口的配置对象。
+ * @returns {PlatformAPI_t} - 实现了 PlatformAPI_t 接口的对象实例。
  */
 export function buildPlatformAPI(interfaceConfig) {
 	/** @type {PlatformAPI_t} */
@@ -264,6 +277,13 @@ export function buildPlatformAPI(interfaceConfig) {
 		name: 'telegram',
 		config: interfaceConfig,
 
+		/**
+		 * 发送消息到指定的 Telegram 频道或群组。
+		 * @param {string | number} logicalChannelId - 目标 Telegram 频道或群组的逻辑 ID。
+		 * @param {FountChatReply_t} fountReplyPayload - 由 Bot 逻辑层生成的、包含回复内容的 fount 回复对象。
+		 * @param {chatLogEntry_t_ext} [originalMessageEntry] - (可选) 触发此次回复的原始消息条目。
+		 * @returns {Promise<chatLogEntry_t_ext | null>} 如果发送成功，则返回代表第一条已发送消息的 fount 日志条目；否则返回 null。
+		 */
 		async sendMessage(logicalChannelId, fountReplyPayload, originalMessageEntry) {
 			const { chatId, threadId: threadIdFromLogicalId } = parseLogicalChannelId(logicalChannelId)
 			const platformChatId = chatId
@@ -299,6 +319,12 @@ export function buildPlatformAPI(interfaceConfig) {
 			return null
 		},
 
+		/**
+		 * 在指定频道发送“正在输入...”状态。
+		 * @param {string | number} logicalChannelId - 目标 Telegram 频道或群组的逻辑 ID。
+		 * @param {chatLogEntry_t_ext} [originalMessageEntry] - (可选) 触发此次操作的原始消息条目。
+		 * @returns {Promise<void>}
+		 */
 		async sendTyping(logicalChannelId, originalMessageEntry) {
 			const { chatId, threadId: threadIdFromLogicalId } = parseLogicalChannelId(logicalChannelId)
 			const platformChatId = chatId
@@ -310,19 +336,51 @@ export function buildPlatformAPI(interfaceConfig) {
 			} catch (e) { /* 静默处理 */ }
 		},
 
+		/**
+		 * 获取指定 Telegram 频道或群组的历史消息。
+		 * @param {string | number} logicalChannelId - 目标 Telegram 频道或群组的逻辑 ID。
+		 * @param {number} limit - 要获取的消息数量上限。
+		 * @returns {Promise<chatLogEntry_t_ext[]>} - 转换后的 fount 聊天日志条目数组。 转换后的 fount 聊天日志条目数组。
+		 */
 		async fetchChannelHistory(logicalChannelId, limit) {
 			const { chatId, threadId } = parseLogicalChannelId(logicalChannelId)
 			console.warn(`[TelegramInterface] fetchChannelHistory not fully implemented in Telegram interface (LogicalID: ${logicalChannelId}, PlatformChatID: ${chatId}, ThreadID: ${threadId}). Relying on in-memory logs.`)
 			return []
 		},
 
+		/**
+		 * 获取机器人自身的 Telegram 用户 ID。
+		 * @returns {number} - 机器人自身的 Telegram 用户 ID。
+		 */
 		getBotUserId: () => telegramBotInfo ? telegramBotInfo.id : -1,
+		/**
+		 * 获取机器人自身的 Telegram 用户名。
+		 * @returns {string} - 机器人自身的 Telegram 用户名。
+		 */
 		getBotUsername: () => telegramBotInfo ? telegramBotInfo.username || BotFountCharname : 'UnknownBot',
+		/**
+		 * 获取机器人自身的 Telegram 显示名称。
+		 * @returns {string} - 机器人自身的 Telegram 显示名称。
+		 */
 		getBotDisplayName: () => telegramBotInfo ? telegramUserIdToDisplayName[telegramBotInfo.id] || telegramBotInfo.first_name || telegramBotInfo.username || BotFountCharname : 'Unknown Bot',
 
+		/**
+		 * 获取主人的 Telegram 用户名。
+		 * @returns {string} - 主人的 Telegram 用户名。
+		 */
 		getOwnerUserName: () => interfaceConfig.OwnerUserName,
+		/**
+		 * 获取主人的 Telegram 用户 ID。
+		 * @returns {string} - 主人的 Telegram 用户 ID。
+		 */
 		getOwnerUserId: () => interfaceConfig.OwnerUserID,
 
+		/**
+		 * 获取供 AI 使用的、易读的聊天/频道名称。
+		 * @param {string | number} logicalChannelId - 频道 ID。
+		 * @param {chatLogEntry_t_ext} [triggerMessage] - (可选) 触发消息，用于私聊时获取对方用户名。
+		 * @returns {string} 格式化后的聊天/频道名称。
+		 */
 		getChatNameForAI: (logicalChannelId, triggerMessage) => {
 			const { threadId } = parseLogicalChannelId(logicalChannelId)
 
@@ -351,12 +409,21 @@ export function buildPlatformAPI(interfaceConfig) {
 			return `Telegram: Chat ${logicalChannelId}`
 		},
 
+		/**
+		 * 通知接入层执行机器人销毁/下线操作。
+		 * @returns {Promise<void>}
+		 */
 		destroySelf: async () => {
 			await cleanupBotLogic()
 			if (telegrafInstance)
 				telegrafInstance.stop('SIGINT')
 		},
 
+		/**
+		 * (可选) 获取群组/服务器的默认或合适的首选频道。
+		 * @param {string | number} chatId - 群组的 ID。
+		 * @returns {Promise<import('../../bot_core/index.mjs').ChannelObject | null>} - 群组/服务器的默认或合适的首选频道。
+		 */
 		getGroupDefaultChannel: async chatId => {
 			if (!telegrafInstance) {
 				console.error('[TelegramInterface] getGroupDefaultChannel: Telegraf instance not available.')
@@ -379,10 +446,21 @@ export function buildPlatformAPI(interfaceConfig) {
 			}
 		},
 
+		/**
+		 * 记录从 Bot 逻辑层传递过来的错误。
+		 * @param {Error} error - 错误对象。
+		 * @param {chatLogEntry_t_ext} [contextMessage] - (可选) 发生错误时的上下文消息条目。
+		 * @returns {void}
+		 */
 		logError: (error, contextMessage) => {
 			console.error('[TelegramInterface-PlatformAPI-Error]', error, contextMessage ? `Context: ${JSON.stringify(contextMessage)}` : '')
 		},
 
+		/**
+		 * 获取特定于 Telegram 平台和当前消息上下文的插件列表。
+		 * @param {chatLogEntry_t_ext} messageEntry - 当前正在处理的消息条目。
+		 * @returns {Record<string, import('../../../../../../../src/decl/pluginAPI.ts').pluginAPI_t>} - 包含特定于 Telegram 平台的插件对象。
+		 */
 		getPlatformSpecificPlugins: messageEntry => {
 			if (messageEntry?.extension?.telegram_message_obj)
 				return {
@@ -392,8 +470,17 @@ export function buildPlatformAPI(interfaceConfig) {
 			return {}
 		},
 
+		/**
+		 * 获取特定于 Telegram 平台的世界观配置。
+		 * @returns {object} - Telegram 平台的世界观配置。
+		 */
 		getPlatformWorld: () => telegramWorld,
 
+		/**
+		 * (可选) 设置当机器人加入新群组/服务器时调用的回调函数。
+		 * @param {(group: import('../../bot_core/index.mjs').GroupObject) => Promise<void>} onJoinCallback - 回调函数。
+		 * @returns {void}
+		 */
 		onGroupJoin: onJoinCallback => {
 			if (telegrafInstance)
 				telegrafInstance.on('my_chat_member', async ctx => {
@@ -423,11 +510,20 @@ export function buildPlatformAPI(interfaceConfig) {
 				console.error('[TelegramInterface] Could not set onGroupJoin: bot instance or callback invalid.')
 		},
 
+		/**
+		 * (可选) 获取机器人当前所在的所有群组/服务器列表。
+		 * @returns {Promise<import('../../bot_core/index.mjs').GroupObject[]>} - 机器人当前所在的所有群组/服务器列表。
+		 */
 		getJoinedGroups: async () => {
 			console.warn('[TelegramInterface] getJoinedGroups is not reliably supported by Telegram Bot API. It may return an empty list or only previously known chats.')
 			return Promise.resolve([])
 		},
 
+		/**
+		 * (可选) 获取特定群组/服务器的成员列表。
+		 * @param {string | number} chatId - 群组的 ID。
+		 * @returns {Promise<import('../../bot_core/index.mjs').UserObject[]>} - 特定群组/服务器的成员列表。
+		 */
 		getGroupMembers: async chatId => {
 			console.warn('[TelegramInterface] getGroupMembers on Telegram primarily returns administrators or a limited set of members due to API restrictions.')
 			if (!telegrafInstance) {
@@ -449,6 +545,12 @@ export function buildPlatformAPI(interfaceConfig) {
 			}
 		},
 
+		/**
+		 * (可选) 为指定群组/服务器生成邀请链接。
+		 * @param {string | number} chatId - 群组的 ID。
+		 * @param {string | number} [threadId] - (可选) 消息线程 ID。
+		 * @returns {Promise<string | null>} 邀请 URL 或 null。
+		 */
 		generateInviteLink: async (chatId, threadId) => {
 			if (!telegrafInstance) {
 				console.error('[TelegramInterface] generateInviteLink: Telegraf instance not available.')
@@ -464,6 +566,11 @@ export function buildPlatformAPI(interfaceConfig) {
 			}
 		},
 
+		/**
+		 * (可选) 使机器人离开指定群组/服务器。
+		 * @param {string | number} chatId - 群组的 ID。
+		 * @returns {Promise<void>}
+		 */
 		leaveGroup: async chatId => {
 			if (!telegrafInstance) {
 				console.error('[TelegramInterface] leaveGroup: Telegraf instance not available.')
@@ -477,11 +584,20 @@ export function buildPlatformAPI(interfaceConfig) {
 			}
 		},
 
+		/**
+		 * (可选) 优化方法：一次性获取主人在哪些群组中、不在哪些群组中。
+		 * @returns {Promise<{groupsWithOwner: import('../../bot_core/index.mjs').GroupObject[], groupsWithoutOwner: import('../../bot_core/index.mjs').GroupObject[]} | null>} - 包含主人所在群组和不在群组的列表。
+		 */
 		getOwnerPresenceInGroups: async () => {
 			console.warn('[TelegramInterface] getOwnerPresenceInGroups is not supported by the Telegram Bot API due to privacy restrictions and API limitations. This method will return null, and the system should fall back to other methods for startup checks if applicable.')
 			return null
 		},
 
+		/**
+		 * (可选) 设置当主人离开群组时调用的回调函数。
+		 * @param {(groupId: string | number, userId: string | number) => Promise<void>} onLeaveCallback - 回调函数。
+		 * @returns {void}
+		 */
 		onOwnerLeaveGroup: onLeaveCallback => {
 			if (!telegrafInstance) {
 				console.error('[TelegramInterface] onOwnerLeaveGroup: Telegraf instance not initialized.')
@@ -511,6 +627,11 @@ export function buildPlatformAPI(interfaceConfig) {
 			})
 		},
 
+		/**
+		 * (可选) 向配置的机器人主人发送私信。
+		 * @param {string} messageText - 要发送的消息文本。
+		 * @returns {Promise<void>}
+		 */
 		sendDirectMessageToOwner: async messageText => {
 			if (!telegrafInstance) {
 				console.error('[TelegramInterface] sendDirectMessageToOwner: Telegraf instance not available.')

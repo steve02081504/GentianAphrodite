@@ -1,3 +1,7 @@
+/**
+ * 包含一系列中文粗鲁词语的数组。
+ * @type {string[]}
+ */
 // @remove-duplicates
 export const rude_words = [
 	'傻逼', '白痴', '蠢货', '弱智', '傻子', '废物', '下贱', '低能', '无能', '死妈', '恶心', '不知死活', '活得不耐烦',
@@ -5,6 +9,10 @@ export const rude_words = [
 	'禁言', '踢了', '飞了', '杀了', '肏了', '丧家之犬', '蠢逼', '和我做',
 	'没爹', '没母', '没父', '没人养', '你是猪'
 ]
+/**
+ * 包含一系列日式颜文字（Kaomoji）的数组。
+ * @type {string[]}
+ */
 // @remove-duplicates
 export const Kaomoji_list = [
 	'(*´▽｀*)ヾ', '(＃￣ω￣)', '(￣▽￣)ノ',
@@ -29,12 +37,21 @@ export const Kaomoji_list = [
 	'(^・ω・^)', '(=´ω`=)', 'ଲ(’ω’ଲ)'
 ]
 
+/**
+ * 从文本中移除所有预定义的颜文字。
+ * @param {string} text - 要处理的文本。
+ * @returns {string} - 移除了颜文字的文本。
+ */
 export function remove_kaomoji(text) {
 	for (const kaomoji of Kaomoji_list)
 		text = text.replaceAll(kaomoji, '')
 	return text
 }
 
+/**
+ * 包含一系列中文淫秽词语的数组。
+ * @type {string[]}
+ */
 // @remove-duplicates
 export const lewd_words = [
 	'一夜情', '一柱擎天', '乱伦', '乳交', '乳牛', '乳穴', '乳肉', '云雨', '交配', '假阳具', '做爱',

@@ -18,8 +18,7 @@ import { getScopedChatLog, match_keys, match_keys_count, PreprocessChatLogEntry 
  * 	talking_about_ai_character: boolean,
  * 	talking_about_prompt_review: boolean,
  * 	prompt_input: boolean
- * }}
- * logical_results_t
+ * }} logical_results_t
  */
 
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
@@ -27,9 +26,10 @@ import { getScopedChatLog, match_keys, match_keys_count, PreprocessChatLogEntry 
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
- * @param {chatReplyRequest_t} args
- * @param {prompt_struct_t} prompt_struct
- * @param {number} detail_level
+ * @param {chatReplyRequest_t} args 聊天回复请求
+ * @param {prompt_struct_t} prompt_struct prompt结构体
+ * @param {number} detail_level 细节等级
+ * @returns {Promise<logical_results_t>} 逻辑结果
  */
 export async function buildLogicalResults(args, prompt_struct, detail_level) {
 	/** @type {logical_results_t} */

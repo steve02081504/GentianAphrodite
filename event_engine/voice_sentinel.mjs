@@ -1,5 +1,5 @@
 /**
- * @fileoverview
+ * @file
  * 一个基于 PvRecorder 的智能语音哨兵模块。
  * 当侦测到声音时，会将其录制下来。如果声音与主人音色匹配，则会触发AI进行回应。
  */
@@ -19,7 +19,37 @@ import { GetReply } from '../reply_gener/index.mjs'
 
 import { initRealityChannel, RealityChannel } from './index.mjs'
 
-// --- 配置中心 (Configuration) ---
+/**
+ * @typedef {object} RecordingStats
+ * @property {number} totalRms
+ * @property {number} frameCount
+ * @property {number} totalLoudFrames
+ * @property {number} matchingLoudFrames
+ * @property {number} longestInternalSilenceFrames
+ * @property {number} currentSilenceStreakFrames
+ */
+
+/**
+ * @typedef {object} VoiceSentinelState
+ * @property {string} state
+ * @property {PvRecorder | null} recorder
+ * @property {number[][] | null} referenceMfccs
+ * @property {Date | null} referenceFileMtime
+ * @property {{quiet: number, loud: number}} dynamicThresholds
+ * @property {number[]} initRmsList
+ * @property {number | null} quietStartTime
+ * @property {number | null} lastLoudTime
+ * @property {any[]} armingBuffer
+ * @property {any[]} recordingBuffer
+ * @property {number | null} recordingStartTime
+ * @property {number} consecutiveLoudFrames
+ * @property {number} lastValidationCheckTime
+ * @property {any[]} activityLog
+ * @property {RecordingStats} currentRecordingStats
+ * @property {number} recorderRetryCount
+ * @property {number} avgEnvRms
+ */
+
 const CONFIG = {
 	// --- 阈值与触发器 (Thresholds & Triggers) ---
 	thresholds: {
@@ -68,6 +98,10 @@ const CONFIG = {
 
 // --- 状态管理中心 (State Management) ---
 
+/**
+ * 创建并返回一个用于跟踪单次录音统计数据的初始对象。
+ * @returns {RecordingStats} - 包含录音统计数据的初始对象。
+ */
 function createInitialRecordingStats() {
 	return {
 		totalRms: 0, frameCount: 0, totalLoudFrames: 0, matchingLoudFrames: 0,
@@ -76,6 +110,10 @@ function createInitialRecordingStats() {
 	}
 }
 
+/**
+ * 创建并返回语音哨兵的完整初始状态对象。
+ * @returns {VoiceSentinelState} - 语音哨兵的初始状态对象。
+ */
 function createInitialState() {
 	return {
 		state: 'INITIALIZING', // INITIALIZING, MONITORING_QUIET, ARMED, RECORDING
@@ -101,15 +139,43 @@ function createInitialState() {
 	}
 }
 
+/** @type {VoiceSentinelState} */
 let sentinelState = createInitialState()
 
 // --- 工具函数 (Utility Functions) ---
 
+/**
+ * 计算 Int16 数组的均方根 (RMS) 值。
+ * @param {Int16Array} int16Array - 输入的 Int16 数组。
+ * @returns {number} - 计算出的 RMS 值。
+ */
 const calculateRMS = int16Array => Math.sqrt(int16Array.reduce((sum, val) => sum + val * val, 0) / int16Array.length)
+/**
+ * 将 Int16 数组转换为 Float32 数组。
+ * @param {Int16Array} int16Array - 输入的 Int16 数组。
+ * @returns {Float32Array} - 转换后的 Float32 数组。
+ */
 const int16ToFloat32 = int16Array => Float32Array.from(int16Array, v => v / 32768)
+/**
+ * 计算数组的平均值。
+ * @param {number[]} data - 输入的数字数组。
+ * @returns {number} - 计算出的平均值。
+ */
 const calculateMean = data => data.reduce((sum, value) => sum + value, 0) / data.length
+/**
+ * 计算数组的标准差。
+ * @param {number[]} data - 输入的数字数组。
+ * @param {number} mean - 数组的平均值。
+ * @returns {number} - 计算出的标准差。
+ */
 const calculateStdDev = (data, mean) => Math.sqrt(calculateMean(data.map(value => (value - mean) ** 2)))
 
+/**
+ * 计算两个向量之间的余弦相似度。
+ * @param {number[]} vecA - 第一个向量。
+ * @param {number[]} vecB - 第二个向量。
+ * @returns {number} - 余弦相似度值。
+ */
 function cosineSimilarity(vecA, vecB) {
 	let dotProduct = 0, normA = 0, normB = 0
 	// 从 i = 1 开始，忽略第一个主要反映音量大小的MFCC系数(C0)，专注于音色本身的比较
@@ -142,6 +208,10 @@ function isFrameMatchingVoice(frame) {
 
 // --- 文件与后期处理 ---
 
+/**
+ * 加载参考音频文件并提取 MFCC 特征。
+ * @returns {number[][] | null} - 提取到的 MFCC 特征数组，如果加载失败则返回 null。
+ */
 function loadReferenceMfcc() {
 	const refPath = CONFIG.files.REFERENCE_WAV
 	if (!existsSync(refPath)) {
@@ -216,6 +286,12 @@ function loadReferenceMfcc() {
 	}
 }
 
+/**
+ * 结束录音会话，进行最终验证并处理录音数据。
+ * @async
+ * @param {number} now - 当前时间戳。
+ * @returns {Promise<void>}
+ */
 async function finishRecordingSession(now) {
 	console.log('🏁 Recording session ended, performing final validation...')
 	const { currentRecordingStats, referenceMfccs, recordingBuffer } = sentinelState
@@ -308,6 +384,11 @@ async function finishRecordingSession(now) {
 
 // --- 核心状态机逻辑 (State Machine Logic) ---
 
+/**
+ * 将语音哨兵的状态转换为新状态。
+ * @param {string} newState - 新的状态名称。
+ * @param {number} now - 当前时间戳。
+ */
 function transitionToState(newState, now) {
 	const oldState = sentinelState.state
 	if (oldState === newState) return
@@ -345,6 +426,13 @@ function transitionToState(newState, now) {
 	}
 }
 
+/**
+ * 处理用于录音的音频帧数据。
+ * @param {object} frameData - 包含音频帧缓冲和 RMS 值的对象。
+ * @param {Int16Array} frameData.buffer - 音频帧的 Int16 缓冲区。
+ * @param {number} frameData.rms - 音频帧的 RMS 值。
+ * @returns {void}
+ */
 function processFrameForRecording(frameData) {
 	sentinelState.recordingBuffer.push(frameData)
 	const stats = sentinelState.currentRecordingStats
@@ -358,6 +446,11 @@ function processFrameForRecording(frameData) {
 	}
 }
 
+/**
+ * 处理语音哨兵处于“初始化”状态时的逻辑。
+ * @param {number} now - 当前时间戳。
+ * @returns {void}
+ */
 function handleInitializingState(now) {
 	if (now - (sentinelState.initStartTime || (sentinelState.initStartTime = now)) >= CONFIG.timing.INITIALIZATION_MS) {
 		const avgRms = calculateMean(sentinelState.initRmsList)
@@ -376,6 +469,12 @@ function handleInitializingState(now) {
 	}
 }
 
+/**
+ * 处理语音哨兵处于“静默监控”状态时的逻辑。
+ * @param {number} rms - 当前的 RMS 值。
+ * @param {number} now - 当前时间戳。
+ * @returns {void}
+ */
 function handleMonitoringQuietState(rms, now) {
 	if (rms > sentinelState.dynamicThresholds.quiet)
 		sentinelState.quietStartTime = now
@@ -384,6 +483,14 @@ function handleMonitoringQuietState(rms, now) {
 
 }
 
+/**
+ * 处理语音哨兵处于“武装”状态时的逻辑。
+ * @param {object} frameData - 包含音频帧缓冲和 RMS 值的对象。
+ * @param {Int16Array} frameData.buffer - 音频帧的 Int16 缓冲区。
+ * @param {number} frameData.rms - 音频帧的 RMS 值。
+ * @param {number} now - 当前时间戳。
+ * @returns {void}
+ */
 function handleArmedState(frameData, now) {
 	const isLoud = frameData.rms > sentinelState.dynamicThresholds.loud
 
@@ -421,6 +528,14 @@ function handleArmedState(frameData, now) {
 
 }
 
+/**
+ * 处理语音哨兵处于“录音”状态时的逻辑。
+ * @param {object} frameData - 包含音频帧缓冲和 RMS 值的对象。
+ * @param {Int16Array} frameData.buffer - 音频帧的 Int16 缓冲区。
+ * @param {number} frameData.rms - 音频帧的 RMS 值。
+ * @param {number} now - 当前时间戳。
+ * @returns {Promise<void>}
+ */
 async function handleRecordingState(frameData, now) {
 	processFrameForRecording(frameData)
 	const stats = sentinelState.currentRecordingStats
@@ -467,6 +582,11 @@ async function handleRecordingState(frameData, now) {
 
 // --- 主程序 (Main Application) ---
 
+/**
+ * 重新启动录音器。
+ * @async
+ * @returns {Promise<boolean>} - 如果成功重启则返回 true，否则返回 false。
+ */
 async function restartRecorder() {
 	if (sentinelState.recorder) sentinelState.recorder.release()
 	await new Promise(resolve => setTimeout(resolve, 1000))
@@ -485,6 +605,10 @@ async function restartRecorder() {
 	}
 }
 
+/**
+ * 更新命令行界面的显示，展示当前 RMS 和状态。
+ * @param {number} rms - 当前的 RMS 值。
+ */
 function updateCliDisplay(rms) {
 	const bar = '█'.repeat(Math.min(CONFIG.display.CLI_BAR_MAX_LENGTH, Math.floor(rms / CONFIG.display.CLI_BAR_RMS_SCALING_FACTOR)))
 	let statusDisplay = `[状态: ${sentinelState.state.padEnd(16)}] RMS: ${rms.toFixed(0).padEnd(5)} | ${bar}`
@@ -501,8 +625,17 @@ function updateCliDisplay(rms) {
 	console.freshLine('status-line', statusDisplay)
 }
 
+/**
+ * 指示语音哨兵是否正在运行。
+ * @type {boolean}
+ */
 let isRunning = false
 
+/**
+ * 语音哨兵的主循环，负责持续读取音频帧并根据状态进行处理。
+ * @async
+ * @returns {Promise<void>}
+ */
 async function sentinelLoop() {
 	while (isRunning) {
 		let frame
@@ -554,6 +687,10 @@ async function sentinelLoop() {
 	}
 }
 
+/**
+ * 停止语音哨兵的运行。
+ * @returns {void}
+ */
 export function stopVoiceSentinel() {
 	if (!isRunning) return
 	console.log('👋 Shutting down audio sentinel...')
@@ -565,6 +702,11 @@ export function stopVoiceSentinel() {
 	console.log('🎤 Audio sentinel stopped.')
 }
 
+/**
+ * 检查语音哨兵的状态，如果未运行则启动，如果参考文件有更新则重新加载。
+ * @async
+ * @returns {Promise<boolean>} - 返回语音哨兵是否正在运行。
+ */
 export async function checkVoiceSentinel() {
 	// Stop conditions
 	if (!existsSync(CONFIG.files.REFERENCE_WAV)) {
@@ -593,6 +735,10 @@ export async function checkVoiceSentinel() {
 	return isRunning
 }
 
+/**
+ * 启动语音哨兵。
+ * @returns {void}
+ */
 function startVoiceSentinel() {
 	if (charConfig.disable_voice_sentinel) {
 		console.log('🎤 Audio sentinel is disabled by config.')

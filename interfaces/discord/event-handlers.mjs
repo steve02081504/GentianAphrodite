@@ -15,9 +15,11 @@ import { discordClientInstance, setResolvedOwnerId, discordUserIdToDisplayName, 
  */
 
 /**
- * Discord Bot 的主设置和事件处理函数。
- * @param {DiscordInterfaceConfig_t} interfaceConfig - 传递给此 Discord 接口的特定配置对象。
- * @param {PlatformAPI_t} discordPlatformAPI
+ * 注册 Discord 客户端的主要事件处理器。
+ * 此函数负责设置机器人如何响应消息创建、更新和删除事件，
+ * 同时也会设置机器人的活动状态（如果已配置），并解析和设置所有者用户的 ID。
+ * @param {DiscordInterfaceConfig_t} interfaceConfig - 此 Discord 接口的特定配置对象。
+ * @param {PlatformAPI_t} discordPlatformAPI - 用于将 Discord 事件传递到机器人核心逻辑的平台 API。
  */
 export async function registerEventHandlers(interfaceConfig, discordPlatformAPI) {
 	const client = discordClientInstance

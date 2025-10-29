@@ -4,7 +4,10 @@ import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
-/** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
+/**
+ * 处理来自 AI 的谷歌搜索请求。
+ * @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t}
+ */
 export async function googlesearch(result, { AddLongTimeLog }) {
 	// Match <google-search>...</google-search>
 	let searchQueryContent = result.content.match(/<google-search>(?<query>[^]*?)<\/google-search>/)?.groups?.query

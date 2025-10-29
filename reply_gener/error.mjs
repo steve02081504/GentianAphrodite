@@ -9,11 +9,11 @@ import { is_dist, charname as BotCharname, username as FountUsername, GentianAph
 const errorRecord = {}
 
 /**
- * For an error, generate an AI suggestion.
- * @param {Error} error
- * @param {string} errorMessageForRecord
- * @param {FountChatReplyRequest_t} originalArgs
- * @returns {Promise<FountChatReply_t | null>}
+ * 针对错误生成AI建议。
+ * @param {Error} error - 发生的错误对象。
+ * @param {string} errorMessageForRecord - 用于记录的错误消息字符串。
+ * @param {FountChatReplyRequest_t} originalArgs - 导致错误的原始请求参数。
+ * @returns {Promise<FountChatReply_t | null>} 一个包含AI建议的回复对象，如果生成失败则返回null。
  */
 async function getAISuggestionForError(error, errorMessageForRecord, originalArgs) {
 	try {
@@ -77,11 +77,11 @@ async function getAISuggestionForError(error, errorMessageForRecord, originalArg
 }
 
 /**
- * Unified error handler for reply_gener.
- * It generates an error report with an AI suggestion and returns it as a chat reply.
- * @param {Error} error The error that occurred.
- * @param {FountChatReplyRequest_t} originalArgs The original request that caused the error.
- * @returns {Promise<FountChatReply_t>} A reply object containing the error report.
+ * `reply_gener` 的统一错误处理器。
+ * 它会生成一个带有AI建议的错误报告，并将其作为聊天回复返回。
+ * @param {Error} error - 发生的错误对象。
+ * @param {FountChatReplyRequest_t} originalArgs - 导致错误的原始请求参数。
+ * @returns {Promise<FountChatReply_t>} 一个包含错误报告的回复对象。
  */
 export async function handleError(error, originalArgs) {
 	const errorStack = error.stack || error.message

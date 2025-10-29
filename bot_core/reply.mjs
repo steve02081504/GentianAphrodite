@@ -95,12 +95,21 @@ async function buildReplyRequest(triggerMessage, platformAPI, channelId, request
 		plugins: activePlugins,
 		chat_scoped_char_memory: channelCharScopedMemory[channelId],
 		chat_log: await fetchFilesForMessages(currentChannelChatLog),
+		/**
+		 * 异步向当前频道添加一个新的聊天记录条目（即发送一条消息）。
+		 * @param {FountChatReply_t} replyFromChar - 要发送的回复对象。
+		 * @returns {Promise<chatLogEntry_t_ext | null>} 如果成功发送，则返回创建的聊天记录条目，否则返回 null。
+		 */
 		async AddChatLogEntry(replyFromChar) {
 			if (replyFromChar && (replyFromChar.content || replyFromChar.files?.length))
 				return await sendAndLogReply(replyFromChar, platformAPI, channelId, triggerMessage)
 
 			return null
 		},
+		/**
+		 * 异步更新并返回当前的回复请求对象，主要用于刷新聊天记录、记忆和时间戳。
+		 * @returns {Promise<FountChatReplyRequest_t>} 更新后的回复请求对象。
+		 */
 		async Update() {
 			const updatedRequest = { ...this }
 			updatedRequest.chat_log = channelChatLogs[channelId] || [] // 刷新日志
@@ -152,6 +161,9 @@ async function processAIReply(aiFinalReply, platformAPI, channelId, triggerMessa
  */
 export async function doMessageReply(triggerMessage, platformAPI, channelId) {
 	let typingInterval = setInterval(() => { platformAPI.sendTyping(channelId).catch(() => { }) }, 5000)
+	/**
+	 * 清除正在发送的“输入中”状态的定时器。
+	 */
 	function clearTypingInterval() {
 		if (typingInterval) typingInterval = clearInterval(typingInterval)
 	}

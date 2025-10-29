@@ -1,3 +1,9 @@
+/**
+ * 提供一组常见的问候语。
+ * @param {object} args - 包含用户角色名称的参数对象。
+ * @param {string} args.UserCharname - 用户的角色名称。
+ * @returns {Array<object>} - 包含问候语内容的数组。
+ */
 export function commonGreetings(args) {
 	return [
 		{

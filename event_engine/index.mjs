@@ -2,6 +2,10 @@ import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
 import { notify } from '../../../../../../src/scripts/notify.mjs'
 import { charname, GentianAphrodite, username } from '../charbase.mjs'
 
+/**
+ * Fount 世界观对象，定义了 AI 角色在“真实世界”中的行为准则和能力。
+ * @type {import('../../../../../../src/decl/WorldAPI.ts').WorldAPI_t}
+ */
 const realityWorld = {
 	info: {
 		'zh-CN': {
@@ -15,6 +19,11 @@ const realityWorld = {
 	},
 	interfaces: {
 		chat: {
+			/**
+			 * 获取用于“真实世界”模式的 AI 提示。
+			 * @param {object} args - 提示参数。
+			 * @returns {object} 包含提示文本的对象。
+			 */
 			GetPrompt: args => {
 				return {
 					text: [
@@ -32,6 +41,10 @@ const realityWorld = {
 	}
 }
 
+/**
+ * Fount 插件，为 AI 角色提供通过系统通知与用户进行带外通信的能力。
+ * @type {import('../../../../../../src/decl/pluginAPI.ts').pluginAPI_t}
+ */
 const notify_plugin = {
 	info: {
 		'zh-CN': {
@@ -47,6 +60,13 @@ const notify_plugin = {
 	},
 	interfaces: {
 		chat: {
+			/**
+			 * 获取用于通知插件的 AI 提示，指导 AI 如何使用通知功能。
+			 * @param {object} args - 提示参数。
+			 * @param {object} result - 结果对象。
+			 * @param {number} detail_level - 详细级别。
+			 * @returns {Promise<object>} 包含额外聊天日志的对象。
+			 */
 			GetPrompt: async (args, result, detail_level) => {
 				return {
 					additional_chat_log: [
@@ -66,6 +86,11 @@ const notify_plugin = {
 					]
 				}
 			},
+			/**
+			 * 处理 AI 的回复，提取并发送通知内容。
+			 * @param {object} result - AI 的回复结果对象。
+			 * @returns {Promise<boolean>} 返回 false，表示此处理程序只修改结果，不完全处理回复。
+			 */
 			ReplyHandler: async result => {
 				const match = result.content.match(/<notify>(?<content>[\S\s]*?)<\/notify>/)
 				const content = match?.groups?.content?.trim?.() // Extract and trim the content
@@ -79,7 +104,15 @@ const notify_plugin = {
 	}
 }
 
+/**
+ * 表示一个特殊的“真实世界”频道对象，用于 AI 在不直接与用户交互的情况下进行内部思考和操作。
+ * @type {object}
+ */
 export const RealityChannel = {}
+
+/**
+ * 初始化真实世界频道。
+ */
 export function initRealityChannel() {
 	if (RealityChannel.chat_name) return
 	Object.assign(RealityChannel, {
@@ -127,6 +160,10 @@ export function initRealityChannel() {
 `
 			}
 		],
+		/**
+		 * 向“真实世界”频道的聊天日志中添加一个条目。
+		 * @param {object} entry - 要添加的聊天日志条目。
+		 */
 		AddChatLogEntry: entry => {
 			console.dir(entry, { depth: null })
 			RealityChannel.chat_log.push(entry)
@@ -135,6 +172,10 @@ export function initRealityChannel() {
 		plugins: {
 			notify_plugin,
 		},
+		/**
+		 * 更新“真实世界”频道对象的时间戳并返回自身。
+		 * @returns {object} 更新后的 RealityChannel 对象。
+		 */
 		Update: () => {
 			RealityChannel.time = new Date()
 			return RealityChannel

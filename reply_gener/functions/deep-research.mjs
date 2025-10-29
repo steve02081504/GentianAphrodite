@@ -18,13 +18,12 @@ import { googlesearch } from './googlesearch.mjs'
 import { webbrowse } from './webbrowse.mjs'
 
 /**
- * Parses plan text into a structured plan array with relaxed validation.
- * Extracts all lines matching the "Step <number>:" pattern, regardless of order, continuity, or position.
- * Ignores lines that do not match the pattern.
- *
- * @param {string} text The text possibly containing plan steps.
- * @returns {{step: number, topic: string, result: string | null}[]} An array of parsed step objects, or an empty array if no matching lines are found or input is invalid.
- * The order follows the appearance in the text.
+ * 将计划文本解析为结构化的计划数组，验证较为宽松。
+ * 提取所有匹配 "Step <number>:" 模式的行，无论其顺序、连续性或位置如何。
+ * 忽略不匹配该模式的行。
+ * @param {string} text 可能包含计划步骤的文本。
+ * @returns {{step: number, topic: string, result: string | null}[]} 解析后的步骤对象数组，如果找不到匹配的行或输入无效，则返回空数组。
+ * 顺序遵循文本中的出现顺序。
  */
 function parsePlan(text) {
 	const plan = []
@@ -55,7 +54,10 @@ function parsePlan(text) {
 	return plan
 }
 
-/** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
+/**
+ * 处理来自 AI 的深度研究请求。
+ * @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t}
+ */
 export async function deepResearch(result, args) {
 	const { max_planning_cycles, thinking_interval, initial_plan_max_retries, summary_max_retries } = config.deep_research
 	const { AddLongTimeLog, prompt_struct } = args

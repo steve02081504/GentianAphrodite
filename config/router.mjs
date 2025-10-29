@@ -9,6 +9,10 @@ import { chardir, charname } from '../charbase.mjs'
 import { checkVoiceSentinel } from '../event_engine/voice_sentinel.mjs'
 import { unlockAchievement } from '../scripts/achievements.mjs'
 
+/**
+ * 设置配置界面的 API 端点。
+ * @param {import('express').Router} router - Express 路由器实例。
+ */
 export function setConfigEndpoints(router) {
 	router.post(`/api/chars/${charname}/saveAudioFile`, async (req, res) => {
 		const { filePath, samples } = req.body

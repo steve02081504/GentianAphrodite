@@ -12,13 +12,18 @@ import { is_PureChinese } from './langdetect.mjs'
 import { escapeRegExp } from './tools.mjs'
 
 const chT2S = OpenCC.Converter({ from: 'twp', to: 'cn' })
+/**
+ * 将繁体中文内容转换为简体中文。
+ * @param {string} content - 要转换的文本内容。
+ * @returns {string} - 转换后的简体中文内容。
+ */
 export function SimplifyChinese(content) {
 	return chT2S(content)
 }
 /**
- * A simpler version of SimplifiyContent that does not do any translation.
- * @param {string} content
- * @returns {[string, string, string]} The input, its simplified chinese version, and its normalized fancy text version
+ * 一个更简单的 SimplifyContent 版本，不执行任何翻译。
+ * @param {string} content - 要简化的内容。
+ * @returns {[string, string, string]} - 输入、其简体中文版本及其标准化的花式文本版本。
  */
 function SimpleSimplify(content) {
 	const base_content = SimplifyChinese(content)
@@ -26,14 +31,12 @@ function SimpleSimplify(content) {
 }
 
 /**
- * Simplify the given content so that it can be used in prompts.
- * @param {string} content
- * @returns {[string, string, string]} The input, its simplified chinese version, and its normalized fancy text version
- * If the given content is not pure chinese, it will be translated to chinese first.
- * The translation may fail if the translate API rate limit is exceeded.
- * If the translation fails, the original content will be returned.
+ * 简化给定的内容，以便在 prompt 中使用。
+ * 如果内容不是纯中文，会先尝试将其翻译为中文。
+ * @param {string} content - 要简化的内容。
+ * @returns {Promise<[string, string, string]>} - 一个数组，包含原始输入、简体中文版本和标准化花式文本版本。
  */
-export async function SimplifiyContent(content) {
+export async function SimplifyContent(content) {
 	content = remove_kaomoji(content)
 	if (!content.trim()) return [content]
 	/** @type {string} */
@@ -64,33 +67,37 @@ export async function SimplifiyContent(content) {
 }
 
 /**
- * Preprocesses a content (usually a chat log entry) and returns a dictionary which extends the input extension.
- * The returned dictionary contains the following properties:
- * - `SimplifiedContents`: The simplified content in an array of 3 elements: original content, simplified content, and normalized simplified content.
- * This function is used to preprocess a chat log entry before passing it to the prompts.
+ * 预处理内容（通常是聊天记录条目），并返回一个扩展了输入 extension 的字典。
+ * 返回的字典包含 `SimplifiedContents` 属性，这是一个包含原始内容、简化内容和标准化简化内容的数组。
  * @template T
- * @param {string} content The content to preprocess.
- * @param {T} [extension={}] The input extension to extend.
- * @returns {T & {
- * 	SimplifiedContents: string[]
- * }} The preprocessed content.
+ * @param {string} content - 要预处理的内容。
+ * @param {T} [extension={}] - 要扩展的输入 extension。
+ * @returns {Promise<T & { SimplifiedContents: string[] }>} - 预处理后的内容。
  */
 export async function PreprocessContent(content, extension = {}) {
 	extension ||= {}
-	extension.SimplifiedContents ??= await SimplifiyContent(content)
+	extension.SimplifiedContents ??= await SimplifyContent(content)
 
 	return extension
 }
 
 /**
- * @param {chatLogEntry_t} entry
- * @returns {Promise<string[]>}
+ * 预处理单个聊天记录条目，为其添加简化后的内容。
+ * @param {chatLogEntry_t} entry - 要处理的聊天记录条目。
+ * @returns {Promise<string[]>} - 一个数组，包含原始内容和简化后的内容。
  */
 export async function PreprocessChatLogEntry(entry) {
 	entry.extension = await PreprocessContent(entry.content, entry.extension)
 	return [entry.content, ...entry.extension.SimplifiedContents]
 }
 
+/**
+ * 匹配内容中的关键字。
+ * @param {string} content - 要匹配的内容。
+ * @param {(string|RegExp)[]} keys - 关键字数组。
+ * @param {Function} [matcher] - 自定义匹配器函数。
+ * @returns {number} - 匹配到的关键字数量。
+ */
 export function base_match_keys(content, keys,
 	matcher = (content, reg_keys) => {
 		const contents = SimpleSimplify(content)
@@ -108,6 +115,12 @@ export function base_match_keys(content, keys,
 	return matcher(content, keys)
 }
 
+/**
+ * 检查内容中是否包含所有指定的关键字。
+ * @param {string} content - 要匹配的内容。
+ * @param {(string|RegExp)[]} keys - 关键字数组。
+ * @returns {boolean} - 如果所有关键字都匹配到，则返回 true，否则返回 false。
+ */
 export function base_match_keys_all(content, keys) {
 	return base_match_keys(content, keys, (content, reg_keys) => {
 		const contents = SimpleSimplify(content)
@@ -115,6 +128,12 @@ export function base_match_keys_all(content, keys) {
 	})
 }
 
+/**
+ * 计算内容中关键字的出现次数。
+ * @param {string} content - 要匹配的内容。
+ * @param {(string|RegExp)[]} keys - 关键字数组。
+ * @returns {number} - 关键字出现的总次数。
+ */
 export function base_match_keys_count(content, keys) {
 	return base_match_keys(content, keys, (content, reg_keys) => {
 		const contents = SimpleSimplify(content)
@@ -123,11 +142,11 @@ export function base_match_keys_count(content, keys) {
 }
 
 /**
- * Return a subset of chat_log, scoped by depth and role
- * @param {chatReplyRequest_t} args
- * @param {'user'|'char'|'both'|'other'} [from='any'] filter by role
- * @param {number} [depth=4] number of entries to return
- * @return {chatLogEntry_t[]} the scoped chat log
+ * 返回按深度和角色范围限定的聊天记录子集。
+ * @param {chatReplyRequest_t} args - 聊天回复请求参数。
+ * @param {'user'|'char'|'both'|'other'|'any'} [from='any'] - 按角色筛选。
+ * @param {number} [depth=4] - 要返回的条目数。
+ * @returns {chatLogEntry_t[]} - 限定范围后的聊天记录。
  */
 export function getScopedChatLog(args, from = 'any', depth = 4) {
 	// pickup the last few entry of chat_log
@@ -156,6 +175,11 @@ export function getScopedChatLog(args, from = 'any', depth = 4) {
 	return chat_log
 }
 
+/**
+ * 扁平化聊天记录，将 `logContextBefore` 和 `logContextAfter` 合并到主日志中。
+ * @param {chatLogEntry_t[]} chat_log - 要扁平化的聊天记录。
+ * @returns {chatLogEntry_t[]} - 扁平化后的聊天记录。
+ */
 export function flatChatLog(chat_log) {
 	return chat_log
 		.map(chatLogEntry => [...chatLogEntry.logContextBefore || [], chatLogEntry, ...chatLogEntry.logContextAfter || []])
@@ -164,11 +188,13 @@ export function flatChatLog(chat_log) {
 }
 
 /**
- * @param {chatReplyRequest_t} args
- * @param {(string|RegExp)[]} keys
- * @param {'any'|'user'|'char'|'other'} from
- * @param {number} depth
- * @param {(content:string,reg_keys:RegExp[]) => boolean} matcher
+ * 在聊天记录中匹配关键字。
+ * @param {chatReplyRequest_t} args - 聊天回复请求参数。
+ * @param {(string|RegExp)[]} keys - 关键字数组。
+ * @param {'any'|'user'|'char'|'other'} from - 按角色筛选。
+ * @param {number} depth - 搜索深度。
+ * @param {Function} [matcher] - 自定义匹配器函数。
+ * @returns {Promise<number>} - 匹配到的关键字数量。
  */
 export async function match_keys(args, keys, from = 'any', depth = 4,
 	matcher = (content, reg_keys) => reg_keys.filter(key => content.match(key)).length
@@ -193,10 +219,26 @@ export async function match_keys(args, keys, from = 'any', depth = 4,
 	return maxFetchCount
 }
 
+/**
+ * 检查聊天记录中是否包含所有指定的关键字。
+ * @param {chatReplyRequest_t} args - 聊天回复请求参数。
+ * @param {(string|RegExp)[]} keys - 关键字数组。
+ * @param {'any'|'user'|'char'|'other'} from - 按角色筛选。
+ * @param {number} depth - 搜索深度。
+ * @returns {Promise<boolean>} - 如果所有关键字都匹配到，则返回 true，否则返回 false。
+ */
 export async function match_keys_all(args, keys, from = 'any', depth = 4) {
 	return await match_keys(args, keys, from, depth, (content, reg_keys) => reg_keys.every(key => content.match(key)))
 }
 
+/**
+ * 计算聊天记录中关键字的出现次数。
+ * @param {chatReplyRequest_t} args - 聊天回复请求参数。
+ * @param {(string|RegExp)[]} keys - 关键字数组。
+ * @param {'any'|'user'|'char'|'other'} from - 按角色筛选。
+ * @param {number} depth - 搜索深度。
+ * @returns {Promise<number>} - 关键字出现的总次数。
+ */
 export async function match_keys_count(args, keys, from = 'any', depth = 4) {
 	return await match_keys(args, keys, from, depth, (content, reg_keys) => reg_keys.map(key => content.match(key)?.length || 0).reduce((a, b) => a + b))
 }

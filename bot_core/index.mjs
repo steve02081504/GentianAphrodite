@@ -4,6 +4,10 @@ import { configure, channelMessageQueues, channelHandlers, channelChatLogs, curr
 import { processNextMessageInQueue } from './trigger.mjs'
 import { mergeChatLogEntries, updateBotNameMapping, updateUserCache } from './utils.mjs'
 
+/**
+ * @module bot_core
+ * @description 导出了核心机器人逻辑的主要入口点和配置功能。
+ */
 export { configure, registerGroupHandlers as registerPlatformAPI }
 
 /**
@@ -103,6 +107,7 @@ export { configure, registerGroupHandlers as registerPlatformAPI }
  * @param {chatLogEntry_t_ext[]} currentChannelLog - 当前频道的聊天记录。
  * @param {PlatformAPI_t} platformAPI - 平台 API。
  * @param {string | number} channelId - 频道 ID。
+ * @returns {Promise<void>}
  */
 async function processQueue(myQueue, currentChannelLog, platformAPI, channelId) {
 	while (myQueue.length)
@@ -114,6 +119,7 @@ async function processQueue(myQueue, currentChannelLog, platformAPI, channelId) 
  * @async
  * @param {string | number} channelId - 当前正在处理的频道 ID。
  * @param {PlatformAPI_t} platformAPI - 当前平台的 API 对象。
+ * @returns {Promise<void>}
  */
 async function handleMessageQueue(channelId, platformAPI) {
 	if (!channelMessageQueues[channelId]?.length)

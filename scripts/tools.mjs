@@ -2,15 +2,20 @@ import fs from 'node:fs'
 
 import { async_eval } from 'https://cdn.jsdelivr.net/gh/steve02081504/async-eval/deno.mjs'
 
+/**
+ * 暂停执行指定的毫秒数。
+ * @param {number} ms - 要暂停的毫秒数。
+ * @returns {Promise<void>}
+ */
 export async function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 /**
- * Checks if two arrays are equal.
- * @param {Array} a - The first array.
- * @param {Array} b - The second array.
- * @return {boolean} True if the arrays are equal, false otherwise.
+ * 检查两个数组是否相等。
+ * @param {Array} a - 第一个数组。
+ * @param {Array} b - 第二个数组。
+ * @returns {boolean} - 如果数组相等则返回 true，否则返回 false。
  */
 export function arraysEqual(a, b) {
 	if (a === b) return true
@@ -24,12 +29,10 @@ export function arraysEqual(a, b) {
 }
 
 /**
- * Synchronously writes data to a file if the data is different from the existing data.
- *
- * @param {string} filePath - The path of the file to write to.
- * @param {string|Buffer} data - The data to write to the file.
- * @param {string} [encoding='utf8'] - The encoding to use when writing the file.
- * @return {void}
+ * 如果数据与现有数据不同，则同步将数据写入文件。
+ * @param {string} filePath - 要写入的文件的路径。
+ * @param {string|Buffer} data - 要写入文件的数据。
+ * @param {string} [encoding='utf8'] - 写入文件时使用的编码。
  */
 export function nicerWriteFileSync(filePath, data, encoding) {
 	if (Object(data) instanceof String) encoding ??= 'utf8'
@@ -41,9 +44,9 @@ export function nicerWriteFileSync(filePath, data, encoding) {
 }
 
 /**
- * Removes all empty directories in a directory recursively.
- * @param {string} dirPath - The directory to clear.
- * @return {boolean} True if the directory was cleared successfully, false otherwise.
+ * 递归地删除目录中的所有空目录。
+ * @param {string} dirPath - 要清理的目录。
+ * @returns {boolean} - 如果目录被成功清理，则返回 true，否则返回 false。
  */
 export function clearEmptyDirs(dirPath) {
 	const files = fs.readdirSync(dirPath, { recursive: true })
@@ -58,23 +61,18 @@ export function clearEmptyDirs(dirPath) {
 }
 
 /**
- * Reverses a string.
- *
- * @param {string} str - The string to reverse.
- * @return {string} The reversed string.
+ * 反转一个字符串。
+ * @param {string} str - 要反转的字符串。
+ * @returns {string} - 反转后的字符串。
  */
 export function reverseStr(/** @type {string} */str) {
 	return Array.from(str).reverse().join('')
 }
 
 /**
- * Gets a real regex object from a slash-delimited regex string
- *
- * This function works with `/` as delimiter, and each occurance of it inside the regex has to be escaped.
- * Flags are optional, but can only be valid flags supported by JavaScript's `RegExp` (`g`, `i`, `m`, `s`, `u`, `y`).
- *
- * @param {string} input - A delimited regex string
- * @returns {RegExp} The regex object
+ * 从斜杠分隔的正则表达式字符串中获取一个真正的正则表达式对象。
+ * @param {string} input - 分隔的正则表达式字符串。
+ * @returns {RegExp} - 正则表达式对象。
  */
 export function parseRegexFromString(input) {
 	// Extracting the regex pattern and flags
@@ -96,40 +94,37 @@ export function parseRegexFromString(input) {
 }
 
 /**
- * Escapes special characters in a string to be used in a regular expression.
- *
- * @param {string} string - The string to escape.
- * @return {string} The escaped string.
+ * 转义字符串中的特殊字符，以便在正则表达式中使用。
+ * @param {string} string - 要转义的字符串。
+ * @returns {string} - 转义后的字符串。
  */
 export function escapeRegExp(string) {
 	return string.replace(/[$()*+./?[\\-^{|}]/g, '\\$&')
 }
 /**
- * Replaces Unicode escape sequences in a string with their corresponding characters.
- *
- * @param {string} str - The input string possibly containing Unicode escape sequences.
- * @return {string} The string with Unicode escape sequences replaced by actual characters.
+ * 将字符串中的转义字符替换为它们的原始字符。
+ * @param {string} string - 可能包含转义字符的输入字符串。
+ * @returns {string} - 移除了转义的字符串。
  */
 export function unescapeRegExp(string) {
 	return string.replace(/\\(.)/g, '$1')
 }
 
 /**
- * Replaces Unicode escape sequences in a string with their corresponding characters.
- *
- * @param {string} str - The input string possibly containing Unicode escape sequences.
- * @return {string} The string with Unicode escape sequences replaced by actual characters.
+ * 将字符串中的 Unicode 转义序列替换为它们对应的字符。
+ * @param {string} str - 可能包含 Unicode 转义序列的输入字符串。
+ * @returns {string} - 替换了 Unicode 转义序列的字符串。
  */
 export function unicodeEscapeToChar(str) {
 	return str.replace(/\\u[\dA-Fa-f]{4}/g, match => String.fromCharCode(parseInt(match.replace('\\u', ''), 16)))
 }
 
 /**
- * Recursively creates a deep copy of the given object.
+ * 递归地创建给定对象的深层副本。
  * @template T
- * @param {T} object - The object to be copied.
- * @param {WeakMap<object, object>} [weakMap] - A WeakMap used to store the copied objects.
- * @return {T} A deep copy of the object.
+ * @param {T} object - 要复制的对象。
+ * @param {WeakMap<object, object>} [weakMap] - 用于存储已复制对象的 WeakMap。
+ * @returns {T} - 对象的深层副本。
  */
 export function deepCopy(object, weakMap = new WeakMap()) {
 	if (!object || !(object instanceof Object)) return object
@@ -147,17 +142,12 @@ export function deepCopy(object, weakMap = new WeakMap()) {
 
 
 /**
- * Recursively merges two objects into a new object.
- * If the first object is falsy, the second object is returned.
- * If the first object is a string, the second object is returned if it is also a string.
- * If the first object is an object, the second object is merged into the first object.
- * The merge is performed using a WeakMap to keep track of the copied objects.
- *
+ * 递归地将两个对象合并到一个新对象中。
  * @template T, U
- * @param {T | null | undefined} obj1 - The first object to be merged.
- * @param {U | null | undefined} obj2 - The second object to be merged.
- * @param {WeakMap<object, object>} [weakMap] - A WeakMap used to store the copied objects.
- * @return {T & U} A new object that is the result of merging the two input objects.
+ * @param {T | null | undefined} obj1 - 要合并的第一个对象。
+ * @param {U | null | undefined} obj2 - 要合并的第二个对象。
+ * @param {WeakMap<object, object>} [weakMap] - 用于存储已复制对象的 WeakMap。
+ * @returns {T & U} - 合并两个输入对象后产生的新对象。
  */
 export function mergeTree(obj1, obj2, weakMap = new WeakMap()) {
 	if (!obj1 || !(obj1 instanceof Object)) return obj2 ?? obj1
@@ -170,10 +160,9 @@ export function mergeTree(obj1, obj2, weakMap = new WeakMap()) {
 }
 
 /**
- * Replaces Unicode escape sequences in a string with their corresponding characters.
- *
- * @param {string} str - The input string possibly containing Unicode escape sequences.
- * @return {string} The string with Unicode escape sequences replaced by actual characters.
+ * 将字符串中的 Unicode 转义序列替换为它们对应的字符。
+ * @param {string} str - 可能包含 Unicode 转义序列的输入字符串。
+ * @returns {string} - 替换了 Unicode 转义序列的字符串。
  */
 export function unescapeUnicode(str) {
 	if (!(Object(str) instanceof String)) str = str.toString()
@@ -181,9 +170,9 @@ export function unescapeUnicode(str) {
 }
 
 /**
- * Removes duplicate entries from the array or object tree.
- * @param {Object|Array} data - The data containing entries to process.
- * @returns {Object|Array} The data with duplicate entries removed.
+ * 从数组或对象树中删除重复的条目。
+ * @param {Object|Array} data - 包含要处理的条目的数据。
+ * @returns {Object|Array} - 删除了重复条目的数据。
  */
 export function removeDuplicates(data) {
 	if (Object(data) instanceof String) return data
@@ -196,19 +185,19 @@ export function removeDuplicates(data) {
 }
 
 /**
- * Returns a random integer between `y` (inclusive) and `x` (exclusive).
- *
- * @param {number} x - The maximum value.
- * @param {number} y - The minimum value.
- * @returns {number} A random integer between `y` (inclusive) and `x` (exclusive).
+ * 返回 `y` (含) 和 `x` (不含) 之间的一个随机整数。
+ * @param {number} x - 最大值。
+ * @param {number} [y=0] - 最小值。
+ * @param {Function} [Rng=Math.random] - 随机数生成器。
+ * @returns {number} - `y` (含) 和 `x` (不含) 之间的一个随机整数。
  */
 export function RandIntLeesThan(x, y = 0, Rng = Math.random) { return Math.floor(Rng() * (x - y)) + y }
 /**
- * Shuffles the elements of an array using the Fisher-Yates algorithm.
- *
+ * 使用 Fisher-Yates 算法打乱数组的元素。
  * @template T
- * @param {Array<T>} a - The array to be shuffled.
- * @return {Array<T>} - The shuffled array.
+ * @param {Array<T>} a - 要打乱的数组。
+ * @param {Function} [Rng=Math.random] - 随机数生成器。
+ * @returns {Array<T>} - 打乱后的数组。
  */
 export function suffleArray(a, Rng = Math.random) {
 	let currentIndex = a.length
@@ -222,9 +211,10 @@ export function suffleArray(a, Rng = Math.random) {
 }
 
 /**
- * 匹配一个string中的所有的${expr}，替换为eval结果
- * @param {string} str
- * @param {Record<string, any>} formats
+ * 匹配一个字符串中的所有 ${expr}，并将其替换为表达式的求值结果。
+ * @param {string} str - 要格式化的字符串。
+ * @param {Record<string, any>} formats - 一个包含表达式中可用变量的对象。
+ * @returns {Promise<string>} - 格式化后的字符串。
  */
 export async function FormatStr(str, formats) {
 	// 使用循环匹配所有 ${...} 表达式
@@ -250,11 +240,11 @@ export async function FormatStr(str, formats) {
 }
 
 /**
+ * 返回数组中最频繁出现的元素。
  * @template T
- * @param {T[]} arr
- * @param {(obj:T) => any} summarier
- * @return {{element: T, count: number}}
- * @description Returns the most frequent element in the array.
+ * @param {T[]} arr - 要检查的数组。
+ * @param {(obj:T) => any} [summarier=x=>x] - 一个函数，用于从数组元素中提取用于比较的值。
+ * @returns {{element: T, count: number}} - 包含最频繁出现的元素和其出现次数的对象。
  */
 export function findMostFrequentElement(arr, summarier = x => x) {
 	const countMap = {}
@@ -277,23 +267,9 @@ export function findMostFrequentElement(arr, summarier = x => x) {
 }
 
 /**
- * @function parseDuration
- * @description Converts a duration string to a number of milliseconds.
- * @param {string} durationString A duration string. The string can contain
- * multiple space-separated parts, each part consists of a number and a unit.
- * The unit can be any of the following:
- * <ul>
- * <li>seconds, sec, s,  </li>
- * <li>minutes, min, m,  </li>
- * <li>hours, hour, h,  </li>
- * <li>days, day, d,  </li>
- * <li>weeks, week, wk, w,  </li>
- * <li>months, month, mo,  </li>
- * <li>years, year, y,  </li>
- * <li>century, cent, c,  </li>
- * </ul>
- * For example, "3 days 2 hours" will be converted to 3*24*60*60*1000 + 2*60*60*1000 milliseconds.
- * @returns {number} The number of milliseconds.
+ * 将持续时间字符串转换为毫秒数。
+ * @param {string} durationString - 持续时间字符串，例如 "3 days 2 hours"。
+ * @returns {number} - 毫秒数。
  */
 export function parseDuration(durationString) {
 	const dict = {
@@ -351,6 +327,11 @@ export function parseDuration(durationString) {
 	return duration
 }
 
+/**
+ * 转义 HTML 特殊字符。
+ * @param {string} str - 要转义的字符串。
+ * @returns {string} - 转义后的字符串。
+ */
 export function escapeHTML(str) {
 	const htmlEntities = {
 		'&': '&amp;',
@@ -363,6 +344,13 @@ export function escapeHTML(str) {
 }
 
 const timeToStrSetting = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }
+/**
+ * 将日期对象格式化为本地化的日期时间字符串。
+ * @param {Date|number} date - 要格式化的日期对象或时间戳。
+ * @param {string} [locale] - 用于格式化的区域设置字符串。
+ * @param {object} [setting=timeToStrSetting] - `toLocaleString` 的选项对象。
+ * @returns {string} - 格式化后的日期时间字符串。
+ */
 export function timeToStr(date, locale, setting = timeToStrSetting) {
 	return new Date(date).toLocaleString(locale || undefined, setting)
 }
@@ -393,6 +381,12 @@ const translations = {
 	}
 }
 
+/**
+ * 将毫秒差转换为本地化的、人类可读的持续时间字符串。
+ * @param {number} diff - 毫秒差。
+ * @param {string} [locale='en-US'] - 用于本地化的区域设置字符串。
+ * @returns {string} - 格式化后的持续时间字符串。
+ */
 export function timeToTimeStr(diff, locale = 'en-US') {
 	const effectiveLocale = translations[locale] ? locale : 'en-US'
 	const unitConfig = translations[effectiveLocale]
@@ -432,6 +426,10 @@ export function timeToTimeStr(diff, locale = 'en-US') {
 	return parts.join(unitConfig.separator)
 }
 
+/**
+ * 捕获主屏幕的截图。
+ * @returns {Promise<Buffer>} - PNG 格式的屏幕截图 Buffer。
+ */
 export async function captureScreen() {
 	const { Monitor } = await import('npm:node-screenshots')
 	const monitors = Monitor.all()

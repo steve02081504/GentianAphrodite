@@ -132,6 +132,10 @@ export let currentConfig = {
 	MergeMessagePeriodMs: 3 * 60 * 1000,
 }
 
+/**
+ * 龙胆的关键词列表。
+ * @type {string[]}
+ */
 export const GentianWords = ['龙胆', 'gentian']
 
 /**
@@ -144,10 +148,18 @@ export function configure(newConfig) {
 		currentConfig.DefaultMaxFetchCount = Math.floor(currentConfig.DefaultMaxMessageDepth * 3 / 2) || currentConfig.DefaultMaxMessageDepth
 }
 
+/**
+ * 设置敷衍模式。
+ * @param {boolean} value - 是否开启敷衍模式。
+ */
 export function setFuyanMode(value) {
 	fuyanMode = value
 }
 
+/**
+ * 设置当前 Bot 是否处于特定催眠模式的频道 ID。
+ * @param {string | number | null} value - 频道 ID，如果为 null，则 Bot 不处于任何催眠模式。
+ */
 export function setInHypnosisChannelId(value) {
 	inHypnosisChannelId = value
 }

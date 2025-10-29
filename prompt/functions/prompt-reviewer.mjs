@@ -3,10 +3,11 @@
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
- * @param {chatReplyRequest_t} args
- * @param {logical_results_t} logical_results
- * @param {prompt_struct_t} prompt_struct
- * @param {number} detail_level
+ * @param {chatReplyRequest_t} args - 聊天回复请求参数。
+ * @param {logical_results_t} logical_results - 逻辑处理结果。
+ * @param {prompt_struct_t} prompt_struct - Prompt 结构体。
+ * @param {number} detail_level - 详细级别。
+ * @returns {Promise<string>} - Prompt 审查结果。
  */
 export async function PromptReviewerPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''

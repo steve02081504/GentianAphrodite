@@ -16,6 +16,10 @@ export const telegramWorld = {
 	},
 	interfaces: {
 		chat: {
+			/**
+			 * 获取 Telegram 世界观的 Prompt。
+			 * @returns {object} - 包含 Prompt 文本的对象。
+			 */
 			GetPrompt: () => {
 				return {
 					text: [

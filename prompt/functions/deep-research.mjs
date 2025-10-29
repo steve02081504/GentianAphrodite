@@ -4,10 +4,12 @@ import { match_keys } from '../../scripts/match.mjs'
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
- * @param {chatReplyRequest_t} args
- * @param {logical_results_t} logical_results
- * @param {prompt_struct_t} prompt_struct
- * @param {number} detail_level
+ * 生成深度研究相关的 Prompt。
+ * @param {chatReplyRequest_t} args - 聊天回复请求参数。
+ * @param {logical_results_t} logical_results - 逻辑结果。
+ * @param {prompt_struct_t} prompt_struct - Prompt 结构。
+ * @param {number} detail_level - 详细级别。
+ * @returns {Promise<object>} - 包含 Prompt 文本的对象。
  */
 export async function DeepResearchPrompt(args, logical_results, prompt_struct, detail_level) {
 	let result = ''
@@ -33,6 +35,10 @@ ${args.UserCharname}: 如果昨天是明天的话就好了，那么今天就是�
 	}
 }
 
+/**
+ * 生成深度研究主 Prompt。
+ * @returns {Promise<object>} - 包含 Prompt 文本的对象。
+ */
 export async function DeepResearchMainPrompt() {
 	return {
 		text: [{

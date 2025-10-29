@@ -4,9 +4,10 @@ import { match_keys } from '../../scripts/match.mjs'
 import { discordClientInstance } from './state.mjs'
 
 /**
- *
- * @param {import('npm:discord.js').Message | undefined} message
- * @returns {import('../../../../../../../src/decl/pluginAPI.ts').pluginAPI_t}
+ * 获取Discord API插件。
+ * 该插件为AI提供了与Discord API交互所需的上下文和提示，使其能够执行高级操作。
+ * @param {import('npm:discord.js').Message | undefined} message - 可选的Discord消息对象，用于提供上下文。
+ * @returns {import('../../../../../../../src/decl/pluginAPI.ts').pluginAPI_t} - 插件API对象。
  */
 export const get_discord_api_plugin = message => ({
 	info: {
@@ -18,6 +19,13 @@ export const get_discord_api_plugin = message => ({
 	},
 	interfaces: {
 		chat: {
+			/**
+			 * 获取用于生成JS代码的Prompt。
+			 * @param {string} args - 用户输入的参数。
+			 * @param {any} result - 结果对象。
+			 * @param {number} detail_level - 详细级别。
+			 * @returns {string | undefined} - JS代码Prompt字符串或undefined。
+			 */
 			GetJSCodePrompt: async (args, result, detail_level) => {
 				if (
 					await match_keys(args, rude_words, 'any', 6) ||
@@ -44,6 +52,13 @@ discord_client: 你的discord.js客户端
 `
 				}
 			},
+			/**
+			 * 获取JS代码执行的上下文。
+			 * @param {string} args - 用户输入的参数。
+			 * @param {any} result - 结果对象。
+			 * @param {number} detail_level - 详细级别。
+			 * @returns {object | undefined} - JS代码上下文对象或undefined。
+			 */
 			GetJSCodeContext: async (args, result, detail_level) => {
 				if (message)
 					return {

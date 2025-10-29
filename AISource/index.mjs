@@ -18,6 +18,10 @@ export let AIsources = {
 	'from-other': null
 }
 
+/**
+ * 获取当前所有AI来源的配置数据。
+ * @returns {Record<string, string>} 一个包含AI来源名称及其文件名的对象。
+ */
 export function getAISourceData() {
 	const result = {}
 	for (const name in AIsources)
@@ -26,6 +30,11 @@ export function getAISourceData() {
 	return result
 }
 
+/**
+ * 根据提供的数据设置并加载AI来源。
+ * @param {Record<string, string>} data - 包含AI来源名称及其文件名的对象。
+ * @returns {Promise<void>}
+ */
 export async function setAISourceData(data) {
 	const newAIsources = {}
 	for (const name in data) if (data[name])
@@ -39,8 +48,9 @@ export async function setAISourceData(data) {
 }
 
 /**
- * @param {string} name
- * @returns {string[]}
+ * 根据任务类型获取AI来源的调用顺序。
+ * @param {string} name - 任务的名称 (例如 'deep-research', 'nsfw')。
+ * @returns {string[]} AI来源名称的有序数组。
  */
 export function GetAISourceCallingOrder(name) {
 	// 对于不同任务需求，按照指定顺序尝试调用AI
@@ -72,20 +82,29 @@ export function GetAISourceCallingOrder(name) {
 	}
 }
 
+/**
+ * 检查当前是否有任何可用的AI来源。
+ * @returns {boolean} 如果没有任何可用的AI来源，则返回true，否则返回false。
+ */
 export function noAISourceAvailable() {
 	const result = Object.values(AIsources).every(x => !x)
 	if (result) console.error('No AI source available:', AIsources)
 	return result
 }
 
+/**
+ * @type {AIsource_t | undefined}
+ * 记录上一次使用的AI来源。
+ */
 export let last_used_AIsource
 
 /**
- * @param {string} name
- * @param {(source:AIsource_t) => Promise<string>} caller
- * @param {number} trytimes
- * @param {(err: Error) => Promise<void>} error_logger
- * @returns {Promise<{content: string; files: {buffer: Buffer; name: string; mime_type: string; description: string}[]}>}
+ * 按预定顺序尝试调用不同的AI来源来执行一个操作。
+ * @param {string} name - AI任务的类型，用于决定调用顺序。
+ * @param {(source:AIsource_t) => Promise<any>} caller - 要对每个AI来源执行的异步函数。
+ * @param {number} [trytimes=3] - 对每个AI来源的重试次数。
+ * @param {(err: Error) => Promise<void>} [error_logger=console.error] - 用于记录错误的异步函数。
+ * @returns {Promise<any>} 返回 `caller` 函数成功执行后的结果。
  */
 export async function OrderedAISourceCalling(name, caller, trytimes = 3, error_logger = console.error) {
 	const sources = [...new Set([...GetAISourceCallingOrder(name).map(x => AIsources[x]).filter(x => x), ...Object.values(AIsources)])]

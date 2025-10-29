@@ -16,6 +16,13 @@ export const recommend_command_plugin = {
 	},
 	interfaces: {
 		chat: {
+			/**
+			 * 获取推荐命令的 Prompt。
+			 * @param {object} args - 参数对象，包含 UserCharname。
+			 * @param {object} result - 结果对象。
+			 * @param {number} detail_level - 详细级别。
+			 * @returns {object} - 包含 additional_chat_log 的对象。
+			 */
 			GetPrompt: async (args, result, detail_level) => {
 				return {
 					additional_chat_log: [
@@ -32,6 +39,11 @@ command_body
 					]
 				}
 			},
+			/**
+			 * 处理回复，提取推荐命令。
+			 * @param {object} result - 结果对象。
+			 * @returns {boolean} - 返回 false 表示此处理器只修改结果，不完全处理回复。
+			 */
 			ReplyHandler: async result => {
 				const match = result.content.match(/<recommend_command>(?<command>[\S\s]*?)<\/recommend_command>/)
 				const command = match?.groups?.command?.trim() // Extract and trim the command

@@ -14,6 +14,10 @@ const state = {
 	maxSize: 50,
 }
 
+/**
+ * 将条目添加到剪贴板历史记录中。
+ * @param {{type: 'text'|'image', content: string | Buffer, timestamp: number}} entry - 要添加的条目。
+ */
 function addToHistory(entry) {
 	if (state.history.length) {
 		const lastEntry = state.history[0]
@@ -34,26 +38,27 @@ function addToHistory(entry) {
 }
 
 /**
- * Reads text from the clipboard.
- * @returns {Promise<string>} The text from the clipboard.
+ * 从剪贴板读取文本内容。
+ * @returns {Promise<string>} - 返回剪贴板中的文本。
  */
 export function readText() {
 	return clipboard.read()
 }
 
 /**
- * Writes text to the clipboard.
- * @param {string} text - The text to write.
+ * 将文本写入剪贴板。
+ * @param {string} text - 要写入的文本。
+ * @returns {Promise<void>}
  */
 export async function writeText(text) {
 	await clipboard.write(text)
 }
 
 /**
- * Writes an image to the clipboard from a file path or URL.
- * 注意：为了兼容 copyImg 库，我们仍然需要创建一个临时文件来执行复制操作，
- * 但在历史记录中我们保存的是 Buffer。
- * @param {string} imageSource - Path or URL to the image.
+ * 从文件路径或 URL 读取图片，并将其写入剪贴板。
+ * 注意：此函数会创建一个临时文件来完成复制操作。
+ * @param {string} imageSource - 图片的文件路径或 URL。
+ * @returns {Promise<void>}
  */
 export async function writeImage(imageSource) {
 	const fileObj = await toFileObj(imageSource)
@@ -69,16 +74,16 @@ export async function writeImage(imageSource) {
 }
 
 /**
- * Gets the clipboard history.
- * @returns {Array<{type: 'text'|'image', content: string | Buffer, timestamp: number}>}
+ * 获取剪贴板的历史记录。
+ * @returns {Array<{type: 'text'|'image', content: string | Buffer, timestamp: number}>} - 一个包含历史记录条目的数组。
  */
 export function getHistory() {
 	return state.history
 }
 
 /**
- * Sets the maximum number of entries in the clipboard history.
- * @param {number} size - The maximum number of entries.
+ * 设置剪贴板历史记录的最大条目数。
+ * @param {number} size - 新的最大条目数。
  */
 export function setMaxHistorySize(size) {
 	state.maxSize = size
@@ -91,6 +96,9 @@ export function setMaxHistorySize(size) {
 
 let lastContent = ''
 
+/**
+ * 剪贴板变化事件的回调函数。
+ */
 async function onClipboardChange() {
 	try {
 		const content = await clipboard.read()
@@ -106,11 +114,17 @@ async function onClipboardChange() {
 
 clipboardListener.on('change', onClipboardChange)
 
+/**
+ * 开始监听剪贴板的变化。
+ */
 export function startClipboardListening() {
 	try { clipboardListener.startListening() }
 	catch (error) { console.error('Failed to start clipboard listening:', error) }
 }
 
+/**
+ * 停止监听剪贴板的变化。
+ */
 export function stopClipboardListening() {
 	try { clipboardListener.stopListening() }
 	catch (error) { console.error('Failed to stop clipboard listening:', error) }

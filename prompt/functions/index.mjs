@@ -28,10 +28,12 @@ import { WebBrowsePrompt } from './webbrowse.mjs'
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
- * @param {chatReplyRequest_t} args
- * @param {logical_results_t} logical_results
- * @param {prompt_struct_t} prompt_struct
- * @param {number} detail_level
+ * 生成功能相关的 Prompt。
+ * @param {chatReplyRequest_t} args - 聊天回复请求参数。
+ * @param {logical_results_t} logical_results - 逻辑结果。
+ * @param {prompt_struct_t} prompt_struct - Prompt 结构。
+ * @param {number} detail_level - 详细级别。
+ * @returns {Promise<object>} - 合并后的 Prompt 对象。
  */
 export async function FunctionPrompt(args, logical_results, prompt_struct, detail_level) {
 	const result = []

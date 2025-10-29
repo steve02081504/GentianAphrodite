@@ -2,14 +2,20 @@ import { Kaomoji_list } from '../../scripts/dict.mjs'
 import { escapeRegExp } from '../../scripts/tools.mjs'
 
 /**
- * @param {string} reply
- * @returns {string[]}
+ * 将 Discord 回复内容分割成多个消息段，以适应 Discord 的消息长度限制。
+ * @param {string} reply - 原始回复文本。
+ * @param {number} [split_lenth=2000] - 每个消息段的最大长度。
+ * @returns {string[]} - 分割后的消息段数组。
  */
 export function splitDiscordReply(reply, split_lenth = 2000) {
 	let content_slices = reply.split('\n')
 	let new_content_slices = []
 	let last = ''
 
+	/**
+	 * 辅助函数，用于将当前累积的 `last` 字符串推入 `new_content_slices` 数组。
+	 * @returns {void}
+	 */
 	function mapend() {
 		if (last) new_content_slices.push(last)
 		content_slices = new_content_slices
@@ -18,7 +24,9 @@ export function splitDiscordReply(reply, split_lenth = 2000) {
 	}
 
 	/**
-	 * @param {string} code_block
+	 * 将代码块分割成多个小块，以适应 Discord 的消息长度限制。
+	 * @param {string} code_block - 原始代码块字符串。
+	 * @returns {string[]} - 分割后的代码块数组。
 	 */
 	function splitCodeBlock(code_block) {
 		const content_slices = code_block.trim().split('\n')
@@ -146,6 +154,11 @@ export function splitDiscordReply(reply, split_lenth = 2000) {
 	return content_slices.map(e => e.trim()).filter(e => e)
 }
 
+/**
+ * 格式化 Discord 嵌入消息 (Embed) 的内容为纯文本。
+ * @param {import('npm:discord.js').Embed} embed - Discord 嵌入消息对象。
+ * @returns {string} - 格式化后的嵌入消息文本。
+ */
 function formatEmbed(embed) {
 	let embedContent = ''
 	if (embed.data)
@@ -161,6 +174,11 @@ function formatEmbed(embed) {
 	return embedContent ? '```\n' + embedContent + '```\n' : ''
 }
 
+/**
+ * 格式化 Discord 消息内容，包括处理提及、嵌入和附件。
+ * @param {import('npm:discord.js').Message} message - Discord 消息对象。
+ * @returns {string} - 格式化后的消息内容。
+ */
 function formatMessageContent(message) {
 	let content = message.content || ''
 
@@ -195,6 +213,12 @@ function formatMessageContent(message) {
 	return content
 }
 
+/**
+ * 获取消息的完整内容，包括 embeds、附件、转发和提及。
+ * @param {import('npm:discord.js').Message} message - Discord 消息对象。
+ * @param {import('npm:discord.js').Client} client - Discord 客户端实例。
+ * @returns {Promise<string>} - 格式化后的完整消息内容。
+ */
 export async function getMessageFullContent(message, client) {
 	let fullContent = formatMessageContent(message)
 
@@ -211,7 +235,7 @@ export async function getMessageFullContent(message, client) {
 }
 
 /**
- * 格式化文本中的提及，将 @用户名 转换为 <@用户ID>。
+ * 格式化文本中的提及，将 `@用户名` 转换为 `<@用户ID>`。
  * @param {string} text - 原始文本。
  * @param {Map<string, string>} [guildMembersMap] - (可选) 一个 Map 对象，键为小写的用户名或显示名，值为用户ID。
  * @returns {string} 格式化后的文本。

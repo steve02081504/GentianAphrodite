@@ -61,10 +61,18 @@ for (const mem of chat_memories)
 	mem.time_stamp = new Date(mem.time_stamp)
 let lastCleanupTime = new Date().getTime()
 
+/**
+ * 获取最频繁的聊天名称
+ * @returns {string} 最频繁的聊天名称
+ */
 export function getMostFrequentChatName() {
 	return findMostFrequentElement(chat_memories.map(x => x.chat_name)).element
 }
 
+/**
+ * 获取分数最高的短期记忆
+ * @returns {MemoryEntry} 分数最高的短期记忆
+ */
 export function getHighestScoreShortTermMemory() {
 	const currentTimeStamp = Date.now()
 	let max_relevance = 0, result
@@ -106,7 +114,7 @@ function calculateRelevance(memoryEntry, currentKeywords, currentTimeStamp) {
 
 /**
  * 清理旧的或不相关的记忆
- * @param {number} currentTimeStamp
+ * @param {number} currentTimeStamp 当前时间戳
  */
 function cleanupMemories(currentTimeStamp) {
 	const initialMemoryCount = chat_memories.length
@@ -176,16 +184,21 @@ function selectOneWeightedRandom(items, weights) {
 
 /**
  * 短期记忆处理主函数
- * @param {chatReplyRequest_t} args
- * @param {logical_results_t} logical_results
- * @param {prompt_struct_t} prompt_struct
- * @param {number} detail_level
+ * @param {chatReplyRequest_t} args 用户输入参数
+ * @param {logical_results_t} logical_results 逻辑结果
+ * @param {prompt_struct_t} prompt_struct 提示结构
+ * @param {number} detail_level 细节等级
+ * @returns {Promise<prompt_struct_t>} 返回的提示结构
  */
 export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct, detail_level) {
 	const currentTimeStamp = Date.now()
 	const currentChatLog = args.chat_log
 	const currentChatName = args.chat_name // 缓存当前聊天名称
 
+	/**
+	 * @param {chatLogEntry_t[]} chat_log - 聊天日志数组。
+	 * @returns {Promise<KeywordInfo[]>} - 关键词信息数组。
+	 */
 	async function getKeyWords(chat_log) {
 		const keywordMap = {}
 
@@ -332,6 +345,10 @@ export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct
 	})
 
 	// --- 6. 格式化选中的记忆以加入Prompt (使用最终列表) ---
+	/**
+	 * @param {{memory: MemoryEntry, relevance: number, index: number}} memoryItem - 记忆项对象，包含记忆内容、相关性和索引。
+	 * @returns {string} - 格式化后的记忆字符串。
+	 */
 	function formatMemory(memoryItem) {
 		const dateStr = memoryItem.memory.time_stamp.toLocaleString()
 		return `\
@@ -415,18 +432,28 @@ ${args.UserCharname}: 给我把有关华为的记忆全忘掉。
 	}
 }
 
+/**
+ * 保存短期记忆
+ */
 export function saveShortTermMemory() {
 	cleanupMemories(Date.now())
 	fs.mkdirSync(path.join(chardir, 'memory'), { recursive: true })
 	saveJsonFile(path.join(chardir, 'memory/short-term-memory.json'), chat_memories)
 }
 
+/**
+ * @param {string} keyword - 要删除的记忆关键词。
+ * @returns {number} - 删除的记忆数量。
+ */
 export function deleteShortTermMemory(keyword) {
 	const oldLength = chat_memories.length
 	chat_memories = chat_memories.filter(mem => !(Object(keyword) instanceof RegExp ? keyword.test(mem.text) : mem.text.includes(keyword)))
 	saveShortTermMemory()
 	return oldLength - chat_memories.length
 }
+/**
+ * @returns {number} - 短期记忆的数量。
+ */
 export function getShortTermMemoryNum() {
 	return chat_memories.length
 }

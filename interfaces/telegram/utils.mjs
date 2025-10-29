@@ -23,11 +23,11 @@ export function escapeMarkdownV2(text) {
 
 /**
  * 将 Telegram 消息文本和实体转换为 AI 方言 Markdown。
- * @param {string | undefined} text
- * @param {TelegramMessageEntity[] | undefined} entities
- * @param {TelegramBotInfo | undefined} botInfo
- * @param {TelegramMessageType | undefined} replyToMessage
- * @returns {string}
+ * @param {string | undefined} text - 原始文本内容。
+ * @param {TelegramMessageEntity[] | undefined} entities - 消息实体数组。
+ * @param {TelegramBotInfo | undefined} botInfo - 机器人信息对象。
+ * @param {TelegramMessageType | undefined} replyToMessage - 回复的消息对象。
+ * @returns {string} - 转换后的 AI Markdown 格式文本。
  */
 export function telegramEntitiesToAiMarkdown(text, entities, botInfo, replyToMessage) {
 	let aiMarkdown = ''
@@ -141,8 +141,8 @@ export function telegramEntitiesToAiMarkdown(text, entities, botInfo, replyToMes
 
 /**
  * 将 AI 方言 Markdown 转换为 Telegram HTML 格式。
- * @param {string} aiMarkdownText
- * @returns {string}
+ * @param {string} aiMarkdownText - AI Markdown 格式的文本。
+ * @returns {string} - 转换后的 Telegram HTML 格式文本。
  */
 export function aiMarkdownToTelegramHtml(aiMarkdownText) {
 	if (!aiMarkdownText) return ''
@@ -212,9 +212,9 @@ export function aiMarkdownToTelegramHtml(aiMarkdownText) {
 
 /**
  * 分割 Telegram 回复文本以适应其消息长度限制。
- * @param {string} reply
- * @param {number} [split_length=4096]
- * @returns {string[]}
+ * @param {string} reply - 原始回复文本。
+ * @param {number} [split_length=4096] - 每个消息段的最大长度。
+ * @returns {string[]} - 分割后的消息段数组。
  */
 export function splitTelegramReply(reply, split_length = 4096) {
 	if (!reply) return []
@@ -252,9 +252,10 @@ export function splitTelegramReply(reply, split_length = 4096) {
 }
 
 /**
- * @param {string} longString
- * @param {number} maxLength
- * @returns {string[]}
+ * 智能分割 HTML 字符串，避免截断标签。
+ * @param {string} longString - 长 HTML 字符串。
+ * @param {number} maxLength - 最大长度。
+ * @returns {string[]} - 分割后的字符串数组。
  */
 function splitHtmlAware(longString, maxLength) {
 	const chunks = []
@@ -286,10 +287,11 @@ function splitHtmlAware(longString, maxLength) {
 }
 
 /**
- * 构造供 Bot 逻辑层使用的逻辑频道 ID。
- * @param {string | number} chatId
- * @param {number | undefined} threadId
- * @returns {string}
+ * 构造供 Bot 核心逻辑层使用的统一逻辑频道 ID。
+ * 在 Telegram 中，这通常结合了 chat ID 和可选的 message thread ID。
+ * @param {string | number} chatId - Telegram 的 chat ID。
+ * @param {number | undefined} threadId - (可选) Telegram 的 message_thread_id。
+ * @returns {string} - 格式化后的逻辑频道 ID，例如 "CHATID_THREADID" 或 "CHATID"。
  */
 export function constructLogicalChannelId(chatId, threadId) {
 	if (threadId !== undefined && threadId !== null)
@@ -298,9 +300,9 @@ export function constructLogicalChannelId(chatId, threadId) {
 }
 
 /**
- * 从逻辑频道 ID 解析出平台的 chat.id 和可选的 threadId。
- * @param {string | number} logicalChannelId
- * @returns {{chatId: string, threadId?: number}}
+ * 从 Bot 核心逻辑层使用的逻辑频道 ID 解析出 Telegram 的 chat ID 和可选的 thread ID。
+ * @param {string | number} logicalChannelId - 逻辑频道 ID。
+ * @returns {{chatId: string, threadId?: number}} - 包含 `chatId` 和可选 `threadId` 的对象。
  */
 export function parseLogicalChannelId(logicalChannelId) {
 	const idStr = String(logicalChannelId)

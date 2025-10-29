@@ -6,21 +6,28 @@ import { chardir } from '../charbase.mjs'
 
 const varsMap = {}
 /**
- * Retrieves a variable from the varsMap, loading it from a JSON file if it does not exist.
- * If the variable is not found, it is initialized with the provided default value.
- *
+ * 从 varsMap 中检索一个变量，如果它不存在，则从 JSON 文件中加载它。
+ * 如果找不到该变量，则使用提供的默认值对其进行初始化。
  * @template T
- * @param {string} name - The name of the variable to retrieve.
- * @param {T} [vdefault={}] - The default value to use if the variable is not found.
- * @returns {T} The variable's value from varsMap or the default value.
+ * @param {string} name - 要检索的变量的名称。
+ * @param {T} [vdefault={}] - 如果找不到变量，要使用的默认值。
+ * @returns {T} - varsMap 中的变量值或默认值。
  */
 export function getVar(name, vdefault = {}) {
 	return varsMap[name] ??= loadJsonFileIfExists(path.join(chardir, 'vars', `${name}.json`), vdefault)
 }
+/**
+ * 保存一个变量到 JSON 文件。
+ * @param {string} name - 要保存的变量的名称。
+ * @param {any} [data=varsMap[name]] - 要保存的数据。
+ */
 export function saveVar(name, data = varsMap[name]) {
 	fs.mkdirSync(path.join(chardir, 'vars'), { recursive: true })
 	saveJsonFile(path.join(chardir, 'vars', `${name}.json`), varsMap[name] = data)
 }
+/**
+ * 保存所有已加载的变量。
+ */
 export function saveVars() {
 	for (const name in varsMap) saveVar(name)
 }

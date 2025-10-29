@@ -5,9 +5,10 @@ import { where_command } from './exec.mjs'
 const DEFAULT_NAVIGATION_TIMEOUT = 13 * 1000 // 设置一个默认导航超时时间 (毫秒)
 
 /**
- * 根据浏览器地址创建一个 Puppeteer 启动器函数。
- * @param {string} path - 浏览器地址
- * @returns {Promise<Function>} - 返回一个接受配置并启动 Puppeteer 的函数，如果找不到浏览器则返回 null。
+ * 根据浏览器可执行文件路径创建一个 Puppeteer 启动器函数。
+ * @param {string} path - 浏览器可执行文件的路径。
+ * @param {string} name - 浏览器名称 ('firefox', 'chrome', etc.)。
+ * @returns {Promise<Function>} - 返回一个接受配置并启动 Puppeteer 的函数。
  */
 export async function NewBrowserGener(path, name) {
 	// 返回一个函数，该函数接收配置并启动 Puppeteer
@@ -22,7 +23,7 @@ export async function NewBrowserGener(path, name) {
 
 /**
  * 根据浏览器名称创建一个 Puppeteer 启动器函数。
- * @param {string} name - 浏览器名称 ('firefox', 'chrome', etc.)
+ * @param {string} name - 浏览器名称 ('firefox', 'chrome', etc.)。
  * @returns {Promise<Function|null>} - 返回一个接受配置并启动 Puppeteer 的函数，如果找不到浏览器则返回 null。
  */
 export async function NewBrowserGenerByName(name) {
@@ -36,7 +37,7 @@ export async function NewBrowserGenerByName(name) {
  * 尝试按顺序 ('chrome', 'firefox', 'edge') 启动一个可用的浏览器。
  * @param {import('npm:puppeteer-core').LaunchOptions} configs - Puppeteer 的启动配置。
  * @returns {Promise<import('npm:puppeteer-core').Browser>} - 返回一个 Puppeteer 浏览器实例。
- * @throws {Error} - 如果没有找到或无法启动任何支持的浏览器。
+ * @throws {Error} 如果没有找到或无法启动任何支持的浏览器。
  */
 export async function NewBrowser(configs) {
 	const browserPriority = ['chrome', 'firefox']
@@ -71,7 +72,7 @@ export async function NewBrowser(configs) {
  * 从给定的 URL 获取网页内容，清理 HTML，并将其转换为 Markdown 格式。
  * @param {string} url - 要抓取的网页 URL。
  * @returns {Promise<string>} - 返回清理和转换后的 Markdown 文本。
- * @throws {Error} - 如果在过程中发生严重错误（如浏览器启动失败、导航失败等）。
+ * @throws {Error} 如果在过程中发生严重错误（如浏览器启动失败、导航失败等）。
  */
 export async function MarkdownWebFetch(url) {
 	let browser = null // 初始化 browser 变量
@@ -146,7 +147,11 @@ export async function MarkdownWebFetch(url) {
 						'[class*="n-message-container"]', '[id*="moe-a11y-navigations"]',
 						// moegirl.uk & others
 						'[id*="siteNotice"]', '[id*="siteSub"]', '[class*="mw-jump-link"]', '[id*="mw-navigation"]'
-					], actions: () => { // 特定操作：移除红链的 href
+					],
+					/**
+					 * 特定操作：移除红链的 href
+					 */
+					actions: () => {
 						document.querySelectorAll('a[href*="&redlink=1"]').forEach(el => el.removeAttribute('href'))
 					}
 				},
@@ -229,6 +234,12 @@ export async function MarkdownWebFetch(url) {
 	}
 }
 
+/**
+ * 从 URL 和 Content-Disposition 头中提取文件名。
+ * @param {string} url - 文件的 URL。
+ * @param {string} contentDisposition - Content-Disposition 头的内容。
+ * @returns {string|null} - 提取的文件名，如果无法确定则返回 null。
+ */
 export function getUrlFilename(url, contentDisposition) {
 	if (contentDisposition) {
 		// 首先尝试 filename* (RFC 5987)，因为它支持字符集定义。
@@ -312,9 +323,9 @@ export function getUrlFilename(url, contentDisposition) {
 }
 
 /**
- * 在文本中查找 URL。
- * @param {string} text
- * @returns {string[]}
+ * 在文本中查找所有 URL。
+ * @param {string} text - 要在其中查找 URL 的文本。
+ * @returns {string[]} - 找到的 URL 数组。
  */
 export function findUrlsInText(text) {
 	if (!text) return []
@@ -325,7 +336,7 @@ export function findUrlsInText(text) {
 
 /**
  * 获取给定 URL 的元数据。
- * 如果 URL 指向 HTML 页面，则使用 node-html-parser 提取标题、描述、图标和各种元标签。
+ * 如果 URL 指向 HTML 页面，则提取标题、描述、图标和各种元标签。
  * 如果指向其他文件类型，则从响应头中提取文件名、类型和大小等信息。
  * @param {string} url - 要获取元数据的 URL。
  * @returns {Promise<string[]|null>} - 一个包含元数据字符串的数组，如果获取失败或未找到元数据，则返回 null。
@@ -336,6 +347,11 @@ export async function getUrlMetadata(url) {
 
 	try {
 		// 统一处理不成功的响应
+		/**
+		 * 处理失败的响应。
+		 * @param {Response} response - 响应对象。
+		 * @returns {string[]} - 包含状态码和状态文本的元数据数组。
+		 */
 		const handleFailedResponse = response => {
 			const metas = [`- status: ${response.status}`]
 			if (response.statusText) metas.push(`- statusText: ${response.statusText}`)
@@ -359,6 +375,11 @@ export async function getUrlMetadata(url) {
 			const root = parse(html)
 
 			const metadataMap = new Map()
+			/**
+			 * 将元数据添加到映射中。
+			 * @param {string} key - 元数据的键。
+			 * @param {string} value - 元数据的值。
+			 */
 			const addMeta = (key, value) => {
 				// 检查 value 是否存在且不为空字符串
 				if (value && value.trim() && !metadataMap.has(key))
