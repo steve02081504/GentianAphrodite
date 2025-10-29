@@ -21,11 +21,6 @@ export function SimplifyChinese(content) {
 	return chT2S(content)
 }
 /**
- * A simpler version of SimplifyContent that does not do any translation.
- * @param {string} content
- * @returns {[string, string, string]} The input, its simplified chinese version, and its normalized fancy text version
- */
-/**
  * 一个更简单的 SimplifyContent 版本，不执行任何翻译。
  * @param {string} content - 要简化的内容。
  * @returns {[string, string, string]} - 输入、其简体中文版本及其标准化的花式文本版本。
