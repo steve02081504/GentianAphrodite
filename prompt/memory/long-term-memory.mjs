@@ -218,7 +218,7 @@ export function addLongTermMemory(memory) {
 }
 
 /**
- * @param {object} memory 记忆
+ * @param {{name: string, trigger?: string, prompt?: string, updatedAt?: Date, updatedContext?: string}} memoryUpdate - 包含要更新的记忆字段的对象。
  */
 export function updateLongTermMemory({ name, trigger, prompt, updatedAt, updatedContext }) {
 	const memoryIndex = LongTermMemories.findIndex(mem => mem.name === name)
