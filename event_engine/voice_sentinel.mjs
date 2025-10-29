@@ -81,7 +81,7 @@ function createInitialRecordingStats() {
 
 /**
  * 创建并返回语音哨兵的完整初始状态对象。
- * @returns {{state: string, recorder: PvRecorder | null, referenceMfccs: number[][] | null, referenceFileMtime: Date | null, dynamicThresholds: {quiet: number, loud: number}, initRmsList: number[], quietStartTime: number | null, lastLoudTime: number | null, armingBuffer: any[], recordingBuffer: any[], recordingStartTime: number | null, consecutiveLoudFrames: number, lastValidationCheckTime: number, activityLog: any[], currentRecordingStats: object, recorderRetryCount: number, avgEnvRms: number}}
+ * @returns {{state: string, recorder: PvRecorder | null, referenceMfccs: number[][] | null, referenceFileMtime: Date | null, dynamicThresholds: {quiet: number, loud: number}, initRmsList: number[], quietStartTime: number | null, lastLoudTime: number | null, armingBuffer: any[], recordingBuffer: any[], recordingStartTime: number | null, consecutiveLoudFrames: number, lastValidationCheckTime: number, activityLog: any[], currentRecordingStats: {totalRms: number, frameCount: number, totalLoudFrames: number, matchingLoudFrames: number, longestInternalSilenceFrames: number, currentSilenceStreakFrames: number}, recorderRetryCount: number, avgEnvRms: number}}
  */
 function createInitialState() {
 	return {
