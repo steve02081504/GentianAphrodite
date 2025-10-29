@@ -6,6 +6,47 @@ import { parseDuration } from './tools.mjs'
 import { getVar, saveVar } from './vars.mjs'
 
 /**
+ * @typedef {{ messagesSent: number, statementsSent: number }} PlatformStats
+ */
+
+/**
+ * @typedef {{
+ *   firstInteraction: {
+ *     time: (Date | undefined),
+ *     userMessageContent: (string | undefined),
+ *     characterReplyContent: (string | undefined),
+ *     chat_name: (string | undefined)
+ *   },
+ *   userActivity: {
+ *     totalMessagesSent: number,
+ *     totalStatementsSent: number,
+ *     NsfwMessagesSent: number,
+ *     InHypnosisMessagesSent: number,
+ *     byPlatform: {[key: string]: PlatformStats}
+ *   },
+ *   characterActivity: {
+ *     totalMessagesSent: number,
+ *     totalStatementsSent: number,
+ *     byPlatform: {[key: string]: PlatformStats}
+ *   },
+ *   toolUsage: {
+ *     codeRuns: number,
+ *     deepResearchSessions: number,
+ *     fileOperations: number,
+ *     googleSearches: number,
+ *     webBrowses: number,
+ *     timersSet: number,
+ *     timerCallbacks: number,
+ *     browserOperations: number,
+ *     browserCallbacks: number
+ *   },
+ *   longestDailyChat: { start: number, end: number },
+ *   trackingDailyChat: { start: number, end: number },
+ *   avgTokenNum: number
+ * }} StatisticDatas
+ */
+
+/**
  * 使用 mistral-tokenizer-js 对 prompt 进行分词。
  * @param {string} prompt - 要分词的 prompt。
  * @returns {number[]} - 返回分词后的 token ID 数组。
@@ -16,7 +57,7 @@ function tokenize(prompt) {
 
 /**
  * 统计数据。
- * @type {object}
+ * @type {StatisticDatas}
  */
 export const statisticDatas = getVar('statistics', {
 	firstInteraction: {
