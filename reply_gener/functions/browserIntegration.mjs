@@ -22,7 +22,10 @@ import { GetReply } from '../index.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
-/** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
+/**
+ * 处理浏览器集成命令。
+ * @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t}
+ */
 export async function browserIntegration(result, args) {
 	const { AddLongTimeLog, username, char_id } = args
 	let processed = false
@@ -247,6 +250,13 @@ export async function browserIntegration(result, args) {
 	return processed
 }
 
+/**
+ * 处理来自浏览器 JavaScript 的回调。
+ * @param {object} options - 包含回调数据的对象。
+ * @param {any} options.data - 浏览器脚本返回的数据。
+ * @param {number} options.pageId - 发生回调的页面ID。
+ * @param {string} options.script - 触发回调的原始脚本。
+ */
 export function BrowserJsCallback({ data, pageId, script }) {
 	statisticDatas.toolUsage.browserCallbacks = (statisticDatas.toolUsage.browserCallbacks || 0) + 1
 	const logEntry = {

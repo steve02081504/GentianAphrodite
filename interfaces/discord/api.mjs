@@ -4,9 +4,10 @@ import { match_keys } from '../../scripts/match.mjs'
 import { discordClientInstance } from './state.mjs'
 
 /**
- *
- * @param {import('npm:discord.js').Message | undefined} message
- * @returns {import('../../../../../../../src/decl/pluginAPI.ts').pluginAPI_t}
+ * 获取Discord API插件。
+ * 该插件为AI提供了与Discord API交互所需的上下文和提示，使其能够执行高级操作。
+ * @param {import('npm:discord.js').Message | undefined} message - 可选的Discord消息对象，用于提供上下文。
+ * @returns {import('../../../../../../../src/decl/pluginAPI.ts').pluginAPI_t} - 插件API对象。
  */
 export const get_discord_api_plugin = message => ({
 	info: {

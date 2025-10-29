@@ -1,6 +1,11 @@
 import { spawn } from 'node:child_process'
 import process from 'node:process'
 
+/**
+ * 从字符串中移除 ANSI 终端序列。
+ * @param {string} str - 要处理的字符串。
+ * @returns {string} - 清理后的字符串。
+ */
 export function removeTerminalSequences(str) {
 	// deno-lint-ignore no-control-regex
 	return str.replace(/\x1B\[[\d;]*[Km]/g, '')
@@ -81,18 +86,47 @@ let shPath
 let bashPath
 let pwshPath
 
+/**
+ * 使用 sh 执行一个命令字符串。
+ * @param {string} code - 要执行的命令。
+ * @param {object} [options] - 执行选项。
+ * @returns {Promise<{code: number, stdout: string, stderr: string, stdall: string}>} - 执行结果。
+ */
 export function sh_exec(code, options) {
 	return base_sh_exec(shPath ?? '/bin/sh', code, options)
 }
+/**
+ * 使用 bash 执行一个命令字符串。
+ * @param {string} code - 要执行的命令。
+ * @param {object} [options] - 执行选项。
+ * @returns {Promise<{code: number, stdout: string, stderr: string, stdall: string}>} - 执行结果。
+ */
 export function bash_exec(code, options) {
 	return base_sh_exec(bashPath ?? '/bin/bash', code, options)
 }
+/**
+ * 使用 Windows PowerShell 执行一个命令字符串。
+ * @param {string} code - 要执行的命令。
+ * @param {object} [options] - 执行选项。
+ * @returns {Promise<{code: number, stdout: string, stderr: string, stdall: string}>} - 执行结果。
+ */
 export function powershell_exec(code, options) {
 	return base_pwsh_exec(powershellPath, code, options)
 }
+/**
+ * 使用 PowerShell (Core) 执行一个命令字符串。
+ * @param {string} code - 要执行的命令。
+ * @param {object} [options] - 执行选项。
+ * @returns {Promise<{code: number, stdout: string, stderr: string, stdall: string}>} - 执行结果。
+ */
 export function pwsh_exec(code, options) {
 	return base_pwsh_exec(pwshPath ?? powershellPath, code, options)
 }
+/**
+ * 跨平台查找可执行文件的完整路径 (类似于 `which` 或 `where`)。
+ * @param {string} command - 要查找的命令名称。
+ * @returns {Promise<string>} - 命令的完整路径，如果找不到则为空字符串。
+ */
 export function where_command(command) {
 	if (process.platform === 'win32')
 		return pwsh_exec(`Get-Command -Name ${command} -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Definition`).then(result => result.stdout.trim())
@@ -132,6 +166,13 @@ export const shell_exec_map = {
 	sh: sh_exec,
 }
 
+/**
+ * 使用当前平台的默认 shell 执行一个命令字符串。
+ * 在 Windows 上默认为 PowerShell (Core) 或 Windows PowerShell，在其他系统上默认为 bash 或 sh。
+ * @param {string} str - 要执行的命令。
+ * @param {object} [options] - 执行选项。
+ * @returns {Promise<{code: number, stdout: string, stderr: string, stdall: string}>} - 执行结果。
+ */
 export function exec(str, options) {
 	if (process.platform == 'win32') return pwsh_exec(str, options)
 	else if (bashPath) return bash_exec(str, options)

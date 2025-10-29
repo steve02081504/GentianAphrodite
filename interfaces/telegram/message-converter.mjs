@@ -259,12 +259,13 @@ async function processMessageFiles(message, ctx) {
 }
 
 /**
- * 将 Telegram 消息上下文转换为 Bot 逻辑层可以理解的 fount 聊天日志条目格式。
- * @async
- * @param {TelegrafContext | import('npm:telegraf').Telegraf} ctxOrBotInstance
- * @param {TelegramMessageType} message
- * @param {TelegramInterfaceConfig_t} interfaceConfig
- * @returns {Promise<chatLogEntry_t_ext | null>}
+ * 将 Telegram 消息上下文转换为 Bot 核心逻辑可以理解的 Fount 聊天日志条目格式。
+ * 这个函数处理文本、贴纸、文件、提及以及其他 Telegram 特有的消息属性，
+ * 将它们统一成一个标准的 `chatLogEntry_t_ext` 对象。
+ * @param {TelegrafContext | import('npm:telegraf').Telegraf} ctxOrBotInstance - Telegraf 的上下文对象或 bot 实例，用于 API 调用。
+ * @param {TelegramMessageType} message - 从 Telegram 收到的原始消息对象。
+ * @param {TelegramInterfaceConfig_t} interfaceConfig - 此 Telegram 接口的配置对象。
+ * @returns {Promise<chatLogEntry_t_ext | null>} - 转换后的 Fount 聊天日志条目。如果消息无效或不应处理，则返回 `null`。
  */
 export async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, message, interfaceConfig) {
 	if (!message || !message.from) return null

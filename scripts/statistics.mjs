@@ -81,6 +81,11 @@ export const statisticDatas = getVar('statistics', {
 	avgTokenNum: 7400,
 })
 
+/**
+ * 记录一条新的用户消息以进行统计。
+ * @param {string} str - 用户的消息内容。
+ * @param {string} platform - 消息来源的平台。
+ */
 export function newUserMessage(str, platform) {
 	resetIdleTimer()
 	const sentenceNum = getStatementsNum(str)
@@ -94,6 +99,11 @@ export function newUserMessage(str, platform) {
 	statisticDatas.userActivity.byPlatform[platform].statementsSent += sentenceNum
 }
 const the25h = parseDuration('25h')
+/**
+ * 记录一条新的角色回复以进行统计。
+ * @param {string} str - 角色的回复内容。
+ * @param {string} platform - 回复发送到的平台。
+ */
 export function newCharReplay(str, platform) {
 	const sentenceNum = getStatementsNum(str)
 	statisticDatas.characterActivity.totalMessagesSent++
@@ -123,9 +133,9 @@ export function newCharReplay(str, platform) {
 }
 
 /**
- * Return the number of statements in the given string.
- * A statement is a sentence ending with !, ., ?, ?, or ,.
- * The function also removes any block of code (text between triple backticks)
+ * 返回给定字符串中的语句数。
+ * 语句是以!、.、?、或,结尾的句子。
+ * 该函数还会删除任何代码块（三反引号之间的文本）。
  * @param {string} str
  * @returns {number}
  */
@@ -134,6 +144,10 @@ export function getStatementsNum(str) {
 	return str.match(/[^\n!.?。《》！？]+/g)?.length || 0
 }
 
+/**
+ * 更新 prompt token 数据的统计信息。
+ * @param {object} prompt - 要分析的 prompt 对象。
+ */
 export function updatePromptTokenData(prompt) {
 	let prompt_str = ''
 	prompt_str += prompt.text.sort((a, b) => a.important - b.important).map(x => x.content).join('\n')
@@ -146,6 +160,9 @@ export function updatePromptTokenData(prompt) {
 	return
 }
 
+/**
+ * 保存统计数据。
+ */
 export function saveStatisticDatas() {
 	saveVar('statistics')
 }

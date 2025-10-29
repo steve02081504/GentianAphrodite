@@ -124,20 +124,19 @@ export function updateUserCache(senderId, senderName) {
 }
 
 /**
- * Asynchronously fetches files, resolving any functions within the input array.
- *
- * @param {Array<Function | any>} files - An array of files or functions returning files.
- * @returns {Promise<Array<any>>} A promise that resolves to an array of successfully fetched files.
+ * 异步获取文件，解析输入数组中的任何函数。
+ * @param {Array<Function | any>} files - 文件或返回文件的函数数组。
+ * @returns {Promise<Array<any>>} 一个解析为成功获取的文件数组的 Promise。
  */
-
 export async function fetchFiles(files) {
 	files = await Promise.allSettled(files.map(file => Object(file) instanceof Function ? file() : file))
 	return files.filter(file => file.status === 'fulfilled' && file.value).map(file => file.value)
 }
+
 /**
- * Fetches files for the input array of messages.
- * @param {chatLogEntry_t_ext[]} messages - The array of messages.
- * @returns {Promise<chatLogEntry_t_ext[]>} A promise that resolves to the same array of messages, but with any file promises resolved.
+ * 为输入的消息数组获取文件。
+ * @param {chatLogEntry_t_ext[]} messages - 消息数组。
+ * @returns {Promise<chatLogEntry_t_ext[]>} 一个解析为相同消息数组的 Promise，但其中任何文件 Promise 都已解析。
  */
 export async function fetchFilesForMessages(messages) {
 	for (const message of messages)

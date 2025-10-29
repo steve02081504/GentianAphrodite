@@ -72,6 +72,11 @@ const map = {
 	Z: ['Ⓩ', '乙', 'Ｚ', 'Ž', '𝓩', '𝐙', 'ℤ']
 }
 
+/**
+ * 将文本中的花式字符（例如，⒜、α、ａ）转换为其对应的标准 ASCII 字符。
+ * @param {string} text - 包含花式字符的输入文本。
+ * @returns {string} - 标准化后的文本。
+ */
 export function normalizeFancyText(text) {
 	for (const [char, variants] of Object.entries(map))
 		for (const variant of variants)

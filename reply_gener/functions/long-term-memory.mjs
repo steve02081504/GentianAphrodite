@@ -21,8 +21,8 @@ import { createContextSnapshot } from '../../scripts/context.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 
 /**
- * Handles AI commands for managing long-term memories (add, delete, list).
- * Updated for new <add-long-term-memory> format with <trigger> and <prompt-content>.
+ * 处理 AI 用于管理长期记忆（添加、删除、列出）的命令。
+ * 已更新以支持包含 <trigger> 和 <prompt-content> 的新 <add-long-term-memory> 格式。
  * @type {ReplyHandler_t}
  */
 export async function LongTermMemoryHandler(result, args) {

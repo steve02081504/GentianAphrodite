@@ -13,6 +13,11 @@ export const charvar = await exec('git -C "." describe --tags', { cwd: chardir }
 )
 export let username = ''
 
+/**
+ * 初始化角色基础信息。
+ * @param {object} init - 初始化数据。
+ * @param {string} init.username - 用户名。
+ */
 export function initCharBase(init) {
 	username = init.username
 }

@@ -275,7 +275,6 @@ function run() {
 
 /**
  * 获取所有窗口的详细信息，并附带一个标志指示哪个窗口是当前活跃的。
- * 本函数整合了获取所有窗口和获取当前活跃窗口的功能。
  * @returns {Promise<Array<{pid: number, processName: string, path: string, title: string, isActive: boolean}>>} - 返回一个包含所有窗口信息的数组，每个窗口对象都包含一个 `isActive` 布尔值。
  */
 export async function getWindowInfos() {

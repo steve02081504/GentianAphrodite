@@ -14,10 +14,12 @@ export { GetBotConfigTemplate } from './config.mjs'
 /** @typedef {import('npm:telegraf').Telegraf} TelegrafInstance */
 
 /**
- * Telegram Bot 的主设置和事件处理函数。
+ * Telegram 机器人接口的主入口函数。
+ * 此函数负责初始化 Telegraf 实例，获取机器人自身信息，构建并注册平台 API，
+ * 以及设置事件处理器来监听 Telegram 的消息事件。
  * @param {TelegrafInstance} bot - 已初始化的 Telegraf 实例。
- * @param {TelegramInterfaceConfig_t} interfaceConfig - 传递给此 Telegram 接口的特定配置对象。
- * @returns {Promise<import('../../bot_core/index.mjs').PlatformAPI_t>}
+ * @param {TelegramInterfaceConfig_t} interfaceConfig - 此 Telegram 接口的特定配置对象。
+ * @returns {Promise<import('../../bot_core/index.mjs').PlatformAPI_t>} - 返回构建的平台 API 实例。
  */
 export async function TelegramBotMain(bot, interfaceConfig) {
 	setTelegrafInstance(bot)

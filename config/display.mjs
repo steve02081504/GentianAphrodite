@@ -7,6 +7,13 @@ const blobToBase64 = blob => new Promise((resolve, reject) => {
 	reader.readAsDataURL(blob)
 })
 
+/**
+ * 将 Blob 数据保存到服务器。
+ * @param {string} fileName - 要保存的文件名。
+ * @param {Blob} blob - 要保存的 Blob 数据。
+ * @param {HTMLElement} statusElement - 用于显示状态的 HTML 元素。
+ * @returns {Promise<boolean>} - 如果保存成功则返回 true，否则返回 false。
+ */
 const saveFile = async (fileName, blob, statusElement) => {
 	const base64Data = await blobToBase64(blob)
 	statusElement.textContent = geti18n('GentianAphrodite.config.saving')
@@ -35,6 +42,13 @@ const saveFile = async (fileName, blob, statusElement) => {
 	}
 }
 
+/**
+ * 将原始音频数据保存到服务器。
+ * @param {string} fileName - 要保存的文件名。
+ * @param {AudioBuffer} audioBuffer - 包含音频数据的 AudioBuffer。
+ * @param {HTMLElement} statusElement - 用于显示状态的 HTML 元素。
+ * @returns {Promise<boolean>} - 如果保存成功则返回 true，否则返回 false。
+ */
 const saveRawAudio = async (fileName, audioBuffer, statusElement) => {
 	const samples = audioBuffer.getChannelData(0)
 	statusElement.textContent = geti18n('GentianAphrodite.config.saving')
@@ -85,7 +99,13 @@ const captureButton = document.getElementById('captureButton')
 let selectedPhotoFile = null
 let videoStream = null
 
-// --- Initial Load ---
+/**
+ * 从服务器加载并显示文件预览。
+ * @param {string} filePath - 要加载的文件的路径。
+ * @param {HTMLImageElement|HTMLAudioElement} element - 用于显示预览的 HTML 元素。
+ * @param {HTMLElement} statusElement - 用于显示状态的 HTML 元素。
+ * @param {'audio'|'photo'} type - 文件类型。
+ */
 const loadPreview = async (filePath, element, statusElement, type) => {
 	statusElement.textContent = geti18n('GentianAphrodite.config.loading_preview')
 	try {
@@ -128,7 +148,11 @@ const loadPreview = async (filePath, element, statusElement, type) => {
 loadPreview('vars/master-voice-reference.wav', audioPlayback, audioStatus, 'audio')
 loadPreview('vars/master-photo-reference.png', imagePreview, photoStatus, 'photo')
 
-// --- Audio Processing ---
+/**
+ * 对音频 Blob进行重采样。
+ * @param {Blob} webmBlob - 要重采样的 WebM 音频 Blob。
+ * @returns {Promise<AudioBuffer>} - 重采样后的 AudioBuffer。
+ */
 const resampleAudio = async webmBlob => {
 	try {
 		const audioContext = new (window.AudioContext || window.webkitAudioContext)()

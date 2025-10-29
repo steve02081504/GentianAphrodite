@@ -19,7 +19,6 @@ import { GetReply } from '../reply_gener/index.mjs'
 
 import { initRealityChannel, RealityChannel } from './index.mjs'
 
-// --- 配置中心 (Configuration) ---
 const CONFIG = {
 	// --- 阈值与触发器 (Thresholds & Triggers) ---
 	thresholds: {

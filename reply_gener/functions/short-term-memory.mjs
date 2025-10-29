@@ -8,6 +8,7 @@ import { parseRegexFromString } from '../../scripts/tools.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 
 /**
+ * 处理 AI 删除短期记忆的命令。
  * @type {ReplyHandler_t}
  */
 export async function ShortTermMemoryHandler(result, { AddLongTimeLog }) {
