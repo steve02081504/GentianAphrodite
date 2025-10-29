@@ -10,12 +10,6 @@ const DEFAULT_NAVIGATION_TIMEOUT = 13 * 1000 // 设置一个默认导航超时�
  * @param {string} name - 浏览器名称 ('firefox', 'chrome', etc.)。
  * @returns {Promise<Function>} - 返回一个接受配置并启动 Puppeteer 的函数。
  */
-/**
- * 根据浏览器可执行文件路径创建一个 Puppeteer 启动器函数。
- * @param {string} path - 浏览器可执行文件的路径。
- * @param {string} name - 浏览器名称 ('firefox', 'chrome', etc.)。
- * @returns {Promise<Function>} - 返回一个接受配置并启动 Puppeteer 的函数。
- */
 export async function NewBrowserGener(path, name) {
 	// 返回一个函数，该函数接收配置并启动 Puppeteer
 	const puppeteer = await import('npm:puppeteer-core@^24.9.0').then(m => m.default)
@@ -27,11 +21,6 @@ export async function NewBrowserGener(path, name) {
 	})
 }
 
-/**
- * 根据浏览器名称创建一个 Puppeteer 启动器函数。
- * @param {string} name - 浏览器名称 ('firefox', 'chrome', etc.)。
- * @returns {Promise<Function|null>} - 返回一个接受配置并启动 Puppeteer 的函数，如果找不到浏览器则返回 null。
- */
 /**
  * 根据浏览器名称创建一个 Puppeteer 启动器函数。
  * @param {string} name - 浏览器名称 ('firefox', 'chrome', etc.)。
