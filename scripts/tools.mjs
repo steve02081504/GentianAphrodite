@@ -243,7 +243,7 @@ export async function FormatStr(str, formats) {
  * 返回数组中最频繁出现的元素。
  * @template T
  * @param {T[]} arr - 要检查的数组。
- * @param {(obj:T) => any} [summarizer=x=>x] - 一个函数，用于从数组元素中提取用于比较的值。
+ * @param {(obj:T) => any} [summarier=x=>x] - 一个函数，用于从数组元素中提取用于比较的值。
  * @return {{element: T, count: number}} - 包含最频繁出现的元素和其出现次数的对象。
  */
 export function findMostFrequentElement(arr, summarier = x => x) {
