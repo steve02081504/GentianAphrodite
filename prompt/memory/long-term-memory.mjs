@@ -7,8 +7,8 @@ import { loadJsonFileIfExists, saveJsonFile } from '../../../../../../../src/scr
 import { chardir } from '../../charbase.mjs'
 import { match_keys, match_keys_all } from '../../scripts/match.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
-/** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
  * @typedef {{
@@ -35,13 +35,11 @@ for (const memory of LongTermMemories) {
  * @param {LongTermMemory} memory 记忆
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
- * @param {prompt_struct_t} prompt_struct 提示结构
- * @param {number} detail_level 细节等级
  * @returns {Promise<boolean>} 是否触发
  */
-async function runLongTermMemoryTrigger(memory, args, logical_results, prompt_struct, detail_level) {
+async function runLongTermMemoryTrigger(memory, args, logical_results) {
 	return (await async_eval(memory.trigger, {
-		args, logical_results, prompt_struct, detail_level,
+		args, logical_results,
 		match_keys, match_keys_all
 	})).result
 }
@@ -50,12 +48,10 @@ async function runLongTermMemoryTrigger(memory, args, logical_results, prompt_st
  * @param {LongTermMemory} memory 记忆
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
- * @param {prompt_struct_t} prompt_struct 提示结构
- * @param {number} detail_level 细节等级
  */
-export async function testLongTermMemoryTrigger(memory, args, logical_results, prompt_struct, detail_level) {
+export async function testLongTermMemoryTrigger(memory, args, logical_results) {
 	const result = await async_eval(memory.trigger, {
-		args, logical_results, prompt_struct, detail_level,
+		args, logical_results,
 		match_keys, match_keys_all
 	})
 	if (result.error) throw result.error
@@ -112,14 +108,12 @@ export function formatLongTermMemory(memory) {
 /**
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
- * @param {prompt_struct_t} prompt_struct 提示结构
- * @param {number} detail_level 细节等级
- * @returns {Promise<prompt_struct_t>} 返回的提示结构
+ * @returns {Promise<single_part_prompt_t>} 长期记忆和相关操作指引组成的Prompt
  */
-export async function LongTermMemoryPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function LongTermMemoryPrompt(args, logical_results) {
 	const actived_memories = []
 	for (const memory of LongTermMemories)
-		if (await runLongTermMemoryTrigger(memory, args, logical_results, prompt_struct, detail_level))
+		if (await runLongTermMemoryTrigger(memory, args, logical_results))
 			actived_memories.push(memory)
 
 	const activated_memories_text = actived_memories.length ? `\

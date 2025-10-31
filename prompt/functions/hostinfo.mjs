@@ -8,17 +8,14 @@ import { getWindowInfos } from '../../scripts/window_info.mjs'
 
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
-/** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
  * 生成主机信息相关的 Prompt。
  * @param {chatReplyRequest_t} args - 聊天回复请求参数。
  * @param {logical_results_t} logical_results - 逻辑结果。
- * @param {prompt_struct_t} prompt_struct - Prompt 结构。
- * @param {number} detail_level - 详细级别。
  * @returns {Promise<object>} - 包含 Prompt 文本的对象。
  */
-export async function HostInfoPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function HostInfoPrompt(args, logical_results) {
 	let result = ''
 
 	const all_info = await match_keys(args, [/电脑(信息|怎样|怎么样|咋样)/i], 'user')

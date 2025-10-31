@@ -2,17 +2,15 @@ import { match_keys } from '../../scripts/match.mjs'
 import { statisticDatas } from '../../scripts/statistics.mjs'
 import { parseDuration, timeToStr, timeToTimeStr } from '../../scripts/tools.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
-/** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
  * @param {chatReplyRequest_t} args - 聊天回复请求参数。
  * @param {logical_results_t} logical_results - 逻辑处理结果。
- * @param {prompt_struct_t} prompt_struct - Prompt 结构体。
- * @param {number} detail_level - 详细级别。
- * @returns {Promise<string>} - 统计数据处理结果。
+ * @returns {Promise<single_part_prompt_t>} - 统计数据Prompt。
  */
-export async function StatisticDatasPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function StatisticDatasPrompt(args, logical_results) {
 	let result = ''
 
 	if (args.extension?.enable_prompts?.statisticDatas || await match_keys(args, ['第一次', '多久']))

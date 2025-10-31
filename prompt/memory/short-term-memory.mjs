@@ -9,8 +9,8 @@ import { flatChatLog, match_keys, PreprocessChatLogEntry } from '../../scripts/m
 import { findMostFrequentElement } from '../../scripts/tools.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
+/** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
-/** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 // --- 常量定义 ---
 const RELEVANCE_THRESHOLD = 5      // 激活相关记忆的阈值
@@ -186,11 +186,9 @@ function selectOneWeightedRandom(items, weights) {
  * 短期记忆处理主函数
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
- * @param {prompt_struct_t} prompt_struct 提示结构
- * @param {number} detail_level 细节等级
- * @returns {Promise<prompt_struct_t>} 返回的提示结构
+ * @returns {Promise<single_part_prompt_t>} 记忆组成的Prompt
  */
-export async function ShortTermMemoryPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function ShortTermMemoryPrompt(args, logical_results) {
 	const currentTimeStamp = Date.now()
 	const currentChatLog = args.chat_log
 	const currentChatName = args.chat_name // 缓存当前聊天名称

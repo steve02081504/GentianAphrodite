@@ -20,10 +20,9 @@ export const recommend_command_plugin = {
 			 * 获取推荐命令的 Prompt。
 			 * @param {object} args - 参数对象，包含 UserCharname。
 			 * @param {object} result - 结果对象。
-			 * @param {number} detail_level - 详细级别。
 			 * @returns {object} - 包含 additional_chat_log 的对象。
 			 */
-			GetPrompt: async (args, result, detail_level) => {
+			GetPrompt: async (args, result) => {
 				return {
 					additional_chat_log: [
 						{

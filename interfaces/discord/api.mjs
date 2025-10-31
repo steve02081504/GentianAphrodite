@@ -23,10 +23,9 @@ export const get_discord_api_plugin = message => ({
 			 * 获取用于生成JS代码的Prompt。
 			 * @param {string} args - 用户输入的参数。
 			 * @param {any} result - 结果对象。
-			 * @param {number} detail_level - 详细级别。
 			 * @returns {string | undefined} - JS代码Prompt字符串或undefined。
 			 */
-			GetJSCodePrompt: async (args, result, detail_level) => {
+			GetJSCodePrompt: async (args, result) => {
 				if (
 					await match_keys(args, rude_words, 'any', 6) ||
 					await match_keys(args, lewd_words, 'other', 3) ||
@@ -56,10 +55,9 @@ discord_client: 你的discord.js客户端
 			 * 获取JS代码执行的上下文。
 			 * @param {string} args - 用户输入的参数。
 			 * @param {any} result - 结果对象。
-			 * @param {number} detail_level - 详细级别。
 			 * @returns {object | undefined} - JS代码上下文对象或undefined。
 			 */
-			GetJSCodeContext: async (args, result, detail_level) => {
+			GetJSCodeContext: async (args, result) => {
 				if (message)
 					return {
 						message,

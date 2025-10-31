@@ -12,6 +12,7 @@ import { FileChangePrompt } from './file-change.mjs'
 import { GoogleSearchPrompt } from './googlesearch.mjs'
 import { HostInfoPrompt } from './hostinfo.mjs'
 import { infoPrompt } from './info.mjs'
+import { KanjiPrompt } from './kanji.mjs'
 import { PoemPrompt } from './poem.mjs'
 import { PromptReviewerPrompt } from './prompt-reviewer.mjs'
 import { PromptWriterPrompt } from './promptWriter.mjs'
@@ -25,41 +26,39 @@ import { TimerPrompt } from './timer.mjs'
 import { WebBrowsePrompt } from './webbrowse.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
-/** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
  * 生成功能相关的 Prompt。
  * @param {chatReplyRequest_t} args - 聊天回复请求参数。
  * @param {logical_results_t} logical_results - 逻辑结果。
- * @param {prompt_struct_t} prompt_struct - Prompt 结构。
- * @param {number} detail_level - 详细级别。
  * @returns {Promise<object>} - 合并后的 Prompt 对象。
  */
-export async function FunctionPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function FunctionPrompt(args, logical_results) {
 	const result = []
-	result.push(StatisticDatasPrompt(args, logical_results, prompt_struct, detail_level))
-	result.push(RockPaperScissorsPrompt(args, logical_results, prompt_struct, detail_level))
-	result.push(DicePrompt(args, logical_results, prompt_struct, detail_level))
-	result.push(AutoCalcPrompt(args, logical_results, prompt_struct, detail_level))
-	result.push(TaroPrompt(args, logical_results, prompt_struct, detail_level))
-	result.push(PoemPrompt(args, logical_results, prompt_struct, detail_level))
-	result.push(CorpusGeneratorPrompt(args, logical_results, prompt_struct, detail_level))
-	result.push(ChineseGrammarCorrectionPrompt(args, logical_results, prompt_struct, detail_level))
-	result.push(PromptWriterPrompt(args, logical_results, prompt_struct, detail_level))
-	result.push(infoPrompt(args, logical_results, prompt_struct, detail_level))
-	result.push(DeepResearchPrompt(args, logical_results, prompt_struct, detail_level))
-	result.push(GoogleSearchPrompt(args, logical_results, prompt_struct, detail_level))
-	result.push(WebBrowsePrompt(args, logical_results, prompt_struct, detail_level))
-	result.push(CodeRunnerPrompt(args, logical_results, prompt_struct, detail_level))
-	result.push(FileChangePrompt(args, logical_results, prompt_struct, detail_level))
-	result.push(HostInfoPrompt(args, logical_results, prompt_struct, detail_level))
-	result.push(CameraPrompt(args, logical_results, prompt_struct, detail_level))
-	result.push(ScreenshotPrompt(args, logical_results, prompt_struct, detail_level))
-	result.push(qrcodeParserPrompt(args, logical_results, prompt_struct, detail_level))
-	result.push(RudePrompt(args, logical_results, prompt_struct, detail_level))
-	result.push(PromptReviewerPrompt(args, logical_results, prompt_struct, detail_level))
-	result.push(BrowserIntegrationPrompt(args, logical_results, prompt_struct, detail_level))
+	result.push(StatisticDatasPrompt(args, logical_results))
+	result.push(RockPaperScissorsPrompt(args, logical_results))
+	result.push(DicePrompt(args, logical_results))
+	result.push(AutoCalcPrompt(args, logical_results))
+	result.push(KanjiPrompt(args, logical_results))
+	result.push(TaroPrompt(args, logical_results))
+	result.push(PoemPrompt(args, logical_results))
+	result.push(CorpusGeneratorPrompt(args, logical_results))
+	result.push(ChineseGrammarCorrectionPrompt(args, logical_results))
+	result.push(PromptWriterPrompt(args, logical_results))
+	result.push(infoPrompt(args, logical_results))
+	result.push(DeepResearchPrompt(args, logical_results))
+	result.push(GoogleSearchPrompt(args, logical_results))
+	result.push(WebBrowsePrompt(args, logical_results))
+	result.push(CodeRunnerPrompt(args, logical_results))
+	result.push(FileChangePrompt(args, logical_results))
+	result.push(HostInfoPrompt(args, logical_results))
+	result.push(CameraPrompt(args, logical_results))
+	result.push(ScreenshotPrompt(args, logical_results))
+	result.push(qrcodeParserPrompt(args, logical_results))
+	result.push(RudePrompt(args, logical_results))
+	result.push(PromptReviewerPrompt(args, logical_results))
+	result.push(BrowserIntegrationPrompt(args, logical_results))
 	if (args.supported_functions.add_message)
-		result.push(TimerPrompt(args, logical_results, prompt_struct, detail_level))
+		result.push(TimerPrompt(args, logical_results))
 	return mergePrompt(...result)
 }

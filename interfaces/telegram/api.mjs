@@ -22,10 +22,9 @@ export const get_telegram_api_plugin = triggeringMessage => ({
 			 * 获取用于生成 JS 代码的 Prompt。
 			 * @param {object} args - 参数对象。
 			 * @param {object} result - 结果对象。
-			 * @param {number} detail_level - 详细级别。
 			 * @returns {string | undefined} - JS 代码 Prompt 字符串或 undefined。
 			 */
-			GetJSCodePrompt: async (args, result, detail_level) => {
+			GetJSCodePrompt: async (args, result) => {
 				if (
 					await match_keys(args, rude_words, 'any', 6) ||
 					await match_keys(args, lewd_words, 'other', 3) ||
@@ -54,10 +53,9 @@ telegram_client: 你的Telegraf Bot实例
 			 * 获取 JS 代码执行的上下文。
 			 * @param {object} args - 参数对象。
 			 * @param {object} result - 结果对象。
-			 * @param {number} detail_level - 详细级别。
 			 * @returns {object | undefined} - JS 代码上下文对象或 undefined。
 			 */
-			GetJSCodeContext: async (args, result, detail_level) => {
+			GetJSCodeContext: async (args, result) => {
 				if (triggeringMessage)
 					return {
 						message: triggeringMessage,

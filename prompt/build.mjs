@@ -30,16 +30,14 @@ export async function mergePrompt(...prompts) {
  * 构建最终的 Prompt。
  * @param {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} args - 聊天回复请求参数。
  * @param {import("./logical_results/index.mjs").logical_results_t} logical_results - 逻辑结果。
- * @param {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct - Prompt 结构。
- * @param {number} detail_level - 详细级别。
  * @returns {Promise<object>} - 构建后的 Prompt 对象。
  */
-export async function buildPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function buildPrompt(args, logical_results) {
 	return mergePrompt(
-		MemoriesPrompt(args, logical_results, prompt_struct, detail_level),
-		RoleSettingsPrompt(args, logical_results, prompt_struct, detail_level),
-		await FunctionPrompt(args, logical_results, prompt_struct, detail_level), // await 因为函数提示词可能修改enable_prompts而向SystemPrompt传递音频或图片的包含信息
-		ADPrompt(args, logical_results, prompt_struct, detail_level),
-		SystemPrompt(args, logical_results, prompt_struct, detail_level)
+		MemoriesPrompt(args, logical_results),
+		RoleSettingsPrompt(args, logical_results),
+		await FunctionPrompt(args, logical_results), // await 因为函数提示词可能修改enable_prompts而向SystemPrompt传递音频或图片的包含信息
+		ADPrompt(args, logical_results),
+		SystemPrompt(args, logical_results)
 	)
 }

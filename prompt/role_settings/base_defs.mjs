@@ -3,17 +3,15 @@ import { is_dist } from '../../charbase.mjs'
 import { match_keys } from '../../scripts/match.mjs'
 import { random } from '../../scripts/random.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
-/** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
- * @param {prompt_struct_t} prompt_struct 提示结构
- * @param {number} detail_level 细节等级
- * @returns {Promise<prompt_struct_t>} 返回的提示结构
+ * @returns {Promise<single_part_prompt_t>} 人物的基本定义prompt
  */
-export async function BasedefPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function BasedefPrompt(args, logical_results) {
 	let result = ''
 
 	if (await match_keys(args, ['author', 'steve green', /steve02/, /steve81504/, 'stevegreen', 'telegram', 'version', '作者', '俱乐部', '史蒂夫 格林', '史蒂夫格林', '龙胆群', '后援会', '版本', '粉丝', '群组'], 'any', 2))

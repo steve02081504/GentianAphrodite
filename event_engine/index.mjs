@@ -64,10 +64,9 @@ const notify_plugin = {
 			 * 获取用于通知插件的 AI 提示，指导 AI 如何使用通知功能。
 			 * @param {object} args - 提示参数。
 			 * @param {object} result - 结果对象。
-			 * @param {number} detail_level - 详细级别。
 			 * @returns {Promise<object>} 包含额外聊天日志的对象。
 			 */
-			GetPrompt: async (args, result, detail_level) => {
+			GetPrompt: async (args, result) => {
 				return {
 					additional_chat_log: [
 						{

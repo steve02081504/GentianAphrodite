@@ -6,7 +6,6 @@ import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
 import { mimetypeFromBufferAndName } from '../../scripts/mimetype.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
-/** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
  * 从文本中查找现有的文件路径。
@@ -43,11 +42,9 @@ async function findExistingPathsInText(text) {
  * 生成文件变更相关的 Prompt。
  * @param {chatReplyRequest_t} args - 聊天回复请求参数。
  * @param {logical_results_t} logical_results - 逻辑结果。
- * @param {prompt_struct_t} prompt_struct - Prompt 结构。
- * @param {number} detail_level - 详细级别。
  * @returns {Promise<object>} - 包含 Prompt 文本和附加聊天日志的对象。
  */
-export async function FileChangePrompt(args, logical_results, prompt_struct, detail_level) {
+export async function FileChangePrompt(args, logical_results) {
 	let result = ''
 
 	const files = (

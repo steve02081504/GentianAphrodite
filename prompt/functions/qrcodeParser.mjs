@@ -2,16 +2,13 @@ import { decodeQrCodeFromBuffer } from '../../scripts/qrcode.mjs'
 import { findUrlsInText, getUrlMetadata } from '../../scripts/web.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
-/** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
  * @param {chatReplyRequest_t} args - 聊天回复请求参数。
  * @param {logical_results_t} logical_results - 逻辑处理结果。
- * @param {prompt_struct_t} prompt_struct - Prompt 结构体。
- * @param {number} detail_level - 详细级别。
  * @returns {Promise<string>} - 二维码解析结果。
  */
-export async function qrcodeParserPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function qrcodeParserPrompt(args, logical_results) {
 	const logs = args.chat_log.slice(-20)
 
 	for (const log of logs) {

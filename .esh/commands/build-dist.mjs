@@ -64,8 +64,7 @@ const bundle = await rollup({
 				target: 'node',
 				reservedNames: [
 					'console', 'statisticStr', 'statisticDatas', 'charvar',
-					'callback', 'add_files', 'args', 'logical_results', 'prompt_struct',
-					'detail_level', 'match_keys', 'match_keys_all'
+					'callback', 'add_files', 'args', 'logical_results', 'match_keys', 'match_keys_all'
 				],
 				renameGlobals: true,
 				stringArrayEncoding: [

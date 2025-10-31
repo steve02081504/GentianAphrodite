@@ -1,16 +1,14 @@
 import { match_keys } from '../../scripts/match.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
-/** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
- * @param {prompt_struct_t} prompt_struct 提示结构
- * @param {number} detail_level 细节等级
- * @returns {Promise<prompt_struct_t>} 返回的提示结构
+ * @returns {Promise<single_part_prompt_t>} 特殊物品Prompt
  */
-export async function ItemsPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function ItemsPrompt(args, logical_results) {
 	let result = ''
 
 	if (await match_keys(args, ['app', '手机', '电话', '视频', '通话', '面板'], 'any'))

@@ -1,16 +1,13 @@
 import { match_keys } from '../../scripts/match.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
-/** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
- * @param {prompt_struct_t} prompt_struct 提示结构
- * @param {number} detail_level 细节等级
  * @returns {Promise<prompt_struct_t>} 返回的提示结构
  */
-export async function ChineseGrammarCorrectionPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function ChineseGrammarCorrectionPrompt(args, logical_results) {
 	let result = ''
 
 	if (args.extension?.enable_prompts?.ChineseGrammarCorrection || (logical_results.pure_chinese_input &&

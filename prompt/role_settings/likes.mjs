@@ -1,16 +1,14 @@
 import { match_keys } from '../../scripts/match.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
-/** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
- * @param {prompt_struct_t} prompt_struct 提示结构
- * @param {number} detail_level 细节等级
- * @returns {Promise<prompt_struct_t>} 返回的提示结构
+ * @returns {Promise<single_part_prompt_t>} 喜好Prompt
  */
-export async function LikesPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function LikesPrompt(args, logical_results) {
 	let result = ''
 
 	if (await match_keys(args, ['喜好哪些', '喜欢什么', '喜欢哪些', '喜欢的', '安利', '建议', '推荐', '爱听', '喜欢听'], 'any') &&

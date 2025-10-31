@@ -1,16 +1,13 @@
 import { match_keys } from '../../scripts/match.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
-/** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
  * @param {chatReplyRequest_t} args - 聊天回复请求参数。
  * @param {logical_results_t} logical_results - 逻辑处理结果。
- * @param {prompt_struct_t} prompt_struct - Prompt 结构体。
- * @param {number} detail_level - 详细级别。
  * @returns {Promise<string>} - Prompt 编写结果。
  */
-export async function PromptWriterPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function PromptWriterPrompt(args, logical_results) {
 	let result = ''
 
 	if (args.extension?.enable_prompts?.promptWriter || (await match_keys(args, ['写一个', '写一位', '写一段', '写个', '写位', '写卡', '写段', '帮我', '给我一个', '给我个', '起草', '创作'], 'any') &&

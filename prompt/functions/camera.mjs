@@ -6,7 +6,6 @@ import { decodeQrCodeFromBuffer } from '../../scripts/qrcode.mjs'
 
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
-/** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
  * 从物理摄像头捕获图像，并确保临时文件被清理。
@@ -39,11 +38,9 @@ async function captureWebcam() {
 /**
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
- * @param {prompt_struct_t} prompt_struct 提示结构
- * @param {number} detail_level 细节等级
  * @returns {Promise<prompt_struct_t>} 返回的提示结构
  */
-export async function CameraPrompt(args, logical_results, prompt_struct, detail_level) {
+export async function CameraPrompt(args, logical_results) {
 	const additional_chat_log = []
 
 	if (!(in_docker || in_termux) && (args.extension?.enable_prompts?.camera || (

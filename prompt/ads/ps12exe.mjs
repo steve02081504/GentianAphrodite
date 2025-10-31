@@ -1,17 +1,14 @@
 import { match_keys } from '../../scripts/match.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
-/** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
  * 生成 ps12exe 相关的 Prompt。
  * @param {chatReplyRequest_t} args - 聊天回复请求参数。
  * @param {logical_results_t} logical_results - 逻辑结果。
- * @param {prompt_struct_t} prompt_struct - Prompt 结构。
- * @param {number} detail_level - 详细级别。
  * @returns {Promise<object>} - 包含 Prompt 文本的对象。
  */
-export async function ps12exePrompt(args, logical_results, prompt_struct, detail_level) {
+export async function ps12exePrompt(args, logical_results) {
 	let result = ''
 
 	if (await match_keys(args, ['exe', '可执行文件'], 'any', 2) &&

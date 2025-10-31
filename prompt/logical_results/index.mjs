@@ -23,15 +23,12 @@ import { getScopedChatLog, match_keys, match_keys_count, PreprocessChatLogEntry 
 
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
-/** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
  * @param {chatReplyRequest_t} args 聊天回复请求
- * @param {prompt_struct_t} prompt_struct prompt结构体
- * @param {number} detail_level 细节等级
  * @returns {Promise<logical_results_t>} 逻辑结果
  */
-export async function buildLogicalResults(args, prompt_struct, detail_level) {
+export async function buildLogicalResults(args) {
 	/** @type {logical_results_t} */
 	const result = {
 		in_muti_char_chat: new Set(args.chat_log.map(e => e.name)).size > 2,
