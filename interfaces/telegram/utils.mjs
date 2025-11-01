@@ -1,12 +1,5 @@
 import { escapeHTML } from '../../scripts/tools.mjs'
 
-/**
- * @file Telegram Interface Utilities
- * @description Provides utility functions for the Telegram interface,
- * including Markdown/HTML escaping, message splitting, and conversion
- * between Telegram message entities and an AI-friendly Markdown dialect.
- */
-
 /** @typedef {import('./state.mjs').TelegramBotInfo} TelegramBotInfo */
 /** @typedef {import('npm:telegraf/typings/core/types/typegram').Message} TelegramMessageType */
 /** @typedef {import('npm:telegraf/typings/core/types/typegram').MessageEntity} TelegramMessageEntity */

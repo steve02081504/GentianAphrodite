@@ -33,6 +33,13 @@
 			"recording_in_progress": "Recording in progress...",
 			"cannot_start_recording": "Cannot start recording: ${errorMessage}",
 			"recording_stopped": "Recording stopped.",
+			"cameraButton": {
+				"title": "Open Camera"
+			},
+			"photoInput": {
+				"aria-label": "Select image file",
+				"label": "Image File"
+			},
 			"camera_on": "Camera is on.",
 			"cannot_access_camera": "Cannot access camera: ${errorMessage}",
 			"photo_captured_click_to_save": "Photo captured, click upload to save.",

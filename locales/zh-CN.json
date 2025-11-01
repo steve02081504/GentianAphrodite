@@ -33,6 +33,13 @@
 			"recording_in_progress": "正在录音...",
 			"cannot_start_recording": "无法开始录音: ${errorMessage}",
 			"recording_stopped": "录音已停止。",
+			"cameraButton": {
+				"title": "打开摄像头"
+			},
+			"photoInput": {
+				"aria-label": "选择图片文件",
+				"label": "图片文件"
+			},
 			"camera_on": "摄像头已开启。",
 			"cannot_access_camera": "无法访问摄像头: ${errorMessage}",
 			"photo_captured_click_to_save": "已捕获照片，点击上传以保存。",

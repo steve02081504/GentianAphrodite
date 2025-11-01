@@ -5,8 +5,7 @@ import { processNextMessageInQueue } from './trigger.mjs'
 import { mergeChatLogEntries, updateBotNameMapping, updateUserCache } from './utils.mjs'
 
 /**
- * @module bot_core
- * @description 导出了核心机器人逻辑的主要入口点和配置功能。
+ * 导出核心机器人逻辑的主要入口点和配置功能。
  */
 export { configure, registerGroupHandlers as registerPlatformAPI }
 
