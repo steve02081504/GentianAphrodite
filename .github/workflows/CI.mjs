@@ -116,7 +116,7 @@ CI.test('Google Search', async () => {
 
 CI.test('Web Browse', async () => {
 	const { router, url, root } = CI.context.http
-	const webContent = '<html><body><h1>Test Page</h1><p>This is a test paragraph for the CI.</p></body></html>'
+	const webContent = /* html */ '<html><body><h1>Test Page</h1><p>This is a test paragraph for the CI.</p></body></html>'
 
 	router.get(root, (req, res) => {
 		res.writeHead(200, { 'Content-Type': 'text/html' })

@@ -145,33 +145,33 @@ export function aiMarkdownToTelegramHtml(aiMarkdownText) {
 
 	// 代码块: ```lang\ncode\n``` -> <pre><code class="language-lang">code</code></pre>
 	html = html.replace(/```(\w*)\n([\S\s]*?)\n```/g, (match, lang, code) => {
-		const langClass = lang ? ` class="language-${escapeHTML(lang)}"` : ''
+		const langClass = lang ? `class="language-${escapeHTML(lang)}"` : ''
 		// 在pre/code标签内的内容不需要再次转义，因为它已经是被escapeHTML处理过的
-		return `<pre><code${langClass}>${code}</code></pre>`
+		return /* html */ `<pre><code ${langClass}>${code}</code></pre>`
 	})
 
 	// 行内代码: `code` -> <code>code</code>
-	html = html.replace(/(?<!\\)`([^\n`]+?)(?<!\\)`/g, (match, code) => `<code>${code}</code>`)
+	html = html.replace(/(?<!\\)`([^\n`]+?)(?<!\\)`/g, (match, code) => /* html */ `<code>${code}</code>`)
 
 	// 链接: [text](url) -> <a href="url">text</a>
 	html = html.replace(/\[(.*?)]\((.*?)\)/g, (match, text, url) => {
-		return `<a href="${escapeHTML(url)}">${text}</a>`
+		return /* html */ `<a href="${escapeHTML(url)}">${text}</a>`
 	})
 
 	// 剧透: ||content|| -> <tg-spoiler>content</tg-spoiler>
-	html = html.replace(/\|\|(.+?)\|\|/g, (match, content) => `<tg-spoiler>${content}</tg-spoiler>`)
+	html = html.replace(/\|\|(.+?)\|\|/g, (match, content) => /* html */ `<tg-spoiler>${content}</tg-spoiler>`)
 
 	// 加粗: **content** -> <b>content</b>
-	html = html.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+	html = html.replace(/\*\*(.+?)\*\*/g, /* html */ '<b>$1</b>')
 
 	// 斜体: *content* -> <i>content</i> (不匹配被**包裹的)
-	html = html.replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, '<i>$1</i>')
+	html = html.replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, /* html */ '<i>$1</i>')
 
 	// 下划线: __content__ -> <u>content</u>
-	html = html.replace(/__(.+?)__/g, '<u>$1</u>')
+	html = html.replace(/__(.+?)__/g, /* html */ '<u>$1</u>')
 
 	// 删除线: ~~content~~ -> <s>content</s>
-	html = html.replace(/~~(.+?)~~/g, '<s>$1</s>')
+	html = html.replace(/~~(.+?)~~/g, /* html */ '<s>$1</s>')
 
 	const lines = html.split('\n')
 	let inBlockquote = false
