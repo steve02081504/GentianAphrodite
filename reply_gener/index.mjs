@@ -5,6 +5,7 @@ import { compareTwoStrings as string_similarity } from 'npm:string-similarity'
 import { buildPromptStruct } from '../../../../../../src/public/shells/chat/src/prompt_struct.mjs'
 import { noAISourceAvailable, OrderedAISourceCalling } from '../AISource/index.mjs'
 import { is_dist } from '../charbase.mjs'
+import { plugins } from '../config/index.mjs'
 import { get_discord_api_plugin } from '../interfaces/discord/api.mjs'
 import { get_telegram_api_plugin } from '../interfaces/telegram/api.mjs'
 import { buildLogicalResults } from '../prompt/logical_results/index.mjs'
@@ -83,6 +84,8 @@ export function getLongTimeLogAdder(result, prompt_struct, max_forever_looping_n
 export async function GetReply(args) {
 	if (noAISourceAvailable()) return noAIreply(args)
 	try {
+		// 注入角色插件
+		args.plugins = Object.assign({}, plugins, args.plugins)
 		args.plugins.discord_api ??= await get_discord_api_plugin()
 		args.plugins.telegram_api ??= await get_telegram_api_plugin()
 		const prompt_struct = await buildPromptStruct(args)

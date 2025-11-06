@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
+import { loadPlugin } from '../../../../../../src/server/managers/plugin_manager.mjs'
 import { getAISourceData, setAISourceData } from '../AISource/index.mjs'
 import { chardir, charname, username } from '../charbase.mjs'
 import { resetIdleTimer } from '../event_engine/on_idle.mjs'
@@ -17,6 +18,9 @@ export async function GetConfigDisplayContent() {
 		js: await fs.readFile(path.join(chardir, 'config', 'display.mjs'), 'utf-8')
 	}
 }
+
+/** @type {Record<string, import("../../../../../../src/decl/pluginAPI.ts").pluginAPI_t>} */
+export let plugins = {}
 
 /**
  * 存储 Bot 的核心配置，例如深度研究参数、空闲事件和语音哨兵的禁用状态。
@@ -40,6 +44,7 @@ export const config = {
 export function GetData() {
 	return {
 		AIsources: getAISourceData(),
+		plugins: Object.keys(plugins),
 		deep_research: config.deep_research,
 		disable_idle_event: config.disable_idle_event,
 		disable_voice_sentinel: config.disable_voice_sentinel
@@ -51,6 +56,7 @@ export function GetData() {
  */
 export async function SetData(data) {
 	if (data.AIsources) await setAISourceData(data.AIsources)
+	if (data.plugins) plugins = Object.fromEntries(await Promise.all(data.plugins.map(async x => [x, await loadPlugin(username, x)])))
 	Object.assign(config.deep_research, data.deep_research)
 
 	config.disable_idle_event = data.disable_idle_event
