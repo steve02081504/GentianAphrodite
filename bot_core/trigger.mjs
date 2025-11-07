@@ -211,7 +211,7 @@ async function calculateTriggerPossibility(fountEntry, platformAPI, channelId, c
 		!isPossessiveOrStatePhrase &&
 		!isNameAtEndOfShortPhrase
 
-	possible += base_match_keys(content, fountEntry.extension.OwnerNameKeywords) * 7
+	possible += base_match_keys(content, fountEntry.extension.OwnerNameKeywords || []) * 7
 	possible += base_match_keys(content, GentianWords) * 5
 	possible += base_match_keys(content, [/(花|华)(萝|箩|罗)(蘑|磨|摩)/g]) * 3
 
