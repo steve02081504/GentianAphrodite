@@ -88,6 +88,7 @@ export function formatLongTermMemoryContext(memory) {
 
 const prompt_build_table = {
 	name: '记忆名称：',
+	trigger: '触发条件：',
 	prompt: '内容：',
 	createdAt: '创建于：',
 	updatedAt: '更新于：'

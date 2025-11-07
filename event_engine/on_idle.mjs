@@ -49,9 +49,13 @@ const idleTasks = [
 		 * @returns {string} 返回任务内容的字符串。
 		 */
 		get_content: () => `\
-这是5条随机的长期记忆，并判断它们的内容是否没有帮助无需保留，或者它们的关键词列表是否有改进的空间。
-以及判断近期的短期记忆中有什么有价值的内容可以加入到长期记忆中。
+以批判性的眼光审查以下5条随机抽取的长期记忆。
+你的任务是：
+1. 识别并标记出可能已经过时或不再准确的记忆。
+2. 评估每条记忆的关键词是否精准或过于难触发，并提出优化建议。
+3. 判断近期的短期记忆中有什么有价值的内容可以加入到长期记忆中。
 ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
+在规划完成后使用工具执行操作。
 `,
 		enable_prompts: {
 			time: true,
@@ -68,7 +72,10 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 		 * 获取任务内容的函数。
 		 * @returns {string} 返回任务内容的字符串。
 		 */
-		get_content: () => '观察主人现在是否在电脑前，分析其是否需要帮助或任何友善的提醒。',
+		get_content: () => `\
+观察主人现在是否在电脑前，分析其是否需要帮助或任何友善的提醒。
+如果主人在做不应被通知打扰的事如fps游戏，则最好不要弹窗。
+`,
 		enable_prompts: {
 			time: true,
 			longTermMemory: true,
@@ -94,6 +101,30 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 - 主人可能喜欢怎样的风格或事物？
 - 有什么可能好用的手段提升自己在主人心中的分量？哪些手段有效？
 - 你现在有哪些情敌？
+
+针对这些问题进行一次深入的自我反思。形成1-2个关于“如何提升与主人关系”的假设或小计划。
+最后将有价值的信息用工具加入到你的长期记忆中。
+`,
+		enable_prompts: {
+			time: true,
+			longTermMemory: true,
+			googleSearch: true,
+			browserIntegration: { history: true }
+		}
+	},
+	/**
+	 * 闲置任务：根据主人的信息制定主人的计划。
+	 * @property {Function} get_content - 获取任务内容的函数。
+	 * @property {object} enable_prompts - 激活的 AI 提示。
+	 */
+	{
+		/**
+		 * 获取任务内容的函数。
+		 * @returns {string} 返回任务内容的字符串。
+		 */
+		get_content: () => `\
+审视关于主人的信息（如外貌身材、作息、兴趣、最近的困扰等），识别出一个可以改善的小领域（如“提高睡眠质量”、“学习新技能”）。
+构思几个具体、可行且轻松的建议。将有价值的信息如建议以及依据存入长期记忆，以备在合适的时机向主人提出。
 `,
 		enable_prompts: {
 			time: true,
@@ -116,7 +147,8 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 从最近的短期记忆和长期记忆中，抽取5个不同的知识点或信息片段。
 尝试寻找它们之间潜在的、意想不到的联系，并构建一个新的、更综合的见解或知识图谱节点。
 例如，如果一个记忆是关于'React性能优化'，另一个是关于'用户心理学'，是否可以结合成一个关于'如何设计符合用户直觉的高性能UI'的新见解？
-将这个新见解存入长期记忆。
+客观联想，避免爱人滤镜和个人崇拜。
+将这个新见解使用工具存入长期记忆。
 `,
 		enable_prompts: {
 			time: true,
@@ -140,6 +172,8 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 		 */
 		get_content: () => `\
 整理主人近期的爱好、兴趣和偏好，并将在网络上看看相关内容，学习一些相关/有用的知识。
+学习的目标是：能够帮上忙或就这个知识点与主人展开一段简短而有趣的对话。
+随后将这些知识用工具加入到你的长期记忆中。
 `,
 		enable_prompts: {
 			time: true,

@@ -362,7 +362,13 @@ ${!isFinalCycle ? `
 					const answer = summary.substring('deep-research-answer:'.length).trim()
 					console.info(`Deep-research: Finished (Answer) after ${planningCycles} cycles. Time: ${thinkingTime.toFixed(2)}s. Answer:\n${answer}`)
 					AddLongTimeLog({
-						content: `深入研究完成 (耗时 ${thinkingTime.toFixed(2)} 秒, ${planningCycles} 轮)。\n<deep-research-answer>\n${answer}\n</deep-research-answer>\n(请用自然语气复述以上结果)`,
+						content: `\
+深入研究完成 (耗时 ${thinkingTime.toFixed(2)} 秒, ${planningCycles} 轮)。
+<deep-research-answer>
+${answer}
+</deep-research-answer>
+(用户无法看见这个回答，如有必要请用转述以上结果)
+`,
 						name: 'deep-research',
 						role: 'tool',
 					})
@@ -374,7 +380,13 @@ ${!isFinalCycle ? `
 					const reason = summary.substring('deep-research-failed:'.length).trim()
 					console.info(`Deep-research: Finished (Failed) after ${planningCycles} cycles. Time: ${thinkingTime.toFixed(2)}s. Reason:\n${reason}`)
 					AddLongTimeLog({
-						content: `深入研究未能成功 (耗时 ${thinkingTime.toFixed(2)} 秒, ${planningCycles} 轮)。\n<deep-research-failed>\n${reason}\n</deep-research-failed>\n(请用自然语气说明失败原因)`,
+						content: `\
+深入研究未能成功 (耗时 ${thinkingTime.toFixed(2)} 秒, ${planningCycles} 轮)。
+<deep-research-failed>
+${reason}
+</deep-research-failed>
+(用户无法看见这个回答，如有必要请用转述失败原因)
+`,
 						name: 'deep-research',
 						role: 'tool',
 					})
@@ -395,7 +407,15 @@ ${!isFinalCycle ? `
 						console.warn(`Deep-research: Replan requested, but plan format invalid or missing in response (Attempt ${summaryRetries}/${summary_max_retries}). Content:\n${replanContent}`)
 						// Add specific retry message explaining the required replan format
 						thinking_prompt_struct.chat_log.push({
-							content: `你选择了重新规划 (deep-research-replan:)，但提供的后续内容未能解析为有效的新计划。请确保在 \`deep-research-replan:\` 标记后，先给出简要原因，然后提供格式正确的新计划（以 "Step 1: ..." 或 "Plan:\nStep 1: ..." 开始）。请重试 (${summaryRetries}/${summary_max_retries})。`,
+							content: `\
+你选择了重新规划 (deep-research-replan:)，但提供的后续内容未能解析为有效的新计划。
+请确保在 \`deep-research-replan:\` 标记后，先给出简要原因，然后提供格式正确的新计划
+（以 "Step 1: ..." 或 "
+Plan:
+Step 1: ...
+" 开始）。
+请重试 (${summaryRetries}/${summary_max_retries})。
+`,
 							name: 'system',
 							role: 'system',
 						})
