@@ -55,7 +55,7 @@ export function GetData() {
  * @param {object} data - 包含新配置数据的对象。
  */
 export async function SetData(data) {
-	if (data.AIsources) await setAISourceData(data.AIsources)
+	await setAISourceData(data.AIsources || getAISourceData())
 	if (data.plugins) plugins = Object.fromEntries(await Promise.all(data.plugins.map(async x => [x, await loadPlugin(username, x)])))
 	Object.assign(config.deep_research, data.deep_research)
 
