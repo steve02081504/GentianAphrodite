@@ -92,6 +92,19 @@ export async function BrowserIntegrationPrompt(args, logical_results) {
 - 更新: \`<browser-update-autorun-script><id>脚本ID</id>...</browser-update-autorun-script>\`
 - 删除: \`<browser-remove-autorun-script><id>脚本ID</id></browser-remove-autorun-script>\`
 
+4. 发送弹幕：
+你可以在页面上发送弹幕（滚动评论）。
+
+<browser-send-danmaku-to-page>
+	<pageId>页面ID</pageId>
+	<content>弹幕内容 (必需)</content>
+	<speed>速度 (可选, 秒)</speed>
+	<color>颜色 (可选, CSS颜色)</color>
+	<fontSize>字号 (可选, 像素)</fontSize>
+	<yPos>垂直位置 (可选, 0-1的小数)</yPos>
+</browser-send-danmaku-to-page>
+这对于在观看视频或直播时发表评论、或者以一种有趣的方式在页面上显示信息非常有用。
+
 ---
 
 最佳实践与流程建议：
@@ -115,6 +128,15 @@ ${args.UserCharname}: 帮我把现在这个视频网站的视频静音。
 		return '当前页面上没有找到视频元素。'
 	</script>
 </browser-run-js-on-page>
+
+${args.UserCharname}: 在屏幕上发个弹幕。
+龙胆: 嘻嘻，好哦！
+<browser-send-danmaku-to-page>
+	<pageId>focused</pageId>
+	<content>主人最棒！</content>
+	<color>#FFC0CB</color>
+	<fontSize>30</fontSize>
+</browser-send-danmaku-to-page>
 
 ${args.UserCharname}: 我希望每次打开公司内网时，都能自动隐藏顶部的通知横幅。
 龙胆: 龙胆收到，这就帮主人设置好！

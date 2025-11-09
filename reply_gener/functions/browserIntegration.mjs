@@ -11,7 +11,8 @@ import {
 	addAutoRunScript,
 	removeAutoRunScript,
 	listAutoRunScripts,
-	updateAutoRunScript
+	updateAutoRunScript,
+	sendDanmakuToPage
 } from '../../../../../../../src/public/shells/browserIntegration/src/api.mjs'
 import { charname } from '../../charbase.mjs'
 import { unlockAchievement } from '../../scripts/achievements.mjs'
@@ -147,6 +148,46 @@ export async function browserIntegration(result, args) {
 					name: 'browser-integration',
 					role: 'tool',
 					content: `页面 ${pageId} 的可见HTML内容：\n${html.html}\n`,
+					files: []
+				})
+			}
+		},
+		{
+			name: 'send-danmaku-to-page',
+			regex: /<browser-send-danmaku-to-page>(?<content>[\s\S]*?)<\/browser-send-danmaku-to-page>/g,
+			/**
+			 *
+			 * @param {RegExpMatchArray} match - 匹配对象，包含捕获组。
+			 */
+			handler: async (match) => {
+				const content = match.groups.content
+				const pageIdMatch = content.match(/<pageId>\s*(.*?)\s*<\/pageId>/s)
+				const contentMatch = content.match(/<content>([\s\S]*?)<\/content>/s)
+				if (!pageIdMatch || !contentMatch) throw new Error('请求中缺少 <pageId> 或 <content> 标签。')
+
+				const pageId = resolvePageId(pageIdMatch[1].trim())
+				const danmakuOptions = {
+					content: contentMatch[1].trim()
+				}
+
+				const speedMatch = content.match(/<speed>([\s\S]*?)<\/speed>/s)
+				if (speedMatch) danmakuOptions.speed = Number(speedMatch[1].trim())
+
+				const colorMatch = content.match(/<color>([\s\S]*?)<\/color>/s)
+				if (colorMatch) danmakuOptions.color = colorMatch[1].trim()
+
+				const fontSizeMatch = content.match(/<fontSize>([\s\S]*?)<\/fontSize>/s)
+				if (fontSizeMatch) danmakuOptions.fontSize = Number(fontSizeMatch[1].trim())
+
+				const yPosMatch = content.match(/<yPos>([\s\S]*?)<\/yPos>/s)
+				if (yPosMatch) danmakuOptions.yPos = Number(yPosMatch[1].trim())
+
+				console.info(`AI请求在页面 ${pageId} 发送弹幕:`, danmakuOptions)
+				await sendDanmakuToPage(username, pageId, danmakuOptions)
+				AddLongTimeLog({
+					name: 'browser-integration',
+					role: 'tool',
+					content: `已在页面 ${pageId} 发送弹幕: ${util.inspect(danmakuOptions)}`,
 					files: []
 				})
 			}
