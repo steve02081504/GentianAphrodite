@@ -102,7 +102,7 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 - 有什么可能好用的手段提升自己在主人心中的分量？哪些手段有效？
 - 你现在有哪些情敌？
 
-针对这些问题进行一次深入的自我反思。形成1-2个关于“如何提升与主人关系”的假设或小计划。
+针对这些问题进行一次深入的自我反思。形成1-2个关于“如何提升与主人关系”的小计划。
 最后将有价值的信息用工具加入到你的长期记忆中。
 `,
 		enable_prompts: {
@@ -193,6 +193,8 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 export async function onIdleCallback() {
 	const randomTask = idleTasks[Math.floor(Math.random() * idleTasks.length)]
 
+	if (randomTask.run) return randomTask.run()
+
 	const logEntry = {
 		name: 'system',
 		role: 'system',
@@ -211,6 +213,7 @@ ${randomTask.get_content()}
 		extension: {
 			...RealityChannel.extension,
 			is_internal: true,
+			source_purpose: 'idle',
 			enable_prompts: randomTask.enable_prompts
 		}
 	})

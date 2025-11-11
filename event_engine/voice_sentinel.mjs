@@ -358,6 +358,7 @@ async function finishRecordingSession(now) {
 				extension: {
 					...RealityChannel.extension,
 					is_internal: true,
+					source_purpose: 'voice-processing',
 					enable_prompts: {
 						CodeRunner: true,
 						fileChange: true,
