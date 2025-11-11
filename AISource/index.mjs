@@ -17,9 +17,9 @@ export let AIsources = {
 	logic: null,
 	'from-other': null,
 	idle: null,
-	'voice-processing': null,
-	'memory-consolidation': null
+	'voice-processing': null
 }
+const default_AIsourceTypes = Object.keys(AIsources)
 
 /**
  * 获取当前所有AI来源的配置数据。
@@ -46,7 +46,7 @@ export async function setAISourceData(data) {
 	for (const name in newAIsources) newAIsources[name] = await newAIsources[name]
 	if (fount_default && !Object.values(newAIsources).some(x => x === fount_default))
 		newAIsources.fount_default = fount_default
-	for (const name in AIsources) newAIsources[name] ||= null
+	for (const name of default_AIsourceTypes) newAIsources[name] ||= null
 	AIsources = newAIsources
 	checkVoiceSentinel()
 }
@@ -117,7 +117,7 @@ export let last_used_AIsource
  * @returns {Promise<any>} 返回 `caller` 函数成功执行后的结果。
  */
 export async function OrderedAISourceCalling(name, caller, trytimes = 3, error_logger = console.error) {
-	const sources = [...new Set([...GetAISourceCallingOrder(name).map(x => AIsources[x]).filter(x => x), ...Object.values(AIsources)])]
+	const sources = [...new Set([...GetAISourceCallingOrder(name).map(x => AIsources[x]).filter(x => x), ...Object.values(AIsources).filter(x => x)])]
 	let lastErr = new Error('No AI source available')
 	for (const source of sources)
 		for (let i = 0; i < trytimes; i++)
