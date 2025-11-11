@@ -33,6 +33,10 @@ export const config = {
 		summary_max_retries: 5,
 		reasoning_interval: 3000
 	},
+	subagent: {
+		max_cycles: 15,
+		thinking_interval: 1000
+	},
 	disable_idle_event: false,
 	disable_voice_sentinel: false
 }
@@ -46,6 +50,7 @@ export function GetData() {
 		AIsources: getAISourceData(),
 		plugins: Object.keys(plugins),
 		deep_research: config.deep_research,
+		subagent: config.subagent,
 		disable_idle_event: config.disable_idle_event,
 		disable_voice_sentinel: config.disable_voice_sentinel
 	}
@@ -58,6 +63,7 @@ export async function SetData(data) {
 	await setAISourceData(data.AIsources || getAISourceData())
 	if (data.plugins) plugins = Object.fromEntries(await Promise.all(data.plugins.map(async x => [x, await loadPlugin(username, x)])))
 	Object.assign(config.deep_research, data.deep_research)
+	Object.assign(config.subagent, data.subagent)
 
 	config.disable_idle_event = data.disable_idle_event
 	resetIdleTimer()
