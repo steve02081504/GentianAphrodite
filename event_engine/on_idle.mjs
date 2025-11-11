@@ -193,6 +193,8 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 export async function onIdleCallback() {
 	const randomTask = idleTasks[Math.floor(Math.random() * idleTasks.length)]
 
+	if (randomTask.run) return randomTask.run()
+
 	const logEntry = {
 		name: 'system',
 		role: 'system',
@@ -211,6 +213,7 @@ ${randomTask.get_content()}
 		extension: {
 			...RealityChannel.extension,
 			is_internal: true,
+			source_purpose: 'idle',
 			enable_prompts: randomTask.enable_prompts
 		}
 	})

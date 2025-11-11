@@ -15,7 +15,10 @@ export let AIsources = {
 	sfw: null,
 	expert: null,
 	logic: null,
-	'from-other': null
+	'from-other': null,
+	idle: null,
+	'voice-processing': null,
+	'memory-consolidation': null
 }
 
 /**
@@ -43,6 +46,7 @@ export async function setAISourceData(data) {
 	for (const name in newAIsources) newAIsources[name] = await newAIsources[name]
 	if (fount_default && !Object.values(newAIsources).some(x => x === fount_default))
 		newAIsources.fount_default = fount_default
+	for (const name in AIsources) newAIsources[name] ||= null
 	AIsources = newAIsources
 	checkVoiceSentinel()
 }
@@ -79,6 +83,12 @@ export function GetAISourceCallingOrder(name) {
 			// 在回复他人时，我们以最低消费模型的顺序来回落，以最大程度减少不必要的算力损耗
 			// 由于logic模型的低智商可能引起不安全操作，因此我们将其放在靠后的位置
 			return ['from-other', 'nsfw', 'web-browse', 'deep-research', 'sfw', 'logic', 'expert']
+		case 'idle':
+			// 空闲任务，优先使用专用模型
+			return ['idle', 'sfw', 'expert', 'deep-research', 'web-browse', 'nsfw', 'logic', 'from-other']
+		case 'voice-processing':
+			// 语音处理，优先使用专用模型
+			return ['voice-processing', 'sfw', 'expert', 'deep-research', 'web-browse', 'nsfw', 'logic', 'from-other']
 	}
 }
 
