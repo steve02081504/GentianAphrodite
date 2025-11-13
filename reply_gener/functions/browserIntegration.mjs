@@ -4,6 +4,7 @@ import util from 'node:util'
 import {
 	getConnectedPages,
 	getFocusedPageInfo,
+	getMostRecentPageInfo,
 	getBrowseHistory,
 	getPageHtml,
 	getVisibleHtml,
@@ -60,6 +61,11 @@ export async function browserIntegration(result, args) {
 			const focusedPage = getFocusedPageInfo(username)
 			if (focusedPage) return focusedPage.id
 			throw new Error('没有找到焦点页面。')
+		}
+		if (pageIdRaw.toLowerCase() === 'mostrecent') {
+			const mostRecentPage = getMostRecentPageInfo(username)
+			if (mostRecentPage) return mostRecentPage.id
+			throw new Error('没有找到最近访问的页面。')
 		}
 		return Number(pageIdRaw)
 	}

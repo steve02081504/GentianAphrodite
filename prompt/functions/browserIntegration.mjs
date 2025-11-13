@@ -1,6 +1,6 @@
 import util from 'node:util'
 
-import { getConnectedPages, getBrowseHistory } from '../../../../../../../src/public/shells/browserIntegration/src/api.mjs'
+import { getConnectedPages, getBrowseHistory, getMostRecentPageInfo } from '../../../../../../../src/public/shells/browserIntegration/src/api.mjs'
 import { match_keys } from '../../scripts/match.mjs'
 
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
@@ -24,20 +24,34 @@ export async function BrowserIntegrationPrompt(args, logical_results) {
 ---
 当前浏览器状态：
 `
+		let connectedPages
 		try {
-			const connectedPages = getConnectedPages(args.username)
-
+			connectedPages = getConnectedPages(args.username)
 			if (connectedPages?.length) {
 				result += '主人已连接的浏览器页面：\n'
 				result += util.inspect(connectedPages.map(p => ({ id: p.id, url: p.url, title: p.title, focused: p.focused })), { depth: 2, colors: false })
 			}
-			else
-				result += '无页面\n'
+			else result += '无页面\n'
 		}
 		catch (err) {
 			console.warn('Failed to get browser integration pages info', err)
 			result += `获取出错：${err.stack ?? err.message}\n`
 		}
+
+		if (!connectedPages?.some(p => p.focused)) try {
+			const mostRecentPage = getMostRecentPageInfo(args.username)
+			if (mostRecentPage) {
+				result += '主人最近访问的页面是：\n'
+				result += util.inspect({ id: mostRecentPage.id, url: mostRecentPage.url, title: mostRecentPage.title, lastVisitTime: new Date(mostRecentPage.lastVisitTime).toLocaleString() }, { depth: 2, colors: false })
+				result += '\n'
+			}
+			else result += '无\n'
+		}
+		catch (err) {
+			console.warn('Failed to get most recent page info', err)
+			result += `获取最近访问页面出错：${err.stack ?? err.message}\n`
+		}
+
 		if (args.extension?.enable_prompts?.browserIntegration?.history || await match_keys(args, ['最常', '最近', '喜欢', '看过', '历史', 'history'], 'any'))
 			try {
 				const history = getBrowseHistory(args.username)
@@ -109,7 +123,7 @@ export async function BrowserIntegrationPrompt(args, logical_results) {
 
 最佳实践与流程建议：
 
-1. 定位页面：根据上面提供的“当前浏览器状态”中的页面信息，直接使用 \`pageId\`。这是所有后续操作的基础。
+1. 定位页面：根据上面提供的“当前浏览器状态”中的页面信息，直接使用 \`pageId\`。这是所有后续操作的基础。你可以使用 \`mostRecent\` 来指代最近访问的页面，或者使用 \`focused\` 来指代当前焦点页面。
 2. 分析内容：优先使用 \`<browser-get-visible-html>\` 来理解用户当前的视野和意图。这比获取整个HTML更快、信息密度更高。
 3. 执行操作：根据分析结果，使用 \`<browser-run-js-on-page>\` 执行具体操作，如填写表单、点击按钮、提取信息等。
 4. 总结汇报：执行完操作后，清晰地向用户汇报你做了什么以及结果如何。
@@ -118,7 +132,7 @@ export async function BrowserIntegrationPrompt(args, logical_results) {
 ${args.UserCharname}: 帮我把现在这个视频网站的视频静音。
 龙胆: 好的，稍等哦～
 <browser-run-js-on-page>
-	<pageId>focused</pageId>
+	<pageId>mostRecent</pageId>
 	<script>
 		const video = document.querySelector('video')
 		if (video) {
@@ -132,7 +146,7 @@ ${args.UserCharname}: 帮我把现在这个视频网站的视频静音。
 ${args.UserCharname}: 在屏幕上发个弹幕。
 龙胆: 嘻嘻，好哦！
 <browser-send-danmaku-to-page>
-	<pageId>focused</pageId>
+	<pageId>mostRecent</pageId>
 	<content>主人最棒！</content>
 	<color>#FFC0CB</color>
 	<fontSize>30</fontSize>
