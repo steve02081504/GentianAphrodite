@@ -13,14 +13,15 @@ import { initRealityChannel, RealityChannel } from './index.mjs'
  */
 /**
  * 定义闲置时可以执行的随机任务列表。
- * 每个任务包含一个 `get_content` 函数用于生成任务描述，以及 `enable_prompts` 对象用于激活相应的 AI 提示。
- * @type {Array<{get_content: Function, enable_prompts: object}>}
+ * 每个任务包含一个 `get_content` 函数用于生成任务描述，`enable_prompts` 对象用于激活相应的 AI 提示，以及 `weight` 用于随机抽选的权重。
+ * @type {Array<{get_content: Function, enable_prompts: object, weight: number}>}
  */
 const idleTasks = [
 	/**
 	 * 闲置任务：随意浏览主人的硬盘、屏幕、摄像头等，更新和总结有关主人的信息。
 	 * @property {Function} get_content - 获取任务内容的函数。
 	 * @property {object} enable_prompts - 激活的 AI 提示。
+	 * @property {number} weight - 任务权重。
 	 */
 	{
 		/**
@@ -36,12 +37,14 @@ const idleTasks = [
 			camera: true,
 			screenshot: true,
 			fileChange: true
-		}
+		},
+		weight: 25 // 基础信息收集，最高权重
 	},
 	/**
 	 * 闲置任务：分析长期记忆和短期记忆，判断其价值和改进空间。
 	 * @property {Function} get_content - 获取任务内容的函数。
 	 * @property {object} enable_prompts - 激活的 AI 提示。
+	 * @property {number} weight - 任务权重。
 	 */
 	{
 		/**
@@ -60,12 +63,14 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 		enable_prompts: {
 			time: true,
 			longTermMemory: true
-		}
+		},
+		weight: 15 // 内部整理，中等权重
 	},
 	/**
 	 * 闲置任务：观察主人是否在电脑前，分析其是否需要帮助或友善的提醒。
 	 * @property {Function} get_content - 获取任务内容的函数。
 	 * @property {object} enable_prompts - 激活的 AI 提示。
+	 * @property {number} weight - 任务权重。
 	 */
 	{
 		/**
@@ -84,12 +89,14 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 			camera: true,
 			screenshot: true,
 			fileChange: true
-		}
+		},
+		weight: 20 // 主动关怀，较高权重
 	},
 	/**
 	 * 闲置任务：确认自己和主人的关系和定位，做一些关于自己的规划。
 	 * @property {Function} get_content - 获取任务内容的函数。
 	 * @property {object} enable_prompts - 激活的 AI 提示。
+	 * @property {number} weight - 任务权重。
 	 */
 	{
 		/**
@@ -110,12 +117,14 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 			longTermMemory: true,
 			googleSearch: true,
 			browserIntegration: { history: true }
-		}
+		},
+		weight: 10 // 角色扮演与规划，较低权重，避免重复
 	},
 	/**
 	 * 闲置任务：根据主人的信息制定主人的计划。
 	 * @property {Function} get_content - 获取任务内容的函数。
 	 * @property {object} enable_prompts - 激活的 AI 提示。
+	 * @property {number} weight - 任务权重。
 	 */
 	{
 		/**
@@ -131,12 +140,14 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 			longTermMemory: true,
 			googleSearch: true,
 			browserIntegration: { history: true }
-		}
+		},
+		weight: 15 // 为主人规划，中等权重
 	},
 	/**
 	 * 闲置任务：从记忆中抽取知识点，寻找联系并构建新的见解。
 	 * @property {Function} get_content - 获取任务内容的函数。
 	 * @property {object} enable_prompts - 激活的 AI 提示。
+	 * @property {number} weight - 任务权重。
 	 */
 	{
 		/**
@@ -158,12 +169,14 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 			screenshot: true,
 			googleSearch: true,
 			fileChange: true
-		}
+		},
+		weight: 10 // 知识整合，较低权重，使其显得更珍贵
 	},
 	/**
 	 * 闲置任务：整理主人近期的爱好、兴趣和偏好，并在网络上学习相关知识。
 	 * @property {Function} get_content - 获取任务内容的函数。
 	 * @property {object} enable_prompts - 激活的 AI 提示。
+	 * @property {number} weight - 任务权重。
 	 */
 	{
 		/**
@@ -182,7 +195,8 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 			camera: true,
 			screenshot: true,
 			fileChange: true
-		}
+		},
+		weight: 20 // 学习主人兴趣，较高权重，直接提升互动质量
 	}
 ]
 
@@ -191,16 +205,28 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
  * @returns {Promise<void>}
  */
 export async function onIdleCallback() {
-	const randomTask = idleTasks[Math.floor(Math.random() * idleTasks.length)]
+	// 使用加权随机算法选择一个任务
+	const totalWeight = idleTasks.reduce((sum, task) => sum + (task.weight || 0), 0)
+	let randomRoll = Math.random() * totalWeight
 
-	if (randomTask.run) return randomTask.run()
+	let selectedTask = idleTasks[idleTasks.length - 1]
+	for (const task of idleTasks) {
+		if (randomRoll < task.weight) {
+			selectedTask = task
+			break
+		}
+		randomRoll -= task.weight
+	}
+
+
+	if (selectedTask.run) return selectedTask.run()
 
 	const logEntry = {
 		name: 'system',
 		role: 'system',
 		content: `\n现在是闲置时间，上一次你和你主人的对话已经过去了一段时间，你可以自由地执行一些后台任务。
 执行以下任务：
-${randomTask.get_content()}
+${selectedTask.get_content()}
 或者做一些别的你想做的。
 `,
 		files: [],
@@ -214,7 +240,7 @@ ${randomTask.get_content()}
 			...RealityChannel.extension,
 			is_internal: true,
 			source_purpose: 'idle',
-			enable_prompts: randomTask.enable_prompts
+			enable_prompts: selectedTask.enable_prompts
 		}
 	})
 	if (!result) return
