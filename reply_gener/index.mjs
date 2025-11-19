@@ -143,6 +143,7 @@ export async function GetReply(args) {
 			})
 			result.content = requestresult.content
 			result.files = result.files.concat(requestresult.files || [])
+			result.extension = { ...result.extension, ...requestresult.extension }
 			if (result.content.split('\n').pop().trim() == '<-<null>->') { // AI skipped
 				const lastlog = prompt_struct.chat_log.slice(-1)[0]
 				lastlog.logContextAfter ??= []
