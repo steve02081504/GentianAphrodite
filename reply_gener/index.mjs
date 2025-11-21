@@ -82,7 +82,15 @@ export function getLongTimeLogAdder(result, prompt_struct, max_forever_looping_n
  * @returns {Promise<chatReply_t>} - 一个包含生成回复的对象。
  */
 export async function GetReply(args) {
-	if (noAISourceAvailable()) return noAIreply(args)
+	/** @type {chatReply_t} */
+	const result = {
+		content: '',
+		logContextBefore: [],
+		logContextAfter: [],
+		files: [],
+		extension: {},
+	}
+	if (noAISourceAvailable()) return Object.assign(result, noAIreply(args))
 	try {
 		// 注入角色插件
 		args.plugins = Object.assign({}, plugins, args.plugins)
@@ -93,14 +101,6 @@ export async function GetReply(args) {
 			'Gentian', /Gentian(•|·)Aphrodite/, '龙胆', /龙胆(•|·)阿芙萝黛蒂/
 		]
 		const logical_results = await buildLogicalResults(args, prompt_struct, 0)
-		/** @type {chatReply_t} */
-		const result = {
-			content: '',
-			logContextBefore: [],
-			logContextAfter: [],
-			files: [],
-			extension: {},
-		}
 		const AddLongTimeLog = getLongTimeLogAdder(result, prompt_struct)
 		const last_entry = args.chat_log.slice(-1)[0]
 		if (last_entry?.name == args.UserCharname && last_entry.role == 'user') {
