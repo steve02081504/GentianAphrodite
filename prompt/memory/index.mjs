@@ -1,6 +1,7 @@
 import { mergePrompt } from '../build.mjs'
 
 import { LongTermMemoryPrompt, saveLongTermMemory } from './long-term-memory.mjs'
+import { RealityChannelHistoryPrompt } from './reality-channel-history.mjs'
 import { saveShortTermMemory, ShortTermMemoryPrompt } from './short-term-memory.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
@@ -13,6 +14,7 @@ import { saveShortTermMemory, ShortTermMemoryPrompt } from './short-term-memory.
  */
 export async function MemoriesPrompt(args, logical_results) {
 	const result = []
+	result.push(RealityChannelHistoryPrompt(args, logical_results))
 	result.push(ShortTermMemoryPrompt(args, logical_results))
 	result.push(LongTermMemoryPrompt(args, logical_results))
 
