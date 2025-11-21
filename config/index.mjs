@@ -34,7 +34,8 @@ export const config = {
 		reasoning_interval: 3000
 	},
 	disable_idle_event: false,
-	disable_voice_sentinel: false
+	disable_voice_sentinel: false,
+	reality_channel_notification_fallback_order: ['discord', 'telegram', 'system']
 }
 
 /**
@@ -47,7 +48,8 @@ export function GetData() {
 		plugins: Object.keys(plugins),
 		deep_research: config.deep_research,
 		disable_idle_event: config.disable_idle_event,
-		disable_voice_sentinel: config.disable_voice_sentinel
+		disable_voice_sentinel: config.disable_voice_sentinel,
+		reality_channel_notification_fallback_order: config.reality_channel_notification_fallback_order
 	}
 }
 /**
@@ -65,6 +67,9 @@ export async function SetData(data) {
 	config.disable_voice_sentinel = data.disable_voice_sentinel
 	if (config.disable_voice_sentinel) stopVoiceSentinel()
 	else checkVoiceSentinel()
+
+	if (data.reality_channel_notification_fallback_order)
+		config.reality_channel_notification_fallback_order = data.reality_channel_notification_fallback_order
 }
 
 /**

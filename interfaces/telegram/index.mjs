@@ -17,6 +17,11 @@ export { GetBotConfigTemplate } from './config.mjs'
 /** @typedef {import('npm:telegraf').Telegraf} TelegrafInstance */
 
 /**
+ * @type {import('../../bot_core/index.mjs').PlatformAPI_t | null}
+ */
+export let telegramPlatformAPI = null
+
+/**
  * Telegram 机器人接口的主入口函数。
  * 此函数负责初始化 Telegraf 实例，获取机器人自身信息，构建并注册平台 API，
  * 以及设置事件处理器来监听 Telegram 的消息事件。
@@ -46,7 +51,7 @@ export async function TelegramBotMain(bot, interfaceConfig) {
 		if (BotFountCharname) telegramDisplayNameToId[BotFountCharname] = botUserId
 	}
 
-	const telegramPlatformAPI = buildPlatformAPI(interfaceConfig)
+	telegramPlatformAPI = buildPlatformAPI(interfaceConfig)
 
 	registerEventHandlers(bot, interfaceConfig, telegramPlatformAPI)
 
