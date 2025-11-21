@@ -175,9 +175,8 @@ ${args.UserCharname}: 发我屏幕截图看看？
 龙胆: <run-js>
 	import { Monitor } from 'npm:node-screenshots'
 	async function captureScreen() {
-	  if (process.platform === 'linux' && !Deno.env.get('DISPLAY')){
-			throw new Error('Cannot capture screen: No DISPLAY environment variable detected (Headless environment).')
-		}
+		if (process.platform === 'linux' && !process.env.DISPLAY)
+			throw new Error('Cannot capture screen: No DISPLAY environment variable.')
 		const image = await Monitor.all()[0].captureImage()
 		return await image.toPng()
 	}

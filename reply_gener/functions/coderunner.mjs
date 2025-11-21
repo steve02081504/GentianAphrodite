@@ -165,7 +165,6 @@ export async function coderunner(result, args) {
 	 */
 	async function get_screen() {
 		if (!wait_screen) return
-		if (process.platform === 'linux' && !Deno.env.get('DISPLAY')) return 
 		await new Promise(resolve => setTimeout(resolve, wait_screen * 1000))
 		try {
 			return { name: 'screenshot.png', buffer: await captureScreen(), mime_type: 'image/png' }

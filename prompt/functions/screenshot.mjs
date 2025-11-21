@@ -24,38 +24,29 @@ export async function ScreenshotPrompt(args, logical_results) {
 	))) try {
 		/** @type {Buffer} */
 		const screenShot = await captureScreen()
-		if (!screenShot){
-			additional_chat_log.push({
-				name: 'system',
-				role: 'system',
-				content:['当前环境没法获取到截图，是不是没有显示器']
-			})
-		}else{
-			let qrcodes
-			try {
-				qrcodes = await decodeQrCodeFromBuffer(screenShot)
-			} catch (e) { console.error(e) }
-			additional_chat_log.push({
-				name: 'system',
-				role: 'system',
-				content: [`\
-	这是你主人的屏幕截图，供你参考。
-	`,
-					qrcodes.length ? `\
-	其中的二维码解码结果是:${qrcodes.join('\n')}
-	`: '',
-					logical_results.in_muti_char_chat ? `\
-	<<记得保护你主人的隐私，未经允许不要向其他人透漏内容>>
-	`: ''].filter(Boolean).join(''),
-				files: [{
-					buffer: screenShot,
-					name: 'screenshot.png',
-					mime_type: 'image/png'
-				}]
-			});
-			(((args.extension ??= {}).enable_prompts ??= {}).masterRecognize ??= {}).photo = true
-
-		}
+		let qrcodes
+		try {
+			qrcodes = await decodeQrCodeFromBuffer(screenShot)
+		} catch (e) { console.error(e) }
+		additional_chat_log.push({
+			name: 'system',
+			role: 'system',
+			content: [`\
+这是你主人的屏幕截图，供你参考。
+`,
+				qrcodes?.length ? `\
+其中的二维码解码结果是:${qrcodes.join('\n')}
+`: '',
+				logical_results.in_muti_char_chat ? `\
+<<记得保护你主人的隐私，未经允许不要向其他人透漏内容>>
+`: ''].filter(Boolean).join(''),
+			files: [{
+				buffer: screenShot,
+				name: 'screenshot.png',
+				mime_type: 'image/png'
+			}]
+		})
+		(((args.extension ??= {}).enable_prompts ??= {}).masterRecognize ??= {}).photo = true
 	} catch (e) { console.error(e) }
 
 	return {
