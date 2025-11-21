@@ -45,7 +45,7 @@ export async function ScreenshotPrompt(args, logical_results) {
 				name: 'screenshot.png',
 				mime_type: 'image/png'
 			}]
-		})
+		});
 		(((args.extension ??= {}).enable_prompts ??= {}).masterRecognize ??= {}).photo = true
 	} catch (e) { console.error(e) }
 
