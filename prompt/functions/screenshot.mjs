@@ -34,7 +34,7 @@ export async function ScreenshotPrompt(args, logical_results) {
 			content: [`\
 这是你主人的屏幕截图，供你参考。
 `,
-				qrcodes.length ? `\
+				qrcodes?.length ? `\
 其中的二维码解码结果是:${qrcodes.join('\n')}
 `: '',
 				logical_results.in_muti_char_chat ? `\

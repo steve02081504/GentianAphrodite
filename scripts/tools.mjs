@@ -355,7 +355,8 @@ const timeToStrSetting = { weekday: 'long', year: 'numeric', month: 'long', day:
  * @returns {string} - 格式化后的日期时间字符串。
  */
 export function timeToStr(date, locale, setting = timeToStrSetting) {
-	return new Date(date).toLocaleString(locale || undefined, setting)
+	if (['C', 'POSIX'].includes(locale) || !locale) locale = undefined
+	return new Date(date).toLocaleString(locale, setting)
 }
 const MS_PER_SECOND = 1000
 const MS_PER_MINUTE = MS_PER_SECOND * 60
@@ -434,6 +435,8 @@ export function timeToTimeStr(diff, locale = 'en-US') {
  * @returns {Promise<Buffer>} - PNG 格式的屏幕截图 Buffer。
  */
 export async function captureScreen() {
+	if (process.platform === 'linux' && !process.env.DISPLAY)
+		throw new Error('Cannot capture screen: No DISPLAY environment variable.')
 	const { Monitor } = await import('npm:node-screenshots')
 	const monitors = Monitor.all()
 	const mainMonitor = monitors[0]

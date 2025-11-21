@@ -118,7 +118,11 @@ clipboardListener.on('change', onClipboardChange)
  * 开始监听剪贴板的变化。
  */
 export function startClipboardListening() {
-	try { clipboardListener.startListening() }
+	try {
+		if (process.platform === 'linux' && !process.env.DISPLAY)
+			throw new Error('Cannot start clipboard listening: No DISPLAY environment variable.')
+		clipboardListener.startListening()
+	}
 	catch (error) { console.error('Failed to start clipboard listening:', error) }
 }
 
