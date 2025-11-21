@@ -66,10 +66,7 @@ export async function UseNofityAbleChannel(func) {
 	initBaseNotifyChannel()
 	for (const channel of [...notifyAbleChannels, baseNotifyChannel]) try {
 		return await func(await channel.Update())
-	}
-	catch (err) {
-		console.error(err)
-	}
+	} catch (err) { console.error(err) }
 }
 
 /**
