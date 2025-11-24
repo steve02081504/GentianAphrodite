@@ -175,8 +175,10 @@ export async function coderunner(result, args) {
 		}
 	}
 
-	const jsrunner = result.content.match(/<run-js>(?<code>[^]*?)<\/run-js>/)?.groups?.code?.split?.('<run-js>')?.pop?.()
-	if (jsrunner) {
+	let processed = false
+	const jsrunner_matches = [...result.content.matchAll(/<run-js>(?<code>[^]*?)<\/run-js>/g)]
+	for (const match of jsrunner_matches) {
+		const jsrunner = match.groups.code
 		unlockAchievement('use_coderunner')
 		statisticDatas.toolUsage.codeRuns++
 		AddLongTimeLog({
@@ -195,13 +197,15 @@ export async function coderunner(result, args) {
 			files: [await get_screen()].filter(Boolean)
 		})
 		result.extension.execed_codes[jsrunner] = coderesult
-		return true
+		processed = true
 	}
+
 	for (const shell_name in shell_exec_map) {
 		if (!available[shell_name]) continue
-		const runner_regex = new RegExp(`<run-${shell_name}>(?<code>[^]*?)<\\/run-${shell_name}>`)
-		const runner = result.content.match(runner_regex)?.groups?.code
-		if (runner) {
+		const runner_regex = new RegExp(`<run-${shell_name}>(?<code>[^]*?)<\\/run-${shell_name}>`, 'g')
+		const runner_matches = [...result.content.matchAll(runner_regex)]
+		for (const match of runner_matches) {
+			const runner = match.groups.code
 			unlockAchievement('use_coderunner')
 			statisticDatas.toolUsage.codeRuns++
 			AddLongTimeLog({
@@ -222,7 +226,7 @@ export async function coderunner(result, args) {
 				content: '执行结果：\n' + util.inspect(shell_result),
 				files: [await get_screen()].filter(Boolean)
 			})
-			return true
+			processed = true
 		}
 	}
 
@@ -336,5 +340,5 @@ export async function coderunner(result, args) {
 		}
 	}
 
-	return false
+	return processed
 }

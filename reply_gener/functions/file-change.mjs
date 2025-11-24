@@ -12,17 +12,15 @@ import { escapeRegExp, parseRegexFromString } from '../../scripts/tools.mjs'
  * @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t}
  */
 export async function file_change(result, { AddLongTimeLog }) {
-	const view_files_match = result.content.match(/<view-file>(?<paths>[^]*?)<\/view-file>/)?.groups?.paths
 	let regen = false
 	const tool_calling_log = {
 		name: '龙胆',
 		role: 'char',
-		content: '',
-		files: []
+		content: ''
 	}
-
-	if (view_files_match) {
-		const paths = view_files_match.split('\n').map(p => p.trim()).filter(path => path)
+	const view_files_matches = [...result.content.matchAll(/<view-file>(?<paths>[^]*?)<\/view-file>/g)]
+	if (view_files_matches.length) {
+		const paths = view_files_matches.flatMap(match => match.groups.paths.split('\n').map(p => p.trim()).filter(path => path))
 		if (paths.length) {
 			unlockAchievement('use_file_change')
 			const logContent = '<view-file>\n' + paths.join('\n') + '\n</view-file>\n'
@@ -62,8 +60,9 @@ export async function file_change(result, { AddLongTimeLog }) {
 		regen = true
 	}
 
-	const replace_file_content = result.content.match(/<replace-file>(?<content>[^]*?)<\/replace-file>/)?.groups?.content
-	if (replace_file_content) {
+	const replace_file_matches = [...result.content.matchAll(/<replace-file>(?<content>[^]*?)<\/replace-file>/g)]
+	for (const replace_match of replace_file_matches) {
+		const replace_file_content = replace_match.groups.content
 		unlockAchievement('use_file_change')
 		const logContent = '<replace-file>' + replace_file_content + '</replace-file>\n'
 		if (!tool_calling_log.content) {
@@ -123,7 +122,7 @@ export async function file_change(result, { AddLongTimeLog }) {
 				content: `解析replace-file失败：\n\`\`\`\n${err}\n\`\`\`\n原始数据:\n<replace-file>${replace_file_content}</replace-file>`,
 				files: []
 			})
-			return true // Stop processing this command
+			continue // Continue to next match instead of stopping
 		}
 
 		console.info('AI替换的文件：', replace_files_data)
@@ -198,10 +197,10 @@ export async function file_change(result, { AddLongTimeLog }) {
 		regen = true
 	}
 
-	const override_file_match = result.content.match(/<override-file\s+path="(?<path>[^"]+)">(?<content>[^]*?)<\/override-file>/)?.groups
-	if (override_file_match) {
+	const override_file_matches = [...result.content.matchAll(/<override-file\s+path="(?<path>[^"]+)">(?<content>[^]*?)<\/override-file>/g)]
+	for (const override_match of override_file_matches) {
 		unlockAchievement('use_file_change')
-		const { path, content } = override_file_match
+		const { path, content } = override_match.groups
 		const logContent = `<override-file path="${path}">` + content + '</override-file>\n'
 		if (!tool_calling_log.content) {
 			tool_calling_log.content += logContent
