@@ -39,7 +39,7 @@ export async function LongTermMemoryHandler(result, args) {
 	// --- Handle <add-long-term-memory> ---
 	// Match the outer tag, capturing all inner content
 	const addMatches = [...result.content.matchAll(/<add-long-term-memory>(?<content>.*?)<\/add-long-term-memory>/gs)]
-	for (const addMatch of addMatches) 
+	for (const addMatch of addMatches)
 		if (addMatch?.groups?.content) {
 			const content = addMatch.groups.content.trim()
 			// Match the inner tags based on the new structure
@@ -102,11 +102,11 @@ export async function LongTermMemoryHandler(result, args) {
 				processed = true // Processed the tag, but it was invalid
 			}
 		}
-	
+
 
 	// --- Handle <update-long-term-memory> ---
 	const updateMatches = [...result.content.matchAll(/<update-long-term-memory>(?<content>.*?)<\/update-long-term-memory>/gs)]
-	for (const updateMatch of updateMatches) 
+	for (const updateMatch of updateMatches)
 		if (updateMatch?.groups?.content) {
 			const content = updateMatch.groups.content.trim()
 			const nameMatch = content.match(/<name>(?<name>.*?)<\/name>/s)
@@ -182,11 +182,11 @@ export async function LongTermMemoryHandler(result, args) {
 				processed = true // Processed the tag, but it was invalid
 			}
 		}
-	
+
 
 	// --- Handle <delete-long-term-memory> ---
 	const deleteMatches = [...result.content.matchAll(/<delete-long-term-memory>(?<name>.*?)<\/delete-long-term-memory>/gs)]
-	for (const deleteMatch of deleteMatches) 
+	for (const deleteMatch of deleteMatches)
 		if (deleteMatch?.groups?.name) {
 			const memoryName = deleteMatch.groups.name.trim()
 
@@ -228,7 +228,7 @@ export async function LongTermMemoryHandler(result, args) {
 				processed = true // Processed the tag, but it was invalid
 			}
 		}
-	
+
 
 	// --- Handle <list-long-term-memory> ---
 	if (result.content.includes('<list-long-term-memory></list-long-term-memory>')) {
@@ -268,7 +268,7 @@ export async function LongTermMemoryHandler(result, args) {
 
 	// --- Handle <view-long-term-memory-context> ---
 	const viewContextMatches = [...result.content.matchAll(/<view-long-term-memory-context>(?<name>.*?)<\/view-long-term-memory-context>/gs)]
-	for (const viewContextMatch of viewContextMatches) 
+	for (const viewContextMatch of viewContextMatches)
 		if (viewContextMatch?.groups?.name) {
 			const memoryName = viewContextMatch.groups.name.trim()
 
@@ -311,7 +311,7 @@ export async function LongTermMemoryHandler(result, args) {
 				processed = true // Processed the tag, but it was invalid
 			}
 		}
-	
+
 
 
 	// Return true if any LTM command was found and processed

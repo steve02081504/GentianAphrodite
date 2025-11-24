@@ -25,7 +25,7 @@ export async function timer(result, args) {
 	const timers = getTimers(args.username, 'chars', args.char_id)
 
 	const setTimerMatches = [...result.content.matchAll(/<set-timer>(?<content>[\S\s]*?)<\/set-timer>/gis)]
-	for (const setTimerMatch of setTimerMatches) 
+	for (const setTimerMatch of setTimerMatches)
 		if (setTimerMatch?.groups?.content) {
 			statisticDatas.toolUsage.timersSet++
 			processed = true
@@ -130,7 +130,7 @@ export async function timer(result, args) {
 			})
 
 		}
-	
+
 
 	if (result.content.match(/<list-timers>\s*<\/list-timers>/)) {
 		processed = true
@@ -150,7 +150,7 @@ export async function timer(result, args) {
 	}
 
 	const removeTimerMatches = [...result.content.matchAll(/<remove-timer>(?<reasons>.*?)<\/remove-timer>/gis)]
-	for (const removeTimerMatch of removeTimerMatches) 
+	for (const removeTimerMatch of removeTimerMatches)
 		if (removeTimerMatch?.groups?.reasons) {
 			processed = true
 			const reasonsToRemove = removeTimerMatch.groups.reasons.trim().split('\n').map(e => e.trim())
@@ -186,7 +186,7 @@ export async function timer(result, args) {
 				files: []
 			})
 		}
-	
+
 
 	tool_calling_log.content = tool_calling_log.content.trim()
 

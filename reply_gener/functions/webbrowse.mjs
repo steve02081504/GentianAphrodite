@@ -11,7 +11,7 @@ export async function webbrowse(result, { AddLongTimeLog, prompt_struct }) {
 	const matches = [...result.content.matchAll(/<web-browse>\s*<url>(?<url>.*?)<\/url>\s*<question>(?<question>[\S\s]*?)<\/question>\s*<\/web-browse>/g)]
 	if (matches.length) {
 		let processed = false
-		for (const match of matches) 
+		for (const match of matches)
 			if (match?.groups) {
 				unlockAchievement('use_webbrowse')
 				statisticDatas.toolUsage.webBrowses++
@@ -79,7 +79,7 @@ ${question}
 					processed = true
 				}
 			}
-		
+
 		return processed
 	}
 
