@@ -166,6 +166,7 @@ export async function GetReply(args) {
 				args.supported_functions.add_message ? timer : null,
 				...Object.values(args.plugins).map(plugin => plugin.interfaces.chat?.ReplyHandler)
 			].filter(Boolean)
+			let continue_regen = false
 			for (const replyHandler of replyHandlers)
 				if (await replyHandler(result, {
 					...args, AddLongTimeLog, prompt_struct, extension: {
@@ -173,7 +174,8 @@ export async function GetReply(args) {
 						logical_results
 					}
 				}))
-					continue regen
+					continue_regen = true
+			if (continue_regen) continue regen
 			break
 		}
 		if (last_entry?.name == args.UserCharname && last_entry.role == 'user') {
