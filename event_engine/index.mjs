@@ -224,6 +224,8 @@ export function initRealityChannel() {
 			return RealityChannel
 		},
 		chat_scoped_char_memory: {},
-		extension: {},
+		extension: {
+			is_reality_channel: true
+		},
 	})
 }
