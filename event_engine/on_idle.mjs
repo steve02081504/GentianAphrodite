@@ -197,6 +197,20 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 			fileChange: true
 		},
 		weight: 20 // 学习主人兴趣，较高权重，直接提升互动质量
+	},
+	{
+		/**
+		 * 获取任务内容的函数。
+		 * @returns {string} 返回任务内容的字符串。
+		 */
+		get_content: () => `\
+分解你现有的巨大的长期记忆，将它们拆分成更小的、更有意义的单元。
+或删除已经过时无用的长期记忆来给有用的事物留下空间。
+`,
+		enable_prompts: {
+			longTermMemory: true,
+		},
+		weight: 10 // 知识整合，较低权重，使其显得更珍贵
 	}
 ]
 
