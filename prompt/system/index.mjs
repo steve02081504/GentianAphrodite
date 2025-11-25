@@ -8,6 +8,7 @@ import { PromptReviewerPrompt } from './prompt-reviewer.mjs'
 import { SoberPrompt } from './sober.mjs'
 import { SOSPrompt } from './sos.mjs'
 import { StatusBarPrompt } from './StatusBar.mjs'
+import { StickersPrompt } from './stickers.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
@@ -27,6 +28,7 @@ export async function SystemPrompt(args, logical_results) {
 
 	result.push(StatusBarPrompt(args, logical_results))
 	result.push(OptionsPrompt(args, logical_results))
+	result.push(StickersPrompt(args, logical_results))
 
 	result.push(CoreRulesPrompt(args, logical_results))
 
