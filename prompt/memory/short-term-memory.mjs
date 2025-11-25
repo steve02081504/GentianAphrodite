@@ -12,33 +12,44 @@ import { findMostFrequentElement } from '../../scripts/tools.mjs'
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
-// --- 常量定义 ---
-const RELEVANCE_THRESHOLD = 5      // 激活相关记忆的阈值
-const SCORE_INCREMENT_TOP = 5      // 高相关记忆分数增加值
-const SCORE_INCREMENT_NEXT = 2     // 次相关记忆分数增加值
-// -- 时间衰减 (优化) --
-const TIME_DECAY_FACTOR_EXP = 2e-9 // 时间衰减因子（指数模型，需要仔细调整！）
-const MAX_TIME_PENALTY = 15        // 时间衰减造成的最大分数惩罚值
-// -- 随机选择权重 (优化) --
-const BASE_RANDOM_WEIGHT = 1         // 基础权重，确保所有记忆都有机会
-const RANDOM_WEIGHT_RECENCY_FACTOR = 1.7 // 随机选择中近期性权重因子 (可调整)
-const RANDOM_WEIGHT_SCORE_FACTOR = 1.1   // 随机选择中分数权重因子 (可调整)
-const MAX_SCORE_FOR_RANDOM_WEIGHT = 50  // 用于计算随机权重的最高分数上限
-// -- 关键词提取 (优化) --
-const KEYWORD_MIN_WEIGHT = 0.8       // 提取关键词的最低权重阈值 (可调整)
-// -- 清理 --
-const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000 // 清理间隔（1天）
-const MEMORY_TTL_MS = 365 * 24 * 60 * 60 * 1000 // 记忆最大存活时间（1年）
-const CLEANUP_MIN_SCORE_THRESHOLD = -5 // 清理时，无关键词相关性的最低分数阈值
-const MIN_RETAINED_MEMORIES = 512    // 清理后最少保留的记忆数量
-// -- 激活逻辑去重/过滤 --
-const MIN_TIME_DIFFERENCE_ANY_MS = 10 * 60 * 1000 // 10分钟，避免选取时间过近的*任何已选*记忆 (包括相关、次相关、随机之间)
-const MIN_TIME_DIFFERENCE_SAME_CHAT_MS = 20 * 60 * 1000 // 20分钟，激活检查时跳过来自*同一个聊天*的近期记忆
-const MAX_TOP_RELEVANT = 2 // 最多选几条最相关
-const MAX_NEXT_RELEVANT = 1 // 最多选几条次相关
-const MAX_RANDOM_FLASHBACK = 2 // 最多选几条随机
+// 相关性阈值：只有得分超过5的记忆才会被视为潜在相关
+const RELEVANCE_THRESHOLD = 5
+// 记忆被选中后的分数奖励（强化记忆）：
+const SCORE_INCREMENT_TOP = 5    // 被选为"高相关"时增加的分数
+const SCORE_INCREMENT_NEXT = 2   // 被选为"次相关"时增加的分数
+
+// 时间衰减因子：用于模拟遗忘，随着时间推移，记忆的相关性会下降
+const TIME_DECAY_FACTOR_EXP = 2e-9
+const MAX_TIME_PENALTY = 15      // 最大因时间久远扣除的分数
+
+// 时间周期性加成：模拟人类更容易回忆起"一天中同一时刻"发生的事（如早晨想起早晨的事）
+const TIME_OF_DAY_MAX_BONUS = 3
+const TIME_OF_DAY_STD_DEV_MINUTES = 120 // 标准差，约2小时，决定时间窗口的宽窄
+
+// 随机回闪（Flashback）的权重配置
+const BASE_RANDOM_WEIGHT = 1
+const RANDOM_WEIGHT_RECENCY_FACTOR = 1.7 // 越新的记忆越容易随机浮现
+const RANDOM_WEIGHT_SCORE_FACTOR = 1.1   // 分数越高的记忆越容易随机浮现
+const MAX_SCORE_FOR_RANDOM_WEIGHT = 50
+
+// 关键词提取配置
+const KEYWORD_MIN_WEIGHT = 0.8 // 只有权重高的词才会被视为关键词
+
+// 内存清理与保留配置
+const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000     // 每24小时清理一次
+const MEMORY_TTL_MS = 365 * 24 * 60 * 60 * 1000     // 记忆保留有效期（1年）
+const CLEANUP_MIN_SCORE_THRESHOLD = -5              // 清理时，相关性低于此分数的记忆可能被删除
+const MIN_RETAINED_MEMORIES = 512                   // 即使分数低，最少也要保留这么条记忆
+const MIN_TIME_DIFFERENCE_ANY_MS = 10 * 60 * 1000        // 不同记忆之间的时间间隔至少10分钟（避免同一对话的重复片段）
+const MIN_TIME_DIFFERENCE_SAME_CHAT_MS = 20 * 60 * 1000  // 如果是当前对话的记忆，需要间隔20分钟才会被提取（避免复读刚才说的话）
+
+// 最终Prompt中包含的记忆数量上限
+const MAX_TOP_RELEVANT = 2
+const MAX_NEXT_RELEVANT = 1
+const MAX_RANDOM_FLASHBACK = 2
 
 /**
+ * 关键词结构
  * @typedef {{
  *   word: string,
  *   weight: number
@@ -46,23 +57,34 @@ const MAX_RANDOM_FLASHBACK = 2 // 最多选几条随机
  */
 
 /**
+ * 记忆条目结构
  * @typedef {{
- * 	time_stamp: Date, // 记录时间戳
- * 	text: string,      // 原始对话文本片段 (最近10条)
- * 	keywords: KeywordInfo[], // 关键词及权重
- * 	score: number,     // 记忆分数
- * 	chat_name: string,  // 对话来源
+ * 	time_stamp: Date,       // 记忆发生的时间
+ * 	text: string,           // 记忆文本内容（通常是对话快照）
+ * 	keywords: KeywordInfo[],// 包含的关键词及其权重
+ * 	score: number,          // 记忆的基础分数（会被强化或遗忘）
+ * 	chat_name: string,      // 来源的聊天/会话名称
  * }} MemoryEntry
  */
 
-/** @type {MemoryEntry[]} */
+// ================= 初始化逻辑 =================
+
+/** @type {MemoryEntry[]} 全局内存中的记忆列表 */
 let chat_memories = loadJsonFileIfExists(path.join(chardir, 'memory/short-term-memory.json'), [])
+
+// 确保时间戳是 Date 对象
 for (const mem of chat_memories)
 	mem.time_stamp = new Date(mem.time_stamp)
+
 let lastCleanupTime = new Date().getTime()
 
+// 启动时执行一次清理
+cleanupMemories(new Date())
+
+// ================= 导出工具函数 =================
+
 /**
- * 获取最频繁的聊天名称
+ * 获取最频繁的聊天名称（用于统计主要互动的对象）
  * @returns {string} 最频繁的聊天名称
  */
 export function getMostFrequentChatName() {
@@ -70,32 +92,39 @@ export function getMostFrequentChatName() {
 }
 
 /**
- * 获取分数最高的短期记忆
+ * 获取当前分数最高的短期记忆（基于当前时间上下文计算）
  * @returns {MemoryEntry} 分数最高的短期记忆
  */
 export function getHighestScoreShortTermMemory() {
-	const currentTimeStamp = Date.now()
-	let max_relevance = 0, result
+	const currentTimeStamp = new Date()
+	let max_relevance = -Infinity, result
 	for (const mem of chat_memories) {
+		// 空关键词列表，纯粹基于时间（周期+新鲜度）和固有分数计算
 		const relevance = calculateRelevance(mem, [], currentTimeStamp)
 		if (relevance >= max_relevance) {
 			max_relevance = relevance
 			result = mem
 		}
 	}
-
 	return result
 }
 
+// ================= 核心算法函数 =================
+
 /**
- * 计算单个记忆条目的相关性分数 (优化时间衰减)
+ * 计算单个记忆条目的相关性分数
+ * 核心算法包含三个部分：关键词匹配度 + 时间周期性匹配 + 时间衰减
+ *
  * @param {MemoryEntry} memoryEntry - 历史记忆条目
- * @param {KeywordInfo[]} currentKeywords - 当前对话的关键词
- * @param {number} currentTimeStamp - 当前时间戳
- * @returns {number} - 相关性分数
+ * @param {KeywordInfo[]} currentKeywords - 当前对话上下文提取的关键词
+ * @param {Date} currentTimeStamp - 当前时间戳
+ * @returns {number} - 综合相关性分数
  */
 function calculateRelevance(memoryEntry, currentKeywords, currentTimeStamp) {
 	let relevanceScore = 0
+
+	// 1. 关键词匹配分数
+	// 如果当前对话提到的词出现在记忆中，累加双方权重
 	const memoryKeywordsSet = new Set(memoryEntry.keywords.map(kw => kw.word))
 	let keywordMatchScore = 0
 	currentKeywords.forEach(currentKw => {
@@ -105,63 +134,94 @@ function calculateRelevance(memoryEntry, currentKeywords, currentTimeStamp) {
 		}
 	})
 	relevanceScore += keywordMatchScore
-	const timeDiff = Math.max(0, currentTimeStamp - (memoryEntry.time_stamp ?? 0))
+
+	// 2. 时间周期性加成 (Time of Day Bonus)
+	// 计算当前时间与记忆时间在一天中的分钟数差异
+	const memoryTime = memoryEntry.time_stamp
+	const currentTime = currentTimeStamp
+	const memoryMinutes = memoryTime.getHours() * 60 + memoryTime.getMinutes()
+	const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes()
+	const totalMinutesInDay = 24 * 60
+
+	// 计算循环时间差（例如 23:00 和 01:00 差2小时而不是22小时）
+	let timeOfDayDiff = Math.abs(memoryMinutes - currentMinutes)
+	if (timeOfDayDiff > totalMinutesInDay / 2)
+		timeOfDayDiff = totalMinutesInDay - timeOfDayDiff
+
+	// 使用高斯函数（正态分布曲线）计算加成，差异越小加成越高
+	const numerator = -(timeOfDayDiff * timeOfDayDiff)
+	const denominator = 2 * TIME_OF_DAY_STD_DEV_MINUTES * TIME_OF_DAY_STD_DEV_MINUTES
+	const timeOfDayBonus = TIME_OF_DAY_MAX_BONUS * Math.exp(numerator / denominator)
+	relevanceScore += timeOfDayBonus
+
+	// 3. 时间衰减惩罚 (Time Decay Penalty)
+	// 记忆越久远，扣分越多（模拟遗忘），但有最大扣分上限
+	const timeDiff = Math.max(0, currentTimeStamp.getTime() - (memoryEntry.time_stamp?.getTime() ?? 0))
 	const timePenalty = MAX_TIME_PENALTY * (1 - Math.exp(-timeDiff * TIME_DECAY_FACTOR_EXP))
 	relevanceScore -= timePenalty
+
+	// 4. 加上记忆本身的固有分数（被引用过的记忆分数会更高）
 	relevanceScore += memoryEntry.score
+
 	return relevanceScore
 }
 
 /**
  * 清理旧的或不相关的记忆
- * @param {number} currentTimeStamp 当前时间戳
+ * 策略：保留最近一年的，按相关性排序，至少保留 MIN_RETAINED_MEMORIES 条
+ * @param {Date} currentTimeStamp 当前时间戳
  */
 function cleanupMemories(currentTimeStamp) {
 	const initialMemoryCount = chat_memories.length
-	const oneYearAgo = currentTimeStamp - MEMORY_TTL_MS
+	const oneYearAgo = currentTimeStamp.getTime() - MEMORY_TTL_MS
 
 	const passingMemories = []
 	const failingMemories = []
 
 	for (const mem of chat_memories) {
+		// 使用空关键词计算基础相关性（主要看时间和固有分数）
 		mem.relevance = calculateRelevance(mem, [], currentTimeStamp)
-		if (mem.time_stamp < oneYearAgo) failingMemories.push(mem)
-		if (mem.relevance >= CLEANUP_MIN_SCORE_THRESHOLD) passingMemories.push(mem)
+
+		// 如果太旧，归入失败组
+		if (mem.time_stamp.getTime() < oneYearAgo) failingMemories.push(mem)
+		// 如果相关性达标，归入保留组
+		else if (mem.relevance >= CLEANUP_MIN_SCORE_THRESHOLD) passingMemories.push(mem)
 		else failingMemories.push(mem)
 	}
 
+	// 如果保留组不够数量，从失败组里捞回相关性最高的
 	if (passingMemories.length >= MIN_RETAINED_MEMORIES)
 		chat_memories = passingMemories
 	else {
-		// 达标的记忆数量不足 MIN_RETAINED_MEMORIES，需要从未达标的记忆中补充
 		const neededFromFailing = MIN_RETAINED_MEMORIES - passingMemories.length
 		failingMemories.sort((a, b) => b.relevance - a.relevance)
-		// 取权重最高的 neededFromFailing 条未达标记忆
 		const supplementaryMemories = failingMemories.slice(0, neededFromFailing)
 		chat_memories = [...passingMemories, ...supplementaryMemories]
 	}
 
+	// 清理临时属性
 	for (const mem of chat_memories) delete mem.relevance
 
-	lastCleanupTime = currentTimeStamp
+	lastCleanupTime = currentTimeStamp.getTime()
 	if (initialMemoryCount !== chat_memories.length)
 		console.log(`[Memory] Cleanup ran. Removed ${initialMemoryCount - chat_memories.length} entries. Current size: ${chat_memories.length}`)
 }
 
 /**
- * 加权随机选择 - 主要用于 *单次* 加权随机选择一个项
+ * 加权随机选择算法
+ * 用于"随机回闪"功能，让分数高或较新的记忆更有可能被随机选中
  * @template T
  * @param {T[]} items - 待选择项数组
  * @param {number[]} weights - 对应各项的权重
- * @returns {T | null} - 选中的项，如果无法选择则返回 null
+ * @returns {T | null} - 选中的项
  */
 function selectOneWeightedRandom(items, weights) {
 	if (!items?.length || items.length !== weights.length)
 		return null
 
 	const totalWeight = weights.reduce((sum, w) => sum + Math.max(0, w), 0)
+	// 权重总和无效时，退化为均匀随机
 	if (totalWeight <= 0)
-		// 如果总权重为0，随机选一个（或返回null，这里选择随机选一个）
 		if (items.length)
 			return items[Math.floor(Math.random() * items.length)]
 		else
@@ -175,55 +235,62 @@ function selectOneWeightedRandom(items, weights) {
 		cumulativeWeight += weight
 		if (randomVal <= cumulativeWeight)
 			return items[i]
-
 	}
 
-	// Fallback (should theoretically not be reached if totalWeight > 0)
 	return items[items.length - 1]
 }
 
+// ================= 主逻辑函数 =================
+
 /**
  * 短期记忆处理主函数
- * @param {chatReplyRequest_t} args 用户输入参数
+ * 负责：提取当前对话关键词 -> 检索相关记忆 -> 生成Prompt -> 记录新记忆
+ *
+ * @param {chatReplyRequest_t} args 用户输入参数（包含聊天记录）
  * @param {logical_results_t} logical_results 逻辑结果
- * @returns {Promise<single_part_prompt_t>} 记忆组成的Prompt
+ * @returns {Promise<single_part_prompt_t>} 记忆组成的Prompt对象
  */
 export async function ShortTermMemoryPrompt(args, logical_results) {
-	const currentTimeStamp = Date.now()
+	const currentTimeStamp = new Date()
 	const currentChatLog = args.chat_log
-	const currentChatName = args.chat_name // 缓存当前聊天名称
+	const currentChatName = args.chat_name
 
 	/**
-	 * @param {chatLogEntry_t[]} chat_log - 聊天日志数组。
-	 * @returns {Promise<KeywordInfo[]>} - 关键词信息数组。
+	 * 内部辅助：从聊天日志提取关键词
+	 * @param {chatLogEntry_t[]} chat_log 聊天日志
+	 * @returns {Promise<{ word: string, weight: number }[]>} 关键词列表
 	 */
 	async function getKeyWords(chat_log) {
 		const keywordMap = {}
 
 		for (const entry of chat_log) {
+			// 优先使用 SimplifiedContents (可能的预处理文本)，否则用 content
 			const text = entry.extension?.SimplifiedContents?.[0] || entry.content
 			if (!text.trim()) continue
 
+			// 权重加成：当前角色(User/Char)说的话权重更高
 			let multiplier = 1.0
 			if (entry.name == args.Charname) multiplier = 2.0
 			else if (entry.name == args.UserCharname) multiplier = 2.7
 
+			// 使用 Jieba 提取关键词
 			for (const kw of jieba.extract(text, 72))
 				keywordMap[kw.word] = kw.weight * multiplier + (keywordMap[kw.word] || 0)
 		}
 
+		// 格式化并排序，取前72个
 		return Object.entries(keywordMap).map(([word, weight]) => ({ word, weight }))
 			.filter(kw => kw.weight >= KEYWORD_MIN_WEIGHT)
 			.sort((a, b) => b.weight - a.weight)
 			.slice(0, 72)
 	}
 
-	// --- 2. 分析当前对话，提取关键词 ---
+	// 1. 处理当前对话：取最后5条记录提取关键词
 	const recentLogSlice = currentChatLog.slice(-5)
 	await Promise.all(recentLogSlice.map(PreprocessChatLogEntry))
 	const currentKeywords = await getKeyWords(flatChatLog(recentLogSlice))
 
-	// --- 3. 计算所有记忆的相关性 ---
+	// 2. 记忆评分：计算所有记忆与当前对话的相关性
 	/** @type {{memory: MemoryEntry, relevance: number, index: number}[]} */
 	const scoredMemories = chat_memories
 		.map((mem, index) => ({
@@ -231,35 +298,39 @@ export async function ShortTermMemoryPrompt(args, logical_results) {
 			relevance: calculateRelevance(mem, currentKeywords, currentTimeStamp),
 			index
 		}))
+		// 过滤掉不相关的
 		.filter(item => item.relevance >= RELEVANCE_THRESHOLD)
+		// 按相关性降序排列
 		.sort((a, b) => b.relevance - a.relevance)
 
-	// --- 4. 选择相关和次相关记忆 (逻辑不变，但会影响后续随机选择的池子) ---
+	// 3. 记忆选择策略：Top Relevant (高相关) 和 Next Relevant (次相关)
 	const selectedIndices = new Set()
 	const finalTopRelevant = []
 	const finalNextRelevant = []
-	const allSelectedRelevantMemories = [] // 用于相关/次相关内部的时间检查
+	const allSelectedRelevantMemories = [] // 用于检查时间冲突
 
 	for (const candidateMemory of scoredMemories) {
+		// 名额已满则停止
 		if (finalTopRelevant.length >= MAX_TOP_RELEVANT && finalNextRelevant.length >= MAX_NEXT_RELEVANT) break
 
 		const isFromSameChat = candidateMemory.memory.chat_name === currentChatName
-		const timeDiffSinceMemory = currentTimeStamp - candidateMemory.memory.time_stamp
+		const timeDiffSinceMemory = currentTimeStamp.getTime() - candidateMemory.memory.time_stamp.getTime()
 
-		// 跳过来自同聊天的近期记忆 (相关/次相关选择时)
+		// 过滤：如果是当前聊天的记忆，且发生时间太近（避免复读）
 		if (isFromSameChat && timeDiffSinceMemory < MIN_TIME_DIFFERENCE_SAME_CHAT_MS)
 			continue
 
+		// 过滤：避免选中的记忆之间时间太近（避免把同一段对话拆成好几条塞进去）
 		let isTooCloseToSelectedRelevant = false
 		for (const selectedMem of allSelectedRelevantMemories)
-			if (Math.abs(candidateMemory.memory.time_stamp - selectedMem.memory.time_stamp) < MIN_TIME_DIFFERENCE_ANY_MS) {
+			if (Math.abs(candidateMemory.memory.time_stamp.getTime() - selectedMem.memory.time_stamp.getTime()) < MIN_TIME_DIFFERENCE_ANY_MS) {
 				isTooCloseToSelectedRelevant = true
 				break
 			}
 
 		if (isTooCloseToSelectedRelevant) continue
 
-		// 分配到 Top 或 Next
+		// 分配到 Top 或 Next 槽位
 		if (finalTopRelevant.length < MAX_TOP_RELEVANT) {
 			finalTopRelevant.push(candidateMemory)
 			allSelectedRelevantMemories.push(candidateMemory)
@@ -272,67 +343,60 @@ export async function ShortTermMemoryPrompt(args, logical_results) {
 		}
 	}
 
-	// --- 4.5 优化随机闪回选择逻辑 ---
-	const finalRandomFlashback = [] // 最终选中的随机记忆 [{memory, index, relevance}]
-	// 初始候选池：所有记忆中排除已被选为相关/次相关的
+	// 4. 记忆选择策略：随机回闪 (Random Flashback)
+	// 从未被选中的记忆中，按权重随机抽取，模拟灵光一闪
+	const finalRandomFlashback = []
 	let availableForRandomPool = chat_memories
 		.map((mem, index) => ({ memory: mem, index }))
 		.filter(item => !selectedIndices.has(item.index))
 
-	// 迭代选择随机记忆，每次选择一个，并进行过滤
 	for (let i = 0; i < MAX_RANDOM_FLASHBACK && availableForRandomPool.length; i++) {
-		// a. 过滤当前候选池
+		// 再次过滤时间冲突
 		const currentCandidates = availableForRandomPool.filter(candidate => {
 			const isFromSameChat = candidate.memory.chat_name === currentChatName
-			const timeDiffSinceMemory = currentTimeStamp - candidate.memory.time_stamp
+			const timeDiffSinceMemory = currentTimeStamp.getTime() - candidate.memory.time_stamp.getTime()
 
-			// 过滤条件1: 不能是来自同聊天的近期记忆 (20分钟内)
 			if (isFromSameChat && timeDiffSinceMemory < MIN_TIME_DIFFERENCE_SAME_CHAT_MS)
 				return false
 
-			// 过滤条件2: 不能与 *任何已选* (相关、次相关、已选随机) 的记忆时间过近 (10分钟内)
-			const allPreviouslySelected = [...allSelectedRelevantMemories, ...finalRandomFlashback] // 合并已选的相关/次相关 和 已选的随机
+			const allPreviouslySelected = [...allSelectedRelevantMemories, ...finalRandomFlashback]
 			for (const selectedItem of allPreviouslySelected)
-				if (Math.abs(candidate.memory.time_stamp - selectedItem.memory.time_stamp) < MIN_TIME_DIFFERENCE_ANY_MS)
-					return false // 时间太近，过滤掉
+				if (Math.abs(candidate.memory.time_stamp.getTime() - selectedItem.memory.time_stamp.getTime()) < MIN_TIME_DIFFERENCE_ANY_MS)
+					return false
 
-			return true // 通过所有过滤条件
+			return true
 		})
 
-		// 如果过滤后没有候选者了，停止选择
 		if (!currentCandidates.length) break
 
-		// b. 计算剩余候选者的权重
+		// 计算随机权重：新近度 + 分数
 		const weights = currentCandidates.map(item => {
-			const ageFactor = Math.max(0, 1 - (currentTimeStamp - item.memory.time_stamp) / MEMORY_TTL_MS)
+			const ageFactor = Math.max(0, 1 - (currentTimeStamp.getTime() - item.memory.time_stamp.getTime()) / MEMORY_TTL_MS)
 			const cappedScore = Math.max(0, Math.min(item.memory.score, MAX_SCORE_FOR_RANDOM_WEIGHT))
 			const normalizedScoreFactor = MAX_SCORE_FOR_RANDOM_WEIGHT > 0 ? cappedScore / MAX_SCORE_FOR_RANDOM_WEIGHT : 0
+
+			// 基础权重 + 时间因子 + 分数因子
 			const weight = BASE_RANDOM_WEIGHT
 				+ ageFactor * RANDOM_WEIGHT_RECENCY_FACTOR
 				+ normalizedScoreFactor * RANDOM_WEIGHT_SCORE_FACTOR
 			return Math.max(0, weight)
 		})
 
-		// c. 加权随机选择 *一个* 候选者
 		const selectedRandomItem = selectOneWeightedRandom(currentCandidates, weights)
 
-		// d. 如果成功选到一个
 		if (selectedRandomItem) {
-			// 计算其相关性（可选，但保持格式一致）
 			selectedRandomItem.relevance = calculateRelevance(selectedRandomItem.memory, currentKeywords, currentTimeStamp)
-			// 添加到最终列表
 			finalRandomFlashback.push(selectedRandomItem)
-			// 从 *主* 候选池中移除该项，防止下次迭代再次选中
+			// 移除已选，防止重复
 			availableForRandomPool = availableForRandomPool.filter(item => item.index !== selectedRandomItem.index)
 		}
 		else {
-			// 如果 selectOneWeightedRandom 返回 null (理论上权重>0时不应发生，除非 currentCandidates 为空)，也停止
 			console.warn('[Memory] Failed to select a weighted random item, stopping random selection.')
 			break
 		}
-	} // 结束随机选择的迭代
+	}
 
-	// --- 5. 强化被激活的记忆 (逻辑不变) ---
+	// 5. 强化机制：被选中的记忆会增加分数（"回忆加强了记忆"）
 	finalTopRelevant.forEach(item => {
 		const memoryToUpdate = chat_memories[item.index]
 		if (memoryToUpdate) memoryToUpdate.score = Math.min(memoryToUpdate.score + SCORE_INCREMENT_TOP, 100)
@@ -342,10 +406,11 @@ export async function ShortTermMemoryPrompt(args, logical_results) {
 		if (memoryToUpdate) memoryToUpdate.score = Math.min(memoryToUpdate.score + SCORE_INCREMENT_NEXT, 100)
 	})
 
-	// --- 6. 格式化选中的记忆以加入Prompt (使用最终列表) ---
+	// 6. 构建 Prompt 字符串
 	/**
-	 * @param {{memory: MemoryEntry, relevance: number, index: number}} memoryItem - 记忆项对象，包含记忆内容、相关性和索引。
-	 * @returns {string} - 格式化后的记忆字符串。
+	 * 格式化记忆条目为字符串
+	 * @param {object} memoryItem - 记忆条目对象，包含 memory 属性
+	 * @returns {string} 格式化后的记忆字符串
 	 */
 	function formatMemory(memoryItem) {
 		const dateStr = memoryItem.memory.time_stamp.toLocaleString()
@@ -372,12 +437,14 @@ ${finalNextRelevant.map(formatMemory).join('\n')}
 ${finalRandomFlashback.map(formatMemory).join('\n')}
 `
 	result += '</memories>'
+
 	if (result.trim() === '<memories>\n</memories>') result = ''
 	if (result)
 		result += `\
 这些是你的往期记忆，你不用回复记忆中的对话，它们是过去式的。
 `
 
+	// 7. 添加"删除记忆"的指令支持（如果配置启用或用户触发了关键词）
 	if (
 		args.extension?.enable_prompts?.ShortTermMemory || (
 			await match_keys(args, ['删了', '清除', '丢掉', '丢弃', '舍弃', '移除', '清空', '忘了', '忘掉'], 'user') &&
@@ -394,12 +461,13 @@ ${args.UserCharname}: 给我把有关华为的记忆全忘掉。
 你必须使用正则语法，且鼓励想到其他可能的情况（大小写、别称）来完善删除范围。
 `
 
-	// --- 7. 执行清理 ---
-	if (currentTimeStamp - lastCleanupTime > CLEANUP_INTERVAL_MS)
+	// 8. 周期性清理
+	if (currentTimeStamp.getTime() - lastCleanupTime > CLEANUP_INTERVAL_MS)
 		cleanupMemories(currentTimeStamp)
 
-	// --- 1. 保存新记忆 (逻辑不变) ---
+	// 9. 新记忆生成：将当前对话（最后10条）存入短期记忆
 	const memoryLogSlice = currentChatLog.slice(-10)
+	// 只有非内部调用，且包含双方对话时才保存
 	if (!args.extension?.is_internal &&
 		memoryLogSlice.length &&
 		memoryLogSlice.some(chatLogEntry => chatLogEntry.name == args.UserCharname) &&
@@ -410,7 +478,7 @@ ${args.UserCharname}: 给我把有关华为的记忆全忘掉。
 
 		if (memoryText.trim())
 			chat_memories.push({
-				time_stamp: memoryLogSlice[memoryLogSlice.length - 1]?.time_stamp || currentTimeStamp,
+				time_stamp: new Date(memoryLogSlice[memoryLogSlice.length - 1]?.time_stamp || currentTimeStamp),
 				text: memoryText,
 				keywords: newMemoryKeywords,
 				score: 0,
@@ -419,11 +487,11 @@ ${args.UserCharname}: 给我把有关华为的记忆全忘掉。
 		else
 			console.warn('[Memory] Skipping saving new memory due to empty processed content.')
 
-		// 1/20概率保存
+		// 5% 概率保存文件，减少 I/O
 		if (Math.random() < 0.05) saveShortTermMemory()
 	}
 
-	// --- 8. 返回结果 ---
+	// 返回构建好的Prompt
 	return {
 		text: [{ content: result, important: 0 }],
 		additional_chat_log: []
@@ -431,17 +499,18 @@ ${args.UserCharname}: 给我把有关华为的记忆全忘掉。
 }
 
 /**
- * 保存短期记忆
+ * 保存短期记忆到文件
  */
 export function saveShortTermMemory() {
-	cleanupMemories(Date.now())
+	cleanupMemories(new Date())
 	fs.mkdirSync(path.join(chardir, 'memory'), { recursive: true })
 	saveJsonFile(path.join(chardir, 'memory/short-term-memory.json'), chat_memories)
 }
 
 /**
- * @param {string} keyword - 要删除的记忆关键词。
- * @returns {number} - 删除的记忆数量。
+ * 删除指定关键词的记忆
+ * @param {string|RegExp} keyword - 要删除的记忆关键词或正则
+ * @returns {number} - 删除的记忆数量
  */
 export function deleteShortTermMemory(keyword) {
 	const oldLength = chat_memories.length
@@ -449,8 +518,9 @@ export function deleteShortTermMemory(keyword) {
 	saveShortTermMemory()
 	return oldLength - chat_memories.length
 }
+
 /**
- * @returns {number} - 短期记忆的数量。
+ * @returns {number} - 短期记忆的数量
  */
 export function getShortTermMemoryNum() {
 	return chat_memories.length

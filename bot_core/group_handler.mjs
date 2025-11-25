@@ -9,7 +9,7 @@ import { fetchFilesForMessages } from './utils.mjs'
  * 记录无效入群事件的时间戳。
  * @type {number[]}
  */
-let invalidGroupJoinEvents = []
+const invalidGroupJoinEvents = []
 
 /**
  * 平台接口 API 对象类型定义。
