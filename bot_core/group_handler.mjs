@@ -6,6 +6,12 @@ import { userIdToNameMap, inHypnosisChannelId } from './state.mjs'
 import { fetchFilesForMessages } from './utils.mjs'
 
 /**
+ * 记录无效入群事件的时间戳。
+ * @type {number[]}
+ */
+let invalidGroupJoinEvents = []
+
+/**
  * 平台接口 API 对象类型定义。
  * @typedef {import('./index.mjs').PlatformAPI_t} PlatformAPI_t
  */
@@ -187,6 +193,24 @@ async function sendInsultAndLeaveGroup(group, platformAPI, defaultChannel) {
  */
 async function handleOwnerNotInGroup(group, platformAPI, defaultChannel) {
 	console.log(`[BotLogic] Owner NOT found in group ${group.name} (ID: ${group.id}). Taking action...`)
+
+	const now = Date.now()
+	const thirtyMinutesAgo = now - 30 * 60 * 1000
+
+	// 过滤掉旧事件
+	const invalidGroupJoinEvents = invalidGroupJoinEvents.filter(timestamp => timestamp >= thirtyMinutesAgo)
+	invalidGroupJoinEvents.push(now)
+
+	// 如果在半小时内有超过3次无效入群，则直接退群
+	if (invalidGroupJoinEvents.length > 3) {
+		console.warn(`[BotLogic] More than 3 invalid group joins in the last 30 minutes. Leaving group "${group.name}" (${group.id}) without generating AI reply.`)
+		if (platformAPI.leaveGroup)
+			await platformAPI.leaveGroup(group.id)
+		else
+			console.warn(`[BotLogic] leaveGroup not implemented for ${platformAPI.name}. Cannot leave group ${group.id}.`)
+
+		return // 提前返回，跳过生成侮辱和邀请
+	}
 
 	let inviteLink = null
 	if (platformAPI.generateInviteLink)
