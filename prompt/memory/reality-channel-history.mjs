@@ -12,7 +12,7 @@ import { createContextSnapshot } from '../../scripts/context.mjs'
  * @returns {Promise<single_part_prompt_t>} 由近期的现实频道记录组成的提示
  */
 export async function RealityChannelHistoryPrompt(args, logical_results) {
-	if (args.extension.is_reality_channel) return { text: [], additional_chat_log: [] }
+	if (args.extension?.is_reality_channel) return { text: [], additional_chat_log: [] }
 
 	const recentHistory = RealityChannel.chat_log.slice(-5)
 	const historyText = createContextSnapshot(recentHistory)

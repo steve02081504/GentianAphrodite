@@ -157,7 +157,7 @@ export async function GetReply(args) {
 				})
 				return null
 			}
-			const sticker = result.content.match(/<gentian_sticker>(.*?)<\/gentian_sticker>/)[1]
+			const sticker = result.content.match(/<gentian_sticker>(.*?)<\/gentian_sticker>/)?.[1]
 			result.content = result.content.replace(/<gentian_sticker>(.*?)<\/gentian_sticker>/, '')
 			if (sticker) try {
 				result.files.push({
