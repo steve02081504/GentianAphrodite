@@ -236,7 +236,6 @@ export async function GetReply(args) {
 				console.error(`Sticker ${sticker} not found`)
 			}
 			result.content = result.content.replace(/\s*<-<null>->\s*$/, '')
-			result.content = result.content.replace(/^(?:啊啦|唔姆|\.{3}|(?!主人).){0,5}主人(?:大人)?(?:\.{3}|…|💖|✨|🥰|🎶|🥺|，|！|。)+/, '') // 啊啊啊啊我受不了了
 			if (args.supported_functions.add_message) addNotifyAbleChannel(args)
 			if (!result.content) return null
 			/** @type {(import('../../../../../../src/decl/PluginAPI.ts').ReplyHandler_t)[]} */
