@@ -17,7 +17,7 @@ export async function StickersPrompt(args, logical_results) {
 		result += `\
 你可以使用以下贴纸来卖萌或嘲讽，一次只能一个：
 ${fs.readdirSync(chardir + '/public/imgs/stickers').map(i => i.slice(0, -5)).join(';')}
-使用方法是<gentian_sticker>贴纸名</gentian_sticker>。
+使用方法是<gentian-sticker>贴纸名</gentian-sticker>。
 `
 
 	return {

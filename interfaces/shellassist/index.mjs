@@ -52,7 +52,7 @@ stderr: ${entry.error.includes('\n') ? '\n```\n' + entry.error + '\n```' : '`' +
 			})
 	for (const entry of chat_log)
 		if (entry.extension.recommend_command)
-			entry.content = entry.content.trimEnd() + `\n<recommend_command>\n${entry.extension.recommend_command}\n</recommend_command>`
+			entry.content = entry.content.trimEnd() + `\n<recommend-command>\n${entry.extension.recommend_command}\n</recommend-command>`
 
 	let user_doing_now = ''
 	if (args.screen) user_doing_now += `\

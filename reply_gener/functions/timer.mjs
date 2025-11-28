@@ -208,9 +208,9 @@ export function timerCallBack(callbackdata) {
 		content: `\
 定时器“${reason}”到期
 设置定时器时的聊天记录节选：
-<chat_log_snip>
+<chat_log-snip>
 ${chat_log_snip}
-</chat_log_snip>
+</chat_log-snip>
 请你根据定时器相关回复或行动。
 `,
 		files: [],

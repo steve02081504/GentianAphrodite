@@ -224,8 +224,8 @@ export async function GetReply(args) {
 				})
 				return null
 			}
-			const sticker = result.content.match(/<gentian_sticker>(.*?)<\/gentian_sticker>/)?.[1]
-			result.content = result.content.replace(/<gentian_sticker>(.*?)<\/gentian_sticker>/, '')
+			const sticker = result.content.match(/<gentian-sticker>(.*?)<\/gentian-sticker>/)?.[1]
+			result.content = result.content.replace(/<gentian-sticker>(.*?)<\/gentian-sticker>/, '')
 			if (sticker) try {
 				result.files.push({
 					name: sticker + '.avif',

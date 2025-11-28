@@ -32,16 +32,16 @@ export const recommend_command_plugin = {
 							name: 'system',
 							content: `\
 你可以通过回复以下格式来推荐命令让${args.UserCharname}选择是否执行：
-<recommend_command>
+<recommend-command>
 command_body
-</recommend_command>
+</recommend-command>
 `,
 						}
 					]
 				}
 			},
 			GetReplyPreviewUpdater: defineToolUseBlocks([
-				{ start: '<recommend_command>', end: '</recommend_command>' }
+				{ start: '<recommend-command>', end: '</recommend-command>' }
 			]),
 			/**
 			 * 处理回复，提取推荐命令。
@@ -49,12 +49,12 @@ command_body
 			 * @returns {boolean} - 返回 false 表示此处理器只修改结果，不完全处理回复。
 			 */
 			ReplyHandler: async result => {
-				const match = result.content.match(/<recommend_command>(?<command>[\S\s]*?)<\/recommend_command>/)
+				const match = result.content.match(/<recommend-command>(?<command>[\S\s]*?)<\/recommend-command>/)
 				const command = match?.groups?.command?.trim() // Extract and trim the command
 
 				if (command) {
 					result.extension.recommend_command = result.recommend_command = command
-					result.content = result.content.replace(/\s*<recommend_command>[\S\s]*?<\/recommend_command>\s*/g, '\n').trim() // Also trim result
+					result.content = result.content.replace(/\s*<recommend-command>[\S\s]*?<\/recommend-command>\s*/g, '\n').trim() // Also trim result
 				}
 
 				// Return false as this handler only modifies the result, doesn't fully handle the reply
