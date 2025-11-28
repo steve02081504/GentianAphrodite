@@ -126,6 +126,7 @@ export async function OrderedAISourceCalling(name, caller, trytimes = 3, error_l
 				return await caller(source)
 			}
 			catch (err) {
+				if (err.name === 'AbortError') throw err // manually aborted
 				await error_logger(lastErr = err)
 			}
 

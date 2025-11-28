@@ -9,6 +9,7 @@ import { toFileObj } from '../../scripts/fileobj.mjs'
 import { newCharReplay, statisticDatas } from '../../scripts/statistics.mjs'
 import { captureScreen } from '../../scripts/tools.mjs'
 import { GetReply } from '../index.mjs'
+import { defineInlineToolUses } from "../../../../../../../src/public/shells/chat/src/stream.mjs";
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
@@ -235,17 +236,29 @@ export async function coderunner(result, args) {
 	if (result.content.match(/<inline-js>[^]*?<\/inline-js>/)) try {
 		unlockAchievement('use_coderunner')
 		const original = result.content
-		const replacements = await Promise.all(
-			Array.from(result.content.matchAll(/<inline-js>(?<code>[^]*?)<\/inline-js>/g))
-				.map(async match => {
-					const jsrunner = match.groups.code.split('<inline-js>').pop()
-					console.info('AI内联运行的JS代码：', jsrunner)
-					const coderesult = await run_jscode_for_AI(jsrunner)
-					console.info('coderesult', coderesult)
-					if (coderesult.error) throw coderesult.error
-					return coderesult.result + ''
-				})
-		)
+		const cachedResults = args.extension.streamInlineToolsResults?.['inline-js']
+
+		let replacements
+		if (cachedResults?.length)
+			replacements = cachedResults.map(res => {
+				if (res instanceof Error) throw res
+				return res
+			})
+		else {
+			// 古法计算
+			replacements = await Promise.all(
+				Array.from(result.content.matchAll(/<inline-js>(?<code>[^]*?)<\/inline-js>/g))
+					.map(async match => {
+						const jsrunner = match.groups.code
+						console.info('AI内联运行的JS代码：', jsrunner)
+						const coderesult = await run_jscode_for_AI(jsrunner)
+						console.info('coderesult', coderesult)
+						if (coderesult.error) throw coderesult.error
+						return coderesult.result + ''
+					})
+			)
+		}
+
 		let i = 0
 		result.logContextBefore.push({
 			name: '龙胆',
@@ -276,7 +289,7 @@ export async function coderunner(result, args) {
 			content: '内联js代码执行失败：\n' + error.stack,
 			files: []
 		})
-		return true
+		processed = true
 	}
 
 	for (const shell_name in shell_exec_map) {
@@ -285,27 +298,39 @@ export async function coderunner(result, args) {
 		if (result.content.match(runner_regex)) try {
 			unlockAchievement('use_coderunner')
 			const original = result.content
-			const runner_regex_g = new RegExp(`<inline-${shell_name}>(?<code>[^]*?)<\\/inline-${shell_name}>`, 'g')
-			const replacements = await Promise.all(
-				Array.from(result.content.matchAll(runner_regex_g))
-					.map(async match => {
-						const runner = match.groups.code.split(`<inline-${shell_name}>`).pop()
-						console.info(`AI内联运行的${shell_name}代码：`, runner)
-						let shell_result
-						try {
-							shell_result = await shell_exec_map[shell_name](runner, { no_ansi_terminal_sequences: true })
-						} catch (err) {
-							shell_result = err
-						}
+			const cachedResults = args.extension.streamInlineToolsResults?.[`inline-${shell_name}`]
 
-						if (shell_result instanceof Error) throw shell_result
+			let replacements
+			if (cachedResults?.length)
+				replacements = cachedResults.map(res => {
+					if (res instanceof Error) throw res
+					return res
+				})
+			else {
+				// 古法计算
+				const runner_regex_g = new RegExp(`<inline-${shell_name}>(?<code>[^]*?)<\\/inline-${shell_name}>`, 'g')
+				replacements = await Promise.all(
+					Array.from(result.content.matchAll(runner_regex_g))
+						.map(async match => {
+							const runner = match.groups.code
+							console.info(`AI内联运行的${shell_name}代码：`, runner)
+							let shell_result
+							try {
+								shell_result = await shell_exec_map[shell_name](runner, { no_ansi_terminal_sequences: true })
+							} catch (err) {
+								shell_result = err
+							}
 
-						if (shell_result.code !== 0)
-							throw new Error(`${shell_name} execution of code '${runner}' failed with exit code ${shell_result.exitCode}:\n${util.inspect(shell_result)}`)
+							if (shell_result instanceof Error) throw shell_result
 
-						return shell_result.stdout.trim()
-					})
-			)
+							if (shell_result.code)
+								throw new Error(`${shell_name} execution of code '${runner}' failed with exit code ${shell_result.exitCode}:\n${util.inspect(shell_result)}`)
+
+							return shell_result.stdout.trim()
+						})
+				)
+			}
+
 			let i = 0
 			result.logContextBefore.push({
 				name: '龙胆',
@@ -320,6 +345,7 @@ export async function coderunner(result, args) {
 				files: [],
 				charVisibility: [args.char_id],
 			})
+			const runner_regex_g = new RegExp(`<inline-${shell_name}>(?<code>[^]*?)<\\/inline-${shell_name}>`, 'g')
 			result.content = result.content.replace(runner_regex_g, () => replacements[i++])
 		}
 		catch (error) {
@@ -336,9 +362,52 @@ export async function coderunner(result, args) {
 				content: `内联${shell_name}代码执行失败：\n` + error.stack,
 				files: []
 			})
-			return true
+			processed = true
 		}
 	}
 
 	return processed
+}
+
+/**
+ * 获取代码运行器的预览更新器。
+ * @returns {import("../../../../../../../src/decl/pluginAPI.ts").GetReplyPreviewUpdater_t} - 预览更新器获取器。
+ */
+export async function GetCoderunnerPreviewUpdater() {
+	const toolDefs = [
+		['inline-js', '<inline-js>', '</inline-js>', async (code) => {
+			const jsrunner = code
+			const coderesult = await async_eval(jsrunner, {})
+			if (coderesult.error) throw coderesult.error
+			return coderesult.result + ''
+		}]
+	]
+
+	// 添加所有可用的 shell 内联工具
+	for (const shell_name in shell_exec_map) {
+		if (!available[shell_name]) continue
+		toolDefs.push([
+			`inline-${shell_name}`,
+			`<inline-${shell_name}>`,
+			`</inline-${shell_name}>`,
+			async (code) => {
+				const runner = code
+				let shell_result
+				try {
+					shell_result = await shell_exec_map[shell_name](runner, { no_ansi_terminal_sequences: true })
+				} catch (err) {
+					shell_result = err
+				}
+
+				if (shell_result instanceof Error) throw shell_result
+
+				if (shell_result.code)
+					throw new Error(`${shell_name} execution of code '${runner}' failed with exit code ${shell_result.exitCode}`)
+
+				return shell_result.stdout.trim()
+			}
+		])
+	}
+
+	return defineInlineToolUses(toolDefs)
 }

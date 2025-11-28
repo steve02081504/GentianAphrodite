@@ -1,3 +1,5 @@
+import { defineToolUseBlocks } from '../../../../../../../src/public/shells/chat/src/stream.mjs'
+
 /**
  * @type {import('../../../../../../../src/decl/pluginAPI.ts').pluginAPI_t}
  */
@@ -38,6 +40,9 @@ command_body
 					]
 				}
 			},
+			GetReplyPreviewUpdater: defineToolUseBlocks([
+				{ start: '<recommend_command>', end: '</recommend_command>' }
+			]),
 			/**
 			 * 处理回复，提取推荐命令。
 			 * @param {object} result - 结果对象。

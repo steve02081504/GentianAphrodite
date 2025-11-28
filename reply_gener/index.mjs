@@ -5,6 +5,7 @@ import { inspect } from 'node:util'
 import { compareTwoStrings as string_similarity } from 'npm:string-similarity'
 
 import { buildPromptStruct } from '../../../../../../src/public/shells/chat/src/prompt_struct.mjs'
+import { defineToolUseBlocks } from '../../../../../../src/public/shells/chat/src/stream.mjs'
 import { noAISourceAvailable, OrderedAISourceCalling } from '../AISource/index.mjs'
 import { chardir, is_dist } from '../charbase.mjs'
 import { plugins } from '../config/index.mjs'
@@ -18,7 +19,7 @@ import { newCharReplay, newUserMessage, saveStatisticDatas, statisticDatas } fro
 
 import { handleError } from './error.mjs'
 import { browserIntegration } from './functions/browserIntegration.mjs'
-import { coderunner } from './functions/coderunner.mjs'
+import { coderunner, GetCoderunnerPreviewUpdater } from './functions/coderunner.mjs'
 import { deepResearch } from './functions/deep-research.mjs'
 import { file_change } from './functions/file-change.mjs'
 import { googlesearch } from './functions/googlesearch.mjs'
@@ -130,6 +131,72 @@ export async function GetReply(args) {
 			if (await match_keys(args, ['steve02081504'], 'user'))
 				unlockAchievement('talk_about_author')
 		}
+		// 构建更新预览管线
+		args.generation_options ??= {}
+		const oriReplyPreviewUpdater = args.generation_options?.replyPreviewUpdater
+		/**
+		 * 聊天回复预览更新管道。
+		 * @type {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').CharReplyPreviewUpdater_t}
+		 */
+		let replyPreviewUpdater = (args, r) => oriReplyPreviewUpdater?.(r)
+		for (const GetReplyPreviewUpdater of [
+			defineToolUseBlocks([
+				// File operations (file-change.mjs)
+				{ start: '<view-file>', end: '</view-file>' },
+				{ start: '<replace-file>', end: '</replace-file>' },
+				{ start: /<override-file[^>]*>/, end: '</override-file>' },
+
+				// Code execution (coderunner.mjs)
+				{ start: '<run-js>', end: '</run-js>' },
+				{ start: '<run-bash>', end: '</run-bash>' },
+				{ start: '<run-pwsh>', end: '</run-pwsh>' },
+				{ start: '<run-powershell>', end: '</run-powershell>' },
+				{ start: '<run-cmd>', end: '</run-cmd>' },
+				{ start: '<wait-screen>', end: '</wait-screen>' },
+
+				// Memory management (long-term-memory.mjs & short-term-memory.mjs)
+				{ start: '<add-long-term-memory>', end: '</add-long-term-memory>' },
+				{ start: '<update-long-term-memory>', end: '</update-long-term-memory>' },
+				{ start: '<delete-long-term-memory>', end: '</delete-long-term-memory>' },
+				{ start: '<list-long-term-memory>', end: '</list-long-term-memory>' },
+				{ start: '<view-long-term-memory-context>', end: '</view-long-term-memory-context>' },
+				{ start: '<delete-short-term-memories>', end: '</delete-short-term-memories>' },
+
+				// Web browsing (googlesearch.mjs & webbrowse.mjs)
+				{ start: '<google-search>', end: '</google-search>' },
+				{ start: '<web-browse>', end: '</web-browse>' },
+
+				// Deep research (deep-research.mjs)
+				{ start: '<deep-research>', end: '</deep-research>' },
+
+				// Timer functions (timer.mjs)
+				{ start: '<set-timer>', end: '</set-timer>' },
+				{ start: '<list-timers>', end: '</list-timers>' },
+				{ start: '<remove-timer>', end: '</remove-timer>' },
+
+				// Browser integration (browserIntegration.mjs)
+				{ start: '<browser-get-connected-pages>', end: '</browser-get-connected-pages>' },
+				{ start: '<browser-get-focused-page-info>', end: '</browser-get-focused-page-info>' },
+				{ start: '<browser-get-browse-history>', end: '</browser-get-browse-history>' },
+				{ start: '<browser-get-page-html>', end: '</browser-get-page-html>' },
+				{ start: '<browser-get-visible-html>', end: '</browser-get-visible-html>' },
+				{ start: '<browser-send-danmaku-to-page>', end: '</browser-send-danmaku-to-page>' },
+				{ start: '<browser-run-js-on-page>', end: '</browser-run-js-on-page>' },
+				{ start: '<browser-add-autorun-script>', end: '</browser-add-autorun-script>' },
+				{ start: '<browser-update-autorun-script>', end: '</browser-update-autorun-script>' },
+				{ start: '<browser-remove-autorun-script>', end: '</browser-remove-autorun-script>' },
+				{ start: '<browser-list-autorun-scripts>', end: '</browser-list-autorun-scripts>' },
+			]),
+			await GetCoderunnerPreviewUpdater(),
+			...Object.values(args.plugins).map(plugin => plugin.interfaces?.chat?.GetReplyPreviewUpdater)
+		].filter(Boolean))
+			replyPreviewUpdater = GetReplyPreviewUpdater(replyPreviewUpdater)
+		/**
+		 * 更新回复预览。
+		 * @param {reply_chunk_t} r - 来自 AI 的回复块。
+		 * @returns {void}
+		 */
+		args.generation_options.replyPreviewUpdater = r => replyPreviewUpdater(args, r)
 		regen: while (true) {
 			if (!is_dist && process.env.EdenOS) {
 				console.log('logical_results', logical_results)
@@ -139,7 +206,7 @@ export async function GetReply(args) {
 				logical_results.in_nsfw ? 'nsfw' : logical_results.in_assist ? 'expert' : 'sfw'
 				: 'from-other')
 			const requestresult = await OrderedAISourceCalling(AItype, async AI => {
-				const result = await AI.StructCall(prompt_struct)
+				const result = await AI.StructCall(prompt_struct, args.generation_options)
 				if (!String(result.content).trim()) throw new Error('empty reply')
 				return result
 			})

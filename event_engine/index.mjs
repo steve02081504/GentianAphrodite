@@ -1,5 +1,6 @@
 import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
 import { notify } from '../../../../../../src/scripts/notify.mjs'
+import { defineToolUseBlocks } from '../../../../../../src/public/shells/chat/src/stream.mjs'
 import { charname, GentianAphrodite, username } from '../charbase.mjs'
 import { config } from '../config/index.mjs'
 import { discordPlatformAPI } from '../interfaces/discord/index.mjs'
@@ -122,6 +123,10 @@ notify可以通知你主人，其实现方式是未定义的，可能通过聊�
 					]
 				}
 			},
+			GetReplyPreviewUpdater: defineToolUseBlocks([
+				{ start: '<notify>', end: '</notify>' },
+				{ start: '<system-notify>', end: '</system-notify>' }
+			]),
 			/**
 			 * 处理 AI 的回复，提取并发送通知内容。
 			 * @param {object} result - AI 的回复结果对象。
