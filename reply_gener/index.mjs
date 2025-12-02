@@ -23,6 +23,7 @@ import { coderunner, GetCoderunnerPreviewUpdater } from './functions/coderunner.
 import { deepResearch } from './functions/deep-research.mjs'
 import { file_change } from './functions/file-change.mjs'
 import { googlesearch } from './functions/googlesearch.mjs'
+import { IdleManagementHandler } from './functions/idle-management.mjs'
 import { LongTermMemoryHandler } from './functions/long-term-memory.mjs'
 import { rolesettingfilter } from './functions/rolesettingfilter.mjs'
 import { ShortTermMemoryHandler } from './functions/short-term-memory.mjs'
@@ -186,6 +187,13 @@ export async function GetReply(args) {
 				{ start: '<browser-update-autorun-script>', end: '</browser-update-autorun-script>' },
 				{ start: '<browser-remove-autorun-script>', end: '</browser-remove-autorun-script>' },
 				{ start: '<browser-list-autorun-scripts>', end: '</browser-list-autorun-scripts>' },
+
+				// Idle Management
+				{ start: '<adjust-idle-weight>', end: '</adjust-idle-weight>' },
+				{ start: '<postpone-idle>', end: '</postpone-idle>' },
+				{ start: '<add-todo>', end: '</add-todo>' },
+				{ start: '<delete-todo>', end: '</delete-todo>' },
+				{ start: '<list-todos>', end: '</list-todos>' },
 			]),
 			await GetCoderunnerPreviewUpdater(),
 			...Object.values(args.plugins).map(plugin => plugin.interfaces?.chat?.GetReplyPreviewUpdater)
@@ -241,7 +249,7 @@ export async function GetReply(args) {
 			/** @type {(import('../../../../../../src/decl/PluginAPI.ts').ReplyHandler_t)[]} */
 			const replyHandlers = [
 				coderunner, LongTermMemoryHandler, ShortTermMemoryHandler,
-				deepResearch, googlesearch, webbrowse, rolesettingfilter, file_change, browserIntegration,
+				deepResearch, googlesearch, webbrowse, rolesettingfilter, file_change, browserIntegration, IdleManagementHandler,
 				args.supported_functions.add_message ? timer : null,
 				...Object.values(args.plugins).map(plugin => plugin.interfaces.chat?.ReplyHandler)
 			].filter(Boolean)

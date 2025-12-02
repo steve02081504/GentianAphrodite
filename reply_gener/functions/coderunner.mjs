@@ -3,13 +3,13 @@ import util from 'node:util'
 
 import { async_eval } from 'https://cdn.jsdelivr.net/gh/steve02081504/async-eval/deno.mjs'
 
+import { defineInlineToolUses } from '../../../../../../../src/public/shells/chat/src/stream.mjs'
 import { unlockAchievement } from '../../scripts/achievements.mjs'
 import { available, shell_exec_map } from '../../scripts/exec.mjs'
 import { toFileObj } from '../../scripts/fileobj.mjs'
 import { newCharReplay, statisticDatas } from '../../scripts/statistics.mjs'
 import { captureScreen } from '../../scripts/tools.mjs'
 import { GetReply } from '../index.mjs'
-import { defineInlineToolUses } from "../../../../../../../src/public/shells/chat/src/stream.mjs";
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
@@ -126,7 +126,7 @@ export async function coderunner(result, args) {
 		let sent_files
 		if (args.supported_functions.files)
 			/**
-			 *
+			 * 在eval时添加文件
 			 * @param {...any} pathOrFileObjs - 文件路径或文件对象。
 			 * @returns {Promise<void>}
 			 */
@@ -244,7 +244,7 @@ export async function coderunner(result, args) {
 				if (res instanceof Error) throw res
 				return res
 			})
-		else {
+		else
 			// 古法计算
 			replacements = await Promise.all(
 				Array.from(result.content.matchAll(/<inline-js>(?<code>[^]*?)<\/inline-js>/g))
@@ -257,7 +257,6 @@ export async function coderunner(result, args) {
 						return coderesult.result + ''
 					})
 			)
-		}
 
 		let i = 0
 		result.logContextBefore.push({

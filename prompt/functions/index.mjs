@@ -11,6 +11,7 @@ import { DicePrompt } from './dice.mjs'
 import { FileChangePrompt } from './file-change.mjs'
 import { GoogleSearchPrompt } from './googlesearch.mjs'
 import { HostInfoPrompt } from './hostinfo.mjs'
+import { IdleManagementPrompt } from './idle-management.mjs'
 import { infoPrompt } from './info.mjs'
 import { KanjiPrompt } from './kanji.mjs'
 import { PoemPrompt } from './poem.mjs'
@@ -58,6 +59,7 @@ export async function FunctionPrompt(args, logical_results) {
 	result.push(RudePrompt(args, logical_results))
 	result.push(PromptReviewerPrompt(args, logical_results))
 	result.push(BrowserIntegrationPrompt(args, logical_results))
+	result.push(IdleManagementPrompt(args, logical_results))
 	if (args.supported_functions.add_message)
 		result.push(TimerPrompt(args, logical_results))
 	return mergePrompt(...result)

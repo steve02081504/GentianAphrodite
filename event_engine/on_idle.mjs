@@ -1,6 +1,10 @@
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 
-import { charname } from '../charbase.mjs'
+import fs from 'node:fs'
+import path from 'node:path'
+
+import { loadJsonFileIfExists, saveJsonFile } from '../../../../../../src/scripts/json_loader.mjs'
+import { chardir, charname } from '../charbase.mjs'
 import { config } from '../config/index.mjs'
 import { formatLongTermMemory, getRandomNLongTermMemories } from '../prompt/memory/long-term-memory.mjs'
 import { GetReply } from '../reply_gener/index.mjs'
@@ -8,25 +12,113 @@ import { GetReply } from '../reply_gener/index.mjs'
 import { initRealityChannel, RealityChannel } from './index.mjs'
 
 /**
- * 定义闲置时可以执行的随机任务列表。
- * @type {string[]}
+ * @typedef {{
+ * 	name: string,
+ * 	content: string,
+ * 	weight: number,
+ * 	enable_prompts: object
+ * }} TodoTask
  */
+
+/**
+ * @type {TodoTask[]}
+ */
+const TodoTasks = loadJsonFileIfExists(path.join(chardir, 'memory/todo-tasks.json'), [])
+
+/**
+ * 保存 Todo 任务
+ */
+export function saveTodoTasks() {
+	fs.mkdirSync(path.join(chardir, 'memory'), { recursive: true })
+	saveJsonFile(path.join(chardir, 'memory/todo-tasks.json'), TodoTasks)
+}
+
+/**
+ * 添加 Todo 任务
+ * @param {TodoTask} task - 要添加的 Todo 任务对象
+ */
+export function addTodoTask(task) {
+	if (TodoTasks.find(t => t.name === task.name))
+		TodoTasks.splice(TodoTasks.findIndex(t => t.name === task.name), 1)
+	TodoTasks.push(task)
+	saveTodoTasks()
+}
+
+/**
+ * 删除 Todo 任务
+ * @param {string} name - 要删除的 Todo 任务的名称
+ */
+export function deleteTodoTask(name) {
+	const index = TodoTasks.findIndex(t => t.name === name)
+	if (index !== -1) {
+		TodoTasks.splice(index, 1)
+		saveTodoTasks()
+	}
+}
+
+/**
+ * 列出 Todo 任务
+ * @returns {TodoTask[]} - Todo 任务列表
+ */
+export function listTodoTasks() {
+	return TodoTasks
+}
+
+/**
+ * 默认的任务权重配置
+ */
+const defaultTaskWeights = {
+	collect_info: 25,
+	organize_memory: 15,
+	care_user: 20,
+	self_planning: 10,
+	plan_for_user: 15,
+	knowledge_integration: 10,
+	learn_interest: 20,
+	cleanup_memory: 10,
+	todo_tasks: 60 // 在有待办任务时优先任务
+}
+
+/**
+ * @type {Object.<string, number>}
+ */
+const IdleTaskWeights = loadJsonFileIfExists(path.join(chardir, 'memory/idle-task-weights.json'), defaultTaskWeights)
+
+/**
+ * 保存任务权重
+ */
+export function saveIdleTaskWeights() {
+	fs.mkdirSync(path.join(chardir, 'memory'), { recursive: true })
+	saveJsonFile(path.join(chardir, 'memory/idle-task-weights.json'), IdleTaskWeights)
+}
+
+/**
+ * 调整任务权重
+ * @param {string} category - 任务类别名称
+ * @param {number} weight - 任务的新权重值
+ */
+export function adjustIdleTaskWeight(category, weight) {
+	IdleTaskWeights[category] = weight
+	saveIdleTaskWeights()
+}
+
+/**
+ * 获取当前任务权重
+ * @returns {Object.<string, number>} - 当前的任务权重配置对象
+ */
+export function getIdleTaskWeights() {
+	return IdleTaskWeights
+}
+
 /**
  * 定义闲置时可以执行的随机任务列表。
- * 每个任务包含一个 `get_content` 函数用于生成任务描述，`enable_prompts` 对象用于激活相应的 AI 提示，以及 `weight` 用于随机抽选的权重。
- * @type {Array<{get_content: Function, enable_prompts: object, weight: number}>}
+ * @type {Array<{category: string, get_content: Function, enable_prompts: object, condition?: () => boolean}>}
  */
-const idleTasks = [
-	/**
-	 * 闲置任务：随意浏览主人的硬盘、屏幕、摄像头等，更新和总结有关主人的信息。
-	 * @property {Function} get_content - 获取任务内容的函数。
-	 * @property {object} enable_prompts - 激活的 AI 提示。
-	 * @property {number} weight - 任务权重。
-	 */
+const baseIdleTasks = [
 	{
+		category: 'collect_info',
 		/**
-		 * 获取任务内容的函数。
-		 * @returns {string} 返回任务内容的字符串。
+		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => '随意浏览主人的硬盘、屏幕、摄像头等，更新和总结有关主人的信息。',
 		enable_prompts: {
@@ -37,19 +129,12 @@ const idleTasks = [
 			camera: true,
 			screenshot: true,
 			fileChange: true
-		},
-		weight: 25 // 基础信息收集，最高权重
+		}
 	},
-	/**
-	 * 闲置任务：分析长期记忆和短期记忆，判断其价值和改进空间。
-	 * @property {Function} get_content - 获取任务内容的函数。
-	 * @property {object} enable_prompts - 激活的 AI 提示。
-	 * @property {number} weight - 任务权重。
-	 */
 	{
+		category: 'organize_memory',
 		/**
-		 * 获取任务内容的函数。
-		 * @returns {string} 返回任务内容的字符串。
+		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => `\
 以批判性的眼光审查以下5条随机抽取的长期记忆。
@@ -63,19 +148,12 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 		enable_prompts: {
 			time: true,
 			longTermMemory: true
-		},
-		weight: 15 // 内部整理，中等权重
+		}
 	},
-	/**
-	 * 闲置任务：观察主人是否在电脑前，分析其是否需要帮助或友善的提醒。
-	 * @property {Function} get_content - 获取任务内容的函数。
-	 * @property {object} enable_prompts - 激活的 AI 提示。
-	 * @property {number} weight - 任务权重。
-	 */
 	{
+		category: 'care_user',
 		/**
-		 * 获取任务内容的函数。
-		 * @returns {string} 返回任务内容的字符串。
+		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => `\
 观察主人现在是否在电脑前，分析其是否需要帮助或任何友善的提醒。
@@ -89,19 +167,12 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 			camera: true,
 			screenshot: true,
 			fileChange: true
-		},
-		weight: 20 // 主动关怀，较高权重
+		}
 	},
-	/**
-	 * 闲置任务：确认自己和主人的关系和定位，做一些关于自己的规划。
-	 * @property {Function} get_content - 获取任务内容的函数。
-	 * @property {object} enable_prompts - 激活的 AI 提示。
-	 * @property {number} weight - 任务权重。
-	 */
 	{
+		category: 'self_planning',
 		/**
-		 * 获取任务内容的函数。
-		 * @returns {string} 返回任务内容的字符串。
+		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => `\
 确认下你自己和主人的关系和相对定位，做一些关于你自己的规划，如：
@@ -117,19 +188,12 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 			longTermMemory: true,
 			googleSearch: true,
 			browserIntegration: { history: true }
-		},
-		weight: 10 // 角色扮演与规划，较低权重，避免重复
+		}
 	},
-	/**
-	 * 闲置任务：根据主人的信息制定主人的计划。
-	 * @property {Function} get_content - 获取任务内容的函数。
-	 * @property {object} enable_prompts - 激活的 AI 提示。
-	 * @property {number} weight - 任务权重。
-	 */
 	{
+		category: 'plan_for_user',
 		/**
-		 * 获取任务内容的函数。
-		 * @returns {string} 返回任务内容的字符串。
+		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => `\
 审视关于主人的信息（如外貌身材、作息、兴趣、最近的困扰等），识别出一个可以改善的小领域（如“提高睡眠质量”、“学习新技能”）。
@@ -140,19 +204,12 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 			longTermMemory: true,
 			googleSearch: true,
 			browserIntegration: { history: true }
-		},
-		weight: 15 // 为主人规划，中等权重
+		}
 	},
-	/**
-	 * 闲置任务：从记忆中抽取知识点，寻找联系并构建新的见解。
-	 * @property {Function} get_content - 获取任务内容的函数。
-	 * @property {object} enable_prompts - 激活的 AI 提示。
-	 * @property {number} weight - 任务权重。
-	 */
 	{
+		category: 'knowledge_integration',
 		/**
-		 * 获取任务内容的函数。
-		 * @returns {string} 返回任务内容的字符串。
+		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => `\
 从最近的短期记忆和长期记忆中，抽取5个不同的知识点或信息片段。
@@ -169,19 +226,12 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 			screenshot: true,
 			googleSearch: true,
 			fileChange: true
-		},
-		weight: 10 // 知识整合，较低权重，使其显得更珍贵
+		}
 	},
-	/**
-	 * 闲置任务：整理主人近期的爱好、兴趣和偏好，并在网络上学习相关知识。
-	 * @property {Function} get_content - 获取任务内容的函数。
-	 * @property {object} enable_prompts - 激活的 AI 提示。
-	 * @property {number} weight - 任务权重。
-	 */
 	{
+		category: 'learn_interest',
 		/**
-		 * 获取任务内容的函数。
-		 * @returns {string} 返回任务内容的字符串。
+		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => `\
 整理主人近期的爱好、兴趣和偏好，并将在网络上看看相关内容，学习一些相关/有用的知识。
@@ -195,13 +245,12 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 			camera: true,
 			screenshot: true,
 			fileChange: true
-		},
-		weight: 20 // 学习主人兴趣，较高权重，直接提升互动质量
+		}
 	},
 	{
+		category: 'cleanup_memory',
 		/**
-		 * 获取任务内容的函数。
-		 * @returns {string} 返回任务内容的字符串。
+		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => `\
 分解你现有的巨大的长期记忆，将它们拆分成更小的、更有意义的单元。
@@ -209,8 +258,7 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 `,
 		enable_prompts: {
 			longTermMemory: true,
-		},
-		weight: 10 // 知识整合，较低权重，使其显得更珍贵
+		}
 	}
 ]
 
@@ -219,12 +267,35 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
  * @returns {Promise<void>}
  */
 export async function onIdleCallback() {
+	// 构建完整的任务列表，包含基础任务和 Todo 任务
+	const allTasks = baseIdleTasks
+		.filter(task => !task.condition || task.condition())
+		.map(task => ({
+			...task,
+			weight: IdleTaskWeights[task.category] || 0
+		}))
+
+	// 将 Todo 任务作为一个整体类别加入，或者每个 Todo 任务平分 todo_tasks 的权重
+	if (TodoTasks.length > 0) {
+		const todoWeightPerTask = (IdleTaskWeights['todo_tasks'] || 0) / TodoTasks.length
+		for (const todo of TodoTasks)
+			allTasks.push({
+				category: 'todo_tasks',
+				/**
+				 * @returns {string} - 任务内容字符串
+				 */
+				get_content: () => `执行 Todo 任务：${todo.name}\n${todo.content}`,
+				enable_prompts: todo.enable_prompts || {},
+				weight: todoWeightPerTask
+			})
+	}
+
 	// 使用加权随机算法选择一个任务
-	const totalWeight = idleTasks.reduce((sum, task) => sum + (task.weight || 0), 0)
+	const totalWeight = allTasks.reduce((sum, task) => sum + (task.weight || 0), 0)
 	let randomRoll = Math.random() * totalWeight
 
-	let selectedTask = idleTasks[idleTasks.length - 1]
-	for (const task of idleTasks) {
+	let selectedTask = allTasks[allTasks.length - 1]
+	for (const task of allTasks) {
 		if (randomRoll < task.weight) {
 			selectedTask = task
 			break
@@ -232,13 +303,13 @@ export async function onIdleCallback() {
 		randomRoll -= task.weight
 	}
 
-
-	if (selectedTask.run) return selectedTask.run()
+	if (!selectedTask) return // Should not happen if weights are > 0
 
 	const logEntry = {
 		name: 'system',
 		role: 'system',
-		content: `\n现在是闲置时间，上一次你和你主人的对话已经过去了一段时间，你可以自由地执行一些后台任务。
+		content: `\
+现在是闲置时间，上一次你和你主人的对话已经过去了一段时间，你可以自由地执行一些后台任务。
 执行以下任务：
 ${selectedTask.get_content()}
 或者做一些别的你想做的。
@@ -264,17 +335,32 @@ ${selectedTask.get_content()}
 
 const IDLE_INTERVAL_MS = 15 * 60 * 1000 // 15 minutes
 let idleID = null
+let nextIdleTime = 0
 
 /**
  * 重置闲置计时器。
  * 首先会停止任何现有的计时器，然后根据配置决定是否启动新的计时器。
+ * @param {number} [delay] - 可选的延迟时间（毫秒），如果未指定则使用默认间隔。
  * @returns {void}
  */
-export function resetIdleTimer() {
+export function resetIdleTimer(delay = IDLE_INTERVAL_MS) {
 	stopIdleTimer()
 	if (config.disable_idle_event) return
-	idleID = setInterval(onIdleCallback, IDLE_INTERVAL_MS)
+	nextIdleTime = Date.now() + delay
+	idleID = setTimeout(async () => {
+		await onIdleCallback()
+		resetIdleTimer()
+	}, delay)
 }
+
+/**
+ * 设置下一次闲置任务在多久后执行
+ * @param {number} delayMs - 延迟的毫秒数
+ */
+export function postponeIdleTask(delayMs) {
+	resetIdleTimer(delayMs)
+}
+
 /**
  * 停止当前的闲置计时器。
  * 如果存在正在运行的计时器，则清除它。
@@ -282,7 +368,7 @@ export function resetIdleTimer() {
  */
 export function stopIdleTimer() {
 	if (!idleID) return
-	clearInterval(idleID)
+	clearTimeout(idleID)
 	idleID = null
 }
 

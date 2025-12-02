@@ -1,6 +1,6 @@
+import { defineToolUseBlocks } from '../../../../../../src/public/shells/chat/src/stream.mjs'
 import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
 import { notify } from '../../../../../../src/scripts/notify.mjs'
-import { defineToolUseBlocks } from '../../../../../../src/public/shells/chat/src/stream.mjs'
 import { charname, GentianAphrodite, username } from '../charbase.mjs'
 import { config } from '../config/index.mjs'
 import { discordPlatformAPI } from '../interfaces/discord/index.mjs'
