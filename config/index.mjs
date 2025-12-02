@@ -40,6 +40,9 @@ export const config = {
 	reality_channel_notification_fallback_order: {
 		idle: ['discord', 'telegram', 'system'],
 		'voice-processing': ['system', 'discord', 'telegram']
+	},
+	disable_prompt: {
+		camera: false
 	}
 }
 
@@ -53,7 +56,8 @@ export function GetData() {
 		plugins: Object.keys(plugins),
 		deep_research: config.deep_research,
 		reality_channel_disables: config.reality_channel_disables,
-		reality_channel_notification_fallback_order: config.reality_channel_notification_fallback_order
+		reality_channel_notification_fallback_order: config.reality_channel_notification_fallback_order,
+		disable_prompt: config.disable_prompt
 	}
 }
 /**
@@ -75,6 +79,9 @@ export async function SetData(data) {
 	for (const prop of Object.keys(config.reality_channel_notification_fallback_order))
 		if (data.reality_channel_notification_fallback_order?.prop)
 			config.reality_channel_notification_fallback_order[prop] = data.reality_channel_notification_fallback_order[prop]
+
+	if (data.disable_prompt)
+		Object.assign(config.disable_prompt, data.disable_prompt)
 }
 
 /**

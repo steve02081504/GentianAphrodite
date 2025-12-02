@@ -4,6 +4,8 @@ import { in_docker, in_termux } from '../../../../../../../src/scripts/env.mjs'
 import { match_keys } from '../../scripts/match.mjs'
 import { decodeQrCodeFromBuffer } from '../../scripts/qrcode.mjs'
 
+import { config } from '../../config/index.mjs'
+
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
@@ -43,7 +45,7 @@ async function captureWebcam() {
 export async function CameraPrompt(args, logical_results) {
 	const additional_chat_log = []
 
-	if (!(in_docker || in_termux) && (args.extension?.enable_prompts?.camera || (
+	if (!(config.disable_prompt?.camera || in_docker || in_termux) && (args.extension?.enable_prompts?.camera || (
 		await match_keys(args, ['屏幕前', '电脑前', '荧幕前'], 'any', 2) || (
 			await match_keys(args, ['摄像头', '录像', '显示屏', '荧幕'], 'any', 2) &&
 			await match_keys(args, ['看看', '看到', '看下', '看一下', '有什', '有啥'], 'any', 2)
