@@ -101,6 +101,7 @@ export async function deepResearch(result, args) {
 		prompt_struct: thinking_prompt_struct,
 		chat_scoped_char_memory: args.chat_scoped_char_memory,
 		plugins: args.plugins,
+		extension: args.extension,
 		supported_functions: {
 			markdown: true,
 			files: false,
