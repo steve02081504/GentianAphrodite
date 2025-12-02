@@ -48,9 +48,10 @@ const realityWorld = {
 /**
  * 通过多种渠道发送现实频道通知的函数，按配置的优先级顺序尝试发送通知。
  * @param {string} message - 要发送的通知内容。
+ * @param {string} purpose - 触发目的，用于选择对应的通知顺序配置。
  */
-async function sendRealityNotification(message) {
-	for (const method of config.reality_channel_notification_fallback_order) try {
+async function sendRealityNotification(message, purpose) {
+	for (const method of config.reality_channel_notification_fallback_order[purpose]) try {
 		switch (method) {
 			case 'discord':
 				if (discordPlatformAPI?.sendDirectMessageToOwner) {
@@ -142,7 +143,7 @@ notify可以通知你主人，其实现方式是未定义的，可能通过聊�
 				const match = result.content.match(/<notify>(?<content>[\S\s]*?)<\/notify>/)
 				if (match) {
 					const content = match?.groups?.content?.trim?.()
-					if (content) await sendRealityNotification(result.extension.notify = content)
+					if (content) await sendRealityNotification(result.extension.notify = content, result.extension?.source_purpose)
 				}
 
 				// Return false as this handler only modifies the result, doesn't fully handle the reply

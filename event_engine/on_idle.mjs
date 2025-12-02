@@ -345,7 +345,7 @@ let nextIdleTime = 0
  */
 export function resetIdleTimer(delay = IDLE_INTERVAL_MS) {
 	stopIdleTimer()
-	if (config.disable_idle_event) return
+	if (config.reality_channel_disables.idle_event) return
 	nextIdleTime = Date.now() + delay
 	idleID = setTimeout(async () => {
 		await onIdleCallback()

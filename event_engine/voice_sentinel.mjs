@@ -741,7 +741,7 @@ export async function checkVoiceSentinel() {
  * @returns {void}
  */
 function startVoiceSentinel() {
-	if (charConfig.disable_voice_sentinel) {
+	if (charConfig.reality_channel_disables.voice_sentinel) {
 		console.log('🎤 Audio sentinel is disabled by config.')
 		return
 	}

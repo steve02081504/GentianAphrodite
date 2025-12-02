@@ -37,7 +37,7 @@ function parsePlan(text) {
 
 	let match
 	let index = 0
-	while ((match = regex.exec(text)) !== null) {
+	while (match = regex.exec(text)) {
 		const stepNum = ++index // Assign step numbers sequentially based on order found
 		const topic = match[1].trim()
 

@@ -33,9 +33,14 @@ export const config = {
 		summary_max_retries: 5,
 		reasoning_interval: 3000
 	},
-	disable_idle_event: false,
-	disable_voice_sentinel: false,
-	reality_channel_notification_fallback_order: ['discord', 'telegram', 'system']
+	reality_channel_disables: {
+		idle_event: false,
+		voice_sentinel: false
+	},
+	reality_channel_notification_fallback_order: {
+		idle: ['discord', 'telegram', 'system'],
+		'voice-processing': ['system', 'discord', 'telegram']
+	}
 }
 
 /**
@@ -47,8 +52,7 @@ export function GetData() {
 		AIsources: getAISourceData(),
 		plugins: Object.keys(plugins),
 		deep_research: config.deep_research,
-		disable_idle_event: config.disable_idle_event,
-		disable_voice_sentinel: config.disable_voice_sentinel,
+		reality_channel_disables: config.reality_channel_disables,
 		reality_channel_notification_fallback_order: config.reality_channel_notification_fallback_order
 	}
 }
@@ -61,15 +65,16 @@ export async function SetData(data) {
 	if (data.plugins) plugins = Object.fromEntries(await Promise.all(data.plugins.map(async x => [x, await loadPlugin(username, x)])))
 	Object.assign(config.deep_research, data.deep_research)
 
-	config.disable_idle_event = data.disable_idle_event
-	resetIdleTimer()
+	if (data.reality_channel_disables) {
+		Object.assign(config.reality_channel_disables, data.reality_channel_disables)
+		resetIdleTimer()
+		if (config.reality_channel_disables.voice_sentinel) stopVoiceSentinel()
+		else checkVoiceSentinel()
+	}
 
-	config.disable_voice_sentinel = data.disable_voice_sentinel
-	if (config.disable_voice_sentinel) stopVoiceSentinel()
-	else checkVoiceSentinel()
-
-	if (data.reality_channel_notification_fallback_order)
-		config.reality_channel_notification_fallback_order = data.reality_channel_notification_fallback_order
+	for (const prop of Object.keys(config.reality_channel_notification_fallback_order))
+		if (data.reality_channel_notification_fallback_order?.prop)
+			config.reality_channel_notification_fallback_order[prop] = data.reality_channel_notification_fallback_order[prop]
 }
 
 /**
