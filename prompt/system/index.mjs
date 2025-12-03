@@ -2,11 +2,11 @@ import { mergePrompt } from '../build.mjs'
 
 import { CoreRulesPrompt } from './corerules.mjs'
 import { MasterRecognizePrompt } from './master-recognize.mjs'
-import { SpecialReplayPrompt } from './specialreplay.mjs'
 import { OptionsPrompt } from './Options.mjs'
 import { PromptReviewerPrompt } from './prompt-reviewer.mjs'
 import { SoberPrompt } from './sober.mjs'
 import { SOSPrompt } from './sos.mjs'
+import { SpecialReplayPrompt } from './specialreplay.mjs'
 import { StatusBarPrompt } from './StatusBar.mjs'
 import { StickersPrompt } from './stickers.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */

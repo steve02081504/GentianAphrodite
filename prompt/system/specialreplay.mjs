@@ -2,7 +2,7 @@
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
-import { match_keys } from "../../scripts/match.mjs"
+import { match_keys } from '../../scripts/match.mjs'
 
 /**
  * @param {chatReplyRequest_t} args 用户输入参数

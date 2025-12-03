@@ -4,7 +4,8 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
-import { __dirname } from "../../../../../../../src/server/base.mjs"
+
+import { __dirname } from '../../../../../../../src/server/base.mjs'
 
 /** @type {ReplyHandler_t} */
 export function getToolInfo(reply, args) {
@@ -15,7 +16,7 @@ export function getToolInfo(reply, args) {
 		toolname = toolname.trim()
 		AddLongTimeLog({
 			name: '龙胆',
-			role: 'tool',
+			role: 'char',
 			content: `<get-tool-info>${toolname}</get-tool-info>`,
 		})
 		let info_prompt = ''
@@ -441,8 +442,8 @@ export default {
 				info_prompt = '无此工具'
 		}
 		AddLongTimeLog({
-			name: 'system',
-			role: 'system',
+			name: 'get-tool-info',
+			role: 'tool',
 			content: info_prompt,
 		})
 

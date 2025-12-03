@@ -177,6 +177,7 @@ export async function doMessageReply(triggerMessage, platformAPI, channelId) {
 		await processAIReply(aiFinalReply, platformAPI, channelId, triggerMessage)
 	}
 	catch (error) {
+		if (error.skip_auto_fix) throw error
 		await handleError(error, platformAPI, triggerMessage)
 	}
 	finally {

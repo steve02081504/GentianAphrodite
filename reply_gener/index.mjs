@@ -32,7 +32,6 @@ import { ShortTermMemoryHandler } from './functions/short-term-memory.mjs'
 import { timer } from './functions/timer.mjs'
 import { webbrowse } from './functions/webbrowse.mjs'
 import { noAIreply } from './noAI/index.mjs'
-import { skip_report } from '../../../fount/src/server/server.mjs'
 
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
@@ -262,7 +261,7 @@ export async function GetReply(args) {
 			} catch {
 				console.error(`Sticker ${sticker} not found`)
 			}
-			result.content = result.content.replace(/\s*<-<null>->\s*$/, '')
+			result.content = result.content.replace(/\s*<-<(null|error)>->\s*$/, '')
 			if (args.supported_functions.add_message) addNotifyAbleChannel(args)
 			if (!result.content) return null
 			/** @type {(import('../../../../../../src/decl/PluginAPI.ts').ReplyHandler_t)[]} */

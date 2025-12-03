@@ -1,10 +1,9 @@
 import fs from 'node:fs/promises'
 
 import { in_docker, in_termux } from '../../../../../../../src/scripts/env.mjs'
+import { config } from '../../config/index.mjs'
 import { match_keys } from '../../scripts/match.mjs'
 import { decodeQrCodeFromBuffer } from '../../scripts/qrcode.mjs'
-
-import { config } from '../../config/index.mjs'
 
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */

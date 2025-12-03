@@ -133,6 +133,7 @@ async function handleMessageQueue(channelId, platformAPI) {
 		await processQueue(myQueue, currentChannelLog, platformAPI, channelId)
 	}
 	catch (error) {
+		if (error.skip_auto_fix) throw error
 		const contextMessage = myQueue.length ? myQueue[myQueue.length - 1] : currentChannelLog?.slice(-1)[0]
 		await handleError(error, platformAPI, contextMessage)
 	}
@@ -168,6 +169,7 @@ function ensureChannelHandlerIsRunning(channelId, platformAPI, fountEntry) {
 	if (!channelHandlers[channelId])
 		channelHandlers[channelId] = handleMessageQueue(channelId, platformAPI)
 			.catch(err => {
+				if (err.skip_auto_fix) throw error
 				handleError(err, platformAPI, fountEntry)
 			})
 			.finally(() => {
@@ -196,6 +198,7 @@ export async function processIncomingMessage(fountEntry, platformAPI, channelId)
 		ensureChannelHandlerIsRunning(channelId, platformAPI, fountEntry)
 	}
 	catch (error) {
+		if (error.skip_auto_fix) throw error
 		await handleError(error, platformAPI, fountEntry)
 	}
 }
