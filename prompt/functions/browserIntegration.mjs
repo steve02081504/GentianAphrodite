@@ -15,7 +15,7 @@ export async function BrowserIntegrationPrompt(args, logical_results) {
 	let result = ''
 
 	if (args.extension?.enable_prompts?.browserIntegration || logical_results.in_assist || await match_keys(args, [
-		'browser', 'page', 'tab', '网页', '页面', '标签页', '浏览器',
+		'browser', 'page', 'tab', '网页', '页面', '标签页', '浏览器', '网站', '站点',
 		'autorun', 'userscript', '自动运行', '用户脚本',
 		/<browser-.*>/i
 	], 'any')) {
