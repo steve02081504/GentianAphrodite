@@ -2,6 +2,7 @@ import { mergePrompt } from '../build.mjs'
 
 import { AutoCalcPrompt } from './autocalc.mjs'
 import { BrowserIntegrationPrompt } from './browserIntegration.mjs'
+import { CharGeneratorPrompt } from './charGenerator.mjs'
 import { CameraPrompt } from './camera.mjs'
 import { ChineseGrammarCorrectionPrompt } from './ChineseGrammarCorrection.mjs'
 import { CodeRunnerPrompt } from './coderunner.mjs'
@@ -60,6 +61,7 @@ export async function FunctionPrompt(args, logical_results) {
 	result.push(PromptReviewerPrompt(args, logical_results))
 	result.push(BrowserIntegrationPrompt(args, logical_results))
 	result.push(IdleManagementPrompt(args, logical_results))
+	result.push(CharGeneratorPrompt(args, logical_results))
 	if (args.supported_functions.add_message)
 		result.push(TimerPrompt(args, logical_results))
 	return mergePrompt(...result)

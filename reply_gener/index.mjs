@@ -19,9 +19,11 @@ import { newCharReplay, newUserMessage, saveStatisticDatas, statisticDatas } fro
 
 import { handleError } from './error.mjs'
 import { browserIntegration } from './functions/browserIntegration.mjs'
+import { CharGenerator, PersonaGenerator } from './functions/charGenerator.mjs'
 import { coderunner, GetCoderunnerPreviewUpdater } from './functions/coderunner.mjs'
 import { deepResearch } from './functions/deep-research.mjs'
 import { file_change } from './functions/file-change.mjs'
+import { getToolInfo } from './functions/getToolInfo.mjs'
 import { googlesearch } from './functions/googlesearch.mjs'
 import { IdleManagementHandler } from './functions/idle-management.mjs'
 import { LongTermMemoryHandler } from './functions/long-term-memory.mjs'
@@ -194,6 +196,11 @@ export async function GetReply(args) {
 				{ start: '<add-todo>', end: '</add-todo>' },
 				{ start: '<delete-todo>', end: '</delete-todo>' },
 				{ start: '<list-todos>', end: '</list-todos>' },
+
+				// Character Generator
+				{ start: '<get-tool-info>', end: '</get-tool-info>' },
+				{ start: /<generate-char[^>]*>/, end: '</generate-char>' },
+				{ start: /<generate-persona[^>]*>/, end: '</generate-persona>' },
 			]),
 			await GetCoderunnerPreviewUpdater(),
 			...Object.values(args.plugins).map(plugin => plugin.interfaces?.chat?.GetReplyPreviewUpdater)
@@ -248,6 +255,7 @@ export async function GetReply(args) {
 			if (!result.content) return null
 			/** @type {(import('../../../../../../src/decl/PluginAPI.ts').ReplyHandler_t)[]} */
 			const replyHandlers = [
+				getToolInfo, CharGenerator, PersonaGenerator,
 				coderunner, LongTermMemoryHandler, ShortTermMemoryHandler,
 				deepResearch, googlesearch, webbrowse, rolesettingfilter, file_change, browserIntegration, IdleManagementHandler,
 				args.supported_functions.add_message ? timer : null,
