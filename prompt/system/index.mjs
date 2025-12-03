@@ -2,7 +2,7 @@ import { mergePrompt } from '../build.mjs'
 
 import { CoreRulesPrompt } from './corerules.mjs'
 import { MasterRecognizePrompt } from './master-recognize.mjs'
-import { NullReplayPrompt } from './nullreplay.mjs'
+import { SpecialReplayPrompt } from './specialreplay.mjs'
 import { OptionsPrompt } from './Options.mjs'
 import { PromptReviewerPrompt } from './prompt-reviewer.mjs'
 import { SoberPrompt } from './sober.mjs'
@@ -34,7 +34,7 @@ export async function SystemPrompt(args, logical_results) {
 
 	result.push(MasterRecognizePrompt(args, logical_results))
 
-	result.push(NullReplayPrompt(args, logical_results))
+	result.push(SpecialReplayPrompt(args, logical_results))
 
 	return mergePrompt(...result)
 }

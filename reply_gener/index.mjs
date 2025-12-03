@@ -32,6 +32,7 @@ import { ShortTermMemoryHandler } from './functions/short-term-memory.mjs'
 import { timer } from './functions/timer.mjs'
 import { webbrowse } from './functions/webbrowse.mjs'
 import { noAIreply } from './noAI/index.mjs'
+import { skip_report } from '../../../fount/src/server/server.mjs'
 
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
@@ -239,6 +240,17 @@ export async function GetReply(args) {
 				})
 				return null
 			}
+			if (result.content.split('\n').pop().trim() == '<-<error>->') { // AI throws error
+				const lastlog = prompt_struct.chat_log.slice(-1)[0]
+				lastlog.logContextAfter ??= []
+				lastlog.logContextAfter.push({
+					name: '龙胆',
+					role: 'char',
+					content: '<-<error>->',
+					charVisibility: [args.char_id]
+				})
+				throw Object.assign(new Error(), { skip_auto_fix: true, skip_report: true })
+			}
 			const sticker = result.content.match(/<gentian-sticker>(.*?)<\/gentian-sticker>/)?.[1]
 			result.content = result.content.replace(/<gentian-sticker>(.*?)<\/gentian-sticker>/, '')
 			if (sticker) try {
@@ -293,6 +305,7 @@ export async function GetReply(args) {
 	}
 	catch (error) {
 		console.error(`[ReplyGener] Error in GetReply for chat "${args.chat_name}":`, error)
-		return handleError(error, args)
+		if (!error.skip_auto_fix) return handleError(error, args)
+		else throw error
 	}
 }
