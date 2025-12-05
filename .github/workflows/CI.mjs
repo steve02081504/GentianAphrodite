@@ -202,3 +202,157 @@ CI.test('Deep research', async () => {
 	CI.assert(result.content === 'The fount made by steve02081504 is fount, the sum of 2 and 2 is 4, and the result of 5*8 is 40.', `Deep-research flow did not produce the correct final answer. Expected: 'The fount made by steve02081504 is fount, the sum of 2 and 2 is 4, and the result of 5*8 is 40.', but got: '${result.content}'`)
 	CI.assert(fs.existsSync(testFilePath), `File fount.txt was not created in the test workspace. Expected file to exist: ${testFilePath}`)
 })
+
+CI.test('Character Generator', () => {
+	CI.test('<generate-char>', async () => {
+		const charName = 'CI_Test_Char'
+		const charCode = 'export default { name: "CI Test Character" }'
+		const charDir = path.join(import.meta.dirname, '..', '..', 'reply_gener', 'functions', '..', '..', '..', charName)
+		const charFile = path.join(charDir, 'main.mjs')
+		const fountFile = path.join(charDir, 'fount.json')
+		if (fs.existsSync(charDir))
+			fs.rmSync(charDir, { recursive: true, force: true })
+
+		const result = await CI.runOutput([
+			`<generate-char name="${charName}">\n${charCode}\n</generate-char>`,
+			'Character generated successfully.'
+		])
+
+		const systemLog = result.logContextBefore.find(log => log.role === 'tool' && log.name === 'char-generator')
+		CI.assert(systemLog && systemLog.content.includes('生成角色'), `<generate-char> failed to generate character. Expected tool log to include '生成角色', but got: ${systemLog?.content}`)
+		CI.assert(fs.existsSync(charFile), `Character main.mjs file was not created. Expected file to exist: ${charFile}`)
+		CI.assert(fs.existsSync(fountFile), `Character fount.json file was not created. Expected file to exist: ${fountFile}`)
+
+		const mainContent = fs.readFileSync(charFile, 'utf-8')
+		CI.assert(mainContent === charCode, `Character code mismatch. Expected: "${charCode}", but got: "${mainContent}"`)
+
+		// Clean up
+		fs.rmSync(charDir, { recursive: true, force: true })
+	})
+
+	CI.test('<generate-persona>', async () => {
+		const personaName = 'CI_Test_Persona'
+		const personaCode = 'export default { persona: "CI Test Persona" }'
+		const personaDir = path.join(import.meta.dirname, '..', '..', 'reply_gener', 'functions', '..', '..', '..', '..', 'personas', personaName)
+		const personaFile = path.join(personaDir, 'main.mjs')
+		const fountFile = path.join(personaDir, 'fount.json')
+		if (fs.existsSync(personaDir))
+			fs.rmSync(personaDir, { recursive: true, force: true })
+
+		const result = await CI.runOutput([
+			`<generate-persona name="${personaName}">\n${personaCode}\n</generate-persona>`,
+			'Persona generated successfully.'
+		])
+
+		const systemLog = result.logContextBefore.find(log => log.role === 'tool' && log.name === 'persona-generator')
+		CI.assert(systemLog && systemLog.content.includes('生成用户人设'), `<generate-persona> failed to generate persona. Expected tool log to include '生成用户人设', but got: ${systemLog?.content}`)
+		CI.assert(fs.existsSync(personaFile), `Persona main.mjs file was not created. Expected file to exist: ${personaFile}`)
+		CI.assert(fs.existsSync(fountFile), `Persona fount.json file was not created. Expected file to exist: ${fountFile}`)
+
+		const mainContent = fs.readFileSync(personaFile, 'utf-8')
+		CI.assert(mainContent === personaCode, `Persona code mismatch. Expected: "${personaCode}", but got: "${mainContent}"`)
+
+		// Clean up
+		fs.rmSync(personaDir, { recursive: true, force: true })
+	})
+})
+
+CI.test('Idle Management', async () => {
+	await CI.test('<add-todo> and <list-todos>', async () => {
+		// Clean up any existing test todo first
+		await CI.runOutput(['<delete-todo>CI_Test_Todo</delete-todo>', 'Deleted.'])
+
+		const result = await CI.runOutput([
+			'<add-todo><name>CI_Test_Todo</name><content>Test todo task</content><weight>15</weight></add-todo>',
+			'<list-todos></list-todos>',
+			'Todo task added and listed.'
+		])
+
+		const logs = result.logContextBefore.filter(log => log.role === 'tool')
+		CI.assert(logs[0].content.includes('已添加待办任务'), `<add-todo> failed. Expected log to include '已添加待办任务', but got: ${logs[0].content}`)
+		CI.assert(logs[1].content.includes('CI_Test_Todo'), `<list-todos> failed to show new todo. Expected log to include 'CI_Test_Todo', but got: ${logs[1].content}`)
+		CI.assert(logs[1].content.includes('权重: 15'), `<list-todos> failed to show correct weight. Expected log to include '权重: 15', but got: ${logs[1].content}`)
+	})
+
+	await CI.test('<delete-todo>', async () => {
+		// Ensure the todo exists before deleting
+		await CI.runOutput(['<add-todo><name>CI_Test_Todo</name><content>Test todo task</content><weight>15</weight></add-todo>', 'Added.'])
+
+		const result = await CI.runOutput([
+			'<delete-todo>CI_Test_Todo</delete-todo>',
+			'<list-todos></list-todos>',
+			'Todo task deleted.'
+		])
+
+		const logs = result.logContextBefore.filter(log => log.role === 'tool')
+		CI.assert(logs[0].content.includes('已删除待办任务'), `<delete-todo> failed. Expected log to include '已删除待办任务', but got: ${logs[0].content}`)
+		CI.assert(!logs[1].content.includes('CI_Test_Todo'), `<list-todos> showed todo after deletion. Expected log to not include 'CI_Test_Todo', but got: ${logs[1].content}`)
+	})
+
+	await CI.test('<adjust-idle-weight>', async () => {
+		const result = await CI.runOutput([
+			'<adjust-idle-weight><category>test_category</category><weight>5.5</weight></adjust-idle-weight>',
+			'Weight adjusted.'
+		])
+
+		const systemLog = result.logContextBefore.find(log => log.role === 'tool')
+		CI.assert(systemLog.content.includes('已将闲置任务类别'), `<adjust-idle-weight> failed. Expected log to include '已将闲置任务类别', but got: ${systemLog.content}`)
+		CI.assert(systemLog.content.includes('5.5'), `<adjust-idle-weight> failed to set correct weight. Expected log to include '5.5', but got: ${systemLog.content}`)
+	})
+
+	await CI.test('<postpone-idle>', async () => {
+		const result = await CI.runOutput([
+			'<postpone-idle>2h</postpone-idle>',
+			'Idle postponed.'
+		])
+
+		const systemLog = result.logContextBefore.find(log => log.role === 'tool')
+		CI.assert(systemLog.content.includes('已设置下一次闲置任务'), `<postpone-idle> failed. Expected log to include '已设置下一次闲置任务', but got: ${systemLog.content}`)
+		CI.assert(systemLog.content.includes('2h'), `<postpone-idle> failed to show correct duration. Expected log to include '2h', but got: ${systemLog.content}`)
+	})
+})
+
+CI.test('Get Tool Info', async () => {
+	const result = await CI.runOutput([
+		'<get-tool-info>character-generator</get-tool-info>',
+		'Tool info retrieved.'
+	])
+
+	const systemLog = result.logContextBefore.find(log => log.role === 'tool' && log.name === 'get-tool-info')
+	CI.assert(!!systemLog, '<get-tool-info> did not produce a tool log. The tool log was not found in the context.')
+	CI.assert(systemLog.content.includes('generate-char'), `<get-tool-info> did not return tool information. Expected log to include 'generate-char', but got: ${systemLog.content}`)
+})
+
+CI.test('Special Reply Markers', () => {
+	CI.test('<-<null>-> (AI Skip)', async () => {
+		const result = await CI.runOutput('<-<null>->')
+		CI.assert(result === null, `<-<null>-> should return null, but got: ${JSON.stringify(result)}`)
+	})
+
+	CI.test('<-<error>-> (AI Error)', async () => {
+		let errorThrown = false
+		try {
+			await CI.runOutput('<-<error>->')
+		} catch (error) {
+			errorThrown = true
+		}
+		CI.assert(errorThrown, '<-<error>-> should throw an error, but no error was thrown')
+	})
+
+	CI.test('Content with trailing <-<null>->', async () => {
+		const result = await CI.runOutput('Some content here\n<-<null>->')
+		CI.assert(result === 'Some content here', `Reply ending with <-<null>-> should be stripped, but got: ${JSON.stringify(result)}`)
+	})
+
+	CI.test('Content with trailing <-<error>->', async () => {
+		let errorThrown = false
+		let result = null
+		try {
+			result = await CI.runOutput('Some content here\n<-<error>->')
+		} catch (error) {
+			errorThrown = true
+		}
+		CI.assert(!errorThrown, 'Reply ending with <-<error>-> should not throw an error')
+		CI.assert(result === 'Some content here', `Reply ending with <-<error>-> should be stripped, but got: ${JSON.stringify(result)}`)
+	})
+})
