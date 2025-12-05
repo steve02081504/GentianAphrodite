@@ -207,11 +207,9 @@ CI.test('Character Generator', () => {
 	CI.test('<generate-char>', async () => {
 		const charName = 'CI_Test_Char'
 		const charCode = 'export default { name: "CI Test Character" }'
-		const charDir = path.join(CI.context.workSpace.path, '..', '..', '..', charName)
+		const charDir = path.join(import.meta.dirname, '..', '..', 'reply_gener', 'functions', '..', '..', '..', charName)
 		const charFile = path.join(charDir, 'main.mjs')
 		const fountFile = path.join(charDir, 'fount.json')
-
-		// Clean up if exists
 		if (fs.existsSync(charDir))
 			fs.rmSync(charDir, { recursive: true, force: true })
 
@@ -235,11 +233,9 @@ CI.test('Character Generator', () => {
 	CI.test('<generate-persona>', async () => {
 		const personaName = 'CI_Test_Persona'
 		const personaCode = 'export default { persona: "CI Test Persona" }'
-		const personaDir = path.join(CI.context.workSpace.path, '..', '..', '..', '..', 'personas', personaName)
+		const personaDir = path.join(import.meta.dirname, '..', '..', 'reply_gener', 'functions', '..', '..', '..', '..', 'personas', personaName)
 		const personaFile = path.join(personaDir, 'main.mjs')
 		const fountFile = path.join(personaDir, 'fount.json')
-
-		// Clean up if exists
 		if (fs.existsSync(personaDir))
 			fs.rmSync(personaDir, { recursive: true, force: true })
 
@@ -261,8 +257,11 @@ CI.test('Character Generator', () => {
 	})
 })
 
-CI.test('Idle Management', () => {
-	CI.test('<add-todo> and <list-todos>', async () => {
+CI.test('Idle Management', async () => {
+	await CI.test('<add-todo> and <list-todos>', async () => {
+		// Clean up any existing test todo first
+		await CI.runOutput('<delete-todo>CI_Test_Todo</delete-todo>')
+
 		const result = await CI.runOutput([
 			'<add-todo><name>CI_Test_Todo</name><content>Test todo task</content><weight>15</weight></add-todo>',
 			'<list-todos></list-todos>',
@@ -275,7 +274,10 @@ CI.test('Idle Management', () => {
 		CI.assert(logs[1].content.includes('权重: 15'), `<list-todos> failed to show correct weight. Expected log to include '权重: 15', but got: ${logs[1].content}`)
 	})
 
-	CI.test('<delete-todo>', async () => {
+	await CI.test('<delete-todo>', async () => {
+		// Ensure the todo exists before deleting
+		await CI.runOutput('<add-todo><name>CI_Test_Todo</name><content>Test todo task</content><weight>15</weight></add-todo>')
+
 		const result = await CI.runOutput([
 			'<delete-todo>CI_Test_Todo</delete-todo>',
 			'<list-todos></list-todos>',
@@ -287,7 +289,7 @@ CI.test('Idle Management', () => {
 		CI.assert(!logs[1].content.includes('CI_Test_Todo'), `<list-todos> showed todo after deletion. Expected log to not include 'CI_Test_Todo', but got: ${logs[1].content}`)
 	})
 
-	CI.test('<adjust-idle-weight>', async () => {
+	await CI.test('<adjust-idle-weight>', async () => {
 		const result = await CI.runOutput([
 			'<adjust-idle-weight><category>test_category</category><weight>5.5</weight></adjust-idle-weight>',
 			'Weight adjusted.'
@@ -298,7 +300,7 @@ CI.test('Idle Management', () => {
 		CI.assert(systemLog.content.includes('5.5'), `<adjust-idle-weight> failed to set correct weight. Expected log to include '5.5', but got: ${systemLog.content}`)
 	})
 
-	CI.test('<postpone-idle>', async () => {
+	await CI.test('<postpone-idle>', async () => {
 		const result = await CI.runOutput([
 			'<postpone-idle>2h</postpone-idle>',
 			'Idle postponed.'
