@@ -436,9 +436,9 @@ ${finalNextRelevant.map(formatMemory).join('\n')}
 随机：
 ${finalRandomFlashback.map(formatMemory).join('\n')}
 `
-	result += '</memories>'
+	result += '</memories>\n'
 
-	if (result.trim() === '<memories>\n</memories>') result = ''
+	if (result.trim() === '<memories>\n</memories>\n') result = ''
 	if (result)
 		result += `\
 这些是你的往期记忆，你不用回复记忆中的对话，它们是过去式的。
