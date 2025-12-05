@@ -84,11 +84,19 @@ async function trySendFileOrFallbackText(
 	}
 	catch (e) {
 		console.error(`[TelegramInterface] Failed to send file ${file.name} (ChatID: ${platformChatId}, ThreadID: ${messageThreadId}):`, e)
-		const fallbackText = `[文件发送失败: ${file.name}] ${file.description || captionAiMarkdown || ''}`.trim()
-		if (fallbackText) try {
-			sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, escapeHTML(fallbackText.substring(0, 4000)), baseOptions))
-		} catch (e2) {
-			console.error('[TelegramInterface] Fallback message for failed file send also failed:', e2)
+		console.warn(`[TelegramInterface] Attempting to send ${file.name} as document instead...`)
+		try {
+			sentMsg = await tryFewTimes(() => bot.telegram.sendDocument(platformChatId, fileSource, sendOptions))
+			console.log(`[TelegramInterface] Successfully sent ${file.name} as document.`)
+		}
+		catch (e2) {
+			console.error(`[TelegramInterface] Failed to send ${file.name} as document as well:`, e2)
+			const fallbackText = `[文件发送失败: ${file.name}]\n${file.description || captionAiMarkdown || ''}`.trim()
+			if (fallbackText) try {
+				sentMsg = await tryFewTimes(() => bot.telegram.sendMessage(platformChatId, escapeHTML(fallbackText.substring(0, 4000)), baseOptions))
+			} catch (e3) {
+				console.error('[TelegramInterface] Fallback message for failed file send also failed:', e3)
+			}
 		}
 	}
 	return sentMsg
