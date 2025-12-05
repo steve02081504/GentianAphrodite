@@ -20,7 +20,7 @@ ${args.UserCharname}: 那张三你觉得我什么时候去合适？
 龙胆: <-<null>->
 `
 
-	if (match_keys(args, ['扔一个', '错误', 'error'], 'user', 2))
+	if (await match_keys(args, ['扔一个', '错误', 'error'], 'user', 2))
 		result += `\
 若你想扔出一个错误到外层逻辑（为什么要这么做？），可以单纯输出<-<error>->。
 如：
