@@ -230,24 +230,28 @@ export async function GetReply(args) {
 			result.extension = { ...result.extension, ...requestresult.extension }
 			if (result.content.split('\n').pop().trim() == '<-<null>->') { // AI skipped
 				const lastlog = prompt_struct.chat_log.slice(-1)[0]
-				lastlog.logContextAfter ??= []
-				lastlog.logContextAfter.push({
-					name: '龙胆',
-					role: 'char',
-					content: '<-<null>->',
-					charVisibility: [args.char_id]
-				})
+				if (lastlog) {
+					lastlog.logContextAfter ??= []
+					lastlog.logContextAfter.push({
+						name: '龙胆',
+						role: 'char',
+						content: '<-<null>->',
+						charVisibility: [args.char_id]
+					})
+				}
 				return null
 			}
 			if (result.content.split('\n').pop().trim() == '<-<error>->') { // AI throws error
 				const lastlog = prompt_struct.chat_log.slice(-1)[0]
-				lastlog.logContextAfter ??= []
-				lastlog.logContextAfter.push({
-					name: '龙胆',
-					role: 'char',
-					content: '<-<error>->',
-					charVisibility: [args.char_id]
-				})
+				if (lastlog) {
+					lastlog.logContextAfter ??= []
+					lastlog.logContextAfter.push({
+						name: '龙胆',
+						role: 'char',
+						content: '<-<error>->',
+						charVisibility: [args.char_id]
+					})
+				}
 				throw Object.assign(new Error(), { skip_auto_fix: true, skip_report: true })
 			}
 			const sticker = result.content.match(/<gentian-sticker>(.*?)<\/gentian-sticker>/)?.[1]
