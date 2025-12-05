@@ -11,6 +11,7 @@ import { chardir, is_dist } from '../charbase.mjs'
 import { plugins } from '../config/index.mjs'
 import { get_discord_api_plugin } from '../interfaces/discord/api.mjs'
 import { get_telegram_api_plugin } from '../interfaces/telegram/api.mjs'
+import { getStickerFileId } from '../interfaces/telegram/sticker-mapping.mjs'
 import { buildLogicalResults } from '../prompt/logical_results/index.mjs'
 import { unlockAchievement } from '../scripts/achievements.mjs'
 import { match_keys } from '../scripts/match.mjs'
@@ -256,15 +257,18 @@ export async function GetReply(args) {
 			}
 			const sticker = result.content.match(/<gentian-sticker>(.*?)<\/gentian-sticker>/)?.[1]
 			result.content = result.content.replace(/<gentian-sticker>(.*?)<\/gentian-sticker>/, '')
-			if (sticker) try {
-				result.files.push({
-					name: sticker + '.avif',
-					buffer: Buffer.from(fs.readFileSync(chardir + '/public/imgs/stickers/' + sticker + '.avif'), 'base64'),
-					mime_type: 'image/avif'
-				})
-			} catch {
-				console.error(`Sticker ${sticker} not found`)
-			}
+			if (sticker)
+				if (args.extension?.platform === 'telegram')
+					result.content += `\n<:${getStickerFileId(sticker)}:GentianAphrodite:${sticker}>`
+				else try {
+					result.files.push({
+						name: sticker + '.avif',
+						buffer: Buffer.from(fs.readFileSync(chardir + '/public/imgs/stickers/' + sticker + '.avif'), 'base64'),
+						mime_type: 'image/avif'
+					})
+				} catch {
+					console.error(`Sticker ${sticker} not found`)
+				}
 			result.content = result.content.replace(/\s*<-<(null|error)>->\s*$/, '')
 			if (args.supported_functions.add_message) addNotifyAbleChannel(args)
 			if (!result.content) return null
