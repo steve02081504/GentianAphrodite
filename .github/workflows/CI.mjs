@@ -344,8 +344,9 @@ CI.test('Special Reply Markers', () => {
 
 	CI.test('Content with trailing <-<error>->', async () => {
 		let errorThrown = false
+		let result = null
 		try {
-			await CI.runOutput(['Previous message', 'Some content here\n<-<error>->'])
+			result = await CI.runOutput(['Previous message', 'Some content here\n<-<error>->'])
 		} catch (error) {
 			errorThrown = true
 		}
