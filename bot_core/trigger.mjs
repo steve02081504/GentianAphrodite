@@ -195,7 +195,7 @@ async function calculateTriggerPossibility(fountEntry, platformAPI, channelId, c
 	const trailingEngWords = engWords.slice(-3).join(' ')
 	const contentEdgesForEnglishCheck = leadingEngWords + ' ' + trailingEngWords
 
-	const isChineseNamePattern = base_match_keys(contentEdgesForChineseCheck, ['龙胆'])
+	const isChineseNamePattern = base_match_keys(contentEdgesForChineseCheck, ['龙胆', /[龙胆][子宝儿亲 ]/])
 	const isEnglishNamePattern = base_match_keys(contentEdgesForEnglishCheck, ['gentian'])
 	const isBotNamePatternDetected = isChineseNamePattern || isEnglishNamePattern
 
@@ -342,7 +342,7 @@ async function handleOwnerCommandsInQueue(currentMessageToProcess, platformAPI, 
 			if (banWordMatch?.groups?.banned_content)
 				bannedStrings.push(banWordMatch.groups.banned_content)
 
-			if (base_match_keys(content, [/^[\n,.~、。呵哦啊嗯噫欸胆龙，～]+$/, /^[\n,.~、。呵哦啊嗯噫欸胆龙，～]{4}[\n!,.?~、。呵哦啊嗯噫欸胆龙！，？～]+$/])) {
+			if (base_match_keys(content, [/^[\n,.~、。呵哦啊嗯噫欸胆龙子宝儿亲，～]+$/, /^[\n,.~、。呵哦啊嗯噫欸胆龙子宝儿亲，～]{4}[\n!,.?~、。呵哦啊嗯噫欸胆龙子宝儿亲！，？～]+$/])) {
 				const ownerCallReply = SimplifyChinese(content).replaceAll('龙', '主').replaceAll('胆', '人')
 				await sendAndLogReply({ content: ownerCallReply }, platformAPI, channelId, currentMessageToProcess)
 				newUserMessage(content, platformAPI.name)
