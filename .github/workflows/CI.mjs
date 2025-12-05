@@ -260,7 +260,7 @@ CI.test('Character Generator', () => {
 CI.test('Idle Management', async () => {
 	await CI.test('<add-todo> and <list-todos>', async () => {
 		// Clean up any existing test todo first
-		await CI.runOutput('<delete-todo>CI_Test_Todo</delete-todo>')
+		await CI.runOutput(['<delete-todo>CI_Test_Todo</delete-todo>', 'Deleted.'])
 
 		const result = await CI.runOutput([
 			'<add-todo><name>CI_Test_Todo</name><content>Test todo task</content><weight>15</weight></add-todo>',
@@ -276,7 +276,7 @@ CI.test('Idle Management', async () => {
 
 	await CI.test('<delete-todo>', async () => {
 		// Ensure the todo exists before deleting
-		await CI.runOutput('<add-todo><name>CI_Test_Todo</name><content>Test todo task</content><weight>15</weight></add-todo>')
+		await CI.runOutput(['<add-todo><name>CI_Test_Todo</name><content>Test todo task</content><weight>15</weight></add-todo>', 'Added.'])
 
 		const result = await CI.runOutput([
 			'<delete-todo>CI_Test_Todo</delete-todo>',
