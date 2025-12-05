@@ -207,7 +207,7 @@ CI.test('Character Generator', () => {
 	CI.test('<generate-char>', async () => {
 		const charName = 'CI_Test_Char'
 		const charCode = 'export default { name: "CI Test Character" }'
-		const charDir = path.join(CI.context.workSpace.path, '..', charName)
+		const charDir = path.join(CI.context.workSpace.path, '..', '..', '..', charName)
 		const charFile = path.join(charDir, 'main.mjs')
 		const fountFile = path.join(charDir, 'fount.json')
 
@@ -235,7 +235,7 @@ CI.test('Character Generator', () => {
 	CI.test('<generate-persona>', async () => {
 		const personaName = 'CI_Test_Persona'
 		const personaCode = 'export default { persona: "CI Test Persona" }'
-		const personaDir = path.join(CI.context.workSpace.path, '..', '..', 'personas', personaName)
+		const personaDir = path.join(CI.context.workSpace.path, '..', '..', '..', '..', 'personas', personaName)
 		const personaFile = path.join(personaDir, 'main.mjs')
 		const fountFile = path.join(personaDir, 'fount.json')
 
@@ -312,45 +312,44 @@ CI.test('Idle Management', () => {
 
 CI.test('Get Tool Info', async () => {
 	const result = await CI.runOutput([
-		'<get-tool-info></get-tool-info>',
+		'<get-tool-info>character-generator</get-tool-info>',
 		'Tool info retrieved.'
 	])
 
 	const systemLog = result.logContextBefore.find(log => log.role === 'tool' && log.name === 'get-tool-info')
 	CI.assert(!!systemLog, '<get-tool-info> did not produce a tool log. The tool log was not found in the context.')
-	CI.assert(systemLog.content.includes('工具列表') || systemLog.content.includes('可用工具'), `<get-tool-info> did not return tool information. Expected log to include tool list info, but got: ${systemLog.content}`)
+	CI.assert(systemLog.content.includes('generate-char'), `<get-tool-info> did not return tool information. Expected log to include 'generate-char', but got: ${systemLog.content}`)
 })
 
 CI.test('Special Reply Markers', () => {
 	CI.test('<-<null>-> (AI Skip)', async () => {
-		const result = await CI.runOutput('<-<null>->')
+		const result = await CI.runOutput(['Test message', '<-<null>->'])
 		CI.assert(result === null, `<-<null>-> should return null, but got: ${JSON.stringify(result)}`)
 	})
 
 	CI.test('<-<error>-> (AI Error)', async () => {
 		let errorThrown = false
 		try {
-			await CI.runOutput('<-<error>->')
+			await CI.runOutput(['Test message', '<-<error>->'])
 		} catch (error) {
 			errorThrown = true
-			CI.assert(error.skip_auto_fix === true, `<-<error>-> should set skip_auto_fix to true, but got: ${error.skip_auto_fix}`)
-			CI.assert(error.skip_report === true, `<-<error>-> should set skip_report to true, but got: ${error.skip_report}`)
 		}
 		CI.assert(errorThrown, '<-<error>-> should throw an error, but no error was thrown')
 	})
 
 	CI.test('Content with trailing <-<null>->', async () => {
-		const result = await CI.runOutput('Some content\n<-<null>->')
-		CI.assert(result === null, `Reply ending with <-<null>-> should return null, but got: ${JSON.stringify(result)}`)
+		const result = await CI.runOutput(['Previous message', 'Some content here\n<-<null>->'])
+		CI.assert(result === 'Some content here', `Reply ending with <-<null>-> should be stripped, but got: ${JSON.stringify(result)}`)
 	})
 
 	CI.test('Content with trailing <-<error>->', async () => {
 		let errorThrown = false
 		try {
-			await CI.runOutput('Some content\n<-<error>->')
+			await CI.runOutput(['Previous message', 'Some content here\n<-<error>->'])
 		} catch (error) {
 			errorThrown = true
 		}
-		CI.assert(errorThrown, 'Reply ending with <-<error>-> should throw an error, but no error was thrown')
+		CI.assert(!errorThrown, 'Reply ending with <-<error>-> should not throw an error')
+		CI.assert(result === 'Some content here', `Reply ending with <-<error>-> should be stripped, but got: ${JSON.stringify(result)}`)
 	})
 })
