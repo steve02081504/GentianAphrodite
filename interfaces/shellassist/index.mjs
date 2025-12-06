@@ -104,7 +104,10 @@ ${args.screen}
 			recommend_command: recommend_command_plugin
 		},
 		chat_scoped_char_memory: args.chat_scoped_char_memory,
-		chat_log
+		chat_log,
+		extension: {
+			source_purpose: 'shell-assist'
+		}
 	})
 	newUserMessage(args.command_now, 'shell')
 	if (AIsuggestion) newCharReplay(AIsuggestion.content, 'shell')

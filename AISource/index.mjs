@@ -15,9 +15,10 @@ export let AIsources = {
 	sfw: null,
 	expert: null,
 	logic: null,
-	'from-other': null,
 	idle: null,
-	'voice-processing': null
+	'voice-processing': null,
+	'shell-assist': null,
+	'from-other': null,
 }
 const default_AIsourceTypes = Object.keys(AIsources)
 
@@ -79,16 +80,19 @@ export function GetAISourceCallingOrder(name) {
 		case 'logic':
 			// 在逻辑判断中，我们使用智商顺序的倒序来回落调用，以最大程度减少不必要的算力损耗
 			return ['logic', 'from-other', 'nsfw', 'web-browse', 'sfw', 'expert', 'deep-research']
-		case 'from-other':
-			// 在回复他人时，我们以最低消费模型的顺序来回落，以最大程度减少不必要的算力损耗
-			// 由于logic模型的低智商可能引起不安全操作，因此我们将其放在靠后的位置
-			return ['from-other', 'nsfw', 'web-browse', 'deep-research', 'sfw', 'logic', 'expert']
 		case 'idle':
 			// 空闲任务，优先使用专用模型
 			return ['idle', 'sfw', 'expert', 'deep-research', 'web-browse', 'nsfw', 'logic', 'from-other']
 		case 'voice-processing':
 			// 语音处理，优先使用专用模型
 			return ['voice-processing', 'sfw', 'expert', 'deep-research', 'web-browse', 'nsfw', 'logic', 'from-other']
+		case 'shell-assist':
+			// 终端助手，优先使用专用模型
+			return ['shell-assist', 'sfw', 'expert', 'deep-research', 'web-browse', 'nsfw', 'logic', 'from-other']
+		case 'from-other':
+			// 在回复他人时，我们以最低消费模型的顺序来回落，以最大程度减少不必要的算力损耗
+			// 由于logic模型的低智商可能引起不安全操作，因此我们将其放在靠后的位置
+			return ['from-other', 'nsfw', 'web-browse', 'deep-research', 'sfw', 'logic', 'expert']
 	}
 }
 
