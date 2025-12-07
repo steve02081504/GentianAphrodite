@@ -51,7 +51,7 @@ const realityWorld = {
  * @param {string} purpose - 触发目的，用于选择对应的通知顺序配置。
  */
 async function sendRealityNotification(message, purpose) {
-	for (const method of config.reality_channel_notification_fallback_order[purpose]) try {
+	for (const method of config.reality_channel_notification_fallback_order[purpose] || ['discord', 'telegram', 'system']) try {
 		switch (method) {
 			case 'discord':
 				if (discordPlatformAPI?.sendDirectMessageToOwner) {
