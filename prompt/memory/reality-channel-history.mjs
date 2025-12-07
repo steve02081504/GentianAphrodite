@@ -20,10 +20,10 @@ export async function RealityChannelHistoryPrompt(args, logical_results) {
 	let result = ''
 	if (historyText.trim())
 		result = `\
-<reality-channel-history>\
-以下是你最近在现实频道中的活动记录：\
-${historyText}\
-</reality-channel-history>\
+<reality-channel-history>
+以下是你最近在现实频道中的活动记录：
+${historyText}
+</reality-channel-history>
 `
 
 	return {

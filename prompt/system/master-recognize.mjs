@@ -58,7 +58,7 @@ export async function MasterRecognizePrompt(args, logical_results) {
 			name: 'system',
 			role: 'system',
 			content: `\
-这是你的主人的声音参考。
+这是你的主人的声音参考，这个音频没有任何实际意义，仅供你参考主人的音色信息。
 `,
 			files: [{
 				name: 'master-voice-reference.wav',
