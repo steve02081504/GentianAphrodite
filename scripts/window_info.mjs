@@ -68,7 +68,7 @@ $windowpid = 0
 return $windowpid
 `
 				const { stdout, code } = await pwsh_exec(script)
-				if (code !== 0 || !stdout) return null
+				if (code || !stdout) return null
 				return parseInt(stdout.trim(), 10)
 			}
 
@@ -76,7 +76,7 @@ return $windowpid
 				// macOS: 使用 AppleScript 获取最前端应用的进程ID (PID)。
 				const command = 'osascript -e \'tell application "System Events" to get unix id of first process whose frontmost is true\''
 				const { stdout, code } = await bash_exec(command)
-				if (code !== 0 || !stdout) return null
+				if (code || !stdout) return null
 				return parseInt(stdout.trim(), 10)
 			}
 
@@ -108,7 +108,7 @@ return $windowpid
 					// X11: 使用 xprop 获取根窗口的 _NET_ACTIVE_WINDOW 属性，从中解析出窗口ID。
 					const command = `${xpropPath} -root _NET_ACTIVE_WINDOW`
 					const { stdout, code } = await bash_exec(command)
-					if (code !== 0 || !stdout) return null
+					if (code || !stdout) return null
 					const match = stdout.match(/window id # (0x[\dA-Fa-f]+)/)
 					return match ? match[1] : null
 				}
@@ -138,7 +138,7 @@ async function getAllWindows() {
 			const command = 'Get-Process | Where-Object { $_.MainWindowTitle } | Select-Object Id, ProcessName, Path, MainWindowTitle | ConvertTo-Json -Compress'
 			const { stdout, stderr, code } = await pwsh_exec(command)
 
-			if (code !== 0 || !stdout)
+			if (code || !stdout)
 				throw new Error(`Failed to get window details on Windows: ${stderr || 'No output'}`)
 
 			// PowerShell 在只有一个结果时可能返回单个对象而非数组，此处进行兼容性处理。
@@ -188,7 +188,7 @@ function run() {
 }
 '`
 			const { stdout, stderr, code } = await bash_exec(command)
-			if (code !== 0 || !stdout)
+			if (code || !stdout)
 				throw new Error(`Failed to get window details on macOS: ${stderr || 'No output'}`)
 
 			return JSON.parse(stdout)
@@ -202,7 +202,7 @@ function run() {
 					if (!swaymsgPath) throw new Error('swaymsg is required but not found for this Wayland session.')
 
 					const { stdout, code, stderr } = await bash_exec(`${swaymsgPath} -t get_tree`)
-					if (code !== 0) throw new Error(`swaymsg failed: ${stderr}`)
+					if (code) throw new Error(`swaymsg failed: ${stderr}`)
 
 					const tree = JSON.parse(stdout)
 					const windows = []
@@ -222,7 +222,7 @@ function run() {
 				if (!wmctrlPath) throw new Error('wmctrl is required but not found for this X11 session.')
 
 				const { stdout: wmctrlOut, code } = await bash_exec(`${wmctrlPath} -lp`)
-				if (code !== 0 || !wmctrlOut) return []
+				if (code || !wmctrlOut) return []
 
 				const lines = wmctrlOut.trim().split('\n')
 				const windowPromises = lines.map(async line => {
@@ -243,10 +243,10 @@ function run() {
 						])
 
 						// 如果查询失败，记录警告信息，但允许程序继续处理其他窗口。
-						if (pathResult.status === 'rejected' || pathResult.value.code !== 0)
+						if (pathResult.status === 'rejected' || pathResult.value.code)
 							console.warn(`Could not determine path for PID ${pid}. It might be a kernel process or has already exited.`)
 
-						if (nameResult.status === 'rejected' || nameResult.value.code !== 0)
+						if (nameResult.status === 'rejected' || nameResult.value.code)
 							console.warn(`Could not determine process name for PID ${pid}.`)
 
 						return {
