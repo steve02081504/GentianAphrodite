@@ -14,6 +14,7 @@ import { GoogleSearchPrompt } from './googlesearch.mjs'
 import { HostInfoPrompt } from './hostinfo.mjs'
 import { IdleManagementPrompt } from './idle-management.mjs'
 import { infoPrompt } from './info.mjs'
+import { JokePrompt } from './joke.mjs'
 import { KanjiPrompt } from './kanji.mjs'
 import { PoemPrompt } from './poem.mjs'
 import { PromptReviewerPrompt } from './prompt-reviewer.mjs'
@@ -44,6 +45,7 @@ export async function FunctionPrompt(args, logical_results) {
 	result.push(KanjiPrompt(args, logical_results))
 	result.push(TaroPrompt(args, logical_results))
 	result.push(PoemPrompt(args, logical_results))
+	result.push(JokePrompt(args, logical_results))
 	result.push(CorpusGeneratorPrompt(args, logical_results))
 	result.push(ChineseGrammarCorrectionPrompt(args, logical_results))
 	result.push(PromptWriterPrompt(args, logical_results))
