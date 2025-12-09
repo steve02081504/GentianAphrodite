@@ -33,7 +33,7 @@ CPU架构：${arch()}
 
 	if (args.extension?.enable_prompts?.hostInfo || all_info || await match_keys(args, [/cpu(占用|用了)/i, /cpu使用(率|情况)/i, /cpu(的|什么|是什么|)(信息|型号|频率)/i, /cpu(多少核|核心)/i], 'user')) {
 		// 使用 node-os-utils 获取 CPU 信息
-		const osinfo = await import('npm:node-os-utils').then(m => m.default)
+		const osinfo = await import('npm:node-os-utils@1.3.7').then(m => m.default)
 		const cpuInfo = await osinfo.cpu.average()
 		const cpuUsage = (1 - cpuInfo.avgIdle / cpuInfo.avgTotal) * 100
 		result += `\
@@ -45,7 +45,7 @@ CPU信息：
 `
 	}
 	if (args.extension?.enable_prompts?.hostInfo || await match_keys(args, [/内存(占用|用了)/i, /内存使用(率|情况)/i, /(还剩|多少|已用|空闲)内存/i, /内存(还剩|多少|已用|空闲)/i], 'user')) {
-		const osinfo = await import('npm:node-os-utils').then(m => m.default)
+		const osinfo = await import('npm:node-os-utils@1.3.7').then(m => m.default)
 		const memInfo = await osinfo.mem.info()
 		result += `\
 内存信息：
