@@ -46,7 +46,8 @@ CPU信息：
 `
 	}
 	if (args.extension?.enable_prompts?.hostInfo || await match_keys(args, [/内存(占用|用了)/i, /内存使用(率|情况)/i, /(还剩|多少|已用|空闲)内存/i, /内存(还剩|多少|已用|空闲)/i], 'user')) {
-		const osinfo = await import('npm:node-os-utils').then(m => m.default)
+		const { OSUtils } = await import('npm:node-os-utils').then(m => m.default)
+		const osinfo = new OSUtils()
 		const memInfo = await osinfo.mem.info()
 		result += `\
 内存信息：
