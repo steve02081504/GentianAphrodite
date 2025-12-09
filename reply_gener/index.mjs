@@ -11,7 +11,8 @@ import { chardir, is_dist } from '../charbase.mjs'
 import { plugins } from '../config/index.mjs'
 import { get_discord_api_plugin } from '../interfaces/discord/api.mjs'
 import { get_telegram_api_plugin } from '../interfaces/telegram/api.mjs'
-import { getStickerFileId } from '../interfaces/telegram/sticker-mapping.mjs'
+import { getDiscordSticker } from '../interfaces/discord/sticker.mjs'
+import { getTelegramSticker } from '../interfaces/telegram/sticker.mjs'
 import { buildLogicalResults } from '../prompt/logical_results/index.mjs'
 import { unlockAchievement } from '../scripts/achievements.mjs'
 import { match_keys } from '../scripts/match.mjs'
@@ -259,7 +260,9 @@ export async function GetReply(args) {
 			result.content = result.content.replace(/<gentian-sticker>(.*?)<\/gentian-sticker>/, '')
 			if (sticker)
 				if (args.extension?.platform === 'telegram')
-					result.content += `\n<:${getStickerFileId(sticker)}:GentianAphrodite:${sticker}>`
+					result.content += `\n${await getTelegramSticker(sticker)}`
+				else if (args.extension?.platform === 'discord')
+					result.content += `\n${await getDiscordSticker(sticker)}`
 				else try {
 					result.files.push({
 						name: sticker + '.avif',

@@ -1,8 +1,7 @@
 /**
  * Telegram 贴纸名称到 file_id 的映射
+ * @type {Record<string, string>}
  */
-
-/** @type {Record<string, string>} */
 const stickerNameToFileId = {
 	"After_Bath_Drying_Hair": "CAACAgUAAx0CeySiRQACgdJpMtOWw8VFL2L0vf-abcKevpvbtgAC0RsAAiNbmFXUhadgSHhqdDYE",
 	'Aggressive_Study_Advice': 'CAACAgUAAx0CeySiRQACgdZpMtRQEsovA4f1VH9r9RXS3gZWVwACchwAAmLrmFW6HEOYXcKD9zYE',
@@ -90,10 +89,10 @@ const stickerNameToFileId = {
 }
 
 /**
- * 获取贴纸的 file_id
- * @param {string} stickerName - 贴纸名称
- * @returns {string | undefined} - Telegram file_id 或 undefined
+ * 获取贴纸的 Telegram 表情符号。
+ * @param {string} sticker - 贴纸名称。
+ * @returns {string} - Telegram 表情符号字符串。
  */
-export function getStickerFileId(stickerName) {
-	return stickerNameToFileId[stickerName]
+export function getTelegramSticker(sticker) {
+	return `<:${stickerNameToFileId[sticker]}:GentianAphrodite:${sticker}>`
 }
