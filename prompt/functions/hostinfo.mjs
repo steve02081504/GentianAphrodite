@@ -33,7 +33,8 @@ CPU架构：${arch()}
 
 	if (args.extension?.enable_prompts?.hostInfo || all_info || await match_keys(args, [/cpu(占用|用了)/i, /cpu使用(率|情况)/i, /cpu(的|什么|是什么|)(信息|型号|频率)/i, /cpu(多少核|核心)/i], 'user')) {
 		// 使用 node-os-utils 获取 CPU 信息
-		const osinfo = await import('npm:node-os-utils').then(m => m.default)
+		const { OSUtils } = await import('npm:node-os-utils').then(m => m.default)
+		const osinfo = new OSUtils()
 		const cpuInfo = await osinfo.cpu.average()
 		const cpuUsage = (1 - cpuInfo.avgIdle / cpuInfo.avgTotal) * 100
 		result += `\
