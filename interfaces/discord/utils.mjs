@@ -8,6 +8,82 @@ import { escapeRegExp } from '../../scripts/tools.mjs'
  * @returns {string[]} - 分割后的消息段数组。
  */
 export function splitDiscordReply(reply, split_lenth = 2000) {
+	// 1. 预处理：基于 Markdown 分割线和 Emoji 独占行进行分割
+	const semanticChunks = preSplitDiscordReply(reply)
+	const finalChunks = []
+
+	// 2. 对每个语义块执行原来的长度限制逻辑
+	for (const chunk of semanticChunks)
+		finalChunks.push(...processSizeLimitedChunk(chunk, split_lenth))
+
+	return finalChunks
+}
+
+/**
+ * 预处理消息，处理 Markdown 分割线和 Emoji 行。
+ * @param {string} reply
+ * @returns {string[]}
+ */
+function preSplitDiscordReply(reply) {
+	const lines = reply.split('\n')
+	const chunks = []
+	let currentChunkLines = []
+	let inCodeBlock = false
+
+	for (const line of lines) {
+		// 代码块状态切换
+		if (line.trim().startsWith('```')) {
+			inCodeBlock = !inCodeBlock
+			currentChunkLines.push(line)
+			continue
+		}
+
+		if (inCodeBlock) {
+			currentChunkLines.push(line)
+			continue
+		}
+
+		// Logic 1: Markdown 分割线 (---, ***, ___)
+		// 匹配以空格开头，由 -, *, _ 组成的至少3个字符的分割线，允许中间有空格
+		if (/^\s*([-*_])( ?\1){2,}\s*$/.test(line)) {
+			if (currentChunkLines.length > 0) {
+				chunks.push(currentChunkLines.join('\n'))
+				currentChunkLines = []
+			}
+			continue // 移除分割线
+		}
+
+		// Logic 2: Emoji 或空格独占行
+		// 检查行是否只包含：空格、Unicode Emoji、Discord 自定义 Emoji
+		// 并且必须包含至少一个 Emoji
+		const hasEmoji = /[\p{Extended_Pictographic}]|<a?:[\w]+:\d+>/u.test(line)
+		const isEmojiLine = /^(?:[\s\u200b-\u200d\uFE0F]|[\p{Extended_Pictographic}]|<a?:[\w]+:\d+>)+$/u.test(line)
+
+		if (hasEmoji && isEmojiLine) {
+			if (currentChunkLines.length > 0) {
+				chunks.push(currentChunkLines.join('\n'))
+				currentChunkLines = []
+			}
+			chunks.push(line) // Emoji 行单独作为一个块
+			continue
+		}
+
+		currentChunkLines.push(line)
+	}
+
+	if (currentChunkLines.length > 0)
+		chunks.push(currentChunkLines.join('\n'))
+
+	return chunks.filter(c => c.trim())
+}
+
+/**
+ * 将内容分割成多个消息段，以适应 Discord 的消息长度限制。
+ * @param {string} reply - 原始回复文本。
+ * @param {number} split_lenth - 每个消息段的最大长度。
+ * @returns {string[]} - 分割后的消息段数组。
+ */
+function processSizeLimitedChunk(reply, split_lenth) {
 	let content_slices = reply.split('\n')
 	let new_content_slices = []
 	let last = ''
