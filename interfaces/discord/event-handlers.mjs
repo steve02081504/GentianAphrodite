@@ -1,6 +1,6 @@
 import { Events, ActivityType } from 'npm:discord.js'
 
-import { processIncomingMessage, processMessageUpdate, processMessageDelete } from '../../bot_core/index.mjs'
+import { processIncomingMessage, processMessageUpdate, processMessageDelete, preloadChannel } from '../../bot_core/index.mjs'
 import { charname as BotFountCharname } from '../../charbase.mjs'
 import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
 
@@ -40,6 +40,13 @@ export async function registerEventHandlers(interfaceConfig, discordPlatformAPI)
 			console.warn(`[DiscordInterface] Received invalid message, possibly system message or unsupported format: ${fetchedMessage.id}`)
 			console.dir(fetchedMessage, { depth: null })
 		}
+	})
+
+	client.on(Events.TypingStart, async typing => {
+		// 这里我们使用闭包中的 resolvedOwnerId，确保它与当前初始化的配置一致
+		if (!resolvedOwnerId) return
+		if (typing.user.id === resolvedOwnerId)
+			preloadChannel(typing.channel.id, discordPlatformAPI)
 	})
 
 	client.on(Events.MessageUpdate, async (oldMessage, newMessage) => {

@@ -163,3 +163,32 @@ export function setFuyanMode(value) {
 export function setInHypnosisChannelId(value) {
 	inHypnosisChannelId = value
 }
+
+/**
+ * 缓存的频道 ID 列表 (LRU，索引 0 为最近使用)。
+ * @type {(string|number)[]}
+ */
+export const cachedChannelIds = []
+
+/**
+ * 最大缓存频道数量。
+ * @type {number}
+ */
+export const MAX_CHANNEL_CACHE_SIZE = 1024
+
+/**
+ * 更新频道缓存顺序 (LRU)。
+ * 将指定频道移动到缓存列表头部。如果缓存已满，则移除最旧的频道并清理其日志。
+ * @param {string | number} channelId - 频道 ID。
+ */
+export function touchChannelCache(channelId) {
+	const idx = cachedChannelIds.indexOf(channelId)
+	if (idx !== -1) cachedChannelIds.splice(idx, 1)
+	cachedChannelIds.unshift(channelId)
+
+	while (cachedChannelIds.length > MAX_CHANNEL_CACHE_SIZE) {
+		const toRemove = cachedChannelIds.pop()
+		if (toRemove && channelChatLogs[toRemove])
+			delete channelChatLogs[toRemove]
+	}
+}

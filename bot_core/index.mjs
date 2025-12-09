@@ -1,13 +1,25 @@
 import { handleError } from './error.mjs'
 import { registerPlatformAPI as registerGroupHandlers } from './group_handler.mjs'
-import { configure, channelMessageQueues, channelHandlers, channelChatLogs, currentConfig } from './state.mjs'
+import { configure, channelMessageQueues, channelHandlers, channelChatLogs, currentConfig, touchChannelCache } from './state.mjs'
 import { processNextMessageInQueue } from './trigger.mjs'
 import { mergeChatLogEntries, updateBotNameMapping, updateUserCache } from './utils.mjs'
 
 /**
  * 导出核心机器人逻辑的主要入口点和配置功能。
  */
-export { configure, registerGroupHandlers as registerPlatformAPI }
+export { configure, registerGroupHandlers as registerPlatformAPI, preloadChannel }
+
+/**
+ * 预加载频道数据。
+ * 将频道标记为活跃（LRU），并确保其日志已加载。
+ * @async
+ * @param {string | number} channelId - 频道 ID。
+ * @param {PlatformAPI_t} platformAPI - 平台 API。
+ */
+async function preloadChannel(channelId, platformAPI) {
+	touchChannelCache(channelId)
+	await initializeChannelLogIfEmpty(channelId, platformAPI)
+}
 
 /**
  * fount 基础聊天日志条目类型。
@@ -189,6 +201,7 @@ function ensureChannelHandlerIsRunning(channelId, platformAPI, fountEntry) {
  */
 export async function processIncomingMessage(fountEntry, platformAPI, channelId) {
 	try {
+		touchChannelCache(channelId)
 		updateBotNameMapping(platformAPI)
 		updateUserCache(fountEntry.extension?.platform_user_id, fountEntry.name)
 
