@@ -21,8 +21,8 @@ export function splitDiscordReply(reply, split_lenth = 2000) {
 
 /**
  * 预处理消息，处理 Markdown 分割线和 Emoji 行。
- * @param {string} reply
- * @returns {string[]}
+ * @param {string} reply - 原始回复文本。
+ * @returns {string[]} - 分割后的语义块数组。
  */
 function preSplitDiscordReply(reply) {
 	const lines = reply.split('\n')

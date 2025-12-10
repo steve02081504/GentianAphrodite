@@ -181,7 +181,7 @@ function ensureChannelHandlerIsRunning(channelId, platformAPI, fountEntry) {
 	if (!channelHandlers[channelId])
 		channelHandlers[channelId] = handleMessageQueue(channelId, platformAPI)
 			.catch(err => {
-				if (err.skip_auto_fix) throw error
+				if (err.skip_auto_fix) throw err
 				handleError(err, platformAPI, fountEntry)
 			})
 			.finally(() => {

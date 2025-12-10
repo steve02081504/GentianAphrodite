@@ -1,6 +1,8 @@
 import fs from 'node:fs'
-import { discordClientInstance } from './state.mjs'
+
 import { chardir } from '../../charbase.mjs'
+
+import { discordClientInstance } from './state.mjs'
 
 /**
  * 获取或创建 Discord 应用程序表情符号（Sticker）。
