@@ -124,7 +124,7 @@ export async function browserIntegration(result, args) {
 		},
 		{
 			name: 'get-page-html',
-			regex: /<browser-get-page-html><pageId>(.*?)<\/pageId>\s*<\/browser-get-page-html>/gs,
+			regex: /<browser-get-page-html>\s*<pageId>(.*?)<\/pageId>\s*<\/browser-get-page-html>/gs,
 			/**
 			 *
 			 * @param {RegExpMatchArray} match - 匹配对象，包含捕获组。
@@ -142,7 +142,7 @@ export async function browserIntegration(result, args) {
 		},
 		{
 			name: 'get-visible-html',
-			regex: /<browser-get-visible-html><pageId>(.*?)<\/pageId>\s*<\/browser-get-visible-html>/gs,
+			regex: /<browser-get-visible-html>\s*<pageId>(.*?)<\/pageId>\s*<\/browser-get-visible-html>/gs,
 			/**
 			 *
 			 * @param {RegExpMatchArray} match - 匹配对象，包含捕获组。
@@ -288,7 +288,7 @@ export async function browserIntegration(result, args) {
 		},
 		{
 			name: 'remove-autorun-script',
-			regex: /<browser-remove-autorun-script><id>(.*?)<\/id>\s*<\/browser-remove-autorun-script>/gs,
+			regex: /<browser-remove-autorun-script>\s*<id>(.*?)<\/id>\s*<\/browser-remove-autorun-script>/gs,
 			/**
 			 *
 			 * @param {RegExpMatchArray} match - 匹配对象，包含捕获组。
