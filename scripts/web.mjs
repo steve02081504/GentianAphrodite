@@ -2,7 +2,7 @@ import path from 'node:path'
 
 import { where_command } from './exec.mjs'
 
-const DEFAULT_NAVIGATION_TIMEOUT = 13 * 1000 // 设置一个默认导航超时时间 (毫秒)
+const DEFAULT_NAVIGATION_TIMEOUT = 17 * 1000 // 设置一个默认导航超时时间 (毫秒)
 
 /**
  * 根据浏览器可执行文件路径创建一个 Puppeteer 启动器函数。
@@ -18,6 +18,15 @@ export async function NewBrowserGener(path, name) {
 		browser: name,
 		product: name,
 		executablePath: path,
+		args: [
+			'--no-sandbox',
+			'--disable-setuid-sandbox',
+			'--disable-dev-shm-usage',
+			'--disable-features=IsolateOrigins,site-per-process',
+			'--disable-site-isolation-trials',
+			'--disable-blink-features=AutomationControlled',
+			...(configs.args || [])
+		]
 	})
 }
 
@@ -86,18 +95,40 @@ export async function MarkdownWebFetch(url) {
 
 		const page = await browser.newPage()
 
+		// 设置 User-Agent 防止被部分站点直接拒绝
+		await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36')
+
 		// 设置默认导航超时
 		page.setDefaultNavigationTimeout(DEFAULT_NAVIGATION_TIMEOUT)
 
 		console.info(`Navigating to URL: ${url}`)
-		// 导航到目标 URL，等待网络基本空闲（最多2个活动连接）
+
+		// 只等待 DOMContentLoaded，避免 networkidle2 卡死或过早触发
 		await page.goto(url, {
-			waitUntil: 'networkidle2',
+			waitUntil: 'domcontentloaded',
 		})
-		console.info(`Navigation successful for URL: ${url}`)
+
+		// 手动等待页面稳定
+		try {
+			// 1. 等待 body 出现
+			await page.waitForSelector('body', { timeout: 10000 })
+
+			// 2. 等待网络空闲 (更宽容的配置)
+			// LessWrong 是 SPA，会持续发起后台请求，所以 timeout 设置短一点，能等多少是多少
+			await page.waitForNetworkIdle({
+				idleTime: 500,
+				timeout: 5000,
+			}).catch(() => console.warn('Network idle wait timed out (non-fatal)'))
+		} catch (e) {
+			console.warn(`Wait for page load incomplete: ${e.message}, proceeding anyway...`)
+		}
+
+		console.info(`Navigation successful (or stabilized) for URL: ${url}`)
 
 		console.info('Starting DOM cleanup.')
-		try {
+
+		const MAX_RETRIES = 3
+		for (let i = 0; i < MAX_RETRIES; i++) try {
 			// 在页面上下文中执行 JavaScript 以清理 DOM
 			await page.evaluate(() => {
 				// 通用清理：移除脚本、样式、链接样式表、内联样式、页眉、页脚、noscript 标签
@@ -168,6 +199,12 @@ export async function MarkdownWebFetch(url) {
 						'[id*="left-sidebar"]', '[id*="signup-modal-container"]', '[id*="homepage-wizard-container"]',
 						'[id*="--stacks-s-tooltip"]', '[class*="js-post-menu"]', '[id*="post-form"]'
 					]
+				},
+				// 针对 LessWrong 增加清理规则
+				{
+					pattern: 'lesswrong.com', selectors: [
+						'[class*="Header"]', '[class*="Comments"]', '[id*="comments"]', 'footer'
+					]
 				}
 			]
 
@@ -179,16 +216,16 @@ export async function MarkdownWebFetch(url) {
 						})
 						if (runActions)
 							runActions() // 执行特定操作，如果定义了的话
-
 					}, config.selectors, config.actions) // 传递选择器和操作函数
 					break // 假设一个 URL 只匹配一个模式
 				}
-
 			console.info('DOM cleanup finished.')
-
+			break
 		}
 		catch (error) {
 			console.error(`Error during DOM cleanup execution (page.evaluate): ${error}`)
+			await page.waitForSelector('article, main, .PostsPage-postContent, body', { timeout: 15000 }).catch(() => {})
+			await new Promise(resolve => setTimeout(resolve, 5000))
 		}
 
 		console.info('Fetching cleaned HTML content.')
@@ -202,6 +239,10 @@ export async function MarkdownWebFetch(url) {
 			headingStyle: 'atx', // 使用 '#' 样式的标题
 			codeBlockStyle: 'fenced', // 使用围栏代码块 (```)
 		})
+
+		// 移除不必要的标签配置，避免 Turndown 报错
+		turndownService.remove('script')
+		turndownService.remove('style')
 
 		console.info('Converting HTML to Markdown.')
 		const markdown = turndownService.turndown(content) // 执行转换
