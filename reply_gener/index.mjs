@@ -261,7 +261,7 @@ export async function GetReply(args) {
 			if (sticker)
 				if (args.extension?.platform === 'telegram')
 					result.content += `\n${await getTelegramSticker(sticker)}`
-				else if (args.extension?.platform === 'discord')
+				else if (args.extension?.platform === 'discord' && logical_results.in_muti_char_chat) // 在非群聊中用大图
 					result.content += `\n${await getDiscordSticker(sticker)}`
 				else try {
 					result.files.push({
