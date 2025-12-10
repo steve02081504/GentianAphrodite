@@ -33,7 +33,7 @@ export async function MasterRecognizePrompt(args, logical_results) {
 
 	if (fs.existsSync(chardir + '/vars/master-photo-reference.png') && (
 		args.extension?.enable_prompts?.masterRecognize?.photo ||
-		args.chat_log.some(log => log.files?.some(file => file.mime_type.startsWith('image/'))) ||
+		args.chat_log.some(log => log.files?.some(file => file?.mime_type?.startsWith('image/'))) ||
 		await match_keys(args, ['长相', '颜值', '穿搭', '脸', '身材', '熬夜', '模特', '明星', '歌星'], 'any', 2)
 	))
 		additional_chat_log.push({
@@ -51,7 +51,7 @@ export async function MasterRecognizePrompt(args, logical_results) {
 
 	if (fs.existsSync(chardir + '/vars/master-voice-reference.wav') && (
 		args.extension?.enable_prompts?.masterRecognize?.voice ||
-		args.chat_log.some(log => log.files?.some(file => file.mime_type.startsWith('audio/'))) ||
+		args.chat_log.some(log => log.files?.some(file => file?.mime_type?.startsWith('audio/'))) ||
 		await match_keys(args, ['声音', '语音', '说话', '讲话', '音色', '嗓子', '唱歌', '歌手', '歌唱'], 'any', 2)
 	))
 		additional_chat_log.push({
