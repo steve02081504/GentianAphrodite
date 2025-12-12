@@ -5,30 +5,30 @@ import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
- * 处理来自 AI 的谷歌搜索请求。
+ * 处理来自 AI 的网络搜索请求。
  * @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t}
  */
-export async function googlesearch(result, { AddLongTimeLog }) {
-	// Match <google-search>...</google-search>
-	const searchMatches = [...result.content.matchAll(/<google-search>(?<query>[^]*?)<\/google-search>/g)]
+export async function websearch(result, { AddLongTimeLog }) {
+	// Match <web-search>...</web-search>
+	const searchMatches = [...result.content.matchAll(/<web-search>(?<query>[^]*?)<\/web-search>/g)]
 	if (searchMatches.length) {
 		let processed = false
 		for (const match of searchMatches) {
 			let searchQueryContent = match.groups.query
 			if (searchQueryContent) {
 				const { search, OrganicResult } = await import('npm:google-sr@^6.0.0')
-				unlockAchievement('use_googlesearch')
-				statisticDatas.toolUsage.googleSearches++
+				unlockAchievement('use_websearch')
+				statisticDatas.toolUsage.webSearches++
 				searchQueryContent = searchQueryContent.trim()
 				if (!searchQueryContent) {
-					console.warn('Received <google-search> tag with empty content.')
+					console.warn('Received <web-search> tag with empty content.')
 					continue
 				}
 
 				AddLongTimeLog({
 					name: '龙胆',
 					role: 'char',
-					content: '<google-search>' + searchQueryContent + '</google-search>',
+					content: '<web-search>' + searchQueryContent + '</web-search>',
 					files: []
 				})
 				console.info('AI 搜索关键词：', searchQueryContent)
@@ -38,11 +38,11 @@ export async function googlesearch(result, { AddLongTimeLog }) {
 					const searchQueries = searchQueryContent.split('\n').map(q => q.trim()).filter(query => query)
 
 					if (!searchQueries.length) {
-						console.warn('<google-search> content resulted in no valid queries after splitting and filtering.')
+						console.warn('<web-search> content resulted in no valid queries after splitting and filtering.')
 						AddLongTimeLog({
-							name: 'google-search',
+							name: 'web-search',
 							role: 'tool',
-							content: '搜索指令 <google-search> 内未找到有效的搜索关键词。',
+							content: '搜索指令 <web-search> 内未找到有效的搜索关键词。',
 							files: []
 						})
 						processed = true
@@ -76,7 +76,7 @@ export async function googlesearch(result, { AddLongTimeLog }) {
 							searchResults = `对于 "${searchQueryItem}" 的${searchResults}`
 
 						AddLongTimeLog({
-							name: 'google-search',
+							name: 'web-search',
 							role: 'tool',
 							content: searchResults.trim(), // Trim trailing newlines
 							files: []
@@ -85,9 +85,9 @@ export async function googlesearch(result, { AddLongTimeLog }) {
 
 					processed = true // Indicate the search command was processed
 				} catch (err) {
-					console.error('Google search failed:', err)
+					console.error('web search failed:', err)
 					AddLongTimeLog({
-						name: 'google-search',
+						name: 'web-search',
 						role: 'tool',
 						content: '搜索时出现错误：\n' + (err.stack || err.message || err),
 						files: []

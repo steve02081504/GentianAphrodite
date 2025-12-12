@@ -63,7 +63,7 @@ ${escapeHTML(statisticDatas.firstInteraction.characterReplyContent)}
 - ⚙️ ran code ${statisticDatas.toolUsage.codeRuns} times
 - 🤔 had ${statisticDatas.toolUsage.deepResearchSessions} rounds of deep research
 - 📄 performed ${statisticDatas.toolUsage.fileOperations} file operations
-- 🔎 performed ${statisticDatas.toolUsage.googleSearches} Google searches
+- 🔎 performed ${statisticDatas.toolUsage.webSearches} web searches
 - 🌐 browsed the web ${statisticDatas.toolUsage.webBrowses} times
 - 🖥️ performed ${statisticDatas.toolUsage.browserOperations} browser operations, cumulatively received ${statisticDatas.toolUsage.browserCallbacks} browser callbacks 💻
 - ⏰ set timers ${statisticDatas.toolUsage.timersSet} times, cumulatively calling you ${statisticDatas.toolUsage.timerCallbacks} times 🔔

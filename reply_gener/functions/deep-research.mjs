@@ -6,7 +6,7 @@ import { config } from '../../config/index.mjs'
 import { mergePrompt } from '../../prompt/build.mjs'
 import { CodeRunnerPrompt } from '../../prompt/functions/coderunner.mjs'
 import { DeepResearchMainPrompt } from '../../prompt/functions/deep-research.mjs'
-import { GoogleSearchPrompt } from '../../prompt/functions/googlesearch.mjs'
+import { WebSearchPrompt } from '../../prompt/functions/websearch.mjs'
 import { WebBrowsePrompt } from '../../prompt/functions/webbrowse.mjs'
 import { unlockAchievement } from '../../scripts/achievements.mjs'
 import { statisticDatas } from '../../scripts/statistics.mjs'
@@ -14,7 +14,7 @@ import { sleep } from '../../scripts/tools.mjs'
 import { getLongTimeLogAdder } from '../index.mjs'
 
 import { coderunner } from './coderunner.mjs'
-import { googlesearch } from './googlesearch.mjs'
+import { websearch } from './websearch.mjs'
 import { webbrowse } from './webbrowse.mjs'
 
 /**
@@ -223,7 +223,7 @@ Step 2: <步骤2主题>
 			console.info(`Deep-research: Starting planning cycle ${planningCycles}/${max_planning_cycles}`)
 
 			thinking_prompt_struct.char_prompt = await mergePrompt(
-				...[DeepResearchMainPrompt, GoogleSearchPrompt, WebBrowsePrompt, CodeRunnerPrompt]
+				...[DeepResearchMainPrompt, WebSearchPrompt, WebBrowsePrompt, CodeRunnerPrompt]
 					.map(p => p(thinkingArgs, thinking_logical_results, thinking_prompt_struct, 0)),
 			)
 
@@ -241,7 +241,7 @@ Step 2: <步骤2主题>
 **任务：**
 1. **执行** 此步骤。
 2. **输出结果：**
-	* **若需工具：** 输出工具调用指令（例如 \`<run-js>code</run-js>\` 或 \`<google-search>查询内容</google-search>\`）。工具执行后，其结果将添加到对话记录中，你需基于新信息继续处理**本步骤**，直到你能输出本步骤的最终文本结果或明确的障碍说明。
+	* **若需工具：** 输出工具调用指令（例如 \`<run-js>code</run-js>\` 或 \`<web-search>查询内容</web-search>\`）。工具执行后，其结果将添加到对话记录中，你需基于新信息继续处理**本步骤**，直到你能输出本步骤的最终文本结果或明确的障碍说明。
 	* **若无需工具或工具已执行完毕：** 输出**本步骤最终的文本结果**。
 	* **若当前无法执行（例如信息不足且无法通过工具获取）：** 明确说明遇到的障碍。
 
@@ -270,7 +270,7 @@ Step 2: <步骤2主题>
 					}
 
 					let functionCalled = false
-					for (const replyHandler of [coderunner, googlesearch, webbrowse])
+					for (const replyHandler of [coderunner, websearch, webbrowse])
 						if (await replyHandler(stepOutput, thinkingArgs)) {
 							functionCalled = true
 							console.info(`Deep-research: Cycle ${planningCycles}, Step ${step.step} - Function triggered by handler: ${replyHandler.name}. Waiting for result...`)

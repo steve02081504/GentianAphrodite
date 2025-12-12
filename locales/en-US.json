@@ -82,10 +82,10 @@
 				"description": "Had Gentian execute code for the first time, unlocking her inner programmer.",
 				"locked_description": "Have Gentian execute a piece of code and witness her digital genius."
 			},
-			"use_googlesearch": {
-				"name": "Let Me Google That For You",
-				"description": "Had Gentian perform a Google search, witnessing the AI's information-gathering prowess.",
-				"locked_description": "Have Gentian use Google search and turn her into your personal encyclopedia."
+			"use_websearch": {
+				"name": "Let Me Search That For You",
+				"description": "Had Gentian perform a web search, witnessing the AI's information-gathering prowess.",
+				"locked_description": "Have Gentian use web search and turn her into your personal encyclopedia."
 			},
 			"use_webbrowse": {
 				"name": "Cyber Surfer",

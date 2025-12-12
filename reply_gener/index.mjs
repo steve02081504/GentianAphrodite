@@ -26,7 +26,7 @@ import { coderunner, GetCoderunnerPreviewUpdater } from './functions/coderunner.
 import { deepResearch } from './functions/deep-research.mjs'
 import { file_change } from './functions/file-change.mjs'
 import { getToolInfo } from './functions/getToolInfo.mjs'
-import { googlesearch } from './functions/googlesearch.mjs'
+import { websearch } from './functions/websearch.mjs'
 import { IdleManagementHandler } from './functions/idle-management.mjs'
 import { LongTermMemoryHandler } from './functions/long-term-memory.mjs'
 import { rolesettingfilter } from './functions/rolesettingfilter.mjs'
@@ -167,8 +167,8 @@ export async function GetReply(args) {
 				{ start: '<view-long-term-memory-context>', end: '</view-long-term-memory-context>' },
 				{ start: '<delete-short-term-memories>', end: '</delete-short-term-memories>' },
 
-				// Web browsing (googlesearch.mjs & webbrowse.mjs)
-				{ start: '<google-search>', end: '</google-search>' },
+				// Web browsing (websearch.mjs & webbrowse.mjs)
+				{ start: '<web-search>', end: '</web-search>' },
 				{ start: '<web-browse>', end: '</web-browse>' },
 
 				// Deep research (deep-research.mjs)
@@ -279,7 +279,7 @@ export async function GetReply(args) {
 			const replyHandlers = [
 				getToolInfo, CharGenerator, PersonaGenerator,
 				coderunner, LongTermMemoryHandler, ShortTermMemoryHandler,
-				deepResearch, googlesearch, webbrowse, rolesettingfilter, file_change, browserIntegration, IdleManagementHandler,
+				deepResearch, websearch, webbrowse, rolesettingfilter, file_change, browserIntegration, IdleManagementHandler,
 				args.supported_functions.add_message ? timer : null,
 				...Object.values(args.plugins).map(plugin => plugin.interfaces.chat?.ReplyHandler)
 			].filter(Boolean)

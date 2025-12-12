@@ -10,7 +10,7 @@ import { CorpusGeneratorPrompt } from './corpusGenerator.mjs'
 import { DeepResearchPrompt } from './deep-research.mjs'
 import { DicePrompt } from './dice.mjs'
 import { FileChangePrompt } from './file-change.mjs'
-import { GoogleSearchPrompt } from './googlesearch.mjs'
+import { WebSearchPrompt } from './websearch.mjs'
 import { HostInfoPrompt } from './hostinfo.mjs'
 import { IdleManagementPrompt } from './idle-management.mjs'
 import { infoPrompt } from './info.mjs'
@@ -49,7 +49,7 @@ export async function FunctionPrompt(args, logical_results) {
 	result.push(PromptWriterPrompt(args, logical_results))
 	result.push(infoPrompt(args, logical_results))
 	result.push(DeepResearchPrompt(args, logical_results))
-	result.push(GoogleSearchPrompt(args, logical_results))
+	result.push(WebSearchPrompt(args, logical_results))
 	result.push(WebBrowsePrompt(args, logical_results))
 	result.push(CodeRunnerPrompt(args, logical_results))
 	result.push(FileChangePrompt(args, logical_results))

@@ -186,7 +186,7 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 		enable_prompts: {
 			time: true,
 			longTermMemory: true,
-			googleSearch: true,
+			webSearch: true,
 			browserIntegration: { history: true }
 		}
 	},
@@ -202,7 +202,7 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 		enable_prompts: {
 			time: true,
 			longTermMemory: true,
-			googleSearch: true,
+			webSearch: true,
 			browserIntegration: { history: true }
 		}
 	},
@@ -224,7 +224,7 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 			browserIntegration: { history: true },
 			camera: true,
 			screenshot: true,
-			googleSearch: true,
+			webSearch: true,
 			fileChange: true
 		}
 	},
@@ -240,7 +240,7 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 `,
 		enable_prompts: {
 			time: true,
-			googleSearch: true,
+			webSearch: true,
 			browserIntegration: { history: true },
 			camera: true,
 			screenshot: true,

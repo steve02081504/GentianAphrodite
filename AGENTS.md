@@ -46,7 +46,7 @@
   - **实现**: 在`prompt/build.mjs`或相关预处理器中添加检测和执行逻辑，将结果注入`reply_request.extension`。
 
 - **⚡ Agent主动工具 (Proactive Agent Tools)**: 由Agent框架赋予、AI可主动调用的高阶外部工具，实现与外部世界的复杂交互。
-  - **示例**: `googlesearch` (搜索), `coderunner` (代码执行), `file-change` (文件操作)。
+  - **示例**: `websearch` (搜索), `coderunner` (代码执行), `file-change` (文件操作)。
   - **实现**:
     1. 在`prompt/functions/`中声明工具API。
     2. 在`reply_gener/functions/`中编写对应的代码实现。

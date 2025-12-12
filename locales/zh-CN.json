@@ -82,10 +82,10 @@
 				"description": "第一次让龙胆执行了代码，解锁她的‘程序猿’属性。",
 				"locked_description": "让龙胆执行一次代码，见证她的智能。"
 			},
-			"use_googlesearch": {
-				"name": "有事问谷歌",
-				"description": "让龙胆使用谷歌搜索了一次，见证AI的信息获取能力。",
-				"locked_description": "让龙胆使用谷歌进行一次搜索，成为你的‘百科全书’。"
+			"use_websearch": {
+				"name": "有事就上网",
+				"description": "让龙胆使用网络搜索了一次，见证AI的信息获取能力。",
+				"locked_description": "让龙胆使用网络进行一次搜索，成为你的‘百科全书’。"
 			},
 			"use_webbrowse": {
 				"name": "网上冲浪小助手",
