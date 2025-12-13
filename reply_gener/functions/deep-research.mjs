@@ -6,16 +6,16 @@ import { config } from '../../config/index.mjs'
 import { mergePrompt } from '../../prompt/build.mjs'
 import { CodeRunnerPrompt } from '../../prompt/functions/coderunner.mjs'
 import { DeepResearchMainPrompt } from '../../prompt/functions/deep-research.mjs'
-import { WebSearchPrompt } from '../../prompt/functions/websearch.mjs'
 import { WebBrowsePrompt } from '../../prompt/functions/webbrowse.mjs'
+import { WebSearchPrompt } from '../../prompt/functions/websearch.mjs'
 import { unlockAchievement } from '../../scripts/achievements.mjs'
 import { statisticDatas } from '../../scripts/statistics.mjs'
 import { sleep } from '../../scripts/tools.mjs'
 import { getLongTimeLogAdder } from '../index.mjs'
 
 import { coderunner } from './coderunner.mjs'
-import { websearch } from './websearch.mjs'
 import { webbrowse } from './webbrowse.mjs'
+import { websearch } from './websearch.mjs'
 
 /**
  * 将计划文本解析为结构化的计划数组，验证较为宽松。

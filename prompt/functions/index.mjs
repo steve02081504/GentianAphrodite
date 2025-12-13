@@ -10,7 +10,6 @@ import { CorpusGeneratorPrompt } from './corpusGenerator.mjs'
 import { DeepResearchPrompt } from './deep-research.mjs'
 import { DicePrompt } from './dice.mjs'
 import { FileChangePrompt } from './file-change.mjs'
-import { WebSearchPrompt } from './websearch.mjs'
 import { HostInfoPrompt } from './hostinfo.mjs'
 import { IdleManagementPrompt } from './idle-management.mjs'
 import { infoPrompt } from './info.mjs'
@@ -26,6 +25,7 @@ import { StatisticDatasPrompt } from './statistic_datas.mjs'
 import { TaroPrompt } from './taro.mjs'
 import { TimerPrompt } from './timer.mjs'
 import { WebBrowsePrompt } from './webbrowse.mjs'
+import { WebSearchPrompt } from './websearch.mjs'
 /** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 

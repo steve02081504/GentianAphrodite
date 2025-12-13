@@ -25,7 +25,7 @@ export async function NewBrowserGener(path, name) {
 			'--disable-features=IsolateOrigins,site-per-process',
 			'--disable-site-isolation-trials',
 			'--disable-blink-features=AutomationControlled',
-			...(configs.args || [])
+			...configs.args || []
 		]
 	})
 }

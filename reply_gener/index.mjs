@@ -26,13 +26,13 @@ import { coderunner, GetCoderunnerPreviewUpdater } from './functions/coderunner.
 import { deepResearch } from './functions/deep-research.mjs'
 import { file_change } from './functions/file-change.mjs'
 import { getToolInfo } from './functions/getToolInfo.mjs'
-import { websearch } from './functions/websearch.mjs'
 import { IdleManagementHandler } from './functions/idle-management.mjs'
 import { LongTermMemoryHandler } from './functions/long-term-memory.mjs'
 import { rolesettingfilter } from './functions/rolesettingfilter.mjs'
 import { ShortTermMemoryHandler } from './functions/short-term-memory.mjs'
 import { timer } from './functions/timer.mjs'
 import { webbrowse } from './functions/webbrowse.mjs'
+import { websearch } from './functions/websearch.mjs'
 import { noAIreply } from './noAI/index.mjs'
 
 /** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
