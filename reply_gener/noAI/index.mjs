@@ -1,4 +1,4 @@
-/** @typedef {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import('../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReplyRequest_t} chatReplyRequest_t */
 
 /**
  * 在未配置AI源时生成预设的回复。

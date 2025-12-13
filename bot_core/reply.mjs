@@ -8,12 +8,12 @@ import { fetchFilesForMessages, updateBotNameMapping } from './utils.mjs'
 
 /**
  * fount 聊天回复对象类型。
- * @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReply_t} FountChatReply_t
+ * @typedef {import('../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReply_t} FountChatReply_t
  */
 
 /**
  * fount 聊天回复请求对象类型。
- * @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReplyRequest_t} FountChatReplyRequest_t
+ * @typedef {import('../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReplyRequest_t} FountChatReplyRequest_t
  */
 
 /**

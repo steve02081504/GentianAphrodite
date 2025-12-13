@@ -6,7 +6,7 @@ import { newCharReplay, newUserMessage } from '../../scripts/statistics.mjs'
 
 import { recommend_command_plugin } from './recommend_command.mjs'
 import { GetShellWorld } from './world.mjs'
-/** @typedef {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
+/** @typedef {import('../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
 
 /**
  * Shell 辅助功能的主入口函数。

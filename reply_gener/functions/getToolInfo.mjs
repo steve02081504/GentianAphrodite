@@ -36,7 +36,7 @@ fount角色以mjs文件语法所书写，其可以自由导入任何npm或jsr包
  */
 
 import { loadAIsource, loadDefaultAIsource } from '../../../../../src/server/managers/AIsource_manager.mjs'
-import { buildPromptStruct } from '../../../../../src/public/shells/chat/src/prompt_struct.mjs'
+import { buildPromptStruct } from '../../../../../src/public/parts/shells/chat/src/prompt_struct.mjs'
 import { loadPlugin } from '../../../../../src/server/managers/plugin_manager.mjs'
 
 /**
@@ -139,7 +139,7 @@ export default {
 				// 用fount提供的工具构建提示词结构
 				const prompt_struct = await buildPromptStruct(args)
 				// 创建回复容器
-				/** @type {import("../../../../../src/public/shells/chat/decl/chatLog.ts").chatReply_t} */
+				/** @type {import("../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReply_t} */
 				const result = {
 					content: '',
 					logContextBefore: [],
@@ -158,7 +158,7 @@ export default {
 				const oriReplyPreviewUpdater = args.generation_options?.replyPreviewUpdater
 				/**
 				 * 聊天回复预览更新管道。
-				 * @type {import('../../../../../src/public/shells/chat/decl/chatLog.ts').CharReplyPreviewUpdater_t}
+				 * @type {import('../../../../../src/public/parts/shells/chat/decl/chatLog.ts').CharReplyPreviewUpdater_t}
 				 */
 				let replyPreviewUpdater = (args, r) => oriReplyPreviewUpdater?.(r)
 				for (const GetReplyPreviewUpdater of [
@@ -250,7 +250,7 @@ function CharGenerator(reply, { AddLongTimeLog }) {
 				// 用fount提供的工具构建提示词结构
 				const prompt_struct = await buildPromptStruct(args)
 				// 创建回复容器
-				/** @type {import("../../../../../src/public/shells/chat/decl/chatLog.ts").chatReply_t} */
+				/** @type {import("../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReply_t} */
 				const result = {
 					content: '',
 					logContextBefore: [],
@@ -269,7 +269,7 @@ function CharGenerator(reply, { AddLongTimeLog }) {
 				const oriReplyPreviewUpdater = args.generation_options?.replyPreviewUpdater
 				/**
 				 * 聊天回复预览更新管道。
-				 * @type {import('../../../../../src/public/shells/chat/decl/chatLog.ts').CharReplyPreviewUpdater_t}
+				 * @type {import('../../../../../src/public/parts/shells/chat/decl/chatLog.ts').CharReplyPreviewUpdater_t}
 				 */
 				let replyPreviewUpdater = (args, r) => oriReplyPreviewUpdater?.(r)
 				for (const GetReplyPreviewUpdater of [
@@ -364,7 +364,7 @@ export default {
 
 最后，这里是一些API参考：
 \\\`\\\`\\\`ts
-${fs.readFileSync(path.join(__dirname, './src/public/shells/chat/decl/chatLog.ts'), 'utf-8')}
+${fs.readFileSync(path.join(__dirname, './src/public/parts/shells/chat/decl/chatLog.ts'), 'utf-8')}
 \\\`\\\`\\\`
 \\\`\\\`\\\`ts
 ${fs.readFileSync(path.join(__dirname, './src/decl/charAPI.ts'), 'utf-8')}

@@ -26,7 +26,7 @@ import { TaroPrompt } from './taro.mjs'
 import { TimerPrompt } from './timer.mjs'
 import { WebBrowsePrompt } from './webbrowse.mjs'
 import { WebSearchPrompt } from './websearch.mjs'
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**

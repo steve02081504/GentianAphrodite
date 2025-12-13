@@ -90,6 +90,6 @@ export async function SetData(data) {
  * @returns {Promise<any>} - `setPartData` 函数的返回值。
  */
 export async function setMyData(data) {
-	const { setPartData } = await import('../../../../../../src/public/shells/config/src/manager.mjs')
+	const { setPartData } = await import('../../../../../../src/public/parts/shells/config/src/manager.mjs')
 	return setPartData(username, 'chars', charname, mergeTree(await GetData(), data))
 }

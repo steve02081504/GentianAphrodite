@@ -14,14 +14,14 @@ import {
 	listAutoRunScripts,
 	updateAutoRunScript,
 	sendDanmakuToPage
-} from '../../../../../../../src/public/shells/browserIntegration/src/api.mjs'
+} from '../../../../../../../src/public/parts/shells/browserIntegration/src/api.mjs'
 import { charname } from '../../charbase.mjs'
 import { unlockAchievement } from '../../scripts/achievements.mjs'
 import { UseNofityAbleChannel } from '../../scripts/notify.mjs'
 import { statisticDatas, newCharReplay } from '../../scripts/statistics.mjs'
 import { GetReply } from '../index.mjs'
 
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**

@@ -1,6 +1,6 @@
 import { match_keys } from '../../scripts/match.mjs'
 import { NdiffResults, PickRandomN, random, repetRandomTimes } from '../../scripts/random.mjs'
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
