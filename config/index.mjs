@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
-import { loadPlugin } from '../../../../../../src/server/managers/plugin_manager.mjs'
+import { loadPart } from '../../../../../../src/server/parts_loader.mjs'
 import { getAISourceData, setAISourceData } from '../AISource/index.mjs'
 import { chardir, charname, username } from '../charbase.mjs'
 import { resetIdleTimer } from '../event_engine/on_idle.mjs'
@@ -66,7 +66,7 @@ export function GetData() {
  */
 export async function SetData(data) {
 	await setAISourceData(data.AIsources || getAISourceData())
-	if (data.plugins) plugins = Object.fromEntries(await Promise.all(data.plugins.map(async x => [x, await loadPlugin(username, x)])))
+	if (data.plugins) plugins = Object.fromEntries(await Promise.all(data.plugins.map(async x => [x, await loadPart(username, 'plugins/' + x)])))
 	Object.assign(config.deep_research, data.deep_research)
 
 	if (data.reality_channel_disables) {

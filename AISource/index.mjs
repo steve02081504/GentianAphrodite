@@ -1,7 +1,7 @@
 /** @typedef {import('../../../../../../src/decl/AIsource.ts').AIsource_t} AIsource_t */
 
 import { getPartInfo } from '../../../../../../src/scripts/locale.mjs'
-import { loadAIsource, loadDefaultAIsource } from '../../../../../../src/server/managers/AIsource_manager.mjs'
+import { loadAnyPreferredDefaultPart, loadPart } from '../../../../../../src/server/parts_loader.mjs'
 import { username } from '../charbase.mjs'
 import { checkVoiceSentinel } from '../event_engine/voice_sentinel.mjs'
 
@@ -42,8 +42,8 @@ export function getAISourceData() {
 export async function setAISourceData(data) {
 	const newAIsources = {}
 	for (const name in data) if (data[name])
-		newAIsources[name] = loadAIsource(username, data[name])
-	const fount_default = await loadDefaultAIsource(username)
+		newAIsources[name] = loadPart(username, 'serviceSources/AI/' + data[name])
+	const fount_default = await loadAnyPreferredDefaultPart(username, 'serviceSources/AI')
 	for (const name in newAIsources) newAIsources[name] = await newAIsources[name]
 	if (fount_default && !Object.values(newAIsources).some(x => x === fount_default))
 		newAIsources.fount_default = fount_default

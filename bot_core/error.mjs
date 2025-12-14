@@ -1,6 +1,6 @@
 import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
-import { reloadPart } from '../../../../../../src/server/managers/index.mjs'
-import { loadDefaultPersona } from '../../../../../../src/server/managers/persona_manager.mjs'
+import { reloadPart, loadAnyPreferredDefaultPart } from '../../../../../../src/server/parts_loader.mjs'
+
 import { is_dist, charname as BotCharname, username as FountUsername, GentianAphrodite } from '../charbase.mjs'
 
 import { sendAndLogReply } from './reply.mjs'
@@ -96,7 +96,7 @@ async function getAISuggestionForError(error, errorMessageForRecord, platformAPI
 			locales: localhostLocales,
 			time: new Date(),
 			world: platformAPI.getPlatformWorld(),
-			user: loadDefaultPersona(FountUsername),
+			user: await loadAnyPreferredDefaultPart(FountUsername, 'personas'),
 			char: GentianAphrodite,
 			other_chars: [],
 			plugins: {},
@@ -163,5 +163,5 @@ export async function handleError(error, platformAPI, contextMessage) {
 
 	platformAPI.logError(error, contextMessage)
 	console.error('[BotLogic] Original error handled:', error, 'Context:', contextMessage)
-	await reloadPart(FountUsername, 'chars', BotCharname)
+	await reloadPart(FountUsername, 'chars/' + BotCharname)
 }

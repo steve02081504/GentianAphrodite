@@ -1,5 +1,5 @@
 import { localhostLocales } from '../../../../../../../src/scripts/i18n.mjs'
-import { loadDefaultPersona } from '../../../../../../../src/server/managers/persona_manager.mjs'
+import { loadAnyPreferredDefaultPart } from '../../../../../../../src/server/parts_loader.mjs'
 import { username, GentianAphrodite } from '../../charbase.mjs'
 import { GetReply } from '../../reply_gener/index.mjs'
 import { newCharReplay, newUserMessage } from '../../scripts/statistics.mjs'
@@ -97,7 +97,7 @@ ${args.screen}
 		locales: localhostLocales,
 		time: new Date(),
 		world: GetShellWorld(args.shelltype),
-		user: loadDefaultPersona(username),
+		user: await loadAnyPreferredDefaultPart(username, 'personas'),
 		char: GentianAphrodite,
 		other_chars: [],
 		plugins: {
