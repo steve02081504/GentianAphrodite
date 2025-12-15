@@ -1,5 +1,5 @@
 import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
-import { loadDefaultPersona } from '../../../../../../src/server/managers/persona_manager.mjs'
+import { loadAnyPreferredDefaultPart } from '../../../../../../src/server/parts_loader.mjs'
 import { charname as BotCharname, username as FountUsername, GentianAphrodite } from '../charbase.mjs'
 
 import { handleError } from './error.mjs'
@@ -89,7 +89,7 @@ async function buildReplyRequest(triggerMessage, platformAPI, channelId, request
 		locales: localhostLocales,
 		time: new Date(),
 		world: platformWorld,
-		user: loadDefaultPersona(FountUsername),
+		user: await loadAnyPreferredDefaultPart(FountUsername, 'personas'),
 		char: GentianAphrodite,
 		other_chars: [],
 		plugins: activePlugins,

@@ -35,9 +35,8 @@ fount角色以mjs文件语法所书写，其可以自由导入任何npm或jsr包
  * @typedef {import('../../../../../src/decl/pluginAPI.ts').PluginAPI_t} PluginAPI_t
  */
 
-import { loadAIsource, loadDefaultAIsource } from '../../../../../src/server/managers/AIsource_manager.mjs'
+import { loadPart, loadAnyPreferredDefaultPart } from '../../../../../src/server/parts_loader.mjs'
 import { buildPromptStruct } from '../../../../../src/public/parts/shells/chat/src/prompt_struct.mjs'
-import { loadPlugin } from '../../../../../src/server/managers/plugin_manager.mjs'
 
 /**
  * AI源的实例
@@ -95,9 +94,9 @@ export default {
 			// 设置角色的配置数据
 			SetData: async data => {
 				// 如果传入了AI源的配置
-				if (data.AIsource)  AIsource = await loadAIsource(username, data.AIsource) // 加载AI源
-				else AIsource = await loadDefaultAIsource(username) // 或加载默认AI源（若未设置默认AI源则为undefined）
-				if (data.plugins) plugins = Object.fromEntries(await Promise.all(data.plugins.map(async x => [x, await loadPlugin(username, x)])))
+				if (data.AIsource)  AIsource = await loadPart(username, 'serviceSources/AI/' + data.AIsource) // 加载AI源
+				else AIsource = await loadAnyPreferredDefaultPart(username, 'serviceSources/AI') // 或加载默认AI源（若未设置默认AI源则为undefined）
+				if (data.plugins) plugins = Object.fromEntries(await Promise.all(data.plugins.map(async x => [x, await loadPart(username, 'plugins/' + x)])))
 			}
 		},
 		// 角色的聊天接口
