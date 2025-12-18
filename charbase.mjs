@@ -21,7 +21,7 @@ export const charname = path.basename(chardir)
  * 当前角色的 URL 路径。
  * @type {string}
  */
-export const charurl = `/chars/${encodeURIComponent(path.basename(chardir))}`
+export const charurl = `/parts/chars:${encodeURIComponent(path.basename(chardir))}`
 /**
  * 当前角色的版本信息，通常是 Git 标签或短哈希。
  * @type {string}
