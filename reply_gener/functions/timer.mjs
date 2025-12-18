@@ -22,7 +22,7 @@ export async function timer(result, args) {
 	}
 	let log_content_added = false
 
-	const timers = getTimers(args.username, 'chars', args.char_id)
+	const timers = getTimers(args.username, 'chars/' + args.char_id)
 
 	const setTimerMatches = [...result.content.matchAll(/<set-timer>(?<content>[\S\s]*?)<\/set-timer>/gis)]
 	for (const setTimerMatch of setTimerMatches)
@@ -99,7 +99,7 @@ export async function timer(result, args) {
 					try {
 						let uid = 0
 						while (Object.keys(timers).includes(uid.toString())) uid++
-						setTimer(args.username, 'chars', args.char_id, uid, {
+						setTimer(args.username, 'chars/' + args.char_id, uid, {
 							trigger: data.trigger,
 							callbackdata: {
 								type: 'timer',
@@ -167,7 +167,7 @@ export async function timer(result, args) {
 				const timerUid = Object.keys(timers).find(uid => timers[uid].callbackdata.reason === reason)
 				if (timerUid)
 					try {
-						removeTimer(args.username, 'chars', args.char_id, timerUid)
+						removeTimer(args.username, 'chars/' + args.char_id, timerUid)
 						systemLogContent += `已成功删除定时器：“${reason}”\n`
 					}
 					catch (error) {
