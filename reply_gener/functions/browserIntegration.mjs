@@ -31,7 +31,7 @@ import { GetReply } from '../index.mjs'
  * @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t}
  */
 export async function browserIntegration(result, args) {
-	const { AddLongTimeLog, username, char_id } = args
+	const { AddLongTimeLog, username } = args
 	let processed = false
 	const commands_called = []
 
@@ -214,7 +214,7 @@ export async function browserIntegration(result, args) {
 				const pageId = resolvePageId(pageIdMatch[1].trim())
 				const script = scriptMatch[1]
 				console.info(`AI请求在页面上运行JS, pageId: ${pageId}`)
-				const jsResult = await runJsOnPage(username, pageId, script, { parttype: 'chars', partname: char_id })
+				const jsResult = await runJsOnPage(username, pageId, script, { partpath: `chars/${charname}` })
 				AddLongTimeLog({
 					name: 'browser-integration',
 					role: 'tool',
