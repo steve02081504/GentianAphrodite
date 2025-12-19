@@ -1,3 +1,4 @@
+import { searchSource } from '../../SearchSource/index.mjs'
 import { match_keys } from '../../scripts/match.mjs'
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
@@ -12,7 +13,8 @@ export async function WebSearchPrompt(args, logical_results) {
 	let result = ''
 
 	if (args.extension?.enable_prompts?.webSearch || logical_results.in_assist || await match_keys(args, ['搜索', '查找', '查询', /(查|搜|搜索).{0,3}下/, /有(哪些|什么|没有)/, '怎样', '如何', '帮我搜'], 'any'))
-		result += `\
+		if (searchSource)
+			result += `\
 你可以用以下语法进行网络搜索（如果需要同时搜索多个主题，请每个主题占一行）：
 <web-search>
 关键词列表1
@@ -23,6 +25,10 @@ export async function WebSearchPrompt(args, logical_results) {
 Node.js documentation
 </web-search>
 将返回搜索结果摘要。
+`
+		else
+			result += `\
+网络搜索功能需要配置搜索源后才能使用。如有必要可以告知用户需要在配置中设置搜索源。
 `
 
 	return {

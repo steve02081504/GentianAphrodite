@@ -1,3 +1,4 @@
+import { searchSource } from '../../SearchSource/index.mjs'
 import { unlockAchievement } from '../../scripts/achievements.mjs'
 import { statisticDatas } from '../../scripts/statistics.mjs'
 import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
@@ -16,7 +17,6 @@ export async function websearch(result, { AddLongTimeLog }) {
 		for (const match of searchMatches) {
 			let searchQueryContent = match.groups.query
 			if (searchQueryContent) {
-				const { search, OrganicResult } = await import('npm:google-sr@^6.0.0')
 				unlockAchievement('use_websearch')
 				statisticDatas.toolUsage.webSearches++
 				searchQueryContent = searchQueryContent.trim()
@@ -49,36 +49,41 @@ export async function websearch(result, { AddLongTimeLog }) {
 						continue
 					}
 
+					if (!searchSource) {
+						AddLongTimeLog({
+							name: 'web-search',
+							role: 'tool',
+							content: '搜索功能当前不可用：未找到可用的搜索源。请告知用户需要在配置中设置搜索源后才能使用此功能。',
+							files: []
+						})
+						processed = true
+						continue
+					}
+
 					for (const searchQueryItem of searchQueries) {
 						console.info(`执行搜索: ${searchQueryItem}`)
-						const queryResult = await tryFewTimes(() => search({
-							query: searchQueryItem,
-							parsers: [OrganicResult],
-							requestConfig: {},
-						}))
+						const searchResults = await tryFewTimes(() => searchSource.Search(searchQueryItem, { limit: 5 }))
 
-						const organicResults = queryResult.filter(item => !item.isAd).slice(0, 5)
-
-						let searchResults = ''
-						if (organicResults.length) {
-							searchResults += '搜索结果：\n'
-							organicResults.forEach((item, index) => {
+						let searchResultsText = ''
+						if (searchResults.results.length) {
+							searchResultsText += '搜索结果：\n'
+							searchResults.results.forEach((item, index) => {
 								const source = item.source ? `[${item.source}] ` : ''
-								searchResults += `${index + 1}. ${source}${item.title}\n   ${item.link}\n`
+								searchResultsText += `${index + 1}. ${source}${item.title}\n   ${item.link}\n`
 								if (item.description)
-									searchResults += `${item.description}\n`
+									searchResultsText += `${item.description}\n`
 							})
 						}
-						else searchResults = '未找到相关搜索结果。\n'
+						else searchResultsText = '未找到相关搜索结果。\n'
 
 						// Prepend query if multiple queries were issued
 						if (searchQueries.length > 1)
-							searchResults = `对于 "${searchQueryItem}" 的${searchResults}`
+							searchResultsText = `对于 "${searchQueryItem}" 的${searchResultsText}`
 
 						AddLongTimeLog({
 							name: 'web-search',
 							role: 'tool',
-							content: searchResults.trim(), // Trim trailing newlines
+							content: searchResultsText.trim(), // Trim trailing newlines
 							files: []
 						})
 					}
