@@ -1,10 +1,10 @@
 /** @typedef {import('../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import('../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
-import { translate } from 'npm:@vitalets/google-translate-api'
 import { francAll } from 'npm:franc'
 import * as OpenCC from 'npm:opencc-js'
 
 import { charname } from '../charbase.mjs'
+import { translateSource } from '../TranslateSource/index.mjs'
 
 import { remove_kaomoji } from './dict.mjs'
 import { normalizeFancyText } from './fancytext.mjs'
@@ -47,9 +47,10 @@ export async function SimplifyContent(content) {
 	if (!is_PureChinese(simplified_langcheck_content)) {
 		console.info('%ccontent "' + content + '" is not pure chinese, translating it for prompt building logic', 'color: red')
 		console.log('franc result:', francAll(content, { minLength: 0 }))
-		while (true)
-			try {
-				content = (await translate(content, { from: 'auto', to: 'zh-CN' })).text
+		if (translateSource)
+			while (true) try {
+				const result = await translateSource.Translate(content, { from: 'auto', to: 'zh-CN' })
+				content = result.text
 				break
 			}
 			catch (e) {
@@ -62,6 +63,7 @@ export async function SimplifyContent(content) {
 					break
 				}
 			}
+		else console.error('Translate source is not available, skipping translation')
 	}
 	return SimpleSimplify(content)
 }

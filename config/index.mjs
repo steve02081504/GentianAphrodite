@@ -4,6 +4,7 @@ import path from 'node:path'
 import { loadPart } from '../../../../../../src/server/parts_loader.mjs'
 import { getAISourceData, setAISourceData } from '../AISource/index.mjs'
 import { getSearchSourceData, setSearchSourceData } from '../SearchSource/index.mjs'
+import { getTranslateSourceData, setTranslateSourceData } from '../TranslateSource/index.mjs'
 import { chardir, charname, username } from '../charbase.mjs'
 import { resetIdleTimer } from '../event_engine/on_idle.mjs'
 import { checkVoiceSentinel, stopVoiceSentinel } from '../event_engine/voice_sentinel.mjs'
@@ -54,12 +55,13 @@ export const config = {
 export function GetData() {
 	return {
 		AIsources: getAISourceData(),
+		searchSource: getSearchSourceData(),
+		translateSource: getTranslateSourceData(),
 		plugins: Object.keys(plugins),
 		deep_research: config.deep_research,
 		reality_channel_disables: config.reality_channel_disables,
 		reality_channel_notification_fallback_order: config.reality_channel_notification_fallback_order,
 		disable_prompt: config.disable_prompt,
-		searchSource: getSearchSourceData()
 	}
 }
 /**
@@ -69,6 +71,7 @@ export function GetData() {
 export async function SetData(data) {
 	await setAISourceData(data.AIsources || getAISourceData())
 	await setSearchSourceData(data.searchSource || getSearchSourceData())
+	await setTranslateSourceData(data.translateSource || getTranslateSourceData())
 	if (data.plugins) plugins = Object.fromEntries(await Promise.all(data.plugins.map(async x => [x, await loadPart(username, 'plugins/' + x)])))
 	Object.assign(config.deep_research, data.deep_research)
 
