@@ -132,7 +132,7 @@ export default {
 			// 获取角色的回复
 			GetReply: async args => {
 				// 如果没有设置AI源，返回默认回复
-				if (!AIsource) return { content: '<未设置角色的AI来源时角色的对话回复，可以用markdown语法链接到[设置AI源](https://steve02081504.github.io/fount/protocol?url=fount://page/shells/serviceSourceManage)>' }
+				if (!AIsource) return { content: '<未设置角色的AI来源时角色的对话回复，可以用markdown语法链接到[设置AI源](https://steve02081504.github.io/fount/protocol?url=fount://page/parts/shells:serviceSourceManage)>' }
 				// 注入角色插件
 				args.plugins = Object.assign({}, plugins, args.plugins)
 				// 用fount提供的工具构建提示词结构

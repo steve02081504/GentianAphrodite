@@ -27,4 +27,3 @@ export async function setTranslateSourceData(sourceName) {
 	else
 		translateSource = await loadAnyPreferredDefaultPart(username, 'serviceSources/translate')
 }
-
