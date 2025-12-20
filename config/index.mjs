@@ -97,5 +97,5 @@ export async function SetData(data) {
  */
 export async function setMyData(data) {
 	const { setPartData } = await import('../../../../../../src/public/parts/shells/config/src/manager.mjs')
-	return setPartData(username, 'chars', charname, mergeTree(await GetData(), data))
+	return setPartData(username, 'chars/' + charname, mergeTree(await GetData(), data))
 }
