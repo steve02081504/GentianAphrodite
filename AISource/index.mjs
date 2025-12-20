@@ -121,18 +121,17 @@ export let last_used_AIsource
  * @returns {Promise<any>} 返回 `caller` 函数成功执行后的结果。
  */
 export async function OrderedAISourceCalling(name, caller, trytimes = 3, error_logger = console.error) {
-	const sources = [...new Set([...GetAISourceCallingOrder(name).map(x => AIsources[x]).filter(x => x), ...Object.values(AIsources).filter(x => x)])]
+	const sources = [...new Set([...GetAISourceCallingOrder(name).map(x => AIsources[x]), ...Object.values(AIsources)])].filter(x => x)
 	let lastErr = new Error('No AI source available')
 	for (const source of sources)
-		for (let i = 0; i < trytimes; i++)
-			try {
-				console.info('OrderedAISourceCalling', name, (await getPartInfo(last_used_AIsource = source))?.name)
-				return await caller(source)
-			}
-			catch (err) {
-				if (err.name === 'AbortError') throw err // manually aborted
-				await error_logger(lastErr = err)
-			}
+		for (let i = 0; i < trytimes; i++) try {
+			console.info('OrderedAISourceCalling', name, (await getPartInfo(last_used_AIsource = source))?.name)
+			return await caller(source)
+		}
+		catch (err) {
+			if (err.name === 'AbortError') throw err // manually aborted
+			await error_logger(lastErr = err)
+		}
 
 	throw lastErr
 }
