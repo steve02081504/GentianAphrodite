@@ -4,8 +4,8 @@ import { inspect } from 'node:util'
 
 import { compareTwoStrings as string_similarity } from 'npm:string-similarity'
 
-import { buildPromptStruct } from '../../../../../../src/public/shells/chat/src/prompt_struct.mjs'
-import { defineToolUseBlocks } from '../../../../../../src/public/shells/chat/src/stream.mjs'
+import { buildPromptStruct } from '../../../../../../src/public/parts/shells/chat/src/prompt_struct.mjs'
+import { defineToolUseBlocks } from '../../../../../../src/public/parts/shells/chat/src/stream.mjs'
 import { noAISourceAvailable, OrderedAISourceCalling } from '../AISource/index.mjs'
 import { chardir, is_dist } from '../charbase.mjs'
 import { plugins } from '../config/index.mjs'
@@ -35,9 +35,9 @@ import { webbrowse } from './functions/webbrowse.mjs'
 import { websearch } from './functions/websearch.mjs'
 import { noAIreply } from './noAI/index.mjs'
 
-/** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
-/** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
-/** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReply_t} chatReply_t */
+/** @typedef {import("../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
+/** @typedef {import("../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReply_t} chatReply_t */
 /** @typedef {import("../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
@@ -141,7 +141,7 @@ export async function GetReply(args) {
 		const oriReplyPreviewUpdater = args.generation_options?.replyPreviewUpdater
 		/**
 		 * 聊天回复预览更新管道。
-		 * @type {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').CharReplyPreviewUpdater_t}
+		 * @type {import('../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').CharReplyPreviewUpdater_t}
 		 */
 		let replyPreviewUpdater = (args, r) => oriReplyPreviewUpdater?.(r)
 		for (const GetReplyPreviewUpdater of [

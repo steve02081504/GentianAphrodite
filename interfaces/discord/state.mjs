@@ -50,6 +50,6 @@ export const discordDisplayNameToId = {}
 /**
  * 缓存由 AI 生成并已发送的 FountChatReply_t 对象。
  * 键为第一条成功发送的 Discord 消息的 ID (string)，值为原始的 {@link FountChatReply_t} 对象。
- * @type {Record<string, import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').FountChatReply_t>}
+ * @type {Record<string, import('../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').FountChatReply_t>}
  */
 export const aiReplyObjectCache = {}

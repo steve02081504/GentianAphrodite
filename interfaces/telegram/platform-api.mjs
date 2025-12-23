@@ -19,7 +19,7 @@ import { telegramWorld } from './world.mjs'
  * @typedef {import('../../bot_core/index.mjs').chatLogEntry_t_ext} chatLogEntry_t_ext
  */
 /**
- * @typedef {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').FountChatReply_t} FountChatReply_t
+ * @typedef {import('../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').FountChatReply_t} FountChatReply_t
  */
 /** @typedef {import('npm:telegraf/typings/core/types/typegram').Message} TelegramMessageType */
 

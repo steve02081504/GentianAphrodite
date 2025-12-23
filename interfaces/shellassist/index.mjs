@@ -1,12 +1,12 @@
 import { localhostLocales } from '../../../../../../../src/scripts/i18n.mjs'
-import { loadDefaultPersona } from '../../../../../../../src/server/managers/persona_manager.mjs'
+import { loadAnyPreferredDefaultPart } from '../../../../../../../src/server/parts_loader.mjs'
 import { username, GentianAphrodite } from '../../charbase.mjs'
 import { GetReply } from '../../reply_gener/index.mjs'
 import { newCharReplay, newUserMessage } from '../../scripts/statistics.mjs'
 
 import { recommend_command_plugin } from './recommend_command.mjs'
 import { GetShellWorld } from './world.mjs'
-/** @typedef {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
+/** @typedef {import('../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
 
 /**
  * Shell 辅助功能的主入口函数。
@@ -97,7 +97,7 @@ ${args.screen}
 		locales: localhostLocales,
 		time: new Date(),
 		world: GetShellWorld(args.shelltype),
-		user: loadDefaultPersona(username),
+		user: await loadAnyPreferredDefaultPart(username, 'personas'),
 		char: GentianAphrodite,
 		other_chars: [],
 		plugins: {

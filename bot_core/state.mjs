@@ -1,6 +1,6 @@
 /**
  * fount 基础聊天日志条目类型。
- * @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} FountChatLogEntryBase
+ * @typedef {import('../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatLogEntry_t} FountChatLogEntryBase
  */
 
 /**

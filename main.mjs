@@ -26,7 +26,7 @@ Object.assign(GentianAphrodite, {
 	 */
 	Load: async stat => {
 		initCharBase(stat)
-		addPartLocaleData(username, 'chars', 'GentianAphrodite', ['zh-CN', 'en-US'], locale => loadJsonFile(chardir + `/locales/${locale}.json`))
+		addPartLocaleData(username, 'chars/GentianAphrodite', ['zh-CN', 'en-US'], locale => loadJsonFile(chardir + `/locales/${locale}.json`))
 		initializeOnIdleHandler()
 		initializeVoiceSentinel()
 		startClipboardListening()

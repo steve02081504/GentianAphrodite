@@ -1,9 +1,9 @@
-import { reloadPart } from '../../../../../../src/server/managers/index.mjs'
+import { reloadPart } from '../../../../../../src/server/parts_loader.mjs'
 import { is_dist, charname as BotCharname, username as FountUsername, GentianAphrodite } from '../charbase.mjs'
 
 /**
- * @typedef {import('../../../../../src/public/shells/chat/decl/chatLog.ts').chatReply_t} FountChatReply_t
- * @typedef {import('../../../../../src/public/shells/chat/decl/chatLog.ts').chatReplyRequest_t} FountChatReplyRequest_t
+ * @typedef {import('../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReply_t} FountChatReply_t
+ * @typedef {import('../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReplyRequest_t} FountChatReplyRequest_t
  */
 
 const errorRecord = {}
@@ -102,7 +102,7 @@ export async function handleError(error, originalArgs) {
 
 	console.error('[ReplyGener] Original error handled:', error, 'Context:', originalArgs.chat_name)
 
-	await reloadPart(FountUsername, 'chars', BotCharname)
+	await reloadPart(FountUsername, 'chars/' + BotCharname)
 
 	return {
 		content: fullReplyContent,

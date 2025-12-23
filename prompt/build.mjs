@@ -28,7 +28,7 @@ export async function mergePrompt(...prompts) {
 
 /**
  * 构建最终的 Prompt。
- * @param {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} args - 聊天回复请求参数。
+ * @param {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} args - 聊天回复请求参数。
  * @param {import("./logical_results/index.mjs").logical_results_t} logical_results - 逻辑结果。
  * @returns {Promise<object>} - 构建后的 Prompt 对象。
  */

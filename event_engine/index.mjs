@@ -1,4 +1,4 @@
-import { defineToolUseBlocks } from '../../../../../../src/public/shells/chat/src/stream.mjs'
+import { defineToolUseBlocks } from '../../../../../../src/public/parts/shells/chat/src/stream.mjs'
 import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
 import { notify } from '../../../../../../src/scripts/notify.mjs'
 import { charname, GentianAphrodite, username } from '../charbase.mjs'
