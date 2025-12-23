@@ -1,5 +1,5 @@
 import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
-import { loadDefaultPersona } from '../../../../../../src/server/managers/persona_manager.mjs'
+import { loadAnyPreferredDefaultPart } from '../../../../../../src/server/parts_loader.mjs'
 import { charname as BotCharname, username as FountUsername, GentianAphrodite } from '../charbase.mjs'
 
 import { userIdToNameMap, inHypnosisChannelId } from './state.mjs'
@@ -97,7 +97,7 @@ async function generateInsult(group, platformAPI, defaultChannel, channelHistory
 		locales: localhostLocales,
 		time: new Date(),
 		world: platformAPI.getPlatformWorld?.() || null,
-		user: loadDefaultPersona(FountUsername),
+		user: await loadAnyPreferredDefaultPart(FountUsername, 'personas'),
 		char: GentianAphrodite,
 		other_chars: [],
 		plugins: { ...platformAPI.getPlatformSpecificPlugins?.({ extension: { platform_guild_id: group.id, platform_channel_id: defaultChannel.id, platform: platformAPI.name } }) },

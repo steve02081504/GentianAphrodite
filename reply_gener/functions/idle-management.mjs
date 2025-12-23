@@ -1,4 +1,4 @@
-/** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
+/** @typedef {import("../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 import { addTodoTask, adjustIdleTaskWeight, deleteTodoTask, listTodoTasks, postponeIdleTask } from '../../event_engine/on_idle.mjs'

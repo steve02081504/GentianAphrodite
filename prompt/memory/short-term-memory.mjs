@@ -7,8 +7,8 @@ import { createContextSnapshot } from '../../scripts/context.mjs'
 import jieba from '../../scripts/jieba.mjs'
 import { flatChatLog, match_keys, PreprocessChatLogEntry } from '../../scripts/match.mjs'
 import { findMostFrequentElement } from '../../scripts/tools.mjs'
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 

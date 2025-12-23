@@ -1,9 +1,9 @@
 import util from 'node:util'
 
-import { getConnectedPages, getBrowseHistory, getMostRecentPageInfo } from '../../../../../../../src/public/shells/browserIntegration/src/api.mjs'
+import { getConnectedPages, getBrowseHistory, getMostRecentPageInfo } from '../../../../../../../src/public/parts/shells/browserIntegration/src/api.mjs'
 import { match_keys } from '../../scripts/match.mjs'
 
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**

@@ -1,7 +1,7 @@
 /** @typedef {import('../../../../../../src/decl/AIsource.ts').AIsource_t} AIsource_t */
 
 import { getPartInfo } from '../../../../../../src/scripts/locale.mjs'
-import { loadAIsource, loadDefaultAIsource } from '../../../../../../src/server/managers/AIsource_manager.mjs'
+import { loadAnyPreferredDefaultPart, loadPart } from '../../../../../../src/server/parts_loader.mjs'
 import { username } from '../charbase.mjs'
 import { checkVoiceSentinel } from '../event_engine/voice_sentinel.mjs'
 
@@ -42,8 +42,8 @@ export function getAISourceData() {
 export async function setAISourceData(data) {
 	const newAIsources = {}
 	for (const name in data) if (data[name])
-		newAIsources[name] = loadAIsource(username, data[name])
-	const fount_default = await loadDefaultAIsource(username)
+		newAIsources[name] = loadPart(username, 'serviceSources/AI/' + data[name])
+	const fount_default = await loadAnyPreferredDefaultPart(username, 'serviceSources/AI')
 	for (const name in newAIsources) newAIsources[name] = await newAIsources[name]
 	if (fount_default && !Object.values(newAIsources).some(x => x === fount_default))
 		newAIsources.fount_default = fount_default
@@ -121,18 +121,17 @@ export let last_used_AIsource
  * @returns {Promise<any>} 返回 `caller` 函数成功执行后的结果。
  */
 export async function OrderedAISourceCalling(name, caller, trytimes = 3, error_logger = console.error) {
-	const sources = [...new Set([...GetAISourceCallingOrder(name).map(x => AIsources[x]).filter(x => x), ...Object.values(AIsources).filter(x => x)])]
+	const sources = [...new Set([...GetAISourceCallingOrder(name).map(x => AIsources[x]), ...Object.values(AIsources)])].filter(x => x)
 	let lastErr = new Error('No AI source available')
 	for (const source of sources)
-		for (let i = 0; i < trytimes; i++)
-			try {
-				console.info('OrderedAISourceCalling', name, (await getPartInfo(last_used_AIsource = source))?.name)
-				return await caller(source)
-			}
-			catch (err) {
-				if (err.name === 'AbortError') throw err // manually aborted
-				await error_logger(lastErr = err)
-			}
+		for (let i = 0; i < trytimes; i++) try {
+			console.info('OrderedAISourceCalling', name, (await getPartInfo(last_used_AIsource = source))?.name)
+			return await caller(source)
+		}
+		catch (err) {
+			if (err.name === 'AbortError') throw err // manually aborted
+			await error_logger(lastErr = err)
+		}
 
 	throw lastErr
 }

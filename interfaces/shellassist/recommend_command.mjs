@@ -1,4 +1,4 @@
-import { defineToolUseBlocks } from '../../../../../../../src/public/shells/chat/src/stream.mjs'
+import { defineToolUseBlocks } from '../../../../../../../src/public/parts/shells/chat/src/stream.mjs'
 
 /**
  * @type {import('../../../../../../../src/decl/pluginAPI.ts').pluginAPI_t}

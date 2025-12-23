@@ -1,6 +1,6 @@
 import { flatChatLog } from './match.mjs'
 
-/** @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
+/** @typedef {import('../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
 
 /**
  * 创建最近几条聊天记录的文本快照。

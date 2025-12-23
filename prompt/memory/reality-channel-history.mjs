@@ -1,7 +1,7 @@
 import { RealityChannel } from '../../event_engine/index.mjs'
 import { createContextSnapshot } from '../../scripts/context.mjs'
 
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
