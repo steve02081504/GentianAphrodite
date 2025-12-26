@@ -210,7 +210,7 @@ export async function KanjiPrompt(args, logical_results) {
 	}
 
 	// 2. 处理汉字拆分问题
-	const decompositionRegex = /(\p{Unified_Ideograph})[\s\`]*(?:能|可以)?(?:拆成|拆分成|拆成|的部件是|的结构是|怎么写|由什么组成)/gu
+	const decompositionRegex = /(\p{Unified_Ideograph})[\s`]*(?:这|这个|该)?(?:字符|符号|汉字|字|符)?(?:能|可以|该|是)?(?:拆成|拆分成|拆成|的部件是|的结构是|怎么[写|书|拆]|由什么组成|什么结构)/gu
 
 	for (const match of log.matchAll(decompositionRegex)) {
 		const charToLookup = match[1]
