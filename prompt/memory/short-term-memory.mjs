@@ -78,6 +78,10 @@ for (const mem of chat_memories)
 
 let lastCleanupTime = new Date().getTime()
 
+// 跟踪最后一次保存的记忆的频道名称，用于频道切换时加入最后一次记忆
+/** @type {string | null} */
+let lastSavedMemoryChatName = null
+
 // 启动时执行一次清理
 cleanupMemories(new Date())
 
@@ -110,6 +114,38 @@ export function getHighestScoreShortTermMemory() {
 }
 
 // ================= 核心算法函数 =================
+
+/**
+ * 从聊天日志中提取加权关键词（提取核心逻辑）
+ * @param {chatLogEntry_t[]} chat_log - 聊天记录数组
+ * @param {string} UserCharname - 用户角色名
+ * @param {string} Charname - AI角色名
+ * @returns {Promise<KeywordInfo[]>} - 关键词列表
+ */
+async function extractKeywordsFromChatLog(chat_log, UserCharname, Charname) {
+	const keywordMap = {}
+
+	for (const entry of chat_log) {
+		// 优先使用 SimplifiedContents (可能的预处理文本)，否则用 content
+		const text = entry.extension?.SimplifiedContents?.[0] || entry.content
+		if (!text?.trim()) continue
+
+		// 权重加成：当前角色(User/Char)说的话权重更高
+		let multiplier = 1.0
+		if (entry.name == Charname) multiplier = 2.0
+		else if (entry.name == UserCharname) multiplier = 2.7
+
+		// 使用 Jieba 提取关键词
+		for (const kw of jieba.extract(text, 72))
+			keywordMap[kw.word] = kw.weight * multiplier + (keywordMap[kw.word] || 0)
+	}
+
+	// 格式化并排序，取前72个
+	return Object.entries(keywordMap).map(([word, weight]) => ({ word, weight }))
+		.filter(kw => kw.weight >= KEYWORD_MIN_WEIGHT)
+		.sort((a, b) => b.weight - a.weight)
+		.slice(0, 72)
+}
 
 /**
  * 计算单个记忆条目的相关性分数
@@ -255,40 +291,15 @@ export async function ShortTermMemoryPrompt(args, logical_results) {
 	const currentChatLog = args.chat_log
 	const currentChatName = args.chat_name
 
-	/**
-	 * 内部辅助：从聊天日志提取关键词
-	 * @param {chatLogEntry_t[]} chat_log 聊天日志
-	 * @returns {Promise<{ word: string, weight: number }[]>} 关键词列表
-	 */
-	async function getKeyWords(chat_log) {
-		const keywordMap = {}
-
-		for (const entry of chat_log) {
-			// 优先使用 SimplifiedContents (可能的预处理文本)，否则用 content
-			const text = entry.extension?.SimplifiedContents?.[0] || entry.content
-			if (!text.trim()) continue
-
-			// 权重加成：当前角色(User/Char)说的话权重更高
-			let multiplier = 1.0
-			if (entry.name == args.Charname) multiplier = 2.0
-			else if (entry.name == args.UserCharname) multiplier = 2.7
-
-			// 使用 Jieba 提取关键词
-			for (const kw of jieba.extract(text, 72))
-				keywordMap[kw.word] = kw.weight * multiplier + (keywordMap[kw.word] || 0)
-		}
-
-		// 格式化并排序，取前72个
-		return Object.entries(keywordMap).map(([word, weight]) => ({ word, weight }))
-			.filter(kw => kw.weight >= KEYWORD_MIN_WEIGHT)
-			.sort((a, b) => b.weight - a.weight)
-			.slice(0, 72)
-	}
-
 	// 1. 处理当前对话：取最后5条记录提取关键词
 	const recentLogSlice = currentChatLog.slice(-5)
 	await Promise.all(recentLogSlice.map(PreprocessChatLogEntry))
-	const currentKeywords = await getKeyWords(flatChatLog(recentLogSlice))
+	// 优化：使用提取的公共函数
+	const currentKeywords = await extractKeywordsFromChatLog(
+		flatChatLog(recentLogSlice),
+		args.UserCharname,
+		args.Charname
+	)
 
 	// 2. 记忆评分：计算所有记忆与当前对话的相关性
 	/** @type {{memory: MemoryEntry, relevance: number, index: number}[]} */
@@ -406,6 +417,31 @@ export async function ShortTermMemoryPrompt(args, logical_results) {
 		if (memoryToUpdate) memoryToUpdate.score = Math.min(memoryToUpdate.score + SCORE_INCREMENT_NEXT, 100)
 	})
 
+	// 5.5. 频道切换检查：如果上一次记忆的频道和当前不同，将最后一次记忆也加入 prompt
+	if (lastSavedMemoryChatName && lastSavedMemoryChatName !== currentChatName && chat_memories.length > 0) {
+		// 找到最后一次保存的记忆（属于上一次频道的最后一次记忆，按时间戳排序取最新的）
+		const lastMemory = [...chat_memories]
+			.filter(mem => mem.chat_name === lastSavedMemoryChatName)
+			.sort((a, b) => b.time_stamp.getTime() - a.time_stamp.getTime())[0]
+
+		if (lastMemory) {
+			const lastMemoryIndex = chat_memories.indexOf(lastMemory)
+			// 检查是否已经被选中
+			const isAlreadySelected = finalTopRelevant.some(item => item.index === lastMemoryIndex) ||
+				finalNextRelevant.some(item => item.index === lastMemoryIndex) ||
+				finalRandomFlashback.some(item => item.index === lastMemoryIndex)
+
+			if (!isAlreadySelected && lastMemoryIndex !== -1) {
+				// 将最后一次记忆添加到次相关列表
+				finalNextRelevant.push({
+					memory: lastMemory,
+					relevance: calculateRelevance(lastMemory, currentKeywords, currentTimeStamp),
+					index: lastMemoryIndex
+				})
+			}
+		}
+	}
+
 	// 6. 构建 Prompt 字符串
 	/**
 	 * 格式化记忆条目为字符串
@@ -466,32 +502,6 @@ ${args.UserCharname}: 给我把有关华为的记忆全忘掉。
 	if (currentTimeStamp.getTime() - lastCleanupTime > CLEANUP_INTERVAL_MS)
 		cleanupMemories(currentTimeStamp)
 
-	// 9. 新记忆生成：将当前对话（最后10条）存入短期记忆
-	const memoryLogSlice = currentChatLog.slice(-10)
-	// 只有非内部调用，且包含双方对话时才保存
-	if (!args.extension?.is_internal &&
-		memoryLogSlice.length &&
-		memoryLogSlice.some(chatLogEntry => chatLogEntry.name == args.UserCharname) &&
-		memoryLogSlice.some(chatLogEntry => chatLogEntry.name == args.Charname)
-	) {
-		const newMemoryKeywords = await getKeyWords(memoryLogSlice)
-		const memoryText = createContextSnapshot(memoryLogSlice)
-
-		if (memoryText.trim())
-			chat_memories.push({
-				time_stamp: new Date(memoryLogSlice[memoryLogSlice.length - 1]?.time_stamp || currentTimeStamp),
-				text: memoryText,
-				keywords: newMemoryKeywords,
-				score: 0,
-				chat_name: currentChatName
-			})
-		else
-			console.warn('[Memory] Skipping saving new memory due to empty processed content.')
-
-		// 5% 概率保存文件，减少 I/O
-		if (Math.random() < 0.05) saveShortTermMemory()
-	}
-
 	// 返回构建好的Prompt
 	return {
 		text: [{ content: result, important: 0 }],
@@ -525,4 +535,64 @@ export function deleteShortTermMemory(keyword) {
  */
 export function getShortTermMemoryNum() {
 	return chat_memories.length
+}
+
+/**
+ * 在回复完成后保存短期记忆（包含回复结果）
+ * @param {chatReplyRequest_t} args - 聊天回复请求参数（包含聊天记录）
+ * @param {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReply_t} replyResult - 生成的回复结果
+ */
+export async function saveShortTermMemoryAfterReply(args, replyResult) {
+	const currentTimeStamp = new Date()
+	const currentChatLog = args.chat_log
+	const currentChatName = args.chat_name
+
+	// 构建包含回复结果的完整对话记录
+	const memoryLogSlice = currentChatLog.slice(-10)
+
+	// 只有非内部调用，且包含双方对话时才保存
+	if (!args.extension?.is_internal &&
+		memoryLogSlice.length &&
+		memoryLogSlice.some(chatLogEntry => chatLogEntry.name == args.UserCharname) &&
+		replyResult?.content
+	) {
+		const memoryLogWithReply = [...memoryLogSlice]
+		if (replyResult.content) {
+			memoryLogWithReply.push({
+				name: args.Charname,
+				role: 'char',
+				content: replyResult.content,
+				time_stamp: currentTimeStamp,
+				extension: {}
+			})
+		}
+
+		await Promise.all(memoryLogWithReply.map(PreprocessChatLogEntry))
+		// 优化：使用提取的公共函数，减少重复代码
+		const newMemoryKeywords = await extractKeywordsFromChatLog(
+			flatChatLog(memoryLogWithReply),
+			args.UserCharname,
+			args.Charname
+		)
+		const memoryText = createContextSnapshot(memoryLogWithReply)
+
+		if (memoryText.trim()) {
+			const newMemory = {
+				time_stamp: currentTimeStamp,
+				text: memoryText,
+				keywords: newMemoryKeywords,
+				score: 0,
+				chat_name: currentChatName
+			}
+			chat_memories.push(newMemory)
+
+			// 更新最后一次保存的记忆的频道名称
+			lastSavedMemoryChatName = currentChatName
+		}
+		else
+			console.warn('[Memory] Skipping saving new memory due to empty processed content.')
+
+		// 5% 概率保存文件，减少 I/O
+		if (Math.random() < 0.05) saveShortTermMemory()
+	}
 }

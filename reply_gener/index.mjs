@@ -30,6 +30,7 @@ import { IdleManagementHandler } from './functions/idle-management.mjs'
 import { LongTermMemoryHandler } from './functions/long-term-memory.mjs'
 import { rolesettingfilter } from './functions/rolesettingfilter.mjs'
 import { ShortTermMemoryHandler } from './functions/short-term-memory.mjs'
+import { saveShortTermMemoryAfterReply } from '../prompt/memory/short-term-memory.mjs'
 import { timer } from './functions/timer.mjs'
 import { webbrowse } from './functions/webbrowse.mjs'
 import { websearch } from './functions/websearch.mjs'
@@ -311,6 +312,10 @@ export async function GetReply(args) {
 				saveStatisticDatas()
 			}
 		}
+
+		// 在回复完成后保存短期记忆（包含回复结果）
+		await saveShortTermMemoryAfterReply(args, result)
+
 		return result
 	}
 	catch (error) {
