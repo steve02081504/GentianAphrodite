@@ -1,4 +1,4 @@
-/* global geti18n, partType, partName, element */
+/* global geti18n, partpath, element */
 // Common elements
 /**
  * 将 Blob 对象转换为 Base64 编码的 Data URL 字符串。
@@ -29,7 +29,7 @@ const saveFile = async (fileName, blob, statusElement) => {
 	const base64Data = await blobToBase64(blob)
 	statusElement.textContent = geti18n('GentianAphrodite.config.saving')
 	try {
-		const response = await fetch(`/api/${partType}/${partName}/saveFile`, {
+		const response = await fetch(`/api${parturl}/saveFile`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
@@ -64,7 +64,7 @@ const saveRawAudio = async (fileName, audioBuffer, statusElement) => {
 	const samples = audioBuffer.getChannelData(0)
 	statusElement.textContent = geti18n('GentianAphrodite.config.saving')
 	try {
-		const response = await fetch(`/api/${partType}/${partName}/saveAudioFile`, {
+		const response = await fetch(`/api${parturl}/saveAudioFile`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
@@ -160,7 +160,7 @@ let videoStream = null
 const loadPreview = async (filePath, element, statusElement, type) => {
 	statusElement.textContent = geti18n('GentianAphrodite.config.loading_preview')
 	try {
-		const response = await fetch(`/api/${partType}/${partName}/getFile?filePath=${encodeURIComponent(filePath)}&t=${Date.now()}`)
+		const response = await fetch(`/api${parturl}/getFile?filePath=${encodeURIComponent(filePath)}&t=${Date.now()}`)
 		if (response.ok) {
 			const blob = await response.blob()
 			const url = URL.createObjectURL(blob)
