@@ -1,6 +1,7 @@
 import { Buffer } from 'node:buffer'
-import { getScopedChatLog } from '../../scripts/match.mjs'
+
 import { chineseToNumber } from '../../scripts/chineseToNumber.mjs'
+import { getScopedChatLog } from '../../scripts/match.mjs'
 
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
@@ -24,7 +25,7 @@ const API_BASE_URL = 'https://zi.tools/api/lookup/lookup/'
  * 动态将文字渲染为图片 Buffer
  * 参考 qrcode.mjs 中的 canvas 引入方式
  * @param {string} text - 要渲染的汉字
- * @returns {Promise<Buffer|null>}
+ * @returns {Promise<Buffer|null>} 渲染后的图片 Buffer，如果渲染失败则返回 null
  */
 async function renderTextToBuffer(text) {
 	try {
@@ -105,8 +106,8 @@ async function lookupCharacterInfo(character) {
  * 解析带有数量词的字符串，将其展开为部件数组。
  * 例如： "三个火和2个木" -> ['火', '火', '火', '木', '木']
  *       "龙龙龙" -> ['龙', '龙', '龙']
- * @param {string} text
- * @returns {string[]}
+ * @param {string} text - 包含数量词和汉字的输入字符串
+ * @returns {string[]} 展开后的汉字部件数组
  */
 function expandComponents(text) {
 	const result = []
@@ -120,7 +121,7 @@ function expandComponents(text) {
 	// 但通常语境下 "一万个X" 中 "一万" 是数量。
 	// 这里使用非贪婪匹配结合 chineseToNumber 的能力。
 
-	const pattern = /(?:([0-9\.零一二三四五六七八九十百千万亿两壹贰叁肆伍陆柒捌玖]+)\s*(?:[个只枚]|\s)?)?\s*([\p{Unified_Ideograph}])/gu
+	const pattern = /(?:([0-9.零一二三四五六七八九十百千万亿两壹贰叁肆伍陆柒捌玖]+)\s*(?:[个只枚]|\s)?)?\s*([\p{Unified_Ideograph}])/gu
 
 	let match
 	while ((match = pattern.exec(text)) !== null) {
@@ -148,6 +149,12 @@ function expandComponents(text) {
 }
 
 
+/**
+ * 处理汉字相关请求的主函数，包括组合和拆分查询。
+ * @param {chatReplyRequest_t} args - 聊天请求上下文参数
+ * @param {logical_results_t} logical_results - 逻辑推理结果
+ * @returns {Promise<object>} 返回处理结果对象，包含文本和附加日志
+ */
 export async function KanjiPrompt(args, logical_results) {
 	let result = ''
 	const additional_chat_log = []
@@ -162,15 +169,15 @@ export async function KanjiPrompt(args, logical_results) {
 		const inlineCodeContent = match[2]
 		const plainTextContent = match[3]
 
-		let rawComponents = codeBlockContent || inlineCodeContent || plainTextContent
+		const rawComponents = codeBlockContent || inlineCodeContent || plainTextContent
 		if (!rawComponents) continue
 
 		let components = []
 
-		if (codeBlockContent || inlineCodeContent) {
+		if (codeBlockContent || inlineCodeContent)
 			// 代码块内，直接应用带数量词的解析逻辑
 			components = expandComponents(rawComponents)
-		} else {
+		else {
 			// 普通文本，应用分块策略以去除 "考考你" 等上下文
 			// 增加分隔符：除了非汉字，也要把数字视为内容的一部分，所以分隔符不能包含数字
 			// 这里我们主要依靠 "空格" 和 "标点" 来分块，但保留数字和汉字
@@ -183,15 +190,10 @@ export async function KanjiPrompt(args, logical_results) {
 
 				// 启发式：如果最后一个块解析出了多个部件 (如 "三个火"->3部件 或 "龙龙"->2部件)
 				// 或者原本长度就 > 1，则采纳
-				if (lastBlockComponents.length > 1) {
+				if (lastBlockComponents.length > 1)
 					components = lastBlockComponents
-				} else {
-					// 否则尝试解析整个字符串（应对 "王 王 王" 这种被空格分开的情况）
-					components = expandComponents(rawComponents)
-				}
-			} else {
-				components = expandComponents(rawComponents)
-			}
+				else components = expandComponents(rawComponents) // 否则尝试解析整个字符串（应对 "王 王 王" 这种被空格分开的情况）
+			} else components = expandComponents(rawComponents)
 		}
 
 		if (components.length < 2) continue

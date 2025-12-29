@@ -3,12 +3,12 @@ import path from 'node:path'
 
 import { loadPart } from '../../../../../../src/server/parts_loader.mjs'
 import { getAISourceData, setAISourceData } from '../AISource/index.mjs'
-import { getSearchSourceData, setSearchSourceData } from '../SearchSource/index.mjs'
-import { getTranslateSourceData, setTranslateSourceData } from '../TranslateSource/index.mjs'
 import { chardir, charname, username } from '../charbase.mjs'
 import { resetIdleTimer } from '../event_engine/on_idle.mjs'
 import { checkVoiceSentinel, stopVoiceSentinel } from '../event_engine/voice_sentinel.mjs'
 import { mergeTree } from '../scripts/tools.mjs'
+import { getSearchSourceData, setSearchSourceData } from '../SearchSource/index.mjs'
+import { getTranslateSourceData, setTranslateSourceData } from '../TranslateSource/index.mjs'
 
 /**
  * 获取配置界面的显示内容。

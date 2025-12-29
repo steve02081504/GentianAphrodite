@@ -1,7 +1,7 @@
-import { searchSource } from '../../SearchSource/index.mjs'
 import { unlockAchievement } from '../../scripts/achievements.mjs'
 import { statisticDatas } from '../../scripts/statistics.mjs'
 import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
+import { searchSource } from '../../SearchSource/index.mjs'
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 

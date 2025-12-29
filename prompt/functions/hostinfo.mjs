@@ -1,8 +1,9 @@
 import os from 'node:os'
 import process from 'node:process'
 
+import { exec } from 'npm:@steve02081504/exec'
+
 import { getHistory } from '../../scripts/clipboard.mjs'
-import { exec } from '../../scripts/exec.mjs'
 import { match_keys } from '../../scripts/match.mjs'
 import { getWindowInfos } from '../../scripts/window_info.mjs'
 

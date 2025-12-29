@@ -1,6 +1,6 @@
 import path from 'node:path'
 
-import { exec } from './scripts/exec.mjs'
+import { exec } from 'npm:@steve02081504/exec'
 
 /**
  * 指示当前是否为分发版本。

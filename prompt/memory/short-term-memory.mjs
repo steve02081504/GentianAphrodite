@@ -431,14 +431,13 @@ export async function ShortTermMemoryPrompt(args, logical_results) {
 				finalNextRelevant.some(item => item.index === lastMemoryIndex) ||
 				finalRandomFlashback.some(item => item.index === lastMemoryIndex)
 
-			if (!isAlreadySelected && lastMemoryIndex !== -1) {
+			if (!isAlreadySelected && lastMemoryIndex !== -1)
 				// 将最后一次记忆添加到次相关列表
 				finalNextRelevant.push({
 					memory: lastMemory,
 					relevance: calculateRelevance(lastMemory, currentKeywords, currentTimeStamp),
 					index: lastMemoryIndex
 				})
-			}
 		}
 	}
 
@@ -557,7 +556,7 @@ export async function saveShortTermMemoryAfterReply(args, replyResult) {
 		replyResult?.content
 	) {
 		const memoryLogWithReply = [...memoryLogSlice]
-		if (replyResult.content) {
+		if (replyResult.content)
 			memoryLogWithReply.push({
 				name: args.Charname,
 				role: 'char',
@@ -565,7 +564,6 @@ export async function saveShortTermMemoryAfterReply(args, replyResult) {
 				time_stamp: currentTimeStamp,
 				extension: {}
 			})
-		}
 
 		await Promise.all(memoryLogWithReply.map(PreprocessChatLogEntry))
 		// 优化：使用提取的公共函数，减少重复代码
