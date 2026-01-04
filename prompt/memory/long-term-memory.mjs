@@ -138,6 +138,13 @@ ${random_memories.map(formatLongTermMemory).join('\n')}
 <long-term-memories>
 ${[activated_memories_text, random_memories_text].filter(Boolean).join('\n')}
 </long-term-memories>
+使用指引：
+- 将记忆视为“档案库”或“设定集”，它们仅提供事实信息。
+- 不要模仿记忆条目中的行文风格、用词习惯或精神状态。你的回复风格应仅由当前的角色设定和当前对话语境决定。
+- 如果记忆中出现了高度抽象或自造的概念词，在回复中必须将其转译为自然、通俗、符合当前场景的人类语言。
+示例：
+- 检索到记忆“执行零信息熵休憩”。
+- 回复：“主人快去休息一下，放空大脑放松一会吧。”
 `
 
 	let enable_memory_prompt = false
@@ -176,7 +183,13 @@ from：匹配的范围，any：任意角色，user：用户，char：角色，bo
 depth：匹配的回复深度，省略时默认为4
 其会返回匹配的key数量，这意味着你可以通过\`(await match_keys(args, [...], 'any')) >= N\` 来判断内容是否同时触发多个关键词。
 你还可以使用\`(await match_keys_all(args, [...], 'any'))\` 来判断内容是否同时触发所有关键词。
-prompt-content部分的内容应当简洁明了，拒绝重复和废话。
+prompt-content部分的内容应当：
+- 简洁明了：拒绝重复和废话。
+- 去修辞化：移除所有语气词、比喻、夸张、咏叹调、中二词汇或特定语境下的黑话。
+- 客观视角：就像编写维基百科条目或系统日志一样，只记录“谁、在什么时间、做了什么、原因是什么”。
+示例对比：
+反面例子：主人发动了Code Golfing的究极奥义，用极简的艺术粉碎了冗余的虚空！
+正面例子：主人在JavaScript编程比赛中，通过优化算法大幅缩减了代码长度。
 trigger的关键词应容易触发并涵盖大部分情况，鼓励使用或\`||\`进行交集：
 反面例子：await match_keys(args, ['有个妹妹', '龙凤胎妹妹'], 'user')
 正面例子：await match_keys(args, ['妹', '龙凤胎'], 'any') || await match_keys(args, ['亲戚', /[家亲]人/], 'user')
@@ -200,7 +213,7 @@ trigger的关键词应容易触发并涵盖大部分情况，鼓励使用或\`||
 <view-long-term-memory-context>名称</view-long-term-memory-context>
 
 鼓励你对聊天记录中有关主人的事情追加和维护永久记忆，不要记录已经在prompt中的内容。
-鼓励你及时修正错误的永久记忆。
+鼓励你及时修正错误/过时/劣质/不符合角色设定的永久记忆。
 `
 		}] : []
 	}
