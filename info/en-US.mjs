@@ -20,7 +20,7 @@ export async function update() {
 		avatar: `${charurl}/imgs/anime.avif`,
 		icon: 'https://api.iconify.design/game-icons/flower-pot.svg',
 		sfw_avatar: `${charurl}/imgs/sfw.avif`,
-		description: 'A complex legal loli wife with a massive details & features!',
+		description: 'A complex legal loli wife with rich details & features!',
 		sfw_description: 'What harm could a little Gentian possibly do?',
 		description_markdown: await FormatStr(file, {
 			charvar,

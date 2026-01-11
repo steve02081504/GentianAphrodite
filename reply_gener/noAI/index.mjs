@@ -57,7 +57,7 @@ export function noAIreply(args) {
 				return {
 					content: `\
 *She blushed slightly and wrinkled her small forehead, and she said with some embarrassment:*
-“Specific things I don't know. Because my master hasn't set up the AI source yet.”
+“I don't know the specifics, as Master hasn't set up the AI source yet.”
 `
 				}
 	}

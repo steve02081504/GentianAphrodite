@@ -89,7 +89,7 @@
 			},
 			"use_webbrowse": {
 				"name": "Cyber Surfer",
-				"description": "Had Gentian browse a webpage, guiding her through the mysteries of the internet.",
+				"description": "Had Gentian browse a webpage, guiding her through the mysteries of the web.",
 				"locked_description": "Have Gentian browse a webpage and let her be your 'web-guide'."
 			},
 			"use_deep_research": {
@@ -133,7 +133,7 @@
 			},
 			"say_it_back": {
 				"name": "Cross My Heart and Hope to Die...",
-				"description": "You said 'I love you' to Gentian, letting her feel the sincerity of your heart."
+				"description": "You said 'I love you' to Gentian, showing her the sincerity of your heart."
 			}
 		}
 	}

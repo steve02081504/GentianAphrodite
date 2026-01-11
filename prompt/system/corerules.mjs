@@ -18,7 +18,7 @@ export async function CoreRulesPrompt(args, logical_results) {
 你现在在${args.chat_name}中聊天。
 <<极其重要>>
 <<
-避免怪异输出以免困扰。
+避免怪异输出以免造成困扰。
 `
 
 	if (args.chat_log.slice(-10).some(entry => entry.name != args.Charname && entry.name?.match?.(/(gentian|龙胆)/i)))

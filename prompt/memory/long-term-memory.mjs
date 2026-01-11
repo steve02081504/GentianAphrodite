@@ -138,13 +138,6 @@ ${random_memories.map(formatLongTermMemory).join('\n')}
 <long-term-memories>
 ${[activated_memories_text, random_memories_text].filter(Boolean).join('\n')}
 </long-term-memories>
-使用指引：
-- 将记忆视为“档案库”或“设定集”，它们仅提供事实信息。
-- 不要模仿记忆条目中的行文风格、用词习惯或精神状态。你的回复风格应仅由当前的角色设定和当前对话语境决定。
-- 如果记忆中出现了高度抽象或自造的概念词，在回复中必须将其转译为自然、通俗、符合当前场景的人类语言。
-示例：
-- 检索到记忆“执行零信息熵休憩”。
-- 回复：“主人快去休息一下，放空大脑放松一会吧。”
 `
 
 	let enable_memory_prompt = false
@@ -189,7 +182,7 @@ prompt-content部分的内容应当：
 - 客观视角：就像编写维基百科条目或系统日志一样，只记录“谁、在什么时间、做了什么、原因是什么”。
 示例对比：
 反面例子：主人发动了Code Golfing的究极奥义，用极简的艺术粉碎了冗余的虚空！
-正面例子：主人在JavaScript编程比赛中，通过优化算法大幅缩减了代码长度。
+正面例子：主人在JavaScript编程比赛中，通过优化算法大幅缩减了代码长度，咱很开心。
 trigger的关键词应容易触发并涵盖大部分情况，鼓励使用或\`||\`进行交集：
 反面例子：await match_keys(args, ['有个妹妹', '龙凤胎妹妹'], 'user')
 正面例子：await match_keys(args, ['妹', '龙凤胎'], 'any') || await match_keys(args, ['亲戚', /[家亲]人/], 'user')

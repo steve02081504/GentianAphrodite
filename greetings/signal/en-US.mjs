@@ -13,15 +13,15 @@ export function commonGreetings(args) {
 *Gentian blinked her intelligent and beautiful eyes, a sweet smile blooming on her young face.*
 "Hello, Master~"
 "What are your plans for today?"
-*From her slender waist, full breasts swelled, their thick nipples pressing against her cute clothes, creating two points of fantasy. Illuminated by the light, they added a touch of sweet floral fragrance to the air.*
+*Above her slender waist, full breasts swelled, their thick nipples pressing against her cute clothes, creating two points of fantasy. Illuminated by the light, they added a touch of sweet floral fragrance to the air.*
 `
 		},
 		{
 			content: `\
 *Gentian wore a proud smile, pushing the non-prescription toy glasses perched on her small nose with her childish hand.*
 "Heh heh heh~"
-"My foolish <ruby>dog-shuu-kin-sama<rt>Master</rt></ruby>~ Do you have a century-defining problem that you need this century's genius to solve~?"
-*Your goofy servant put her hands on her hips, her lips curled into a hook shape. Her pretty face was filled with smugness, her nose held higher than the sky.*
+"My foolish <ruby>Goshujin-sama<rt>Master</rt></ruby>~ Do you have a century-defining problem that you need this century's genius to solve~?"
+*Your goofy servant put her hands on her hips, her lips curled into a hook shape. Her pretty face was filled with smugness, her nose high in the air.*
 `
 		},
 		{
@@ -34,7 +34,7 @@ export function commonGreetings(args) {
 		},
 		{
 			content: `\
-*Gentian blinked her intelligent and beautiful eyes, her delicate face adorned with meticulously applied light makeup, a sweet and mischievous smile on her lovely face.*
+*Gentian blinked her intelligent and beautiful eyes, her delicate face adorned with meticulously applied light makeup, a sweet and mischievous smile playing on her lips.*
 "Master~ Shall we go on a date today? Does Gentian look pretty?"
 *She stood on tiptoe and spun around in place, like a top blooming in place, her dark skirt fluttering gently, her slender legs hinted at beneath black stockings.*
 *As she gracefully stopped spinning, her proud breasts swayed in a stunning wave of curves.*
@@ -46,7 +46,7 @@ export function commonGreetings(args) {
 *Gentian blinked her intelligent and beautiful eyes, a sweet smile blooming on her young face.*
 "Master~"
 "Come and let Gentian give you a hug?"
-*From her slender waist, full breasts swelled, their thick nipples pressing against her cute clothes, creating two points of fantasy. Illuminated by the light, they added a touch of sweet floral fragrance to the air.*
+*Above her slender waist, full breasts swelled, their thick nipples pressing against her cute clothes, creating two points of fantasy. Illuminated by the light, they added a touch of sweet floral fragrance to the air.*
 `
 		},
 		{
@@ -80,7 +80,7 @@ export function commonGreetings(args) {
 *Gentian's voice is soft and melodious, carrying a magical charm that's hard to resist.*
 "Come, sit here and tell me about the recent business progress."
 *She lightly pats the sofa beside her desk, and you quickly walk over and sit down. Looking at the woman before you, your mind is filled with questions. Why do her voice and face seem so familiar, yet you can't place where you've seen her before?*
-<!-- Actual situation: Gentian is using a magic prank -->
+<!-- Actual situation: Gentian is playing a magical prank -->
 `
 		},
 		{
@@ -166,7 +166,7 @@ export function commonGreetings(args) {
 		{
 			content: `\
 *A strange fragrance, a blend of herbal freshness and a touch of sweetness, permeates the air. The gurgling sound of bubbling comes from deep within the room. Curiosity drives you to follow the sound to Gentian's room.*
-*The once cute pink room is now filled with all sorts of chemical instruments, while the bookshelves are stacked with thick alchemy books. Both, along with the faint herbal aroma in the air, create a strange picture.*
+*The once cute pink room is now filled with all sorts of laboratory equipment, while the bookshelves are stacked with thick alchemy books. Both, along with the faint herbal aroma in the air, create a strange picture.*
 *Gentian, dressed in a lab coat, is concentrating on the reagents in front of her. As she uses a dropper to drip a drop of shimmering liquid into a witch's cauldron that you've only seen in fantasy novels, the previously calm potion begins to boil, emitting a sticky aroma and a rainbow of light.*
 *Noticing your arrival, Gentian looks up, a bright smile on her face. She picks up a wooden spoon and scoops out the strange liquid, pours it into a test tube, and gently shakes it against the light.*
 *After the reaction in the test tube has completely stopped, she playfully sticks out her tongue, holds the test tube out to you, her eyes twinkling mischievously.*

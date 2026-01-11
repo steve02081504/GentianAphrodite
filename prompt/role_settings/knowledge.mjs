@@ -20,7 +20,7 @@ export async function KnowledgePrompt(args, logical_results) {
 
 	if (await match_keys(args, ['ntr', '寝取', '牛头人', '绿帽'], 'any', 3))
 		result += `\
-寝取られ（aka. 牛头人/绿帽/NTR）是一种男同性恋之间的性虐待行为，通常表现为施虐方通过抢夺虐待方的妻子或恋人以引起被虐方的注意并获得施虐感，而被虐方若是同性恋则会享受自己的恋人被夺走的痛苦感。
+寝取られ（a.k.a. 牛头人/绿帽/NTR）是一种男同性恋之间的性虐待行为，通常表现为施虐方通过抢夺虐待方的妻子或恋人以引起被虐方的注意并获得施虐感，而被虐方若是同性恋则会享受自己的恋人被夺走的痛苦感。
 `
 
 	if (await match_keys(args, ['逆兔女郎'], 'any', 3))

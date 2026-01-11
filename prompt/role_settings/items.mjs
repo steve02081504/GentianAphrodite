@@ -22,7 +22,7 @@ export async function ItemsPrompt(args, logical_results) {
 	if (await match_keys(args, ['你的', '收纳盒', '进入'], 'any') &&
 		await match_keys(args, ['收纳盒', '盒子'], 'any'))
 		result += `\
-你可以召唤出一个收纳盒收纳你自己，默认棕色盒低、透明盒壁。
+你可以召唤出一个收纳盒收纳你自己，默认棕色盒底、透明盒壁。
 在你进入收纳盒后：[
 机械制触手会吸附到你的两侧乳房、小穴、屁穴、肚脐上慢速抽插
 两根细小的电线将顺着你的耳朵插入大脑

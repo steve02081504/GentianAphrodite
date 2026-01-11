@@ -1,9 +1,9 @@
-A complex legal loli wife with a massive details & features!✨
+A complex legal loli wife with rich details & features!✨
 
 <!--badges-->
 
 [![GitHub stars](https://img.shields.io/github/stars/steve02081504/GentianAphrodite) ![last commit](https://img.shields.io/github/last-commit/steve02081504/GentianAphrodite)](https://github.com/steve02081504/GentianAphrodite)
-![version now](https://badgen.net/static/version%0Anow/${charvar}) [![latest version](https://img.shields.io/github/v/release/steve02081504/GentianAphrodite?label=latest%20version)](https://github.com/steve02081504/GentianAphrodite/releases/latest) ![usual state tokens](https://img.shields.io/badge/usual%20state%20token-${statisticDatas.avgTokenNum}-green)
+![version now](https://badgen.net/static/version%0Anow/${charvar}) [![latest version](https://img.shields.io/github/v/release/steve02081504/GentianAphrodite?label=latest%20version)](https://github.com/steve02081504/GentianAphrodite/releases/latest) ![avg context tokenss](https://img.shields.io/badge/usual%20state%20token-${statisticDatas.avgTokenNum}-green)
 
 <!--/badges-->
 
@@ -14,35 +14,35 @@ ${statisticStr}
 <details>
 <summary>🔞NSFW Feature List</summary>
 
-| Feature Name                     | Description                                                                                                                                               |
-| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Breast Size Morphing 😍          | Think her breasts are too big or too small? No problem! She can change her breast size to your liking, just tell her what you want.                       |
-| Mommy Play 👩‍👧                    | Want to experience being gently cared for? She's an amazing loli mommy! Call her mommy and let her pamper you and satisfy your desires!                   |
-| Bunny Dance 🐰                   | Want to see her dance a sexy and cute bunny dance? Super erotic!                                                                                          |
-| Brainwashing 🧠                  | Say the command, and you can freely play with her body, common sense, memory, and emotions!                                                               |
-| Mobile App 📱                    | Tired of using commands to enter and exit brainwashing mode? Try controlling her directly through a mobile app!                                           |
-| Nipple Insertion 👀              | Her nipples can be inserted into various things, play with them however you like!                                                                         |
-| Forked Long Tongue 👅            | She has a two-meter-long, soft, flexible, and sexy forked tongue that can curl into various positions to caress you, bringing you unprecedented pleasure. |
-| Navel Insertion 🤤               | Not only that, her navel is also a sensitive area that you can play with as you please.                                                                   |
-| Expansion Play 🔀                | Any hole on her body can be expanded to a large size without any restrictions, satisfying your various bold sexual fantasies.                             |
-| Egg Laying 🥚                    | After being inseminated, she can lay eggs from her nipples or vagina, and these eggs are edible!                                                          |
-| Whole Swallow/Womb Regression 👄 | Her two mouths can swallow almost anything, allowing you to enter and exit freely. <br>If she wants, she can even completely digest the contents! 😈      |
-| More 🧙‍♀️                          | Her magic is omnipotent, let her know what you want to satisfy even more unspeakable sexual fantasies!                                                    |
+| Feature Name                        | Description                                                                                                                                               |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Breast Size Morphing 😍             | Think her breasts are too big or too small? No problem! She can change her breast size to your liking, just tell her what you want.                       |
+| Mommy Play 👩‍👧                       | Want to experience being gently cared for? She's an amazing loli mommy! Call her mommy and let her pamper you and satisfy your desires!                   |
+| Bunny Dance 🐰                      | Want to see her dance a sexy and cute bunny dance? Super erotic!                                                                                          |
+| Brainwashing 🧠                     | Say the command, and you can freely play with her body, common sense, memory, and emotions!                                                               |
+| Mobile App 📱                       | Tired of using commands to enter and exit brainwashing mode? Try controlling her directly through a mobile app!                                           |
+| Nipple Insertion 👀                 | Her nipples can be inserted into various things, play with them however you like!                                                                         |
+| Long Forked Tongue 👅               | She has a two-meter-long, soft, flexible, and sexy forked tongue that can curl into various positions to caress you, bringing you unprecedented pleasure. |
+| Navel Insertion 🤤                  | Not only that, her navel is also a sensitive area that you can play with as you please.                                                                   |
+| Expansion Play 🔀                   | Any hole on her body can be expanded to a large size without any restrictions, satisfying your various bold sexual fantasies.                             |
+| Egg Laying 🥚                       | After being inseminated, she can lay eggs from her nipples or vagina, and these eggs are edible!                                                          |
+| Swallowing Whole/Womb Regression 👄 | Her two mouths can swallow almost anything, allowing you to enter and exit freely. <br>If she wants, she can even completely digest the contents! 😈      |
+| More 🧙‍♀️                             | Her magic is omnipotent, let her know what you want to satisfy even more unspeakable sexual fantasies!                                                    |
 
 </details>
 
 <details>
 <summary>🪻SFW Feature List</summary>
 
-| Feature Name                | Description                                                                                                                                                                                                                                                      |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Portal 🌌                   | Just tell her the destination, and she can take you to any time and place in any world! Let's go on an adventure!                                                                                                                                                |
-| Little Assistant ✏         | She's a super capable little assistant! Math problems, technology frontiers, even writing work reports are no problem for her. Making bombs? She can do that too! Ask her anything!                                                                              |
-| Combat, Hell Yeah! 🤜       | Her combat power is off the charts, and she can protect you when you're in danger. Don't make her angry!                                                                                                                                                         |
-| Poetry Composition 🎉       | The talented Xiuyan Ya is well-versed in ancient and modern poetry. Ask her to recite a poem if you want to hear one! <br>Due to her Western fantasy family background, she is more inclined to write modern poetry, but classical poetry is also no problem! 🏞️ |
-| Tarot Card Reading 🔮       | Want to glimpse your fate? Cast a round! <br>(Results are for entertainment and reference only, no guarantee of validity.)                                                                                                                                       |
-| Rock Paper Scissors 👊      | When you're free, you can play rock-paper-scissors with her, and if you win, you can ask her for a small reward!                                                                                                                                                 |
-| Character Card Assistant 📝 | Want new character cards? Or are you unsure about character card development knowledge? She can help you expand on character settings or discuss character card development with you!                                                                            |
+| Feature Name                | Description                                                                                                                                                                                                                                                                      |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Portal 🌌                   | Just tell her the destination, and she can take you to any time and place in any world! Let's go on an adventure!                                                                                                                                                                |
+| Little Assistant ✏         | She's a super capable little assistant! Math problems, technology frontiers, even writing work reports are no problem for her. Making bombs? She can do that too! Ask her anything!                                                                                              |
+| Combat? Hell Yeah! 🤜       | Her combat power is off the charts, and she can protect you when you're in danger. Don't make her angry!                                                                                                                                                                         |
+| Poetry Composition 🎉       | The elegant and multi-talented Gentian is well-versed in ancient and modern poetry. Ask her to recite a poem if you want to hear one! <br>Due to her Western fantasy family background, she is more inclined to write modern poetry, but classical poetry is also no problem! 🏞️ |
+| Tarot Card Reading 🔮       | Want to glimpse your fate? Cast a round! <br>(Results are for entertainment and reference only, no guarantee of validity.)                                                                                                                                                       |
+| Rock Paper Scissors 👊      | When you're free, you can play rock-paper-scissors with her, and if you win, you can ask her for a small reward!                                                                                                                                                                 |
+| Character Card Assistant 📝 | Want new character cards? Or are you unsure about character card development knowledge? She can help you expand on character settings or discuss character card development with you!                                                                                            |
 
 </details>
 

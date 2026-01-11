@@ -1,4 +1,4 @@
-/* global geti18n, partpath, element */
+/* global geti18n, partpath, parturl */
 // Common elements
 /**
  * 将 Blob 对象转换为 Base64 编码的 Data URL 字符串。

@@ -32,7 +32,7 @@ export async function webbrowse(result, { AddLongTimeLog, prompt_struct }) {
 					console.info('网页内容：')
 					console.dir(markdown)
 
-					const browseing = {
+					const browsing = {
 						...prompt_struct,
 						char_prompt: await DeepResearchMainPrompt(),
 						other_chars_prompt: {},
@@ -61,7 +61,7 @@ ${question}
 							}
 						]
 					}
-					const browseResult = await OrderedAISourceCalling('web-browse', AI => AI.StructCall(browseing)) // Renamed result variable to avoid shadowing
+					const browseResult = await OrderedAISourceCalling('web-browse', AI => AI.StructCall(browsing)) // Renamed result variable to avoid shadowing
 					AddLongTimeLog({
 						content: '浏览结果：\n' + browseResult.content,
 						name: 'web-browse',

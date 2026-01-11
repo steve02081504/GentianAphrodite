@@ -1,4 +1,4 @@
-import { suffleArray } from './tools.mjs'
+import { shuffleArray } from './tools.mjs'
 
 /**
  * 从给定的参数中随机选择一个并返回。
@@ -15,7 +15,7 @@ export function random(...args) {
  * @returns {any[]} - 随机选择的参数数组。
  */
 export function PickRandomN(number, ...args) {
-	return suffleArray(args).slice(0, number)
+	return shuffleArray(args).slice(0, number)
 }
 /**
  * 将给定的字符串重复一个在最小和最大值之间的随机次数。

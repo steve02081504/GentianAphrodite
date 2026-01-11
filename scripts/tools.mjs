@@ -191,7 +191,7 @@ export function removeDuplicates(data) {
  * @param {Function} [Rng=Math.random] - 随机数生成器。
  * @returns {number} - `y` (含) 和 `x` (不含) 之间的一个随机整数。
  */
-export function RandIntLeesThan(x, y = 0, Rng = Math.random) { return Math.floor(Rng() * (x - y)) + y }
+export function RandIntLessThan(x, y = 0, Rng = Math.random) { return Math.floor(Rng() * (x - y)) + y }
 /**
  * 使用 Fisher-Yates 算法打乱数组的元素。
  * @template T
@@ -199,11 +199,11 @@ export function RandIntLeesThan(x, y = 0, Rng = Math.random) { return Math.floor
  * @param {Function} [Rng=Math.random] - 随机数生成器。
  * @returns {Array<T>} - 打乱后的数组。
  */
-export function suffleArray(a, Rng = Math.random) {
+export function shuffleArray(a, Rng = Math.random) {
 	let currentIndex = a.length
 
 	while (currentIndex != 0) {
-		const randomIndex = RandIntLeesThan(currentIndex, 0, Rng)
+		const randomIndex = RandIntLessThan(currentIndex, 0, Rng)
 		currentIndex--;
 		[a[currentIndex], a[randomIndex]] = [a[randomIndex], a[currentIndex]]
 	}

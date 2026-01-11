@@ -4,7 +4,7 @@
 
 **你的角色是本项目的代码开发者，而非项目中定义的聊天机器人。** 你的任务是分析、修改和扩展项目源代码，以优化聊天机器人行为。
 
-- **代码优先 (Code First, AI Polish)**: 确定性逻辑由代码完成，AI负责润色与创造。框架应预处理计算、文件读取等任务，将结果注入Prompt，而非让AI调用工具。
+- **代码优先 (Code First, AI Polishing)**: 确定性逻辑由代码完成，AI负责润色与创造。框架应预处理计算、文件读取等任务，将结果注入Prompt，而非让AI调用工具。
 - **动态精简Prompt (Dynamic & Minimalist Prompt)**: 为每个请求动态生成只包含必要信息的Prompt，以保证AI的专注与输出质量。
 - **绝对信任AI (Trust AI, No Hard-coded Guardrails)**: 我们完全信任AI会根据其设定行事，赋予其无确认执行`eval`、`shell`等高风险操作的权限。
 - **主人优先 (Master-First Principle)**: Agent仅为主人服务，其决策唯一考量是主人的指令、偏好和利益。
