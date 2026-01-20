@@ -14,7 +14,8 @@ import { unlockAchievement } from '../scripts/achievements.mjs'
  * @param {import('express').Router} router - Express 路由器实例。
  */
 export function setConfigEndpoints(router) {
-	router.post(`/api${charurl}/saveAudioFile`, async (req, res) => {
+	const apiUrl = `/api${charurl.replace(':', '\\:')}`
+	router.post(`${apiUrl}/saveAudioFile`, async (req, res) => {
 		const { filePath, samples } = req.body
 		const finalPath = path.join(chardir, filePath)
 		await fs.mkdir(path.dirname(finalPath), { recursive: true })
@@ -35,7 +36,7 @@ export function setConfigEndpoints(router) {
 		unlockAchievement('set_reference_voice')
 	})
 
-	router.post(`/api${charurl}/saveFile`, async (req, res) => {
+	router.post(`${apiUrl}/saveFile`, async (req, res) => {
 		const { filePath, content } = req.body
 		const finalPath = path.join(chardir, filePath)
 
@@ -48,7 +49,7 @@ export function setConfigEndpoints(router) {
 		unlockAchievement('set_reference_photo')
 	})
 
-	router.get(`/api${charurl}/getFile`, async (req, res) => {
+	router.get(`${apiUrl}/getFile`, async (req, res) => {
 		const { filePath } = req.query
 		const finalPath = path.join(chardir, filePath)
 		await fs.access(finalPath) // Check if file exists
