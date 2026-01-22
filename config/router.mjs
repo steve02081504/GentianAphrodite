@@ -52,7 +52,8 @@ export function setConfigEndpoints(router) {
 	router.get(`${apiUrl}/getFile`, async (req, res) => {
 		const { filePath } = req.query
 		const finalPath = path.join(chardir, filePath)
-		await fs.access(finalPath) // Check if file exists
+		if (!await fs.access(finalPath))
+			return res.status(404).json({ message: 'File not found' })
 		const fileContent = await fs.readFile(finalPath)
 		const ext = path.extname(finalPath).toLowerCase()
 		const mimeType = mimetype.lookup(ext) || 'application/octet-stream'
