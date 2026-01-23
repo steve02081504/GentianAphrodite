@@ -257,22 +257,6 @@ export async function GetReply(args) {
 				}
 				throw Object.assign(new Error(), { skip_auto_fix: true, skip_report: true })
 			}
-			const sticker = result.content.match(/<gentian-sticker>(.*?)<\/gentian-sticker>/)?.[1]
-			result.content = result.content.replace(/<gentian-sticker>(.*?)<\/gentian-sticker>/, '')
-			if (sticker)
-				if (args.extension?.platform === 'telegram')
-					result.content += `\n${await getTelegramSticker(sticker)}`
-				else if (args.extension?.platform === 'discord' && logical_results.in_muti_char_chat) // 在非群聊中用大图
-					result.content += `\n${await getDiscordSticker(sticker)}`
-				else try {
-					result.files.push({
-						name: sticker + '.avif',
-						buffer: Buffer.from(fs.readFileSync(chardir + '/public/imgs/stickers/' + sticker + '.avif'), 'base64'),
-						mime_type: 'image/avif'
-					})
-				} catch {
-					console.error(`Sticker ${sticker} not found`)
-				}
 			result.content = result.content.replace(/\s*<-<(null|error)>->\s*$/, '')
 			if (args.supported_functions.add_message) addNotifyAbleChannel(args)
 			if (!result.content) return null
@@ -315,6 +299,28 @@ export async function GetReply(args) {
 
 		// 在回复完成后保存短期记忆（包含回复结果）
 		await saveShortTermMemoryAfterReply(args, result)
+
+		// 在添加记忆后再处理贴纸语法，避免只有错误格式被记住导致回音室效应进而贴纸格式失效
+		const stickerMatches = [...result.content.matchAll(/<gentian-sticker>(.*?)<\/gentian-sticker>/g)]
+		for (const match of stickerMatches) {
+			const stickerName = match[1]
+			try {
+				let append = ''
+				if (args.extension?.platform === 'telegram')
+					append = `\n${await getTelegramSticker(stickerName)}`
+				else if (args.extension?.platform === 'discord' && logical_results.in_muti_char_chat) // 在非群聊中用大图
+					append = `\n${await getDiscordSticker(stickerName)}`
+				else
+					result.files.push({
+						name: stickerName + '.avif',
+						buffer: Buffer.from(fs.readFileSync(chardir + '/public/imgs/stickers/' + stickerName + '.avif'), 'base64'),
+						mime_type: 'image/avif'
+					})
+				result.content = result.content.replace(match[0], '') + append
+			} catch {
+				console.error(`Sticker ${stickerName} not found`)
+			}
+		}
 
 		return result
 	}
