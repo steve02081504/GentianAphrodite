@@ -66,15 +66,20 @@ export function buildPlatformAPI(interfaceConfig) {
 					`@${originalMessage.author.displayName} (${originalMessage.author.username})`,
 					`@${originalMessage.author.displayName}`,
 				]
-				for (const mention of mentionArray)
-					if (fountReplyPayload.content.startsWith(mention)) {
+				for (const mention of mentionArray) {
+					if (fountReplyPayload.content_for_show?.startsWith?.(mention)) {
+						repliedToDiscordMessage = originalMessage
+						fountReplyPayload.content_for_show = fountReplyPayload.content_for_show.slice(mention.length)
+					}
+					if (fountReplyPayload.content?.startsWith?.(mention)) {
 						repliedToDiscordMessage = originalMessage
 						fountReplyPayload.content = fountReplyPayload.content.slice(mention.length)
-						break
 					}
+					if (repliedToDiscordMessage) break
+				}
 			} catch { /* 原始消息可能已被删除，静默处理，后续发送时不使用 .reply() */ }
 
-			const textContent = fountReplyPayload.content || ''
+			const textContent = fountReplyPayload.content_for_show || fountReplyPayload.content || ''
 			const filesToSend = (fountReplyPayload.files || []).map(f => ({
 				attachment: f.buffer, name: f.name || 'file.dat', description: f.description
 			}))
@@ -134,7 +139,7 @@ export function buildPlatformAPI(interfaceConfig) {
 			}
 
 			if (firstSentDiscordMessage) {
-				if (fountReplyPayload && (fountReplyPayload.content || fountReplyPayload.files?.length))
+				if (fountReplyPayload && (fountReplyPayload.content_for_show || fountReplyPayload.content || fountReplyPayload.files?.length))
 					aiReplyObjectCache[firstSentDiscordMessage.id] = fountReplyPayload
 
 				return await discordMessageToFountChatLogEntry(firstSentDiscordMessage, interfaceConfig)

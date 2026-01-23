@@ -296,7 +296,7 @@ export function buildPlatformAPI(interfaceConfig) {
 			const { chatId, threadId: threadIdFromLogicalId } = parseLogicalChannelId(logicalChannelId)
 			const platformChatId = chatId
 
-			let aiMarkdownContent = fountReplyPayload.content || ''
+			let aiMarkdownContent = fountReplyPayload.content_for_show || fountReplyPayload.content || ''
 			const files = fountReplyPayload.files || []
 			const parseMode = 'HTML'
 
@@ -319,7 +319,7 @@ export function buildPlatformAPI(interfaceConfig) {
 			)
 
 			if (firstSentTelegramMessage) {
-				if (fountReplyPayload && (fountReplyPayload.content || fountReplyPayload.files?.length))
+				if (fountReplyPayload && (fountReplyPayload.content_for_show || fountReplyPayload.content || fountReplyPayload.files?.length))
 					aiReplyObjectCache[firstSentTelegramMessage.message_id] = fountReplyPayload
 
 				return await telegramMessageToFountChatLogEntry(telegrafInstance, firstSentTelegramMessage, interfaceConfig)

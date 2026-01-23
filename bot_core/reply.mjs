@@ -101,7 +101,7 @@ async function buildReplyRequest(triggerMessage, platformAPI, channelId, request
 		 * @returns {Promise<chatLogEntry_t_ext | null>} 如果成功发送，则返回创建的聊天记录条目，否则返回 null。
 		 */
 		async AddChatLogEntry(replyFromChar) {
-			if (replyFromChar && (replyFromChar.content || replyFromChar.files?.length))
+			if (replyFromChar && (replyFromChar.content_for_show || replyFromChar.content || replyFromChar.files?.length))
 				return await sendAndLogReply(replyFromChar, platformAPI, channelId, triggerMessage)
 
 			return null
@@ -143,11 +143,12 @@ async function processAIReply(aiFinalReply, platformAPI, channelId, triggerMessa
 
 	if (!aiFinalReply) return
 
-	for (const bannedStr of bannedStrings)
-		if (aiFinalReply.content)
-			aiFinalReply.content = aiFinalReply.content.replaceAll(bannedStr, '')
+	for (const bannedStr of bannedStrings) {
+		aiFinalReply.content_for_show = aiFinalReply.content_for_show.replaceAll(bannedStr, '')
+		aiFinalReply.content = aiFinalReply.content.replaceAll(bannedStr, '')
+	}
 
-	if (aiFinalReply.content || aiFinalReply.files?.length)
+	if (aiFinalReply.content_for_show || aiFinalReply.content || aiFinalReply.files?.length)
 		await sendAndLogReply(aiFinalReply, platformAPI, channelId, aiFinalReply.extension?.replied_to_message_id ? undefined : triggerMessage)
 
 }
@@ -195,7 +196,7 @@ export async function doMessageReply(triggerMessage, platformAPI, channelId) {
  * @returns {Promise<chatLogEntry_t_ext | null>} 返回第一条成功发送的消息对应的 fount Entry，如果发送失败或无内容则返回 null。
  */
 export async function sendAndLogReply(replyToSend, platformAPI, channelId, repliedToMessageEntry) {
-	if (!replyToSend.content && !replyToSend.files?.length) {
+	if (!(replyToSend.content_for_show || replyToSend.content || replyToSend.files?.length)) {
 		console.warn('[BotLogic] sendAndLogReply: Attempted to send empty message, skipped.', replyToSend)
 		return null
 	}
