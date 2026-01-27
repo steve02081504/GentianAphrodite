@@ -7,7 +7,7 @@ import { newCharReplay, newUserMessage } from '../scripts/statistics.mjs'
 import { findMostFrequentElement } from '../scripts/tools.mjs'
 
 import { sendAndLogReply, doMessageReply } from './reply.mjs'
-import { channelLastSendMessageTime, channelMuteStartTimes, currentConfig, inHypnosisChannelId, fuyanMode, setFuyanMode, bannedStrings, channelChatLogs, GentianWords } from './state.mjs'
+import { channelLastSendMessageTime, channelMuteStartTimes, currentConfig, inHypnosisChannelId, fuyanMode, setFuyanMode, bannedStrings, channelChatLogs, GentianWords, waitForOwnerTypingToEnd, clearOwnerTypingStartTime } from './state.mjs'
 import { fetchFilesForMessages, isBotCommand } from './utils.mjs'
 
 /**
@@ -280,7 +280,7 @@ function logTriggerCheckDetails(fountEntry, platformAPI, channelId, content, pos
 /**
  * 检查消息是否可以合并到上一条消息。
  * @param {chatLogEntry_t_ext | null} lastLogEntry - 上一条日志条目。
- * @param {chatLogEntry_t_ext} currentMessageToProcess - 当前待处理的消息。
+ * @param {chatLogEntry_t_ext | null} currentMessageToProcess - 当前待处理的消息。
  * @returns {boolean} 如果可以合并则返回 true。
  */
 function isMessageMergeable(lastLogEntry, currentMessageToProcess) {
@@ -291,6 +291,30 @@ function isMessageMergeable(lastLogEntry, currentMessageToProcess) {
 		!lastLogEntry.logContextAfter?.length &&
 		lastLogEntry.extension?.platform_message_ids &&
 		currentMessageToProcess.extension?.platform_message_ids
+}
+
+/**
+ * 将当前消息合并到上一条日志条目中。
+ * @param {chatLogEntry_t_ext} lastLogEntry - 上一条日志条目。
+ * @param {chatLogEntry_t_ext} currentMessage - 当前待合并的消息。
+ */
+function mergeMessageIntoLastEntry(lastLogEntry, currentMessage) {
+	const lastContentParts = lastLogEntry.extension?.content_parts || [lastLogEntry.content]
+	const currentContentParts = currentMessage.extension?.content_parts || [currentMessage.content]
+
+	lastLogEntry.content = lastContentParts.concat(currentContentParts).join('\n')
+	lastLogEntry.files = currentMessage.files
+	lastLogEntry.time_stamp = currentMessage.time_stamp
+	lastLogEntry.extension = {
+		...lastLogEntry.extension,
+		...currentMessage.extension,
+		platform_message_ids: Array.from(new Set([
+			...(lastLogEntry.extension?.platform_message_ids || []),
+			...(currentMessage.extension?.platform_message_ids || [])
+		])),
+		content_parts: lastContentParts.concat(currentContentParts),
+		SimplifiedContents: undefined,
+	}
 }
 
 /**
@@ -485,36 +509,30 @@ export async function processNextMessageInQueue(myQueue, currentChannelLog, plat
 		const actualLastLogEntry = lastLogEntry
 		do {
 			const triggerResultForCurrent = await checkQueueMessageTrigger(currentMessageToProcess, currentChannelLog, platformAPI, channelId)
-
-			actualLastLogEntry.content = (actualLastLogEntry.extension.content_parts || [actualLastLogEntry.content])
-				.concat(currentMessageToProcess.extension.content_parts || [currentMessageToProcess.content])
-				.join('\n')
-			actualLastLogEntry.files = currentMessageToProcess.files
-			actualLastLogEntry.time_stamp = currentMessageToProcess.time_stamp
-			actualLastLogEntry.extension = {
-				...actualLastLogEntry.extension,
-				...currentMessageToProcess.extension,
-				platform_message_ids: Array.from(new Set([
-					...actualLastLogEntry.extension.platform_message_ids || [],
-					...currentMessageToProcess.extension.platform_message_ids || []
-				])),
-				content_parts: (actualLastLogEntry.extension.content_parts || [actualLastLogEntry.content.split('\n').pop()])
-					.concat(currentMessageToProcess.extension.content_parts || [currentMessageToProcess.content]),
-				SimplifiedContents: undefined,
-			}
+			mergeMessageIntoLastEntry(actualLastLogEntry, currentMessageToProcess)
 			myQueue.shift()
 
-			if (triggerResultForCurrent === TriggerResultType.EXIT) return 'exit'
+			if (triggerResultForCurrent === TriggerResultType.EXIT) return 1
 			if (triggerResultForCurrent === TriggerResultType.TRIGGER_REPLY) triggered = true
 
 			currentMessageToProcess = myQueue[0]
-		} while (currentMessageToProcess && isMessageMergeable(actualLastLogEntry, currentMessageToProcess))
+		} while (isMessageMergeable(actualLastLogEntry, currentMessageToProcess))
 	}
 
 	while (currentChannelLog.length > currentConfig.DefaultMaxMessageDepth)
 		currentChannelLog.shift()
 
-	const messageForReply = triggered ? currentChannelLog[currentChannelLog.length - 1] : null
-	if (messageForReply)
-		await doMessageReply(messageForReply, platformAPI, channelId)
+	if (!triggered) return
+
+	const messageForReply = currentChannelLog[currentChannelLog.length - 1]
+	if (messageForReply.extension?.is_from_owner) {
+		await waitForOwnerTypingToEnd(channelId)
+		while (isMessageMergeable(messageForReply, myQueue[0])) {
+			mergeMessageIntoLastEntry(messageForReply, myQueue[0])
+			myQueue.shift()
+		}
+		clearOwnerTypingStartTime(channelId)
+	}
+
+	await doMessageReply(messageForReply, platformAPI, channelId)
 }

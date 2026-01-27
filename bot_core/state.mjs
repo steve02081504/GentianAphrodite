@@ -3,6 +3,8 @@
  * @typedef {import('../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatLogEntry_t} FountChatLogEntryBase
  */
 
+import { sleep } from '../scripts/tools.mjs'
+
 /**
  * 扩展的 fount 聊天日志条目类型，包含平台特定信息。
  * @typedef {FountChatLogEntryBase & {
@@ -63,6 +65,13 @@ export const channelCharScopedMemory = {}
  * @type {Record<string | number, number>}
  */
 export const channelMuteStartTimes = {}
+
+/**
+ * 记录主人用户在各个频道最后开始输入的时间戳。
+ * 键为频道 ID，值为毫秒级时间戳。
+ * @type {Record<string | number, number>}
+ */
+export const channelOwnerTypingStartTime = {}
 
 /**
  * 简易错误去重记录，防止短时间内重复报告相同错误。
@@ -191,4 +200,45 @@ export function touchChannelCache(channelId) {
 		if (toRemove && channelChatLogs[toRemove])
 			delete channelChatLogs[toRemove]
 	}
+}
+
+/**
+ * 更新主人用户在指定频道开始输入的时间戳。
+ * @param {string | number} channelId - 频道 ID。
+ */
+export function updateOwnerTypingStartTime(channelId) {
+	channelOwnerTypingStartTime[channelId] = Date.now()
+}
+
+/**
+ * 清除主人用户在指定频道的正在输入时间戳（通常在主人发送消息后调用）。
+ * @param {string | number} channelId - 频道 ID。
+ */
+export function clearOwnerTypingStartTime(channelId) {
+	delete channelOwnerTypingStartTime[channelId]
+}
+
+/**
+ * 检查主人用户是否在指定时间窗口内（默认2秒）有正在输入的通知。
+ * @param {string | number} channelId - 频道 ID。
+ * @param {number} [timeWindowMs=3000] - 时间窗口（毫秒）。
+ * @returns {boolean} 如果主人在时间窗口内有正在输入的通知，则返回 true。
+ */
+export function isOwnerTypingRecently(channelId, timeWindowMs = 3000) {
+	const typingStartTime = channelOwnerTypingStartTime[channelId]
+	if (!typingStartTime) return false
+	return Date.now() - typingStartTime <= timeWindowMs
+}
+
+/**
+ * 等待主人用户结束输入。
+ * 在指定时间窗口内检测到输入则等待输入结束并重新计时，直到连续指定时间没有输入。
+ * @async
+ * @param {string | number} channelId - 频道 ID。
+ * @param {number} [timeWindowMs=3000] - 时间窗口（毫秒）。
+ * @returns {Promise<void>}
+ */
+export async function waitForOwnerTypingToEnd(channelId, timeWindowMs = 3000) {
+	updateOwnerTypingStartTime(channelId)
+	while (isOwnerTypingRecently(channelId, timeWindowMs)) await sleep()
 }

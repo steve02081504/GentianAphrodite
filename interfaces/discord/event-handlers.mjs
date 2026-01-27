@@ -1,11 +1,12 @@
 import { Events, ActivityType } from 'npm:discord.js'
 
 import { processIncomingMessage, processMessageUpdate, processMessageDelete, preloadChannel } from '../../bot_core/index.mjs'
+import { updateOwnerTypingStartTime } from '../../bot_core/state.mjs'
 import { charname as BotFountCharname } from '../../charbase.mjs'
 import { tryFewTimes } from '../../scripts/tryFewTimes.mjs'
 
 import { discordMessageToFountChatLogEntry } from './message-converter.mjs'
-import { discordClientInstance, setResolvedOwnerId, discordUserIdToDisplayName, discordDisplayNameToId } from './state.mjs'
+import { discordClientInstance, setResolvedOwnerId, resolvedOwnerId, discordUserIdToDisplayName, discordDisplayNameToId } from './state.mjs'
 
 /**
  * @typedef {import('./config.mjs').DiscordInterfaceConfig_t} DiscordInterfaceConfig_t
@@ -43,10 +44,11 @@ export async function registerEventHandlers(interfaceConfig, discordPlatformAPI)
 	})
 
 	client.on(Events.TypingStart, async typing => {
-		// 这里我们使用闭包中的 resolvedOwnerId，确保它与当前初始化的配置一致
 		if (!resolvedOwnerId) return
-		if (typing.user.id === resolvedOwnerId)
+		if (typing.user.id === resolvedOwnerId) {
+			updateOwnerTypingStartTime(typing.channel.id)
 			preloadChannel(typing.channel.id, discordPlatformAPI)
+		}
 	})
 
 	client.on(Events.MessageUpdate, async (oldMessage, newMessage) => {
@@ -85,15 +87,15 @@ export async function registerEventHandlers(interfaceConfig, discordPlatformAPI)
 		discordDisplayNameToId[BotFountCharname] = botUserId
 	}
 
-	let resolvedOwnerId = null
+	let localResolvedOwnerId = null
 	if (interfaceConfig.OwnerDiscordID) {
-		resolvedOwnerId = interfaceConfig.OwnerDiscordID
+		localResolvedOwnerId = interfaceConfig.OwnerDiscordID
 		try {
-			await client.users.fetch(resolvedOwnerId)
+			await client.users.fetch(localResolvedOwnerId)
 		}
 		catch (e) {
-			console.error(`[DiscordInterface] Failed to fetch owner user by OwnerDiscordID ${resolvedOwnerId}. Ensure the ID is correct.`, e)
-			resolvedOwnerId = null
+			console.error(`[DiscordInterface] Failed to fetch owner user by OwnerDiscordID ${localResolvedOwnerId}. Ensure the ID is correct.`, e)
+			localResolvedOwnerId = null
 		}
 	}
 	else if (interfaceConfig.OwnerUserName) {
@@ -103,7 +105,7 @@ export async function registerEventHandlers(interfaceConfig, discordPlatformAPI)
 				const members = await guild.members.fetch()
 				const ownerMember = members.find(m => m.user.username === interfaceConfig.OwnerUserName)
 				if (ownerMember) {
-					resolvedOwnerId = ownerMember.id
+					localResolvedOwnerId = ownerMember.id
 					found = true
 					break
 				}
@@ -113,9 +115,8 @@ export async function registerEventHandlers(interfaceConfig, discordPlatformAPI)
 			}
 
 		if (!found) console.warn(`[DiscordInterface] Could not resolve OwnerID for UserName "${interfaceConfig.OwnerUserName}" from shared guilds. Owner-specific features might be limited.`)
-
 	}
 	else console.warn('[DiscordInterface] Neither OwnerDiscordID nor OwnerUserName are configured. Owner-specific features will not work.')
 
-	setResolvedOwnerId(resolvedOwnerId)
+	setResolvedOwnerId(localResolvedOwnerId)
 }
