@@ -9,7 +9,7 @@ import { fetchFilesForMessages } from './utils.mjs'
  * 记录无效入群事件的时间戳。
  * @type {number[]}
  */
-const invalidGroupJoinEvents = []
+let invalidGroupJoinEvents = []
 
 /**
  * 平台接口 API 对象类型定义。
@@ -198,8 +198,10 @@ async function handleOwnerNotInGroup(group, platformAPI, defaultChannel) {
 	const thirtyMinutesAgo = now - 30 * 60 * 1000
 
 	// 过滤掉旧事件
-	const invalidGroupJoinEvents = invalidGroupJoinEvents.filter(timestamp => timestamp >= thirtyMinutesAgo)
-	invalidGroupJoinEvents.push(now)
+	invalidGroupJoinEvents = [
+		...invalidGroupJoinEvents.filter(timestamp => timestamp >= thirtyMinutesAgo),
+		now
+	]
 
 	// 如果在半小时内有超过3次无效入群，则直接退群
 	if (invalidGroupJoinEvents.length > 3) {
