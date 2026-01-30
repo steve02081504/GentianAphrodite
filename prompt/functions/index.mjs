@@ -14,6 +14,7 @@ import { HostInfoPrompt } from './hostinfo.mjs'
 import { IdleManagementPrompt } from './idle-management.mjs'
 import { infoPrompt } from './info.mjs'
 import { KanjiPrompt } from './kanji.mjs'
+import { NotifyPrompt } from './notify.mjs'
 import { PoemPrompt } from './poem.mjs'
 import { PromptReviewerPrompt } from './prompt-reviewer.mjs'
 import { PromptWriterPrompt } from './promptWriter.mjs'
@@ -61,6 +62,7 @@ export async function FunctionPrompt(args, logical_results) {
 	result.push(PromptReviewerPrompt(args, logical_results))
 	result.push(BrowserIntegrationPrompt(args, logical_results))
 	result.push(IdleManagementPrompt(args, logical_results))
+	result.push(NotifyPrompt(args, logical_results))
 	result.push(CharGeneratorPrompt(args, logical_results))
 	if (args.supported_functions.add_message)
 		result.push(TimerPrompt(args, logical_results))

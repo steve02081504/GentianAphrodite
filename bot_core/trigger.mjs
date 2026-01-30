@@ -309,8 +309,8 @@ function mergeMessageIntoLastEntry(lastLogEntry, currentMessage) {
 		...lastLogEntry.extension,
 		...currentMessage.extension,
 		platform_message_ids: Array.from(new Set([
-			...(lastLogEntry.extension?.platform_message_ids || []),
-			...(currentMessage.extension?.platform_message_ids || [])
+			...lastLogEntry.extension?.platform_message_ids || [],
+			...currentMessage.extension?.platform_message_ids || []
 		])),
 		content_parts: lastContentParts.concat(currentContentParts),
 		SimplifiedContents: undefined,

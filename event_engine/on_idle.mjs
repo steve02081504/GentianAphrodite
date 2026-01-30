@@ -337,6 +337,7 @@ ${selectedTask.get_content()}
 		chat_log: [...RealityChannel.chat_log, logEntry],
 		extension: {
 			...RealityChannel.extension,
+			enable_prompts: { notify: true },
 			is_internal: true,
 			source_purpose: 'idle',
 			enable_prompts: selectedTask.enable_prompts

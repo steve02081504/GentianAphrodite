@@ -29,6 +29,7 @@ import { file_change } from './functions/file-change.mjs'
 import { getToolInfo } from './functions/getToolInfo.mjs'
 import { IdleManagementHandler } from './functions/idle-management.mjs'
 import { LongTermMemoryHandler } from './functions/long-term-memory.mjs'
+import { notifyHandler } from './functions/notify.mjs'
 import { rolesettingfilter } from './functions/rolesettingfilter.mjs'
 import { ShortTermMemoryHandler } from './functions/short-term-memory.mjs'
 import { timer } from './functions/timer.mjs'
@@ -193,6 +194,10 @@ export async function GetReply(args) {
 				{ start: '<browser-remove-autorun-script>', end: '</browser-remove-autorun-script>' },
 				{ start: '<browser-list-autorun-scripts>', end: '</browser-list-autorun-scripts>' },
 
+				// Notify (notify & system-notify)
+				{ start: '<notify>', end: '</notify>' },
+				{ start: '<system-notify>', end: '</system-notify>' },
+
 				// Idle Management
 				{ start: '<adjust-idle-weight>', end: '</adjust-idle-weight>' },
 				{ start: '<postpone-idle>', end: '</postpone-idle>' },
@@ -265,6 +270,7 @@ export async function GetReply(args) {
 				getToolInfo, CharGenerator, PersonaGenerator,
 				coderunner, LongTermMemoryHandler, ShortTermMemoryHandler,
 				deepResearch, websearch, webbrowse, rolesettingfilter, file_change, browserIntegration, IdleManagementHandler,
+				notifyHandler,
 				args.supported_functions.add_message ? timer : null,
 				...Object.values(args.plugins).map(plugin => plugin.interfaces.chat?.ReplyHandler)
 			].filter(Boolean)

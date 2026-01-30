@@ -1,14 +1,5 @@
-import { defineToolUseBlocks } from '../../../../../../src/public/parts/shells/chat/src/stream.mjs'
-import { getFocusedPageInfo, sendDanmakuToPage } from '../../../../../../src/public/parts/shells/browserIntegration/src/api.mjs'
 import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
-import { notify } from '../../../../../../src/scripts/notify.mjs'
 import { charname, GentianAphrodite, username } from '../charbase.mjs'
-import { config } from '../config/index.mjs'
-import { discordPlatformAPI } from '../interfaces/discord/index.mjs'
-import { telegramPlatformAPI } from '../interfaces/telegram/index.mjs'
-
-/** 默认弹幕颜色 */
-const DEFAULT_DANMAKU_COLOR = 'FF69B4'
 
 /**
  * Fount 世界观对象，定义了 AI 角色在“真实世界”中的行为准则和能力。
@@ -44,137 +35,6 @@ const realityWorld = {
 						}
 					]
 				}
-			}
-		}
-	}
-}
-
-/**
- * 从 <notify> 标签的属性字符串中解析 color 和 fontSize。
- * @param {string} [attrs] - 标签属性字符串，如 'color="FF69B4" fontSize="24"'
- * @returns {{ color?: string, fontSize?: number }}
- */
-function parseNotifyAttrs(attrs) {
-	attrs = String(attrs).trim()
-	const color = attrs.match(/(?:^|\s)color\s*=\s*["']([^"']*)["']/i)?.[1]?.trim?.()
-	const fontSize = Number(attrs.match(/(?:^|\s)font[-_]?size\s*=\s*["']([^"']*)["']/i)?.[1]?.trim?.() || 0)
-	return { color, fontSize }
-}
-
-/**
- * 通过多种渠道发送现实频道通知的函数。先尝试在活跃页面发弹幕，再按配置顺序发送通知。
- * @param {string} message - 要发送的通知内容。
- * @param {string} purpose - 触发目的，用于选择对应的通知顺序配置。
- * @param {{ color?: string, fontSize?: number }} [danmakuOpts] - 弹幕样式（颜色、字体大小），仅在有活跃页面时使用。
- */
-async function sendRealityNotification(message, purpose, danmakuOpts = {}) {
-	sendDanmakuToPage(username, undefined, {
-			content: message,
-			color: danmakuOpts.color || DEFAULT_DANMAKU_COLOR,
-			fontSize: danmakuOpts.fontSize || undefined
-	}).catch(e => {
-		console.warn('[RealityNotify] Danmaku failed:', e)
-	})
-
-	for (const method of config.reality_channel_notification_fallback_order[purpose] || ['discord', 'telegram', 'system']) try {
-		switch (method) {
-			case 'discord':
-				if (discordPlatformAPI?.sendDirectMessageToOwner) {
-					await discordPlatformAPI.sendDirectMessageToOwner(message)
-					return // Stop after success
-				}
-				break
-			case 'telegram':
-				if (telegramPlatformAPI?.sendDirectMessageToOwner) {
-					await telegramPlatformAPI.sendDirectMessageToOwner(message)
-					return // Stop after success
-				}
-				break
-			case 'system':
-				notify(charname, message)
-				return // Stop after success
-		}
-	} catch (e) { }
-
-	console.error(`[RealityNotify] All notification methods failed for message: "${message}"`)
-}
-
-/**
- * Fount 插件，为 AI 角色提供通过系统通知与用户进行带外通信的能力。
- * @type {import('../../../../../../src/decl/pluginAPI.ts').pluginAPI_t}
- */
-const notify_plugin = {
-	info: {
-		'zh-CN': {
-			name: '通知插件',
-			description: '通知插件，让AI能够通知用户',
-			author: 'steve02081504',
-		},
-		'en-US': {
-			name: 'notify plugin',
-			description: 'notify plugin, let AI notify users',
-			author: 'steve02081504',
-		},
-	},
-	interfaces: {
-		chat: {
-			/**
-			 * 获取用于通知插件的 AI 提示，指导 AI 如何使用通知功能。
-			 * @param {object} args - 提示参数。
-			 * @param {object} result - 结果对象。
-			 * @returns {Promise<object>} 包含额外聊天日志的对象。
-			 */
-			GetPrompt: async (args, result) => {
-				return {
-					additional_chat_log: [
-						{
-							role: 'system',
-							name: 'system',
-							content: `\
-你可以通过回复以下格式来通知${args.UserCharname}：
-<notify color="FF69B4" fontSize="24">
-通知内容
-</notify>
-属性可选，在省略时color默认FF69B4、fontSize默认24。
-像这样：
-龙胆: 我注意到主人的领带没系好，得通知主人一下才行。
-<notify color="FF0000" fontSize="20">主人！领带没系好哦！</notify>
-notify可以通知你主人，其实现方式是未定义的，可能通过聊天软件的私信、系统通知等方式发送给用户。颜色和字体大小也不保证一定生效。
-
-如果你希望发送一个系统弹窗确保给“电脑前的人”而不是你主人，你可以使用<system-notify>：
-<system-notify>
-通知内容
-</system-notify>
-系统弹窗功能没有参数支持，只能发送纯文本。
-`,
-						}
-					]
-				}
-			},
-			GetReplyPreviewUpdater: defineToolUseBlocks([
-				{ start: '<notify>', end: '</notify>' },
-				{ start: '<system-notify>', end: '</system-notify>' }
-			]),
-			/**
-			 * 处理 AI 的回复，提取并发送通知内容。
-			 * @param {object} result - AI 的回复结果对象。
-			 * @returns {Promise<boolean>} 返回 false，表示此处理程序只修改结果，不完全处理回复。
-			 */
-			ReplyHandler: async result => {
-				const rawMatch = result.content.match(/<system-notify>(?<content>[\S\s]*?)<\/system-notify>/)
-				if (rawMatch) {
-					const content = rawMatch?.groups?.content?.trim?.()
-					if (content) notify(charname, result.extension.system_notify = content)
-				}
-
-				const match = result.content.match(/<notify(\s+[^>]*)?>(?<content>[\S\s]*?)<\/notify>/)
-				if (match) {
-					const content = match?.groups?.content?.trim?.()
-					if (content) await sendRealityNotification(result.extension.notify = content, result.extension?.source_purpose, parseNotifyAttrs(match.groups[1]))
-				}
-
-				// Return false as this handler only modifies the result, doesn't fully handle the reply
-				return false
 			}
 		}
 	}
@@ -245,9 +105,7 @@ export function initRealityChannel() {
 			RealityChannel.chat_log.push(entry)
 		},
 		other_chars: {},
-		plugins: {
-			notify_plugin,
-		},
+		plugins: {},
 		/**
 		 * 更新“真实世界”频道对象的时间戳并返回自身。
 		 * @returns {object} 更新后的 RealityChannel 对象。
