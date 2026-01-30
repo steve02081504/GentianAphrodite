@@ -194,11 +194,11 @@ export async function discordMessageToFountChatLogEntry(message, interfaceConfig
 
 	/** @type {chatLogEntry_t_ext} */
 	const fountEntry = {
+		content,
 		...aiReplyObjectCache[message.id],
 		time_stamp: message.editedTimestamp || message.createdTimestamp,
 		role: isFromOwner ? 'user' : 'char',
 		name: senderName,
-		content,
 		files: allFilePromises,
 		extension: {
 			platform: 'discord',

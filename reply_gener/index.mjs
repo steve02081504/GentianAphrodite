@@ -316,7 +316,7 @@ export async function GetReply(args) {
 						buffer: Buffer.from(fs.readFileSync(chardir + '/public/imgs/stickers/' + stickerName + '.avif'), 'base64'),
 						mime_type: 'image/avif'
 					})
-				result.content = result.content.replace(match[0], '') + append
+				result.content_for_show = result.content.replace(match[0], '') + append
 			} catch {
 				console.error(`Sticker ${stickerName} not found`)
 			}

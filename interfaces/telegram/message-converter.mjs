@@ -314,11 +314,11 @@ export async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, messa
 
 	/** @type {chatLogEntry_t_ext} */
 	const fountEntry = {
+		content,
 		...aiReplyObjectCache[message.message_id],
 		time_stamp: message.edit_date ? message.edit_date * 1000 : message.date * 1000,
 		role: isFromOwner ? 'user' : 'char',
 		name: senderName,
-		content,
 		files,
 		extension: {
 			platform: 'telegram',
