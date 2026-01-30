@@ -6,11 +6,11 @@ import { discordPlatformAPI } from '../../interfaces/discord/index.mjs'
 import { telegramPlatformAPI } from '../../interfaces/telegram/index.mjs'
 
 /** 默认弹幕颜色 */
-const DEFAULT_DANMAKU_COLOR = 'FF69B4'
+const DEFAULT_DANMAKU_COLOR = '#FF69B4'
 
 /**
  * 从 <notify> 标签的属性字符串中解析 color 和 fontSize。
- * @param {string} [attrs] - 标签属性字符串，如 'color="FF69B4" fontSize="24"'
+ * @param {string} [attrs] - 标签属性字符串，如 'color="#FF69B4" fontSize="24"'
  * @returns {{ color?: string, fontSize?: number }}
  */
 function parseNotifyAttrs(attrs) {

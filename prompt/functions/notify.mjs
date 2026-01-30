@@ -17,13 +17,13 @@ export async function NotifyPrompt(args, logical_results) {
 		await match_keys(args, ['通知', '提醒', 'notify'], 'any')
 	) result += `\
 你可以通过回复以下格式来通知你主人：
-<notify color="FF69B4" fontSize="24">
+<notify color="#FF69B4" fontSize="24">
 通知内容
 </notify>
-属性可选，在省略时color默认FF69B4、fontSize默认24。
+属性可选，在省略时color默认#FF69B4，fontSize默认24。
 像这样：
 龙胆: 我注意到主人的领带没系好，得通知主人一下才行。
-<notify color="FF0000" fontSize="20">主人！领带没系好哦！</notify>
+<notify color="#FF0000" fontSize="20">主人！领带没系好哦！</notify>
 notify可以通知你主人，其实现方式是未定义的，可能通过聊天软件的私信、系统通知等方式发送给用户。颜色和字体大小也不保证一定生效。
 
 如果你希望发送一个系统弹窗确保给“电脑前的人”而不是你主人，你可以使用<system-notify>：
