@@ -157,6 +157,11 @@ const a = 1;
 const b = 2;
 </override-file>
 
+替换、覆盖、搜索的内容无需xml转义，如：
+<override-file path="D:/amazing discovery.txt">
+wow! 1 < 2 & 4 > 3!
+</override-file>
+
 在修改文件前，务必确认文件内容，避免误操作。
 使用replace-file时，务必保证替换内容和目标的准确性。
 若修正文件内容，尽可能使用替换，替换比覆写更加灵活、简洁。
