@@ -9,6 +9,7 @@ import { config } from '../config/index.mjs'
 import { formatLongTermMemory, getRandomNLongTermMemories } from '../prompt/memory/long-term-memory.mjs'
 import { GetReply } from '../reply_gener/index.mjs'
 import { random } from '../scripts/random.mjs'
+import { timeToTimeStr } from '../scripts/tools.mjs'
 
 import { initRealityChannel, RealityChannel } from './index.mjs'
 
@@ -343,12 +344,21 @@ ${selectedTask.get_content()}
 			enable_prompts: selectedTask.enable_prompts
 		}
 	})
-	if (!result) return
+	if (result.extension?.is_error_report) {
+		idleIntervalMs *= 2
+		console.log('error occurred in idle task, doubling idle interval to', timeToTimeStr(idleIntervalMs))
+	}
+	else {
+		idleIntervalMs = defaultIdleIntervalMs
+		console.log('no error occurred, resetting idle interval to', timeToTimeStr(idleIntervalMs))
+	}
+	if (!result || result.extension?.is_error_report) return
 	result.logContextBefore.push(logEntry)
 	await RealityChannel.AddChatLogEntry({ name: '龙胆', ...result })
 }
 
-const IDLE_INTERVAL_MS = 15 * 60 * 1000 // 15 minutes
+const defaultIdleIntervalMs = 15 * 60 * 1000 // 15 minutes
+let idleIntervalMs = defaultIdleIntervalMs
 let idleID = null
 let nextIdleTime = 0
 
@@ -358,7 +368,7 @@ let nextIdleTime = 0
  * @param {number} [delay] - 可选的延迟时间（毫秒），如果未指定则使用默认间隔。
  * @returns {void}
  */
-export function resetIdleTimer(delay = IDLE_INTERVAL_MS) {
+export function resetIdleTimer(delay = idleIntervalMs) {
 	stopIdleTimer()
 	if (config.reality_channel_disables.idle_event) return
 	nextIdleTime = Date.now() + delay
