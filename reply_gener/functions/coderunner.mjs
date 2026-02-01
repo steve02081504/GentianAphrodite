@@ -7,7 +7,7 @@ import { available, shell_exec_map } from 'npm:@steve02081504/exec'
 import { defineInlineToolUses } from '../../../../../../../src/public/parts/shells/chat/src/stream.mjs'
 import { unlockAchievement } from '../../scripts/achievements.mjs'
 import { toFileObj } from '../../scripts/fileobj.mjs'
-import { newCharReplay, statisticDatas } from '../../scripts/statistics.mjs'
+import { newCharReply, statisticDatas } from '../../scripts/statistics.mjs'
 import { captureScreen } from '../../scripts/tools.mjs'
 import { GetReply } from '../index.mjs'
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
@@ -46,7 +46,7 @@ ${code}
 		if (!reply) return
 		reply.logContextBefore.push(feedback)
 		await logger({ name: '龙胆', ...reply })
-		newCharReplay(reply.content, args.extension?.platform || 'chat')
+		newCharReply(reply.content, args.extension?.platform || 'chat')
 	}
 	catch (error) {
 		console.error(`Error processing callback for "${reason}":`, error)

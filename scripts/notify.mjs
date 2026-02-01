@@ -62,7 +62,7 @@ function initBaseNotifyChannel() {
  * @param {Function} func - 要执行的函数，它将接收一个更新后的渠道对象作为参数。
  * @returns {Promise<any>} - 函数的返回值。
  */
-export async function UseNofityAbleChannel(func) {
+export async function UseNotifyAbleChannel(func) {
 	initBaseNotifyChannel()
 	for (const channel of [...notifyAbleChannels, baseNotifyChannel]) try {
 		return await func(await channel.Update())

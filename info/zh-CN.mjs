@@ -45,7 +45,7 @@ ${escapeHTML(statisticDatas.firstInteraction.userMessageContent)}
 ${escapeHTML(statisticDatas.firstInteraction.characterReplyContent)}
 </code></pre>
 
-📊 直到今天，你累积发了${statisticDatas.userActivity.totalMessagesSent}条信息，一共${statisticDatas.userActivity.totalStatementsSent}句，其中：
+📊 直到今天，你累计发了${statisticDatas.userActivity.totalMessagesSent}条信息，一共${statisticDatas.userActivity.totalStatementsSent}句，其中：
 
 - 🔞 ${statisticDatas.userActivity.NsfwMessagesSent}次回复你和她在做少儿不宜的事
 - 🌀 ${statisticDatas.userActivity.InHypnosisMessagesSent}次回复中你在用调制模式肆意玩弄她的灵魂

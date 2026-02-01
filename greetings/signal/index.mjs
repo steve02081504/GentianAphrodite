@@ -22,6 +22,6 @@ async function commonGreetings(args) {
  * @param {string} args.UserCharname - 用户的角色名称。
  * @returns {Promise<Array<object>>} - 包含问候语内容的 Promise 数组。
  */
-export function singalGreetings(args) {
+export function signalGreetings(args) {
 	return commonGreetings(args)
 }

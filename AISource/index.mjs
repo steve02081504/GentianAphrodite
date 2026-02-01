@@ -61,8 +61,8 @@ export function GetAISourceCallingOrder(name) {
 	// 对于不同任务需求，按照指定顺序尝试调用AI
 	switch (name) {
 		case 'deep-research':
-			// 我们假设用户给龙胆设置的AI来源中，来源的智商顺序以以下顺序排列：
-			// 详细思考模型，专家模型，正经使用模型，网页浏览模型，色情模型，简易逻辑模型
+			// 我们假设用户为龙胆设置的AI来源中，来源的智商顺序按以下顺序排列：
+			// 深度思考模型，专家模型，正经使用模型，网页浏览模型，色情模型，轻量逻辑模型
 			// 在详细思考任务中，我们以此顺序回落AI来源
 			return ['deep-research', 'expert', 'sfw', 'web-browse', 'nsfw', 'logic', 'from-other']
 		case 'web-browse':
@@ -90,7 +90,7 @@ export function GetAISourceCallingOrder(name) {
 			// 终端助手，优先使用专用模型
 			return ['shell-assist', 'sfw', 'expert', 'deep-research', 'web-browse', 'nsfw', 'logic', 'from-other']
 		case 'from-other':
-			// 在回复他人时，我们以最低消费模型的顺序来回落，以最大程度减少不必要的算力损耗
+			// 在回复他人时，我们以最低消耗模型的顺序来回落，以最大程度减少不必要的算力损耗
 			// 由于logic模型的低智商可能引起不安全操作，因此我们将其放在靠后的位置
 			return ['from-other', 'nsfw', 'web-browse', 'deep-research', 'sfw', 'logic', 'expert']
 	}

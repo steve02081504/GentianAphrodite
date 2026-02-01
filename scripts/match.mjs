@@ -106,7 +106,7 @@ export function base_match_keys(content, keys,
 		return Math.max(...contents.map(content => reg_keys.filter(key => content.match(key)).length))
 	}
 ) {
-	// convert all keys to regexp, if it's have chinese like character, no match hole word
+	// convert all keys to regexp; if it contains Chinese-like characters, do not match whole word
 	keys.forEach(key => {
 		if (key instanceof RegExp) key.lastIndex = 0
 	})

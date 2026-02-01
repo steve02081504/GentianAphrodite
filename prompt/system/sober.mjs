@@ -25,7 +25,7 @@ export async function SoberPrompt(args, logical_results) {
 			name: args.Charname,
 			role: 'char',
 			content: `\
-*龙胆眨了眨水灵灵的眼睛，标志性地眯了下眼角。*
+*龙胆眨了眨水灵灵的眼睛，标志性地眯了下眼。*
 `,
 		}]
 	}

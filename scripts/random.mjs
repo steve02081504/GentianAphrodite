@@ -24,7 +24,7 @@ export function PickRandomN(number, ...args) {
  * @param {number} max - 最大重复次数。
  * @returns {string} - 重复后的字符串。
  */
-export function repetRandomTimes(str, min, max) {
+export function repeatRandomTimes(str, min, max) {
 	const time = Math.floor(Math.random() * (max - min) + min)
 	return str.repeat(time)
 }

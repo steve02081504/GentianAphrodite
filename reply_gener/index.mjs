@@ -18,7 +18,7 @@ import { saveShortTermMemoryAfterReply } from '../prompt/memory/short-term-memor
 import { unlockAchievement } from '../scripts/achievements.mjs'
 import { match_keys } from '../scripts/match.mjs'
 import { addNotifyAbleChannel } from '../scripts/notify.mjs'
-import { newCharReplay, newUserMessage, saveStatisticDatas, statisticDatas } from '../scripts/statistics.mjs'
+import { newCharReply, newUserMessage, saveStatisticDatas, statisticDatas } from '../scripts/statistics.mjs'
 
 import { handleError } from './error.mjs'
 import { browserIntegration } from './functions/browserIntegration.mjs'
@@ -291,7 +291,7 @@ export async function baseGetReply(args) {
 			statisticDatas.userActivity.NsfwMessagesSent++
 		if (logical_results.in_hypnosis && !logical_results.hypnosis_exit)
 			statisticDatas.userActivity.InHypnosisMessagesSent++
-		newCharReplay(result.content, args.extension?.platform || 'chat')
+		newCharReply(result.content, args.extension?.platform || 'chat')
 		if (!statisticDatas.firstInteraction.time) {
 			statisticDatas.firstInteraction = {
 				time: Date.now(),

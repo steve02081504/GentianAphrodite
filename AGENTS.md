@@ -45,7 +45,7 @@
   - **示例**: `autocalc.mjs` (数学计算), `qrcodeParser.mjs` (二维码解析), `screenshot.mjs` (屏幕截图)。
   - **实现**: 在`prompt/build.mjs`或相关预处理器中添加检测和执行逻辑，将结果注入`reply_request.extension`。
 
-- **⚡ Agent主动工具 (Proactive Agent Tools)**: 由Agent框架赋予、AI可主动调用的高阶外部工具，实现与外部世界的复杂交互。
+- **⚡ Agent 自主工具 (Proactive Agent Tools)**: 由Agent框架赋予、AI可主动调用的高阶外部工具，实现与外部世界的复杂交互。
   - **示例**: `websearch` (搜索), `coderunner` (代码执行), `file-change` (文件操作)。
   - **实现**:
     1. 在`prompt/functions/`中声明工具API。

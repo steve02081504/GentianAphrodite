@@ -154,7 +154,7 @@ const the25h = parseDuration('25h')
  * @param {string} str - 角色的回复内容。
  * @param {string} platform - 回复发送到的平台。
  */
-export function newCharReplay(str, platform) {
+export function newCharReply(str, platform) {
 	const sentenceNum = getStatementsNum(str)
 	statisticDatas.characterActivity.totalMessagesSent++
 	statisticDatas.characterActivity.totalStatementsSent += sentenceNum

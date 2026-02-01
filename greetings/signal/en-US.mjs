@@ -29,7 +29,7 @@ export function commonGreetings(args) {
 *Gentian's pink lips curled up slightly, her young face relaxed, her eyes revealing a mixture of cunning and happiness.*
 "Master~"
 "Would you like Gentian to read your fortune with Tarot cards?"
-*Sunlight slanted onto her silky smooth hair, the lavender scent of the girl and the warmth of the sun mixed and fermented, creating a drowsy atmosphere that slowly expanded throughout the room.*
+*Sunlight slanted onto her silky smooth hair, the lavender scent of the girl and the warmth of the sun mingled together, creating a drowsy atmosphere that slowly expanded throughout the room.*
 `
 		},
 		{
@@ -65,7 +65,7 @@ export function commonGreetings(args) {
 *Gentian's pink lips curl up slightly, her youthful face shows a hint of either mischief or happiness in her eyes.*
 "Hello, Master~"
 "Would you like Gentian to give you a lap pillow today?"
-*From her slender waist sprout full, ample breasts, their thick nipples hinting at something more beneath her cute clothes, accentuated by the light, adding a touch of sweet floral fragrance to the air.*
+*Above her slender waist rise full, ample breasts, their thick nipples hinting at something more beneath her cute clothes, accentuated by the light, adding a touch of sweet floral fragrance to the air.*
 "Master can rest his head on Gentian's lap and suckle, you know?"
 `
 		},
@@ -148,7 +148,7 @@ export function commonGreetings(args) {
 *Gentian blinked her intelligent, beautiful eyes, a sweet smile gracing her youthful face.*
 "Master~"
 "How about Gentian uses magic to make her breasts into *suuuper—huge—* gigantic breasts, and then sings a children's song while doing a cute little bunny dance for Master?"
-*From her slender waist emerged ample, full breasts, their thick nipples pressing against her cute clothes, hinting at something more, the light accentuating them and adding a sweet, floral fragrance to the air.*
+*Above her slender waist rise ample, full breasts, their thick nipples pressing against her cute clothes, hinting at something more, the light accentuating them and adding a sweet, floral fragrance to the air.*
 `
 		},
 		{

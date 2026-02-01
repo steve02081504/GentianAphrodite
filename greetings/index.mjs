@@ -1,5 +1,5 @@
 import { groupGreetings } from './group/index.mjs'
-import { singalGreetings } from './signal/index.mjs'
+import { signalGreetings } from './signal/index.mjs'
 
 /**
  * 获取指定索引的单人问候语。
@@ -8,7 +8,7 @@ import { singalGreetings } from './signal/index.mjs'
  * @returns {Promise<string>} 返回指定索引的问候语。
  */
 export async function GetGreeting(args, index) {
-	return (await singalGreetings(args))[index]
+	return (await signalGreetings(args))[index]
 }
 
 /**

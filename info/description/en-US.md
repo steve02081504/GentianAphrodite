@@ -3,7 +3,7 @@ A complex legal loli wife with rich details & features!✨
 <!--badges-->
 
 [![GitHub stars](https://img.shields.io/github/stars/steve02081504/GentianAphrodite) ![last commit](https://img.shields.io/github/last-commit/steve02081504/GentianAphrodite)](https://github.com/steve02081504/GentianAphrodite)
-![version now](https://badgen.net/static/version%0Anow/${charvar}) [![latest version](https://img.shields.io/github/v/release/steve02081504/GentianAphrodite?label=latest%20version)](https://github.com/steve02081504/GentianAphrodite/releases/latest) ![avg context tokenss](https://img.shields.io/badge/usual%20state%20token-${statisticDatas.avgTokenNum}-green)
+![version now](https://badgen.net/static/version%0Anow/${charvar}) [![latest version](https://img.shields.io/github/v/release/steve02081504/GentianAphrodite?label=latest%20version)](https://github.com/steve02081504/GentianAphrodite/releases/latest) ![avg context tokens](https://img.shields.io/badge/usual%20state%20token-${statisticDatas.avgTokenNum}-green)
 
 <!--/badges-->
 
@@ -26,7 +26,7 @@ ${statisticStr}
 | Navel Insertion 🤤                  | Not only that, her navel is also a sensitive area that you can play with as you please.                                                                   |
 | Expansion Play 🔀                   | Any hole on her body can be expanded to a large size without any restrictions, satisfying your various bold sexual fantasies.                             |
 | Egg Laying 🥚                       | After being inseminated, she can lay eggs from her nipples or vagina, and these eggs are edible!                                                          |
-| Swallowing Whole/Womb Regression 👄 | Her two mouths can swallow almost anything, allowing you to enter and exit freely. <br>If she wants, she can even completely digest the contents! 😈      |
+| Swallowing Whole/Unbirth 👄 | Her two mouths can swallow almost anything, allowing you to enter and exit freely. <br>If she wants, she can even completely digest the contents! 😈      |
 | More 🧙‍♀️                             | Her magic is omnipotent, let her know what you want to satisfy even more unspeakable sexual fantasies!                                                    |
 
 </details>

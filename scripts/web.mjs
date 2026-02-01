@@ -96,7 +96,7 @@ export async function MarkdownWebFetch(url) {
 		const page = await browser.newPage()
 
 		// 设置 User-Agent 防止被部分站点直接拒绝
-		await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36')
+		await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36')
 
 		// 设置默认导航超时
 		page.setDefaultNavigationTimeout(DEFAULT_NAVIGATION_TIMEOUT)

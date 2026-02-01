@@ -2,7 +2,7 @@ import { localhostLocales } from '../../../../../../../src/scripts/i18n.mjs'
 import { loadAnyPreferredDefaultPart } from '../../../../../../../src/server/parts_loader.mjs'
 import { username, GentianAphrodite } from '../../charbase.mjs'
 import { GetReply } from '../../reply_gener/index.mjs'
-import { newCharReplay, newUserMessage } from '../../scripts/statistics.mjs'
+import { newCharReply, newUserMessage } from '../../scripts/statistics.mjs'
 
 import { recommend_command_plugin } from './recommend_command.mjs'
 import { GetShellWorld } from './world.mjs'
@@ -110,7 +110,7 @@ ${args.screen}
 		}
 	})
 	newUserMessage(args.command_now, 'shell')
-	if (AIsuggestion) newCharReplay(AIsuggestion.content, 'shell')
+	if (AIsuggestion) newCharReply(AIsuggestion.content, 'shell')
 	return {
 		name: '龙胆',
 		recommend_command: AIsuggestion?.recommend_command,

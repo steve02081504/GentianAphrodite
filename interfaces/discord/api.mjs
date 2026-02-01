@@ -31,7 +31,7 @@ export const get_discord_api_plugin = message => ({
 					await match_keys(args, lewd_words, 'other', 3) ||
 					await match_keys(args, [
 						'身份组', '群', '频道', '设置', '服务器', 'ban', '踢了', '禁言',
-						'管理', '操作', '权限', '置顶', '分区', '分组', '帖子', '表情', '帖纸', '反应',
+						'管理', '操作', '权限', '置顶', '分区', '分组', '帖子', '表情', '贴纸', '反应',
 						'修改', '封禁', '邀请', /生成{0,3}链接/, '话题', '投票', '动态', '匿名',
 						'删了', '删掉', 'discord', 'https://discord.com/'
 					], 'any', 3)

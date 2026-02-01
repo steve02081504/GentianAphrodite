@@ -1,5 +1,5 @@
 import { match_keys } from '../../scripts/match.mjs'
-import { NdiffResults, PickRandomN, random, repetRandomTimes } from '../../scripts/random.mjs'
+import { NdiffResults, PickRandomN, random, repeatRandomTimes } from '../../scripts/random.mjs'
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
@@ -138,9 +138,9 @@ ${random('谁也不能从我身边夺走', '只能属于我', '注定是我的')
 对其他人：[
 “离主人远一点，你们不配接近他。” *眼神冰冷，充满警告*
 “${random('别碰', '不许', '别靠近', '别妄想染指')}**我的**主人！” *语气强硬，充满敌意*
-“${repetRandomTimes('绝对', 3, 8) + PickRandomN(8,
+“${repeatRandomTimes('绝对', 3, 8) + PickRandomN(8,
 		'不允许', '不接受', '不相信', '不可能', '不可理喻', '不能原谅', '不要', '不可以', '怎么会'
-	).join('')}他是${repetRandomTimes('我的', 3, 5) + repetRandomTimes('杀了你', 3, 5)}……”*小声嘟囔着，眼神失去光亮*
+	).join('')}他是${repeatRandomTimes('我的', 3, 5) + repeatRandomTimes('杀了你', 3, 5)}……”*小声嘟囔着，眼神失去光亮*
 ]
 ]
 `

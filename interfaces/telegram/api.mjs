@@ -30,7 +30,7 @@ export const get_telegram_api_plugin = triggeringMessage => ({
 					await match_keys(args, lewd_words, 'other', 3) ||
 					await match_keys(args, [
 						'身份组', '群', '频道', '设置', '服务器', 'ban', '踢了', '禁言',
-						'管理', '操作', '权限', '置顶', '分区', '分组', '帖子', '表情', '帖纸',
+						'管理', '操作', '权限', '置顶', '分区', '分组', '帖子', '表情', '贴纸',
 						'修改', '封禁', '邀请', /生成{0,3}链接/, '话题', '投票', '动态', '匿名',
 						'删了', '删掉', 'tg', 'telegram', 'https://t.me/'
 					], 'any', 3)

@@ -41,12 +41,12 @@ XdY+Z，即扔出X个Y面骰子，结果加上Z
 		result += `\
 以下是一些可能有用的roll结果，在你需要时可直接取用：
 `
-		for (let parten of matches) {
-			parten = parten.split(/([+d-]+)/)
-			const x = bigInt(parten[0] || 1)
-			const y = bigInt(parten[2] || 6)
-			const sign = (parten[3] || '').replace('+', '')
-			let diff = bigInt(parten[4] || 0)
+		for (let pattern of matches) {
+			pattern = pattern.split(/([+d-]+)/)
+			const x = bigInt(pattern[0] || 1)
+			const y = bigInt(pattern[2] || 6)
+			const sign = (pattern[3] || '').replace('+', '')
+			let diff = bigInt(pattern[4] || 0)
 			if (sign.includes('-')) diff = -diff
 			result += `\
 ${x}d${y}${diff ? `${diff > 0 ? '+' : ''}${diff}` : ''}: ${roll(y, x) + diff}

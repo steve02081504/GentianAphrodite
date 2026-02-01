@@ -84,7 +84,7 @@ _由Agent框架赋予的、AI可以主动评估并调用的高阶外部工具，
 
 ## wiki
 
-想要了解char架构？查看[Deepwiki](https://deepwiki.com/steve02081504/GentianAphrodite/)
+想要了解char架构？查看[DeepWiki](https://deepwiki.com/steve02081504/GentianAphrodite/)
 
 ## 开发者文档
 

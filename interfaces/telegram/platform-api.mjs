@@ -348,7 +348,7 @@ export function buildPlatformAPI(interfaceConfig) {
 		 * 获取指定 Telegram 频道或群组的历史消息。
 		 * @param {string | number} logicalChannelId - 目标 Telegram 频道或群组的逻辑 ID。
 		 * @param {number} limit - 要获取的消息数量上限。
-		 * @returns {Promise<chatLogEntry_t_ext[]>} - 转换后的 fount 聊天日志条目数组。 转换后的 fount 聊天日志条目数组。
+		 * @returns {Promise<chatLogEntry_t_ext[]>} - 转换后的 fount 聊天日志条目数组。
 		 */
 		async fetchChannelHistory(logicalChannelId, limit) {
 			const { chatId, threadId } = parseLogicalChannelId(logicalChannelId)

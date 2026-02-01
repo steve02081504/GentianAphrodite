@@ -4,8 +4,8 @@
 import { getTimers, removeTimer, setTimer } from '../../../../../../../src/server/timers.mjs'
 import { charname } from '../../charbase.mjs'
 import { flatChatLog } from '../../scripts/match.mjs'
-import { UseNofityAbleChannel } from '../../scripts/notify.mjs'
-import { newCharReplay, statisticDatas } from '../../scripts/statistics.mjs'
+import { UseNotifyAbleChannel } from '../../scripts/notify.mjs'
+import { newCharReply, statisticDatas } from '../../scripts/statistics.mjs'
 import { parseDuration } from '../../scripts/tools.mjs'
 import { GetReply } from '../index.mjs'
 
@@ -216,7 +216,7 @@ ${chat_log_snip}
 		files: [],
 		charVisibility: [charname],
 	}
-	UseNofityAbleChannel(async channel => {
+	UseNotifyAbleChannel(async channel => {
 		const result = await GetReply({
 			...channel,
 			chat_log: [...channel.chat_log, logEntry],
@@ -224,6 +224,6 @@ ${chat_log_snip}
 		if (!result) return
 		result.logContextBefore.push(logEntry)
 		await channel.AddChatLogEntry({ name: '龙胆', ...result })
-		newCharReplay(result.content, platform || 'chat')
+		newCharReply(result.content, platform || 'chat')
 	})
 }

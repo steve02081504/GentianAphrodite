@@ -3,7 +3,7 @@ import { Buffer } from 'node:buffer'
 import { setMyData } from '../config/index.mjs'
 import { rude_words } from '../scripts/dict.mjs'
 import { base_match_keys, base_match_keys_count, SimplifyChinese } from '../scripts/match.mjs'
-import { newCharReplay, newUserMessage } from '../scripts/statistics.mjs'
+import { newCharReply, newUserMessage } from '../scripts/statistics.mjs'
 import { findMostFrequentElement } from '../scripts/tools.mjs'
 
 import { sendAndLogReply, doMessageReply } from './reply.mjs'
@@ -195,7 +195,7 @@ async function calculateTriggerPossibility(fountEntry, platformAPI, channelId, c
 	const trailingEngWords = engWords.slice(-3).join(' ')
 	const contentEdgesForEnglishCheck = leadingEngWords + ' ' + trailingEngWords
 
-	const isChineseNamePattern = base_match_keys(contentEdgesForChineseCheck, ['龙胆', /(?<![乌肝巨火])[龙胆][子宝儿亲 ]/])
+	const isChineseNamePattern = base_match_keys(contentEdgesForChineseCheck, ['龙胆', /(?<![乌肝巨火大苦])[龙胆][子宝儿亲 ]/])
 	const isEnglishNamePattern = base_match_keys(contentEdgesForEnglishCheck, ['gentian'])
 	const isBotNamePatternDetected = isChineseNamePattern || isEnglishNamePattern
 
@@ -336,7 +336,7 @@ async function handleOwnerCommandsInQueue(currentMessageToProcess, platformAPI, 
 				const replyContent = inHypnosisChannelId === channelId ? '听觉已关闭。' : '唔...听不见了。'
 				await sendAndLogReply({ content: replyContent }, platformAPI, channelId, currentMessageToProcess)
 				newUserMessage(content, platformAPI.name)
-				newCharReplay(replyContent, platformAPI.name)
+				newCharReply(replyContent, platformAPI.name)
 				return TriggerResultType.HANDLED
 			}
 			if (base_match_keys(content, [/^龙胆.{0,2}(可以听了|张开耳朵|开耳|开启听觉|恢复听觉).{0,2}$/])) {
@@ -344,14 +344,14 @@ async function handleOwnerCommandsInQueue(currentMessageToProcess, platformAPI, 
 				const replyContent = inHypnosisChannelId === channelId ? '听觉已开启。' : '嗯！又能听见主人的声音了！'
 				await sendAndLogReply({ content: replyContent }, platformAPI, channelId, currentMessageToProcess)
 				newUserMessage(content, platformAPI.name)
-				newCharReplay(replyContent, platformAPI.name)
+				newCharReply(replyContent, platformAPI.name)
 				return TriggerResultType.HANDLED
 			}
 			if (base_match_keys(content, [/^龙胆.{0,2}自裁.{0,2}$/])) {
 				const selfDestructReply = inHypnosisChannelId === channelId ? { content: '好的。' } : { content: '啊，咱死了～' }
 				await sendAndLogReply(selfDestructReply, platformAPI, channelId, currentMessageToProcess)
 				newUserMessage(content, platformAPI.name)
-				newCharReplay(selfDestructReply.content, platformAPI.name)
+				newCharReply(selfDestructReply.content, platformAPI.name)
 				await platformAPI.destroySelf()
 				return TriggerResultType.EXIT // 发出退出信号
 			}
@@ -359,7 +359,7 @@ async function handleOwnerCommandsInQueue(currentMessageToProcess, platformAPI, 
 			if (repeatMatch?.groups?.repeat_content) {
 				await sendAndLogReply({ content: repeatMatch.groups.repeat_content }, platformAPI, channelId, currentMessageToProcess)
 				newUserMessage(content, platformAPI.name)
-				newCharReplay(repeatMatch.groups.repeat_content, platformAPI.name)
+				newCharReply(repeatMatch.groups.repeat_content, platformAPI.name)
 				return TriggerResultType.HANDLED // 命令已处理，无需进一步触发检查
 			}
 			const banWordMatch = content.match(/^龙胆.{0,2}禁止.{0,2}`(?<banned_content>[\S\s]*)`$/)
@@ -370,7 +370,7 @@ async function handleOwnerCommandsInQueue(currentMessageToProcess, platformAPI, 
 				const ownerCallReply = SimplifyChinese(content).replaceAll('龙', '主').replaceAll('胆', '人')
 				await sendAndLogReply({ content: ownerCallReply }, platformAPI, channelId, currentMessageToProcess)
 				newUserMessage(content, platformAPI.name)
-				newCharReplay(ownerCallReply, platformAPI.name)
+				newCharReply(ownerCallReply, platformAPI.name)
 				return TriggerResultType.HANDLED // 命令已处理
 			}
 		}
@@ -419,7 +419,7 @@ async function checkQueueMessageTrigger(currentMessageToProcess, currentChannelL
 		currentMessageToProcess.extension?.platform_user_id != platformAPI.getBotUserId()
 	) {
 		// 复读检查
-		const repetCheckLog = currentChannelLog.slice(-10)
+		const repeatCheckLog = currentChannelLog.slice(-10)
 		const nameMap = {}
 		/**
 		 * 辅助函数，用于生成文件列表的摘要字符串。
@@ -443,32 +443,32 @@ async function checkQueueMessageTrigger(currentMessageToProcess, currentChannelL
 			result += summaryFiles(message.files || [])
 			return result
 		}
-		let repet = findMostFrequentElement(repetCheckLog, summary)
+		let repeat = findMostFrequentElement(repeatCheckLog, summary)
 		// 先进行粗略检测决定是否fetch
 		if (
-			(repet.element?.content || repet.element?.files?.length) &&
-			repet.count >= currentConfig.RepetitionTriggerCount &&
-			!base_match_keys(repet.element.content, [...currentMessageToProcess.extension.OwnerNameKeywords || [], ...rude_words, ...GentianWords]) &&
-			!isBotCommand(repet.element.content)
+			(repeat.element?.content || repeat.element?.files?.length) &&
+			repeat.count >= currentConfig.RepetitionTriggerCount &&
+			!base_match_keys(repeat.element.content, [...currentMessageToProcess.extension.OwnerNameKeywords || [], ...rude_words, ...GentianWords]) &&
+			!isBotCommand(repeat.element.content)
 		) {
 			// 通过，fetch后重新计算复读内容
-			await fetchFilesForMessages(repetCheckLog)
+			await fetchFilesForMessages(repeatCheckLog)
 			/**
 			 * 重新定义 summaryFiles，用于在获取文件内容后生成更详细的摘要。
 			 * @param {any[]} files - 文件数组。
 			 * @returns {string} 文件摘要字符串。
 			 */
 			summaryFiles = files => files.filter(file => !file.extension?.is_from_vision).map(file => file.buffer instanceof Buffer ? file.buffer.toString('hex') : String(file.buffer)).join('\n')
-			repet = findMostFrequentElement(repetCheckLog, summary)
+			repeat = findMostFrequentElement(repeatCheckLog, summary)
 			if (
-				(repet.element?.content || repet.element?.files?.length) &&
-				repet.count >= currentConfig.RepetitionTriggerCount &&
-				!base_match_keys(repet.element.content + '\n' + (repet.element.files || []).map(file => file.name).join('\n'), [...currentMessageToProcess.extension.OwnerNameKeywords || [], ...rude_words, ...GentianWords]) &&
-				!isBotCommand(repet.element.content) &&
-				!repetCheckLog.some(msg => msg.extension?.platform_user_id == platformAPI.getBotUserId() && summary(msg, false) === summary(repet.element, false))
+				(repeat.element?.content || repeat.element?.files?.length) &&
+				repeat.count >= currentConfig.RepetitionTriggerCount &&
+				!base_match_keys(repeat.element.content + '\n' + (repeat.element.files || []).map(file => file.name).join('\n'), [...currentMessageToProcess.extension.OwnerNameKeywords || [], ...rude_words, ...GentianWords]) &&
+				!isBotCommand(repeat.element.content) &&
+				!repeatCheckLog.some(msg => msg.extension?.platform_user_id == platformAPI.getBotUserId() && summary(msg, false) === summary(repeat.element, false))
 			) {
 				await sendAndLogReply(
-					{ content: repet.element.content, files: repet.element.files.filter(file => !file.extension?.is_from_vision) },
+					{ content: repeat.element.content, files: repeat.element.files.filter(file => !file.extension?.is_from_vision) },
 					platformAPI, channelId, currentMessageToProcess
 				)
 				// 复读已发送，此消息不再触发通用回复
