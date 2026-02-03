@@ -357,10 +357,10 @@ async function finishRecordingSession(now) {
 				chat_log: [...RealityChannel.chat_log, logEntry],
 				extension: {
 					...RealityChannel.extension,
-					enable_prompts: { notify: true },
 					is_internal: true,
 					source_purpose: 'voice-processing',
 					enable_prompts: {
+						notify: true,
 						CodeRunner: true,
 						fileChange: true,
 						browserIntegration: true,

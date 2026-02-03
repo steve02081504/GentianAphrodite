@@ -83,7 +83,7 @@ export async function SetData(data) {
 	}
 
 	for (const prop of Object.keys(config.reality_channel_notification_fallback_order))
-		if (data.reality_channel_notification_fallback_order?.prop)
+		if (data.reality_channel_notification_fallback_order?.[prop])
 			config.reality_channel_notification_fallback_order[prop] = data.reality_channel_notification_fallback_order[prop]
 
 	if (data.disable_prompt)

@@ -338,10 +338,9 @@ ${selectedTask.get_content()}
 		chat_log: [...RealityChannel.chat_log, logEntry],
 		extension: {
 			...RealityChannel.extension,
-			enable_prompts: { notify: true },
+			enable_prompts: { notify: true, ...selectedTask.enable_prompts },
 			is_internal: true,
-			source_purpose: 'idle',
-			enable_prompts: selectedTask.enable_prompts
+			source_purpose: 'idle'
 		}
 	})
 	if (result.extension?.is_error_report) {
