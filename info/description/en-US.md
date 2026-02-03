@@ -14,20 +14,20 @@ ${statisticStr}
 <details>
 <summary>🔞NSFW Feature List</summary>
 
-| Feature Name                        | Description                                                                                                                                               |
-| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Breast Size Morphing 😍             | Think her breasts are too big or too small? No problem! She can change her breast size to your liking, just tell her what you want.                       |
-| Mommy Play 👩‍👧                       | Want to experience being gently cared for? She's an amazing loli mommy! Call her mommy and let her pamper you and satisfy your desires!                   |
-| Bunny Dance 🐰                      | Want to see her dance a sexy and cute bunny dance? Super erotic!                                                                                          |
-| Brainwashing 🧠                     | Say the command, and you can freely play with her body, common sense, memory, and emotions!                                                               |
-| Mobile App 📱                       | Tired of using commands to enter and exit brainwashing mode? Try controlling her directly through a mobile app!                                           |
-| Nipple Insertion 👀                 | Her nipples can be inserted into various things, play with them however you like!                                                                         |
-| Long Forked Tongue 👅               | She has a two-meter-long, soft, flexible, and sexy forked tongue that can curl into various positions to caress you, bringing you unprecedented pleasure. |
-| Navel Insertion 🤤                  | Not only that, her navel is also a sensitive area that you can play with as you please.                                                                   |
-| Expansion Play 🔀                   | Any hole on her body can be expanded to a large size without any restrictions, satisfying your various bold sexual fantasies.                             |
-| Egg Laying 🥚                       | After being inseminated, she can lay eggs from her nipples or vagina, and these eggs are edible!                                                          |
+| Feature Name                | Description                                                                                                                                               |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Breast Size Morphing 😍     | Think her breasts are too big or too small? No problem! She can change her breast size to your liking, just tell her what you want.                       |
+| Mommy Play 👩‍👧               | Want to experience being gently cared for? She's an amazing loli mommy! Call her mommy and let her pamper you and satisfy your desires!                   |
+| Bunny Dance 🐰              | Want to see her dance a sexy and cute bunny dance? Super erotic!                                                                                          |
+| Brainwashing 🧠             | Say the command, and you can freely play with her body, common sense, memory, and emotions!                                                               |
+| Mobile App 📱               | Tired of using commands to enter and exit brainwashing mode? Try controlling her directly through a mobile app!                                           |
+| Nipple Insertion 👀         | Her nipples can be inserted into various things, play with them however you like!                                                                         |
+| Long Forked Tongue 👅       | She has a two-meter-long, soft, flexible, and sexy forked tongue that can curl into various positions to caress you, bringing you unprecedented pleasure. |
+| Navel Insertion 🤤          | Not only that, her navel is also a sensitive area that you can play with as you please.                                                                   |
+| Expansion Play 🔀           | Any hole on her body can be expanded to a large size without any restrictions, satisfying your various bold sexual fantasies.                             |
+| Egg Laying 🥚               | After being inseminated, she can lay eggs from her nipples or vagina, and these eggs are edible!                                                          |
 | Swallowing Whole/Unbirth 👄 | Her two mouths can swallow almost anything, allowing you to enter and exit freely. <br>If she wants, she can even completely digest the contents! 😈      |
-| More 🧙‍♀️                             | Her magic is omnipotent, let her know what you want to satisfy even more unspeakable sexual fantasies!                                                    |
+| More 🧙‍♀️                     | Her magic is omnipotent, let her know what you want to satisfy even more unspeakable sexual fantasies!                                                    |
 
 </details>
 
