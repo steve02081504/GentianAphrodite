@@ -31,24 +31,65 @@ export async function WebBrowsePrompt(args, logical_results) {
 		if (log.extension?.processedURLs) continue
 		const urls = findUrlsInText(log.content)
 
-		const all_metas = (await Promise.all(urls.map(async url => {
+		const urlMetaList = (await Promise.all(urls.map(async url => {
 			const metas = await getUrlMetadata(url)
-			if (metas?.length) return `\`${url}\`：\n${metas.join('\n')}`
+			if (metas?.length) return { url, metaText: metas.join('\n') }
 		}))).filter(Boolean)
 
-		if (all_metas.length) {
-			log.extension.processedURLs = true
-			log.logContextAfter ??= []
-			log.logContextAfter.push({
-				name: 'system',
-				role: 'system',
-				content: `\
-上条消息中链接的元信息如下：
-${all_metas.join('\n')}
-`,
-				charVisibility: [args.char_id]
-			})
+		if (!urlMetaList.length) continue
+
+		// 按元信息内容分组，相同元信息的 URL 用通配符合并
+		const metaToUrls = new Map()
+		for (const { url, metaText } of urlMetaList) {
+			const list = metaToUrls.get(metaText) ?? []
+			list.push(url)
+			metaToUrls.set(metaText, list)
 		}
+
+		const parts = []
+		for (const [metaText, urlList] of metaToUrls) {
+			const label = urlList.length === 1
+				? `\`${urlList[0]}\``
+				: (() => {
+					// 最长公共前缀
+					let prefix = urlList[0]
+					for (const u of urlList.slice(1)) {
+						while (prefix && !u.startsWith(prefix)) prefix = prefix.slice(0, -1)
+					}
+					// 最长公共后缀（反转后求 LCP 再反转）
+					const reversed = urlList.map(u => [...u].reverse().join(''))
+					let suffixRev = reversed[0]
+					for (const r of reversed.slice(1)) {
+						while (suffixRev && !r.startsWith(suffixRev)) suffixRev = suffixRev.slice(0, -1)
+					}
+					const suffix = suffixRev ? [...suffixRev].reverse().join('') : ''
+
+					const minLen = Math.min(...urlList.map(u => u.length))
+					const hasMiddle = prefix.length + suffix.length < minLen
+					if (!hasMiddle) return `\`${urlList[0]}\``
+
+					// 通配：前缀 + * + 后缀，路径边界保留 /
+					let mid = '*'
+					if (suffix) {
+						mid = suffix.startsWith('/') ? '/*' : '*'
+					} else if (urlList.some(u => u.length > prefix.length && u[prefix.length] === '/'))
+						prefix += '/'
+					return `\`${prefix}${mid}${suffix}\``
+				})()
+			parts.push(`${label}：\n${metaText}`)
+		}
+
+		log.extension.processedURLs = true
+		log.logContextAfter ??= []
+		log.logContextAfter.push({
+			name: 'system',
+			role: 'system',
+			content: `\
+上条消息中链接的元信息如下：
+${parts.join('\n')}
+`,
+			charVisibility: [args.char_id]
+		})
 	}
 
 	return {
