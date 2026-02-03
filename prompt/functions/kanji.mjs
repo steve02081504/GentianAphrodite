@@ -121,7 +121,7 @@ function expandComponents(text) {
 	// 但通常语境下 "一万个X" 中 "一万" 是数量。
 	// 这里使用非贪婪匹配结合 chineseToNumber 的能力。
 
-	const pattern = /(?:([0-9.零一二三四五六七八九十百千万亿两壹贰叁肆伍陆柒捌玖]+)\s*(?:[个只枚]|\s)?)?\s*([\p{Unified_Ideograph}])/gu
+	const pattern = /(?:([\d.一七万三两九二五亿伍八六十千叁四壹捌柒玖百肆贰陆零]+)\s*[\s个只枚]?)?\s*([\p{Unified_Ideograph}])/gu
 
 	let match
 	while ((match = pattern.exec(text)) !== null) {
@@ -162,7 +162,7 @@ export async function KanjiPrompt(args, logical_results) {
 
 	// 1. 处理汉字组合问题
 	// 允许：汉字、数字、换行、斜杠、逗号、以及常见的连接词（和、加、跟...）
-	const combinationRegex = /(?:```([\s\S]+?)```|`([^`]+)`|([\p{Unified_Ideograph}\d\s\n/|、,，和加跟与]+?))\s*(?:能|可以)?(?:组合|组成|组合成|构成|加起来|是|等于).*(?:什么|哪个)汉?字/gu
+	const combinationRegex = /(?:```([\S\s]+?)```|`([^`]+)`|([\p{Unified_Ideograph}\d\s,/|、与加和跟，]+?))\s*(?:能|可以)?(?:组合|组成|组合成|构成|加起来|是|等于).*(?:什么|哪个)汉?字/gu
 
 	for (const match of log.matchAll(combinationRegex)) {
 		const codeBlockContent = match[1]
@@ -182,7 +182,7 @@ export async function KanjiPrompt(args, logical_results) {
 			// 增加分隔符：除了非汉字，也要把数字视为内容的一部分，所以分隔符不能包含数字
 			// 这里我们主要依靠 "空格" 和 "标点" 来分块，但保留数字和汉字
 			// 简单策略：按 非(汉字|数字|连接词) 分割
-			const blocks = rawComponents.split(/[^\p{Unified_Ideograph}\d和加跟与]+/u).filter(Boolean)
+			const blocks = rawComponents.split(/[^\p{Unified_Ideograph}\d与加和跟]+/u).filter(Boolean)
 
 			if (blocks.length > 1) {
 				const lastBlock = blocks[blocks.length - 1]
@@ -212,7 +212,7 @@ export async function KanjiPrompt(args, logical_results) {
 	}
 
 	// 2. 处理汉字拆分问题
-	const decompositionRegex = /(\p{Unified_Ideograph})[\s`]*(?:这|这个|该)?(?:字符|符号|汉字|字|符)?(?:能|可以|该|是)?(?:拆成|拆分成|拆成|的部件是|的结构是|怎么[写|书|拆]|由什么组成|什么结构)/gu
+	const decompositionRegex = /(\p{Unified_Ideograph})[\s`]*(?:这|这个|该)?(?:字符|符号|汉字|字|符)?(?:能|可以|该|是)?(?:拆成|拆分成|的部件是|的结构是|怎么[书写拆]|由什么组成|什么结构)/gu
 
 	for (const match of log.matchAll(decompositionRegex)) {
 		const charToLookup = match[1]

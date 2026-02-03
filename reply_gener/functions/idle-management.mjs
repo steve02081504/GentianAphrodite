@@ -22,7 +22,7 @@ export async function IdleManagementHandler(result, args) {
 	for (const match of adjustWeightMatches)
 		if (match?.groups?.content) {
 			processed = true
-			const content = match.groups.content
+			const { content } = match.groups
 			const fullMatch = match[0]
 
 			tool_calling_log.content += fullMatch + '\n'
@@ -85,7 +85,7 @@ export async function IdleManagementHandler(result, args) {
 	for (const match of addTodoMatches)
 		if (match?.groups?.content) {
 			processed = true
-			const content = match.groups.content
+			const { content } = match.groups
 			const fullMatch = match[0]
 
 			tool_calling_log.content += fullMatch + '\n'

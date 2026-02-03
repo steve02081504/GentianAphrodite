@@ -11,12 +11,12 @@ const DEFAULT_DANMAKU_COLOR = '#FF69B4'
 /**
  * 从 <notify> 标签的属性字符串中解析 color 和 fontSize。
  * @param {string} [attrs] - 标签属性字符串，如 'color="#FF69B4" fontSize="24"'
- * @returns {{ color?: string, fontSize?: number }}
+ * @returns {{ color?: string, fontSize?: number }} - 解析出的颜色和字体大小。
  */
 function parseNotifyAttrs(attrs) {
 	attrs = String(attrs ?? '').trim()
 	const color = attrs.match(/(?:^|\s)color\s*=\s*["']([^"']*)["']/i)?.[1]?.trim?.()
-	const fontSize = Number(attrs.match(/(?:^|\s)font[-_]?size\s*=\s*["']([^"']*)["']/i)?.[1]?.trim?.() || 0)
+	const fontSize = Number(attrs.match(/(?:^|\s)font[_-]?size\s*=\s*["']([^"']*)["']/i)?.[1]?.trim?.() || 0)
 	return { color, fontSize }
 }
 
@@ -25,6 +25,7 @@ function parseNotifyAttrs(attrs) {
  * @param {string} message - 要发送的通知内容。
  * @param {string} [purpose] - 触发目的，用于选择对应的通知顺序配置。
  * @param {{ color?: string, fontSize?: number }} [danmakuOpts] - 弹幕样式。
+ * @returns {Promise<void>} - 无返回值。
  */
 async function sendRealityNotification(message, purpose, danmakuOpts = {}) {
 	sendDanmakuToPage(username, undefined, {

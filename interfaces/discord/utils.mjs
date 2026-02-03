@@ -45,7 +45,7 @@ function preSplitDiscordReply(reply) {
 
 		// Logic 1: Markdown 分割线 (---, ***, ___)
 		// 匹配以空格开头，由 -, *, _ 组成的至少3个字符的分割线，允许中间有空格
-		if (/^\s*([-*_])( ?\1){2,}\s*$/.test(line)) {
+		if (/^\s*([*_-])( ?\1){2,}\s*$/.test(line)) {
 			if (currentChunkLines.length > 0) {
 				chunks.push(currentChunkLines.join('\n'))
 				currentChunkLines = []
@@ -56,8 +56,8 @@ function preSplitDiscordReply(reply) {
 		// Logic 2: Emoji 或空格独占行
 		// 检查行是否只包含：空格、Unicode Emoji、Discord 自定义 Emoji
 		// 并且必须包含至少一个 Emoji
-		const hasEmoji = /[\p{Extended_Pictographic}]|<a?:[\w]+:\d+>/u.test(line)
-		const isEmojiLine = /^(?:[\s\u200b-\u200d\uFE0F]|[\p{Extended_Pictographic}]|<a?:[\w]+:\d+>)+$/u.test(line)
+		const hasEmoji = /[\p{Extended_Pictographic}]|<a?:\w+:\d+>/u.test(line)
+		const isEmojiLine = /^(?:[\s\u200b-\u200d\uFE0F]|[\p{Extended_Pictographic}]|<a?:\w+:\d+>)+$/u.test(line)
 
 		if (hasEmoji && isEmojiLine) {
 			if (currentChunkLines.length > 0) {

@@ -224,7 +224,7 @@ export async function MarkdownWebFetch(url) {
 		}
 		catch (error) {
 			console.error(`Error during DOM cleanup execution (page.evaluate): ${error}`)
-			await page.waitForSelector('article, main, .PostsPage-postContent, body', { timeout: 15000 }).catch(() => {})
+			await page.waitForSelector('article, main, .PostsPage-postContent, body', { timeout: 15000 }).catch(() => { })
 			await new Promise(resolve => setTimeout(resolve, 5000))
 		}
 

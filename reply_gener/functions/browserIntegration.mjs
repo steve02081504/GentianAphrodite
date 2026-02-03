@@ -160,15 +160,15 @@ export async function browserIntegration(result, args) {
 		},
 		{
 			name: 'send-danmaku-to-page',
-			regex: /<browser-send-danmaku-to-page>(?<content>[\s\S]*?)<\/browser-send-danmaku-to-page>/g,
+			regex: /<browser-send-danmaku-to-page>(?<content>[\S\s]*?)<\/browser-send-danmaku-to-page>/g,
 			/**
 			 *
 			 * @param {RegExpMatchArray} match - 匹配对象，包含捕获组。
 			 */
 			handler: async (match) => {
-				const content = match.groups.content
+				const { content } = match.groups
 				const pageIdMatch = content.match(/<pageId>\s*(.*?)\s*<\/pageId>/s)
-				const contentMatch = content.match(/<content>([\s\S]*?)<\/content>/s)
+				const contentMatch = content.match(/<content>([\S\s]*?)<\/content>/s)
 				if (!pageIdMatch || !contentMatch) throw new Error('请求中缺少 <pageId> 或 <content> 标签。')
 
 				const pageId = resolvePageId(pageIdMatch[1].trim())
@@ -176,16 +176,16 @@ export async function browserIntegration(result, args) {
 					content: contentMatch[1].trim()
 				}
 
-				const speedMatch = content.match(/<speed>([\s\S]*?)<\/speed>/s)
+				const speedMatch = content.match(/<speed>([\S\s]*?)<\/speed>/s)
 				if (speedMatch) danmakuOptions.speed = Number(speedMatch[1].trim())
 
-				const colorMatch = content.match(/<color>([\s\S]*?)<\/color>/s)
+				const colorMatch = content.match(/<color>([\S\s]*?)<\/color>/s)
 				if (colorMatch) danmakuOptions.color = colorMatch[1].trim()
 
-				const fontSizeMatch = content.match(/<fontSize>([\s\S]*?)<\/fontSize>/s)
+				const fontSizeMatch = content.match(/<fontSize>([\S\s]*?)<\/fontSize>/s)
 				if (fontSizeMatch) danmakuOptions.fontSize = Number(fontSizeMatch[1].trim())
 
-				const yPosMatch = content.match(/<yPos>([\s\S]*?)<\/yPos>/s)
+				const yPosMatch = content.match(/<yPos>([\S\s]*?)<\/yPos>/s)
 				if (yPosMatch) danmakuOptions.yPos = Number(yPosMatch[1].trim())
 
 				console.info(`AI请求在页面 ${pageId} 发送弹幕:`, danmakuOptions)
@@ -200,15 +200,15 @@ export async function browserIntegration(result, args) {
 		},
 		{
 			name: 'run-js-on-page',
-			regex: /<browser-run-js-on-page>(?<content>[\s\S]*?)<\/browser-run-js-on-page>/g,
+			regex: /<browser-run-js-on-page>(?<content>[\S\s]*?)<\/browser-run-js-on-page>/g,
 			/**
 			 *
 			 * @param {RegExpMatchArray} match - 匹配对象，包含捕获组。
 			 */
 			handler: async (match) => {
-				const content = match.groups.content
+				const { content } = match.groups
 				const pageIdMatch = content.match(/<pageId>\s*(.*?)\s*<\/pageId>/s)
-				const scriptMatch = content.match(/<script>([\s\S]*?)<\/script>/s)
+				const scriptMatch = content.match(/<script>([\S\s]*?)<\/script>/s)
 				if (!pageIdMatch || !scriptMatch) throw new Error('请求中缺少 <pageId> 或 <script> 标签。')
 
 				const pageId = resolvePageId(pageIdMatch[1].trim())
@@ -225,21 +225,21 @@ export async function browserIntegration(result, args) {
 		},
 		{
 			name: 'add-autorun-script',
-			regex: /<browser-add-autorun-script>(?<content>[\s\S]*?)<\/browser-add-autorun-script>/g,
+			regex: /<browser-add-autorun-script>(?<content>[\S\s]*?)<\/browser-add-autorun-script>/g,
 			/**
 			 *
 			 * @param {RegExpMatchArray} match - 匹配对象，包含捕获组。
 			 */
 			handler: async (match) => {
-				const content = match.groups.content
-				const urlRegexMatch = content.match(/<urlRegex>([\s\S]*?)<\/urlRegex>/)
-				const scriptMatch = content.match(/<script>([\s\S]*?)<\/script>/)
+				const { content } = match.groups
+				const urlRegexMatch = content.match(/<urlRegex>([\S\s]*?)<\/urlRegex>/)
+				const scriptMatch = content.match(/<script>([\S\s]*?)<\/script>/)
 				if (!urlRegexMatch || !scriptMatch) throw new Error('请求中缺少 <urlRegex> 或 <script> 标签。')
 
 				const scriptData = {
 					urlRegex: urlRegexMatch[1].trim(),
 					script: scriptMatch[1],
-					comment: content.match(/<comment>([\s\S]*?)<\/comment>/)?.[1].trim() || ''
+					comment: content.match(/<comment>([\S\s]*?)<\/comment>/)?.[1].trim() || ''
 				}
 				console.info('AI请求添加自动运行脚本:', scriptData)
 				const newScript = addAutoRunScript(username, scriptData)
@@ -253,20 +253,20 @@ export async function browserIntegration(result, args) {
 		},
 		{
 			name: 'update-autorun-script',
-			regex: /<browser-update-autorun-script>(?<content>[\s\S]*?)<\/browser-update-autorun-script>/g,
+			regex: /<browser-update-autorun-script>(?<content>[\S\s]*?)<\/browser-update-autorun-script>/g,
 			/**
 			 *
 			 * @param {RegExpMatchArray} match - 匹配对象，包含捕获组。
 			 */
 			handler: async (match) => {
-				const content = match.groups.content
-				const idMatch = content.match(/<id>([\s\S]*?)<\/id>/s)
+				const { content } = match.groups
+				const idMatch = content.match(/<id>([\S\s]*?)<\/id>/s)
 				if (!idMatch) throw new Error('缺少 <id> 标签。')
 
 				const id = idMatch[1].trim()
-				const urlRegex = content.match(/<urlRegex>([\s\S]*?)<\/urlRegex>/s)?.[1]
-				const script = content.match(/<script>([\s\S]*?)<\/script>/s)?.[1]
-				const comment = content.match(/<comment>([\s\S]*?)<\/comment>/s)?.[1]
+				const urlRegex = content.match(/<urlRegex>([\S\s]*?)<\/urlRegex>/s)?.[1]
+				const script = content.match(/<script>([\S\s]*?)<\/script>/s)?.[1]
+				const comment = content.match(/<comment>([\S\s]*?)<\/comment>/s)?.[1]
 
 				if (urlRegex === undefined && script === undefined && comment === undefined)
 					throw new Error('必须提供 <urlRegex>, <script>, 或 <comment> 标签中的至少一个。')

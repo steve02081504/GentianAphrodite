@@ -105,9 +105,9 @@
 
 添加一个新成就需要以下步骤：
 
-1.  **定义ID**: 在 `achievements_registry.json` 中为新成就定义一个唯一的ID（例如 `use_new_tool`）。
+1. **定义ID**: 在 `achievements_registry.json` 中为新成就定义一个唯一的ID（例如 `use_new_tool`）。
 
-2.  **注册成就**: 在 `achievements_registry.json` 文件中，为你的新成就添加一个条目。该条目应包含名称、描述、图标等信息的本地化键名。
+2. **注册成就**: 在 `achievements_registry.json` 文件中，为你的新成就添加一个条目。该条目应包含名称、描述、图标等信息的本地化键名。
 
     ```json
     "use_new_tool": {
@@ -119,7 +119,7 @@
     }
     ```
 
-3.  **添加本地化文本**: 在 `locales/en-US.json` 和 `locales/zh-CN.json` 文件中，根据上一步定义的键名，添加对应的翻译文本。
+3. **添加本地化文本**: 在 `locales/en-US.json` 和 `locales/zh-CN.json` 文件中，根据上一步定义的键名，添加对应的翻译文本。
 
     ```json
     // locales/zh-CN.json
@@ -132,7 +132,7 @@
     }
     ```
 
-4.  **触发成就**: 在需要解锁该成就的代码逻辑中（例如，某个工具成功执行后），调用 `unlockAchievement` 函数。
+4. **触发成就**: 在需要解锁该成就的代码逻辑中（例如，某个工具成功执行后），调用 `unlockAchievement` 函数。
 
     ```javascript
     // 例如: 在 reply_gener/functions/new_tool.mjs 中

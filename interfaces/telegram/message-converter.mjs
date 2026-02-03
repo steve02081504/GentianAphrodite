@@ -296,7 +296,7 @@ export async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, messa
 	const replyToMessageForAiPrompt = isReplyToOwnerTopicCreationMessage ? undefined : message.reply_to_message
 	let content = telegramEntitiesToAiMarkdown(rawText, entities, telegramBotInfo || undefined, replyToMessageForAiPrompt)
 	if ('sticker' in message && message.sticker) {
-		const sticker = message.sticker
+		const { sticker } = message
 		const description = `<:${sticker.file_id}:${sticker.set_name || 'unknown_set'}:${sticker.emoji || ''}>`
 		content += `\n\n${description}`
 		content = content.trim()
