@@ -355,7 +355,7 @@ async function handleOwnerCommandsInQueue(currentMessageToProcess, platformAPI, 
 				await platformAPI.destroySelf()
 				return TriggerResultType.EXIT // 发出退出信号
 			}
-			const repeatMatch = content.match(/^龙胆.{0,2}复诵.{0,2}`(?<repeat_content>[\S\s]*)`$/)
+			const repeatMatch = content.match(/^龙胆.{0,2}复诵.{0,2}[\n\s]*(?<backticks>`+)[^\n]*\n(?<repeat_content>[\s\S]*?)\k<backticks>[\n\s]*$/)
 			if (repeatMatch?.groups?.repeat_content) {
 				await sendAndLogReply({ content: repeatMatch.groups.repeat_content }, platformAPI, channelId, currentMessageToProcess)
 				newUserMessage(content, platformAPI.name)
