@@ -62,6 +62,11 @@ async function getAISuggestionForError(error, errorMessageForRecord, originalArg
 	/** @type {FountChatReplyRequest_t} */
 	const selfRepairRequest = {
 		...originalArgs,
+		// 避免部件出错导致诊断也跟着爆炸从而失去诊断意义，覆盖所有非本角色的部件
+		world: null,
+		user: null,
+		other_chars: {},
+		plugins: {},
 		chat_name: originalArgs.chat_name ? `${originalArgs.chat_name}-error-handling` : 'self-repair-context',
 		chat_log: selfRepairChatLog,
 	}
