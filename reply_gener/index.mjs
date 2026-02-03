@@ -106,10 +106,11 @@ export async function baseGetReply(args) {
 	args.plugins = Object.assign({}, plugins, args.plugins)
 	args.plugins.discord_api ??= await get_discord_api_plugin()
 	args.plugins.telegram_api ??= await get_telegram_api_plugin()
-	const prompt_struct = await buildPromptStruct(args)
-	prompt_struct.alternative_charnames = [
-		'Gentian', /Gentian(•|·)Aphrodite/, '龙胆', /龙胆(•|·)阿芙萝黛蒂/
-	]
+	const prompt_struct = Object.assign(await buildPromptStruct(args), {
+		alternative_charnames: [
+			'Gentian', /Gentian(•|·)Aphrodite/, '龙胆', /龙胆(•|·)阿芙萝黛蒂/
+		]
+	})
 	const logical_results = await buildLogicalResults(args, prompt_struct, 0)
 	const AddLongTimeLog = getLongTimeLogAdder(result, prompt_struct)
 	const last_entry = args.chat_log.slice(-1)[0]

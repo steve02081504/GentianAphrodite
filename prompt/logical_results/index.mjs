@@ -109,7 +109,7 @@ export async function buildLogicalResults(args) {
 		!await match_keys(args, ['还有', '接下来', '然后', '所以', '接着'], 'any', 1))
 		result.in_assist = false
 
-	if (result.in_nsfw && args.extension?.is_from_owner) unlockAchievement('talk_nsfw_with_master')
+	if (result.in_nsfw && (!result.in_muti_char_chat || args.extension?.in_reply_to_master)) unlockAchievement('talk_nsfw_with_master')
 	if (result.in_hypnosis) unlockAchievement('enter_hypnosis_mode')
 
 	return result

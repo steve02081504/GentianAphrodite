@@ -13,7 +13,7 @@ export async function NotifyPrompt(args, logical_results) {
 	let result = ''
 	if (
 		args.extension?.enable_prompts?.notify ||
-		!args.extension?.is_from_owner ||
+		(args.ReplyToCharname && args.ReplyToCharname != args.UserCharname) ||
 		await match_keys(args, ['通知', '提醒', 'notify'], 'any')
 	) result += `\
 你可以通过回复以下格式来通知你主人：
