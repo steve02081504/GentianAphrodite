@@ -35,6 +35,10 @@ export const config = {
 		summary_max_retries: 5,
 		reasoning_interval: 3000
 	},
+	subagent: {
+		max_cycles: 15,
+		thinking_interval: 1000
+	},
 	reality_channel_disables: {
 		idle_event: false,
 		voice_sentinel: false
@@ -59,6 +63,7 @@ export function GetData() {
 		translateSource: getTranslateSourceData(),
 		plugins: Object.keys(plugins),
 		deep_research: config.deep_research,
+		subagent: config.subagent,
 		reality_channel_disables: config.reality_channel_disables,
 		reality_channel_notification_fallback_order: config.reality_channel_notification_fallback_order,
 		disable_prompt: config.disable_prompt,
@@ -74,6 +79,7 @@ export async function SetData(data) {
 	await setTranslateSourceData(data.translateSource || getTranslateSourceData())
 	if (data.plugins) plugins = Object.fromEntries(await Promise.all(data.plugins.map(async x => [x, await loadPart(username, 'plugins/' + x)])))
 	Object.assign(config.deep_research, data.deep_research)
+	Object.assign(config.subagent, data.subagent)
 
 	if (data.reality_channel_disables) {
 		Object.assign(config.reality_channel_disables, data.reality_channel_disables)
