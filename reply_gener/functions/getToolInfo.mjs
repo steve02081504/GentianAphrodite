@@ -5,7 +5,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { __dirname } from '../../../../../../../src/server/base.mjs'
+import { fountdir } from '../../charbase.mjs'
 
 /** @type {ReplyHandler_t} */
 export function getToolInfo(reply, args) {
@@ -363,10 +363,10 @@ export default {
 
 最后，这里是一些API参考：
 \\\`\\\`\\\`ts
-${fs.readFileSync(path.join(__dirname, './src/public/parts/shells/chat/decl/chatLog.ts'), 'utf-8')}
+${fs.readFileSync(path.join(fountdir, 'src/public/parts/shells/chat/decl/chatLog.ts'), 'utf-8')}
 \\\`\\\`\\\`
 \\\`\\\`\\\`ts
-${fs.readFileSync(path.join(__dirname, './src/decl/charAPI.ts'), 'utf-8')}
+${fs.readFileSync(path.join(fountdir, 'src/decl/charAPI.ts'), 'utf-8')}
 \\\`\\\`\\\`
 
 值得注意的是，能够使用生成工具的是你，龙胆，而不是用户。

@@ -1,5 +1,7 @@
+import os from 'node:os'
+
 import { reloadPart } from '../../../../../../src/server/parts_loader.mjs'
-import { is_dist, charname as BotCharname, username as FountUsername } from '../charbase.mjs'
+import { is_dist, charname as BotCharname, username as FountUsername, fountdir } from '../charbase.mjs'
 
 import { baseGetReply } from './index.mjs'
 
@@ -102,6 +104,9 @@ export async function handleError(error, originalArgs) {
 
 	const randomIPDict = {}
 	fullReplyContent = fullReplyContent.replace(/(?:\d{1,3}\.){3}\d{1,3}/g, ip => randomIPDict[ip] ??= Array(4).fill(0).map(() => Math.floor(Math.random() * 255)).join('.'))
+		.replaceAll(fountdir, 'fount')
+		.replaceAll(os.homedir(), '~')
+		.replaceAll(process.env.MSYS_ROOT_PATH, '/')
 
 	return {
 		content: fullReplyContent,
