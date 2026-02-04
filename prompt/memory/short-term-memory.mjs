@@ -495,6 +495,7 @@ ${args.UserCharname}: 给我把有关华为的记忆全忘掉。
 龙胆: <delete-short-term-memories>/华为|Huawei/i</delete-short-term-memories>
 ]
 你必须使用正则语法，且鼓励想到其他可能的情况（大小写、别称）来完善删除范围。
+严禁使用脚本操作记忆的存档文件。
 `
 
 	// 8. 周期性清理

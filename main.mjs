@@ -2,6 +2,7 @@ import { addPartLocaleData } from '../../../../../src/scripts/i18n.mjs'
 import { loadJsonFile } from '../../../../../src/scripts/json_loader.mjs'
 
 import { chardir, GentianAphrodite, initCharBase, username } from './charbase.mjs'
+import { checkAndBackupMemoryFile } from './scripts/backup.mjs'
 import { GetData, SetData, GetConfigDisplayContent } from './config/index.mjs'
 import { setConfigEndpoints } from './config/router.mjs'
 import { initializeOnIdleHandler, stopIdleTimer } from './event_engine/on_idle.mjs'
@@ -26,6 +27,8 @@ Object.assign(GentianAphrodite, {
 	 */
 	Load: async stat => {
 		initCharBase(stat)
+		await checkAndBackupMemoryFile('memory/long-term-memory.json')
+		await checkAndBackupMemoryFile('memory/short-term-memory.json')
 		addPartLocaleData(username, 'chars/GentianAphrodite', ['zh-CN', 'en-US'], locale => loadJsonFile(chardir + `/locales/${locale}.json`))
 		initializeOnIdleHandler()
 		initializeVoiceSentinel()
