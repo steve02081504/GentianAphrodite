@@ -178,16 +178,31 @@ export async function coderunner(result, args) {
 
 	let processed = false
 	const jsrunner_matches = [...result.content.matchAll(/<run-js>(?<code>[^]*?)<\/run-js>/g)]
+	const waitSuffix = wait_screen ? `\n<wait-screen>${wait_screen}</wait-screen>` : ''
+	// 收集所有 run-js / run-${shell} 按出现顺序，合并为一条角色消息
+	const runBlockParts = []
+	for (const m of jsrunner_matches)
+		runBlockParts.push({ index: m.index, text: m[0] + waitSuffix })
+	for (const shell_name in shell_exec_map) {
+		if (!available[shell_name]) continue
+		const runner_regex = new RegExp(`<run-${shell_name}>(?<code>[^]*?)<\\/run-${shell_name}>`, 'g')
+		for (const m of result.content.matchAll(runner_regex))
+			runBlockParts.push({ index: m.index, text: m[0] + waitSuffix })
+	}
+	runBlockParts.sort((a, b) => a.index - b.index)
+	if (runBlockParts.length) {
+		AddLongTimeLog({
+			name: '龙胆',
+			role: 'char',
+			content: runBlockParts.map(p => p.text).join('\n\n'),
+			files: []
+		})
+	}
+
 	for (const match of jsrunner_matches) {
 		const jsrunner = match.groups.code
 		unlockAchievement('use_coderunner')
 		statisticDatas.toolUsage.codeRuns++
-		AddLongTimeLog({
-			name: '龙胆',
-			role: 'char',
-			content: '<run-js>' + jsrunner + '</run-js>' + (wait_screen ? `\n<wait-screen>${wait_screen}</wait-screen>` : ''),
-			files: []
-		})
 		console.info('AI运行的JS代码：', jsrunner)
 		const coderesult = await run_jscode_for_AI(jsrunner)
 		console.info('coderesult', coderesult)
@@ -209,12 +224,6 @@ export async function coderunner(result, args) {
 			const runner = match.groups.code
 			unlockAchievement('use_coderunner')
 			statisticDatas.toolUsage.codeRuns++
-			AddLongTimeLog({
-				name: '龙胆',
-				role: 'char',
-				content: `<run-${shell_name}>` + runner + `</run-${shell_name}>` + (wait_screen ? `\n<wait-screen>${wait_screen}</wait-screen>` : ''),
-				files: []
-			})
 			console.info(`AI运行的${shell_name}代码：`, runner)
 			let shell_result
 			try { shell_result = await shell_exec_map[shell_name](runner, { no_ansi_terminal_sequences: true }) } catch (err) { shell_result = err }
