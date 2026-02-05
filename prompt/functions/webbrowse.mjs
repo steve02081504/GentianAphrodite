@@ -34,7 +34,7 @@ function longestCommonSuffix(strings) {
  */
 function formatUrlListLabel(urlList) {
 	if (urlList.length === 1) return `\`${urlList[0]}\``
-	const prefix = longestCommonPrefix(urlList)
+	let prefix = longestCommonPrefix(urlList)
 	const suffix = longestCommonSuffix(urlList)
 	const minLen = Math.min(...urlList.map(u => u.length))
 	const hasMiddle = prefix.length + suffix.length < minLen
