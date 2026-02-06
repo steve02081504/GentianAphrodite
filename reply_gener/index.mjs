@@ -5,7 +5,7 @@ import { inspect } from 'node:util'
 import { compareTwoStrings as string_similarity } from 'npm:string-similarity'
 
 import { buildPromptStruct } from '../../../../../../src/public/parts/shells/chat/src/prompt_struct.mjs'
-import { defineToolUseBlocks } from '../../../../../../src/public/parts/shells/chat/src/stream.mjs'
+import { defineInlineToolUses, defineToolUseBlocks } from '../../../../../../src/public/parts/shells/chat/src/stream.mjs'
 import { noAISourceAvailable, OrderedAISourceCalling } from '../AISource/index.mjs'
 import { chardir, is_dist } from '../charbase.mjs'
 import { plugins } from '../config/index.mjs'
@@ -210,6 +210,9 @@ export async function baseGetReply(args) {
 			{ start: '<get-tool-info>', end: '</get-tool-info>' },
 			{ start: /<generate-char[^>]*>/, end: '</generate-char>' },
 			{ start: /<generate-persona[^>]*>/, end: '</generate-persona>' },
+		]),
+		defineInlineToolUses([
+			['gentian-sticker', '<gentian-sticker>', '</gentian-sticker>', () => ''],
 		]),
 		await GetCoderunnerPreviewUpdater(),
 		...Object.values(args.plugins).map(plugin => plugin.interfaces?.chat?.GetReplyPreviewUpdater)
