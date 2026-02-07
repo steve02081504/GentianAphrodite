@@ -483,7 +483,7 @@ ${finalRandomFlashback.map(formatMemory).join('\n')}
 	// 7. 添加"删除记忆"的指令支持（如果配置启用或用户触发了关键词）
 	if (
 		args.extension?.enable_prompts?.ShortTermMemory || (
-			await match_keys(args, ['删了', '清除', '丢掉', '丢弃', '舍弃', '移除', '清空', '忘了', '忘掉'], 'user') &&
+			await match_keys(args, ['删了', '清除', '丢掉', '丢弃', '舍弃', '移除', '清空', '忘了', '忘掉', '忘记', '删掉'], 'user') &&
 			await match_keys(args, ['记忆'], 'user')
 		)
 	)
