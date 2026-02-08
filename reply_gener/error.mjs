@@ -83,7 +83,7 @@ async function getAISuggestionForError(error, errorMessageForRecord, originalArg
  */
 export async function handleError(error, originalArgs) {
 	const errorStack = error.stack || error.message
-	const errorMessageForRecord = `\`\`\`\n${errorStack}\`\`\`\n`
+	const errorMessageForRecord = `\`\`\`\n${errorStack}\n\`\`\`\n`
 
 	if (errorRecord[errorMessageForRecord]) return { content: errorMessageForRecord }
 
