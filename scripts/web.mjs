@@ -1,6 +1,7 @@
 import path from 'node:path'
 
 import { where_command } from 'npm:@steve02081504/exec'
+import { sleep } from './tools.mjs'
 
 const DEFAULT_NAVIGATION_TIMEOUT = 17 * 1000 // 设置一个默认导航超时时间 (毫秒)
 
@@ -225,7 +226,7 @@ export async function MarkdownWebFetch(url) {
 		catch (error) {
 			console.error(`Error during DOM cleanup execution (page.evaluate): ${error}`)
 			await page.waitForSelector('article, main, .PostsPage-postContent, body', { timeout: 15000 }).catch(() => { })
-			await new Promise(resolve => setTimeout(resolve, 5000))
+			await sleep(5000)
 		}
 
 		console.info('Fetching cleaned HTML content.')

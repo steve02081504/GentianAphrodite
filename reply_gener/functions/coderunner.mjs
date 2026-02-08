@@ -8,7 +8,7 @@ import { defineInlineToolUses } from '../../../../../../../src/public/parts/shel
 import { unlockAchievement } from '../../scripts/achievements.mjs'
 import { toFileObj } from '../../scripts/fileobj.mjs'
 import { newCharReply, statisticDatas } from '../../scripts/statistics.mjs'
-import { captureScreen } from '../../scripts/tools.mjs'
+import { captureScreen, sleep } from '../../scripts/tools.mjs'
 import { GetReply } from '../index.mjs'
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
@@ -164,7 +164,7 @@ export async function coderunner(result, args) {
 	 * @returns {Promise<{name: string, buffer: Buffer, mime_type: string}>} - 截图对象。
 	 */
 	async function waitAndCapture(delaySeconds) {
-		await new Promise(resolve => setTimeout(resolve, delaySeconds * 1000))
+		await sleep(delaySeconds * 1000)
 		try {
 			return { name: 'screenshot.png', buffer: await captureScreen(), mime_type: 'image/png' }
 		} catch (e) {

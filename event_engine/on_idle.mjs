@@ -2,6 +2,7 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
+import { setTimeout, clearTimeout } from 'node:timers'
 
 import { loadJsonFileIfExists, saveJsonFile } from '../../../../../../src/scripts/json_loader.mjs'
 import { chardir, charname } from '../charbase.mjs'
@@ -384,7 +385,7 @@ export function resetIdleTimer(delay = idleIntervalMs) {
 	idleID = setTimeout(async () => {
 		await onIdleCallback()
 		resetIdleTimer()
-	}, delay)
+	}, delay).unref()
 }
 
 /**

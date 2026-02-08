@@ -1,3 +1,5 @@
+import { setTimeout } from 'node:timers'
+
 import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
 import { reloadPart, loadAnyPreferredDefaultPart } from '../../../../../../src/server/parts_loader.mjs'
 import { is_dist, charname as BotCharname, username as FountUsername, GentianAphrodite } from '../charbase.mjs'
@@ -150,7 +152,7 @@ export async function handleError(error, platformAPI, contextMessage) {
 
 	if (errorRecord[errorMessageForRecord]) return
 	errorRecord[errorMessageForRecord] = true
-	setTimeout(() => delete errorRecord[errorMessageForRecord], 60000)
+	setTimeout(() => delete errorRecord[errorMessageForRecord], 60000).unref()
 
 	const aiSuggestionReply = await getAISuggestionForError(error, errorMessageForRecord, platformAPI, contextMessage)
 

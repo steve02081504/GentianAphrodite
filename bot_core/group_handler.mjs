@@ -1,6 +1,7 @@
 import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
 import { loadAnyPreferredDefaultPart } from '../../../../../../src/server/parts_loader.mjs'
 import { charname as BotCharname, username as FountUsername, GentianAphrodite } from '../charbase.mjs'
+import { sleep } from '../scripts/tools.mjs'
 
 import { userIdToNameMap, inHypnosisChannelId } from './state.mjs'
 import { fetchFilesForMessages } from './utils.mjs'
@@ -305,7 +306,7 @@ async function performInitialGroupOwnerCheck(platformAPI) {
 			const allGroups = await platformAPI.getJoinedGroups()
 			if (allGroups?.length)
 				for (const group of allGroups) {
-					await new Promise(resolve => setTimeout(resolve, 2000)) // 错开检查
+					await sleep(2000) // 错开检查
 					await handleGroupCheck(group, platformAPI)
 				}
 		}

@@ -1,4 +1,5 @@
 import os from 'node:os'
+import { setTimeout } from 'node:timers'
 
 import { reloadPart } from '../../../../../../src/server/parts_loader.mjs'
 import { is_dist, charname as BotCharname, username as FountUsername, fountdir } from '../charbase.mjs'
@@ -83,12 +84,13 @@ async function getAISuggestionForError(error, errorMessageForRecord, originalArg
  */
 export async function handleError(error, originalArgs) {
 	const errorStack = error.stack || error.message
+	if (!errorStack) console.trace('Error has no stack:', error)
 	const errorMessageForRecord = `\`\`\`\n${errorStack}\n\`\`\`\n`
 
 	if (errorRecord[errorMessageForRecord]) return { content: errorMessageForRecord }
 
 	errorRecord[errorMessageForRecord] = true
-	setTimeout(() => delete errorRecord[errorMessageForRecord], 60000)
+	setTimeout(() => delete errorRecord[errorMessageForRecord], 60000).unref()
 
 	let aiSuggestionReply
 	try {

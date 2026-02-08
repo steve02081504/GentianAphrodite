@@ -1,3 +1,5 @@
+import { sleep } from "./tools.mjs"
+
 const MaxRetries = 3
 /**
  * 尝试执行一个函数几次，如果失败则等待一段时间后重试。
@@ -11,7 +13,7 @@ export async function tryFewTimes(func, { times = MaxRetries, WhenFailsWaitFor =
 	while (times--)
 		try { return await func() }
 		catch (error) {
-			await new Promise(resolve => setTimeout(resolve, WhenFailsWaitFor))
+			await sleep(WhenFailsWaitFor)
 			if (!times) throw error
 		}
 }

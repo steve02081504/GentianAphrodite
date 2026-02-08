@@ -9,7 +9,7 @@ import { translateSource } from '../TranslateSource/index.mjs'
 import { remove_kaomoji } from './dict.mjs'
 import { normalizeFancyText } from './fancytext.mjs'
 import { is_PureChinese } from './langdetect.mjs'
-import { escapeRegExp } from './tools.mjs'
+import { escapeRegExp, sleep } from './tools.mjs'
 
 const chT2S = OpenCC.Converter({ from: 'twp', to: 'cn' })
 /**
@@ -56,7 +56,7 @@ export async function SimplifyContent(content) {
 			catch (e) {
 				if (e.name == 'TooManyRequestsError') {
 					console.info('Translate API rate limit exceeded, waiting 5 second before retrying')
-					await new Promise(resolve => setTimeout(resolve, 5000))
+					await sleep(5000)
 				}
 				else {
 					console.error('Failed to translate content "' + content + '": ', e)

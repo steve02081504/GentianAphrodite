@@ -18,6 +18,7 @@ import { config as charConfig } from '../config/index.mjs'
 import { GetReply } from '../reply_gener/index.mjs'
 
 import { initRealityChannel, RealityChannel } from './index.mjs'
+import { sleep } from '../scripts/tools.mjs'
 
 /**
  * @typedef {object} RecordingStats
@@ -654,7 +655,7 @@ async function sentinelLoop() {
 			console.error(`❌ Failed to read audio frame: ${error.message}.`)
 			if (sentinelState.recorderRetryCount < 5) {
 				console.log('🕒 Attempting to restart recorder in 1 minute...')
-				await new Promise(resolve => setTimeout(resolve, 60 * 1000))
+				await sleep(60 * 1000)
 				console.log('⏳ Attempting to restart recorder...')
 				if (!await restartRecorder()) continue
 			}

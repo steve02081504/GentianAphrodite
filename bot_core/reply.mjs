@@ -1,3 +1,5 @@
+import { setInterval, clearInterval } from 'node:timers'
+
 import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
 import { loadAnyPreferredDefaultPart } from '../../../../../../src/server/parts_loader.mjs'
 import { charname as BotCharname, username as FountUsername, GentianAphrodite } from '../charbase.mjs'
@@ -161,7 +163,7 @@ async function processAIReply(aiFinalReply, platformAPI, channelId, triggerMessa
  * @param {string | number} channelId - 消息所在的频道 ID。
  */
 export async function doMessageReply(triggerMessage, platformAPI, channelId) {
-	let typingInterval = setInterval(() => { platformAPI.sendTyping(channelId).catch(() => { }) }, 5000)
+	let typingInterval = setInterval(() => { platformAPI.sendTyping(channelId).catch(() => { }) }, 5000).unref()
 	/**
 	 * 清除正在发送的“输入中”状态的定时器。
 	 */
