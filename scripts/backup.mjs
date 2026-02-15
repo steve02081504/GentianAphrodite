@@ -1,18 +1,32 @@
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
+
 import { chardir } from '../charbase.mjs'
 
+/**
+ * 获取备份根目录
+ * @returns {string} 备份根目录
+ */
 function getBackupRootDir() {
 	if (process.platform === 'win32')
 		return process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming')
 	return path.join(os.homedir(), '.local', 'share')
 }
 
+/**
+ * 获取备份目录
+ * @returns {string} 备份目录
+ */
 export function getGentianBackupDir() {
 	return path.join(getBackupRootDir(), 'GentianAphrodite', 'backup')
 }
 
+/**
+ * 尝试获取文件大小
+ * @param {string} p 文件路径
+ * @returns {Promise<number | null>} 文件大小
+ */
 async function tryStatSize(p) {
 	try {
 		return (await fs.promises.stat(p)).size
@@ -22,6 +36,11 @@ async function tryStatSize(p) {
 	}
 }
 
+/**
+ * 格式化字节大小
+ * @param {number} n 字节大小
+ * @returns {string} 格式化后的字节大小
+ */
 function formatBytes(n) {
 	if (n == null) return 'N/A'
 	if (n < 1024) return `${n} B`
@@ -38,7 +57,7 @@ function formatBytes(n) {
 /**
  * 备份指定记忆文件。
  * @param {string} filePath 文件路径
- * @param {{ fileChecker?: (filePath: string, backupFilePath: string) => Promise<void> }} [options]
+ * @param {{ fileChecker?: (filePath: string, backupFilePath: string) => Promise<void> }} [options] - 备份选项
  * @returns {Promise<void>}
  */
 export async function checkAndBackupFile(filePath, options = {}) {
@@ -75,6 +94,12 @@ export async function checkAndBackupFile(filePath, options = {}) {
  */
 export function checkAndBackupMemoryFile(filePath) {
 	return checkAndBackupFile(filePath, {
+		/**
+		 * 校验文件大小
+		 * @param {string} filePath 文件路径
+		 * @param {string} backupFilePath 备份文件路径
+		 * @returns {Promise<void>}
+		 */
 		fileChecker: async (filePath, backupFilePath) => {
 			const currentSize = await tryStatSize(filePath)
 			const backupSize = await tryStatSize(backupFilePath)

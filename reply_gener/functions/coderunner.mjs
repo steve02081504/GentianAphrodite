@@ -227,9 +227,9 @@ export async function coderunner(result, args) {
 			let shell_result
 			try { shell_result = await shell_exec_map[shell_name](step.code, { no_ansi_terminal_sequences: true }) } catch (err) { shell_result = err }
 			result.extension.execed_codes[step.code] = shell_result
-			if (shell_result.stdall) {
-				shell_result = { ...shell_result };  for (const key of ['stdout', 'stderr']) delete shell_result[key]
-			}
+			if (shell_result.stdall)
+				for (const key of ['stdout', 'stderr'])
+					delete shell_result[key]
 			console.info(`${shell_name} result`, shell_result)
 			toolEntry.content = '执行结果：\n' + util.inspect(shell_result)
 		}

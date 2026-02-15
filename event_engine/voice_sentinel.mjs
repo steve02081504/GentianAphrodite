@@ -5,7 +5,7 @@
  */
 
 import { Buffer } from 'node:buffer'
-import { existsSync, readFileSync, statSync } from 'node:fs'
+import fs from 'node:fs'
 import { join } from 'node:path'
 
 import { PvRecorder } from 'npm:@picovoice/pvrecorder-node'
@@ -16,9 +16,9 @@ import 'npm:@steve02081504/virtual-console'
 import { chardir, charname } from '../charbase.mjs'
 import { config as charConfig } from '../config/index.mjs'
 import { GetReply } from '../reply_gener/index.mjs'
+import { sleep } from '../scripts/tools.mjs'
 
 import { initRealityChannel, RealityChannel } from './index.mjs'
-import { sleep } from '../scripts/tools.mjs'
 
 /**
  * @typedef {object} RecordingStats
@@ -215,13 +215,13 @@ function isFrameMatchingVoice(frame) {
  */
 function loadReferenceMfcc() {
 	const refPath = CONFIG.files.REFERENCE_WAV
-	if (!existsSync(refPath)) {
+	if (!fs.existsSync(refPath)) {
 		console.error(`❌ Reference audio file does not exist: ${refPath}.`)
 		sentinelState.referenceFileMtime = null
 		return null
 	}
 	try {
-		const refWav = new wavefile.WaveFile(readFileSync(refPath))
+		const refWav = new wavefile.WaveFile(fs.readFileSync(refPath))
 
 		// --- 验证音频格式 ---
 		if (refWav.fmt.sampleRate !== CONFIG.audio.SAMPLE_RATE) {
@@ -277,7 +277,7 @@ function loadReferenceMfcc() {
 			return null
 		}
 		console.log(`📊 Reference voice MFCC feature set loaded (${mfccs.length} feature vectors).`)
-		const { mtime } = statSync(refPath)
+		const { mtime } = fs.statSync(refPath)
 		sentinelState.referenceFileMtime = mtime
 		return mfccs
 	}
@@ -712,7 +712,7 @@ export function stopVoiceSentinel() {
  */
 export async function checkVoiceSentinel() {
 	// Stop conditions
-	if (!existsSync(CONFIG.files.REFERENCE_WAV)) {
+	if (!fs.existsSync(CONFIG.files.REFERENCE_WAV)) {
 		stopVoiceSentinel()
 		return isRunning
 	}
@@ -720,7 +720,7 @@ export async function checkVoiceSentinel() {
 	// If running, check for updates
 	if (isRunning)
 		try {
-			const { mtime } = statSync(CONFIG.files.REFERENCE_WAV)
+			const { mtime } = fs.statSync(CONFIG.files.REFERENCE_WAV)
 			// If mtime is newer, reload the reference MFCCs
 			if (sentinelState.referenceFileMtime && mtime.getTime() > sentinelState.referenceFileMtime.getTime()) {
 				console.log('🔄 Detected voice reference file update, reloading features...')
@@ -753,7 +753,7 @@ function startVoiceSentinel() {
 	}
 
 	// --- 前置条件检查 ---
-	if (!existsSync(CONFIG.files.REFERENCE_WAV)) {
+	if (!fs.existsSync(CONFIG.files.REFERENCE_WAV)) {
 		console.log(`🎤 Audio sentinel: Reference audio (${CONFIG.files.REFERENCE_WAV}) does not exist, cannot start.`)
 		return
 	}

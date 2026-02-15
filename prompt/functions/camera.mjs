@@ -1,4 +1,4 @@
-import fs from 'node:fs/promises'
+import fs from 'node:fs'
 
 import { in_docker, in_termux } from '../../../../../../../src/scripts/env.mjs'
 import { config } from '../../config/index.mjs'
@@ -33,7 +33,7 @@ async function captureWebcam() {
 			if (data) return resolve(data)
 			reject(new Error('摄像头捕获成功，但未返回任何数据。'))
 		})
-	}).finally(() => fs.unlink('temp_webcam_capture.png').catch(() => { }))
+	}).finally(() => fs.promises.unlink('temp_webcam_capture.png').catch(() => { }))
 }
 
 /**

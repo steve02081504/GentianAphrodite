@@ -2,7 +2,6 @@ import { addPartLocaleData } from '../../../../../src/scripts/i18n.mjs'
 import { loadJsonFile } from '../../../../../src/scripts/json_loader.mjs'
 
 import { chardir, GentianAphrodite, initCharBase, username } from './charbase.mjs'
-import { checkAndBackupMemoryFile } from './scripts/backup.mjs'
 import { GetData, SetData, GetConfigDisplayContent } from './config/index.mjs'
 import { setConfigEndpoints } from './config/router.mjs'
 import { initializeOnIdleHandler, stopIdleTimer } from './event_engine/on_idle.mjs'
@@ -15,6 +14,7 @@ import { BrowserJsCallback } from './reply_gener/functions/browserIntegration.mj
 import { timerCallBack } from './reply_gener/functions/timer.mjs'
 import { GetReply } from './reply_gener/index.mjs'
 import { unlockAchievement } from './scripts/achievements.mjs'
+import { checkAndBackupMemoryFile } from './scripts/backup.mjs'
 import { startClipboardListening, stopClipboardListening } from './scripts/clipboard.mjs'
 import { saveVars } from './scripts/vars.mjs'
 

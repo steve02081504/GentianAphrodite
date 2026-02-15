@@ -1,4 +1,4 @@
-import fs from 'node:fs/promises'
+import fs from 'node:fs'
 import path from 'node:path'
 
 import { loadPart } from '../../../../../../src/server/parts_loader.mjs'
@@ -16,8 +16,8 @@ import { getTranslateSourceData, setTranslateSourceData } from '../TranslateSour
  */
 export async function GetConfigDisplayContent() {
 	return {
-		html: await fs.readFile(path.join(chardir, 'config', 'display.html'), 'utf-8'),
-		js: await fs.readFile(path.join(chardir, 'config', 'display.mjs'), 'utf-8')
+		html: await fs.promises.readFile(path.join(chardir, 'config', 'display.html'), 'utf-8'),
+		js: await fs.promises.readFile(path.join(chardir, 'config', 'display.mjs'), 'utf-8')
 	}
 }
 

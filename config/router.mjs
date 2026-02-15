@@ -1,5 +1,5 @@
 import { Buffer } from 'node:buffer'
-import fs from 'node:fs/promises'
+import fs from 'node:fs'
 import path from 'node:path'
 
 import mimetype from 'npm:mime-types'
@@ -18,7 +18,7 @@ export function setConfigEndpoints(router) {
 	router.post(`${apiUrl}/saveAudioFile`, async (req, res) => {
 		const { filePath, samples } = req.body
 		const finalPath = path.join(chardir, filePath)
-		await fs.mkdir(path.dirname(finalPath), { recursive: true })
+		await fs.promises.mkdir(path.dirname(finalPath), { recursive: true })
 
 		// Convert Float32Array to Int16Array
 		const int16Samples = new Int16Array(samples.length)
@@ -29,7 +29,7 @@ export function setConfigEndpoints(router) {
 
 		const wav = new wavefile.WaveFile()
 		wav.fromScratch(1, 16000, '16', int16Samples)
-		await fs.writeFile(finalPath, wav.toBuffer())
+		await fs.promises.writeFile(finalPath, wav.toBuffer())
 
 		res.status(200).json({ message: 'File saved successfully' })
 		checkVoiceSentinel()
@@ -40,10 +40,10 @@ export function setConfigEndpoints(router) {
 		const { filePath, content } = req.body
 		const finalPath = path.join(chardir, filePath)
 
-		await fs.mkdir(path.dirname(finalPath), { recursive: true })
+		await fs.promises.mkdir(path.dirname(finalPath), { recursive: true })
 		const base64Data = content.split(',')[1]
 		const buffer = Buffer.from(base64Data, 'base64')
-		await fs.writeFile(finalPath, buffer)
+		await fs.promises.writeFile(finalPath, buffer)
 
 		res.status(200).json({ message: 'File saved successfully' })
 		unlockAchievement('set_reference_photo')
@@ -52,9 +52,9 @@ export function setConfigEndpoints(router) {
 	router.get(`${apiUrl}/getFile`, async (req, res) => {
 		const { filePath } = req.query
 		const finalPath = path.join(chardir, filePath)
-		if (!await fs.access(finalPath).then(_ => 1, _ => 0))
+		if (!fs.existsSync(finalPath))
 			return res.status(404).json({ message: 'File not found' })
-		const fileContent = await fs.readFile(finalPath)
+		const fileContent = await fs.promises.readFile(finalPath)
 		const ext = path.extname(finalPath).toLowerCase()
 		const mimeType = mimetype.lookup(ext) || 'application/octet-stream'
 		res.setHeader('Content-Type', mimeType)
