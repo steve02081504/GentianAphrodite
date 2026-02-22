@@ -378,6 +378,43 @@ export function findUrlsInText(text) {
 }
 
 /**
+ * 读取响应体，限制最大字节数。
+ * @param {Response} response - Fetch 响应对象。
+ * @param {number} limit - 最大字节数。
+ * @returns {Promise<string>} - 读取到的文本内容。
+ */
+async function readResponseWithLimit(response, limit) {
+	const reader = response.body.getReader()
+	const chunks = []
+	let totalLength = 0
+	try {
+		while (true) {
+			const { done, value } = await reader.read()
+			if (done) break
+			chunks.push(value)
+			totalLength += value.length
+			if (totalLength >= limit) {
+				await reader.cancel()
+				break
+			}
+		}
+	}
+	finally {
+		reader.releaseLock()
+	}
+
+	const combined = new Uint8Array(Math.min(totalLength, limit))
+	let offset = 0
+	for (const chunk of chunks) {
+		const toCopy = Math.min(chunk.length, limit - offset)
+		combined.set(chunk.slice(0, toCopy), offset)
+		offset += toCopy
+		if (offset >= limit) break
+	}
+	return new TextDecoder().decode(combined)
+}
+
+/**
  * 获取给定 URL 的元数据。
  * 如果 URL 指向 HTML 页面，则提取标题、描述、图标和各种元标签。
  * 如果指向其他文件类型，则从响应头中提取文件名、类型和大小等信息。
@@ -387,6 +424,9 @@ export function findUrlsInText(text) {
 export async function getUrlMetadata(url) {
 	const controller = new AbortController()
 	const timeoutId = setTimeout(() => controller.abort(), 5000) // 5秒超时
+	let response = null
+	let html = null
+	let isFallbackGet = false
 
 	try {
 		// 统一处理不成功的响应
@@ -401,19 +441,36 @@ export async function getUrlMetadata(url) {
 			return metas
 		}
 
-		// 步骤 1: 使用 HEAD 请求获取头信息，避免下载整个文件体
-		const headResponse = await fetch(url, { method: 'HEAD', redirect: 'follow', signal: controller.signal })
-		if (!headResponse.ok) return handleFailedResponse(headResponse)
+		// 步骤 1: 尝试使用 HEAD 请求获取头信息，以节省带宽
+		response = await fetch(url, { method: 'HEAD', redirect: 'follow', signal: controller.signal })
 
-		const contentType = headResponse.headers.get('content-type')
+		// 步骤 2: 如果 HEAD 请求失败，尝试 GET 请求（最多 1MB）
+		if (!response.ok) {
+			response = await fetch(url, {
+				method: 'GET',
+				redirect: 'follow',
+				signal: controller.signal,
+				headers: { 'Range': 'bytes=0-1048575' }
+			})
+			if (!response.ok) return handleFailedResponse(response)
+			isFallbackGet = true
+
+			// 如果是 HTML，读取部分内容用于后续解析
+			if (response.headers.get('content-type')?.includes('text/html'))
+				html = await readResponseWithLimit(response, 1024 * 1024)
+		}
+
+		const contentType = response.headers.get('content-type')
 		const metas = []
 
-		// 步骤 2: 判断内容类型，分支处理
+		// 步骤 3: 判断内容类型，分支处理
 		if (contentType?.includes('text/html')) {
-			const getResponse = await fetch(url, { redirect: 'follow', signal: controller.signal })
-			if (!getResponse.ok) return handleFailedResponse(getResponse)
-
-			const html = await getResponse.text()
+			// 如果之前没通过 GET 获取到 HTML（即 HEAD 成功了），则现在获取
+			if (html === null) {
+				const getResponse = await fetch(url, { redirect: 'follow', signal: controller.signal })
+				if (!getResponse.ok) return handleFailedResponse(getResponse)
+				html = await getResponse.text()
+			}
 			const { parse } = await import('npm:node-html-parser')
 			const root = parse(html)
 
@@ -462,9 +519,9 @@ export async function getUrlMetadata(url) {
 				metas.push(`- ${key}: ${value}`)
 		}
 		else {
-			// 对于非 HTML 内容，直接使用 HEAD 响应的头信息
-			const contentDisposition = headResponse.headers.get('content-disposition')
-			const contentLength = headResponse.headers.get('content-length')
+			// 对于非 HTML 内容，直接使用响应头信息
+			const contentDisposition = response.headers.get('content-disposition')
+			const contentLength = response.headers.get('content-length')
 			const filename = getUrlFilename(url, contentDisposition)
 
 			if (filename) metas.push(`- filename: ${filename}`)
@@ -486,6 +543,9 @@ export async function getUrlMetadata(url) {
 		return null
 	}
 	finally {
+		// 确保回退 GET 请求的响应体被关闭
+		if (isFallbackGet && html === null && response?.body)
+			response.body.cancel().catch(() => { })
 		clearTimeout(timeoutId)
 	}
 }
