@@ -53,7 +53,7 @@ ${statisticDatas.firstInteraction.characterReplyContent}
 		await match_keys(args, ['最长'])
 	)
 		result += `\
-你和主人在${timeToStr(statisticDatas.longestDailyChat.start)}至${statisticDatas.longestDailyChat.end}，共${timeToTimeStr(
+你和主人在${timeToStr(statisticDatas.longestDailyChat.start, 'zh-CN')}至${timeToStr(statisticDatas.longestDailyChat.end, 'zh-CN')}，共${timeToTimeStr(
 	statisticDatas.longestDailyChat.end - statisticDatas.longestDailyChat.start
 	, 'zh-CN')}的时间中，每日都有保持对话。
 `

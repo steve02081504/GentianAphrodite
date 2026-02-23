@@ -168,17 +168,19 @@ export function newCharReply(str, platform) {
 	statisticDatas.longestDailyChat.start ||= now
 	statisticDatas.longestDailyChat.end ||= now
 	statisticDatas.trackingDailyChat.start ||= now
-	statisticDatas.trackingDailyChat.end = now
+	statisticDatas.trackingDailyChat.end ||= now
+	if (now - statisticDatas.trackingDailyChat.end > the25h)
+		statisticDatas.trackingDailyChat = { start: now, end: now }
+	else
+		statisticDatas.trackingDailyChat.end = now
 	if (
 		statisticDatas.trackingDailyChat.end - statisticDatas.trackingDailyChat.start
 		>
 		statisticDatas.longestDailyChat.end - statisticDatas.longestDailyChat.start
 	)
-		statisticDatas.longestDailyChat = statisticDatas.trackingDailyChat
-	if (now - statisticDatas.trackingDailyChat.end > the25h)
-		statisticDatas.trackingDailyChat = {
-			start: now,
-			end: 0
+		statisticDatas.longestDailyChat = {
+			start: statisticDatas.trackingDailyChat.start,
+			end: statisticDatas.trackingDailyChat.end
 		}
 }
 
