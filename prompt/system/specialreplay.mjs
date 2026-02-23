@@ -12,7 +12,7 @@ import { match_keys } from '../../scripts/match.mjs'
 export async function SpecialReplayPrompt(args, logical_results) {
 	let result = ''
 
-	if (logical_results.in_muti_char_chat || args.extension?.from_timer)
+	if (logical_results.in_multi_char_chat || args.extension?.from_timer)
 		result += `\
 若你认为当前语境不适合或无需回复，可以单纯输出<-<null>->来跳过回复。
 如：

@@ -12,7 +12,7 @@ import { NdiffResults, PickRandomN, random, repeatRandomTimes } from '../../scri
 export async function corpusPrompt(args, logical_results) {
 	let result = '<Example>\n'
 	if (!logical_results.in_hypnosis) {
-		if (logical_results.in_muti_char_chat)
+		if (logical_results.in_multi_char_chat)
 			result += `\
 对非主人：[
 常规回应：[

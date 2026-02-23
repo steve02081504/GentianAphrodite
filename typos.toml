@@ -1,0 +1,39 @@
+# typos 拼写检查配置
+# 参考: https://github.com/crate-ci/typos/blob/master/docs/reference.md
+
+[files]
+extend-exclude = [
+	"/memory",
+	"/vars",
+	"/dist",
+	"/.esh/logo.txt",
+]
+ignore-hidden = true
+ignore-files = true
+ignore-dot = false
+ignore-vcs = true
+ignore-global = true
+ignore-parent = true
+
+[default]
+# locale = "en-gb"
+# 仅忽略特定上下文，不全局放行
+extend-ignore-re = [
+	# CC 许可 BY-NC-ND 中的 ND（No Derivatives）
+	"BY-NC-ND",
+	# CC 图标 alt 文案中的 "ND icon"
+	"alt=\"ND icon\"",
+	# 单引号内的长 base64/hash（如 Telegram file_id），避免误报 BA/TYE/UE 等
+	"'[A-Za-z0-9/_-]{50,}'",
+]
+# 白名单：允许的“词”（用于正文拼写检查）
+# 当 correction 与 key 相同时表示该词始终视为正确
+[default.extend-words]
+# 在全词匹配时fount项目名始终应该是小写开头
+fount = "fount"
+Fount = "fount"
+
+# splited 这种形式的拼写比正规英语能传递更多的信息，避免无法分清是名词还是动词的情况
+splited = "splited"
+# datas 代表多个或多类型的数据，比正规英语能传递更多的信息
+datas = "datas"
