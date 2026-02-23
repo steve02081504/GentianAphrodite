@@ -490,10 +490,11 @@ export async function getUrlMetadata(url) {
 				signal: controller.signal,
 				headers: { 'Range': 'bytes=0-1048575' }
 			})
-			if (!response.ok) return handleFailedResponse(response)
+			try {
+				if (!response.ok) return handleFailedResponse(response)
 
-			if (response.headers.get('content-type')?.includes('text/html')) try {
-				html = await readResponseWithLimit(response, 1024 * 1024)
+				if (response.headers.get('content-type')?.includes('text/html'))
+					html = await readResponseWithLimit(response, 1024 * 1024)
 			} finally {
 				response.body.cancel().catch(() => { })
 			}
@@ -524,6 +525,7 @@ export async function getUrlMetadata(url) {
 			}
 		}
 
+		// 步骤 4: 统一返回结果
 		if (!Object.keys(record).length) return null
 		return makeMetadataRecord(record)
 	}
