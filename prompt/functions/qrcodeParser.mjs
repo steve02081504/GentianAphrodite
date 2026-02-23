@@ -24,7 +24,7 @@ export async function qrcodeParserPrompt(args, logical_results) {
 			const urls = decodedContents.flatMap(content => findUrlsInText(content))
 			const metas = (await Promise.all(urls.map(async url => {
 				const meta = await getUrlMetadata(url)
-				if (meta?.length) return `\`${url}\`：\n${meta.join('\n')}`
+				if (Object.keys(meta || {}).length) return `\`${url}\`：\n${String(meta)}`
 			}))).filter(Boolean)
 
 			let content = `上条消息中图片内的二维码内容是：\n\`\`\`${decodedContents.join('\n')}\`\`\``

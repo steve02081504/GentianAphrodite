@@ -54,7 +54,7 @@ function formatUrlListLabel(urlList) {
 async function fetchUrlMetaList(urls) {
 	const results = await Promise.all(urls.map(async url => {
 		const metas = await getUrlMetadata(url)
-		if (metas?.length) return { url, metaText: metas.join('\n') }
+		if (Object.keys(metas || {}).length) return { url, metaText: String(metas) }
 		return null
 	}))
 	return results.filter(Boolean)
