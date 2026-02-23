@@ -417,6 +417,10 @@ async function readResponseWithLimit(response, limit) {
  */
 function makeMetadataRecord(record) {
 	return Object.assign(Object.create({
+		/**
+		 * 将元数据对象转换为 Markdown 列表。
+		 * @returns {string} 元数据对象的 Markdown 列表。
+		 */
 		toString() {
 			return Object.keys(this).map(k => `- ${k}: ${this[k]}`).join('\n')
 		}
@@ -432,7 +436,13 @@ function makeMetadataRecord(record) {
 async function parseMetadataFromHtml(html, baseUrl) {
 	const { parse } = await import('npm:node-html-parser')
 	const root = parse(html)
-	const record = /** @type {Record<string, string>} */ ({})
+	/** @type {Record<string, string>} */
+	const record = {}
+	/**
+	 * 添加元数据键值对。
+	 * @param {string} key - 键。
+	 * @param {string} value - 值。
+	 */
 	const add = (key, value) => {
 		if (value && value.trim() && !(key in record)) record[key] = value.trim()
 	}
@@ -471,6 +481,11 @@ async function parseMetadataFromHtml(html, baseUrl) {
 export async function getUrlMetadata(url) {
 	const controller = new AbortController()
 	const timeoutId = setTimeout(() => controller.abort(), 5000) // 5秒超时
+	/**
+	 * 处理失败响应。
+	 * @param {Response} response - 响应对象。
+	 * @returns {Record<string, string> & { toString(): string }} - 包含状态码和状态文本的元数据对象。
+	 */
 	const handleFailedResponse = response => {
 		const record = { status: String(response.status) }
 		if (response.statusText) record.statusText = response.statusText
@@ -488,7 +503,7 @@ export async function getUrlMetadata(url) {
 				method: 'GET',
 				redirect: 'follow',
 				signal: controller.signal,
-				headers: { 'Range': 'bytes=0-1048575' }
+				headers: { Range: 'bytes=0-1048575' }
 			})
 			try {
 				if (!response.ok) return handleFailedResponse(response)
