@@ -388,16 +388,13 @@ async function readResponseWithLimit(response, limit) {
 	const chunks = []
 	let totalLength = 0
 	try {
-		while (true) {
+		while (totalLength < limit) {
 			const { done, value } = await reader.read()
 			if (done) break
 			chunks.push(value)
 			totalLength += value.length
-			if (totalLength >= limit) {
-				await reader.cancel()
-				break
-			}
 		}
+		await reader.cancel()
 	}
 	finally {
 		reader.releaseLock()
@@ -409,9 +406,59 @@ async function readResponseWithLimit(response, limit) {
 		const toCopy = Math.min(chunk.length, limit - offset)
 		combined.set(chunk.slice(0, toCopy), offset)
 		offset += toCopy
-		if (offset >= limit) break
 	}
 	return new TextDecoder().decode(combined)
+}
+
+/**
+ * 创建元数据对象：键值对记录，toString 时渲染为 Markdown 列表。
+ * @param {Record<string, string>} record - 键值对。
+ * @returns {Record<string, string> & { toString(): string }} - 带自定义 toString 的对象。
+ */
+function makeMetadataRecord(record) {
+	return Object.assign(Object.create({
+		toString() {
+			return Object.keys(this).map(k => `- ${k}: ${this[k]}`).join('\n')
+		}
+	}), record)
+}
+
+/**
+ * 从 HTML 字符串解析元数据。
+ * @param {string} html - HTML 内容。
+ * @param {string} baseUrl - 用于解析相对 URL（如 favicon）的基准 URL。
+ * @returns {Promise<Record<string, string>>} - 解析出的元数据键值对。
+ */
+async function parseMetadataFromHtml(html, baseUrl) {
+	const { parse } = await import('npm:node-html-parser')
+	const root = parse(html)
+	const record = /** @type {Record<string, string>} */ ({})
+	const add = (key, value) => {
+		if (value && value.trim() && !(key in record)) record[key] = value.trim()
+	}
+	add('title', root.querySelector('title')?.text)
+	add('description', root.querySelector('meta[name="description"]')?.getAttribute('content'))
+	add('keywords', root.querySelector('meta[name="keywords"]')?.getAttribute('content'))
+	add('author', root.querySelector('meta[name="author"]')?.getAttribute('content'))
+	for (const el of root.querySelectorAll('meta[property^="og:"]')) {
+		const property = el.getAttribute('property')
+		const content = el.getAttribute('content')
+		add(property, content)
+	}
+	for (const el of root.querySelectorAll('meta[name^="twitter:"]')) {
+		const name = el.getAttribute('name')
+		const content = el.getAttribute('content')
+		add(name, content)
+	}
+	const favicon = root.querySelector('link[rel="icon"], link[rel="shortcut icon"]')?.getAttribute('href')
+	if (favicon)
+		try {
+			add('favicon', new URL(favicon, baseUrl).href)
+		}
+		catch (e) {
+			console.warn(`无法解析favicon的URL: ${favicon}`, e)
+		}
+	return record
 }
 
 /**
@@ -419,28 +466,19 @@ async function readResponseWithLimit(response, limit) {
  * 如果 URL 指向 HTML 页面，则提取标题、描述、图标和各种元标签。
  * 如果指向其他文件类型，则从响应头中提取文件名、类型和大小等信息。
  * @param {string} url - 要获取元数据的 URL。
- * @returns {Promise<string[]|null>} - 一个包含元数据字符串的数组，如果获取失败或未找到元数据，则返回 null。
+ * @returns {Promise<Record<string, string>|null>} - 元数据键值对（toString 为 Markdown 列表），失败或无元数据时返回 null。
  */
 export async function getUrlMetadata(url) {
 	const controller = new AbortController()
 	const timeoutId = setTimeout(() => controller.abort(), 5000) // 5秒超时
+	const handleFailedResponse = response => {
+		const record = { status: String(response.status) }
+		if (response.statusText) record.statusText = response.statusText
+		return makeMetadataRecord(record)
+	}
 	let response = null
 	let html = null
-	let isFallbackGet = false
-
 	try {
-		// 统一处理不成功的响应
-		/**
-		 * 处理失败的响应。
-		 * @param {Response} response - 响应对象。
-		 * @returns {string[]} - 包含状态码和状态文本的元数据数组。
-		 */
-		const handleFailedResponse = response => {
-			const metas = [`- status: ${response.status}`]
-			if (response.statusText) metas.push(`- statusText: ${response.statusText}`)
-			return metas
-		}
-
 		// 步骤 1: 尝试使用 HEAD 请求获取头信息，以节省带宽
 		response = await fetch(url, { method: 'HEAD', redirect: 'follow', signal: controller.signal })
 
@@ -453,87 +491,41 @@ export async function getUrlMetadata(url) {
 				headers: { 'Range': 'bytes=0-1048575' }
 			})
 			if (!response.ok) return handleFailedResponse(response)
-			isFallbackGet = true
 
-			// 如果是 HTML，读取部分内容用于后续解析
-			if (response.headers.get('content-type')?.includes('text/html'))
+			if (response.headers.get('content-type')?.includes('text/html')) try {
 				html = await readResponseWithLimit(response, 1024 * 1024)
+			} finally {
+				response.body.cancel().catch(() => { })
+			}
 		}
 
 		const contentType = response.headers.get('content-type')
-		const metas = []
+		/** @type {Record<string, string>} */
+		let record = {}
 
 		// 步骤 3: 判断内容类型，分支处理
 		if (contentType?.includes('text/html')) {
-			// 如果之前没通过 GET 获取到 HTML（即 HEAD 成功了），则现在获取
-			if (html === null) {
+			if (!html) {
 				const getResponse = await fetch(url, { redirect: 'follow', signal: controller.signal })
 				if (!getResponse.ok) return handleFailedResponse(getResponse)
 				html = await getResponse.text()
 			}
-			const { parse } = await import('npm:node-html-parser')
-			const root = parse(html)
-
-			const metadataMap = new Map()
-			/**
-			 * 将元数据添加到映射中。
-			 * @param {string} key - 元数据的键。
-			 * @param {string} value - 元数据的值。
-			 */
-			const addMeta = (key, value) => {
-				// 检查 value 是否存在且不为空字符串
-				if (value && value.trim() && !metadataMap.has(key))
-					metadataMap.set(key, value.trim())
-			}
-
-			addMeta('title', root.querySelector('title')?.text)
-			addMeta('description', root.querySelector('meta[name="description"]')?.getAttribute('content'))
-			addMeta('keywords', root.querySelector('meta[name="keywords"]')?.getAttribute('content'))
-			addMeta('author', root.querySelector('meta[name="author"]')?.getAttribute('content'))
-
-			const ogTags = root.querySelectorAll('meta[property^="og:"]')
-			for (const el of ogTags) {
-				const property = el.getAttribute('property')
-				const content = el.getAttribute('content')
-				addMeta(property, content)
-			}
-
-			const twitterTags = root.querySelectorAll('meta[name^="twitter:"]')
-			for (const el of twitterTags) {
-				const name = el.getAttribute('name')
-				const content = el.getAttribute('content')
-				addMeta(name, content)
-			}
-
-			const favicon = root.querySelector('link[rel="icon"], link[rel="shortcut icon"]')?.getAttribute('href')
-			if (favicon)
-				try {
-					const absoluteFaviconUrl = new URL(favicon, url).href
-					addMeta('favicon', absoluteFaviconUrl)
-				}
-				catch (e) {
-					console.warn(`无法解析favicon的URL: ${favicon}`, e)
-				}
-
-			for (const [key, value] of metadataMap.entries())
-				metas.push(`- ${key}: ${value}`)
+			record = await parseMetadataFromHtml(html, url)
 		}
 		else {
-			// 对于非 HTML 内容，直接使用响应头信息
 			const contentDisposition = response.headers.get('content-disposition')
 			const contentLength = response.headers.get('content-length')
 			const filename = getUrlFilename(url, contentDisposition)
-
-			if (filename) metas.push(`- filename: ${filename}`)
-			if (contentType) metas.push(`- type: ${contentType.trim()}`)
+			if (filename) record.filename = filename
+			if (contentType) record.type = contentType.trim()
 			if (contentLength) {
 				const size = Number.parseInt(contentLength, 10)
-				if (!Number.isNaN(size)) metas.push(`- size: ${size} bytes`)
+				if (!Number.isNaN(size)) record.size = `${size} bytes`
 			}
 		}
 
-		// 步骤 3: 统一返回结果
-		return metas.length ? metas : null
+		if (!Object.keys(record).length) return null
+		return makeMetadataRecord(record)
 	}
 	catch (e) {
 		if (e.name === 'AbortError')
@@ -543,9 +535,6 @@ export async function getUrlMetadata(url) {
 		return null
 	}
 	finally {
-		// 确保回退 GET 请求的响应体被关闭
-		if (isFallbackGet && html === null && response?.body)
-			response.body.cancel().catch(() => { })
 		clearTimeout(timeoutId)
 	}
 }
