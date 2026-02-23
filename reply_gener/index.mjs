@@ -318,7 +318,7 @@ export async function baseGetReply(args) {
 			let append = ''
 			if (args.extension?.platform === 'telegram')
 				append = `\n${await getTelegramSticker(stickerName)}`
-			else if (args.extension?.platform === 'discord' && logical_results.in_muti_char_chat) // 在非群聊中用大图
+			else if (args.extension?.platform === 'discord' && logical_results.in_multi_char_chat) // 在非群聊中用大图
 				append = `\n${await getDiscordSticker(stickerName)}`
 			else
 				result.files.push({

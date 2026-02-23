@@ -23,10 +23,10 @@ async function findExistingPathsInText(text) {
 	}
 	const seekedpaths = new Set()
 	seekedpathlikes.map(path => path.replace(/^`|`$/g, '').trim()).forEach(pathblock => {
-		const spilts = pathblock.split(/(?=[^\w/\\-])/)
-		for (let i = 0; i < spilts.length; i++)
-			for (let j = i + 1; j <= spilts.length; j++) try {
-				const path = spilts.slice(i, j).join('')
+		const splits = pathblock.split(/(?=[^\w/\\-])/)
+		for (let i = 0; i < splits.length; i++)
+			for (let j = i + 1; j <= splits.length; j++) try {
+				const path = splits.slice(i, j).join('')
 				if (pathblock != path && !path.match(/^([A-Za-z]:\\|(\.|\.\.|~)[/\\]|[/\\])[^\n:`]+/u)) continue
 				const resolvedPath = resolvePath(path)
 				if (seekedpaths.has(resolvedPath)) continue
@@ -54,10 +54,10 @@ async function findExistingDirsInText(text) {
 	}
 	const seekeddirs = new Set()
 	seekedpathlikes.map(path => path.replace(/^`|`$/g, '').trim()).forEach(pathblock => {
-		const spilts = pathblock.split(/(?=[^\w/\\-])/)
-		for (let i = 0; i < spilts.length; i++)
-			for (let j = i + 1; j <= spilts.length; j++) try {
-				const path = spilts.slice(i, j).join('')
+		const splits = pathblock.split(/(?=[^\w/\\-])/)
+		for (let i = 0; i < splits.length; i++)
+			for (let j = i + 1; j <= splits.length; j++) try {
+				const path = splits.slice(i, j).join('')
 				if (pathblock != path && !path.match(/^([A-Za-z]:\\|(\.|\.\.|~)[/\\]|[/\\])[^\n:`]+/u)) continue
 				const resolvedPath = resolvePath(path)
 				if (seekeddirs.has(resolvedPath)) continue
