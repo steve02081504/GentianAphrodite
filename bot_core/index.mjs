@@ -136,7 +136,8 @@ async function handleMessageQueue(channelId, platformAPI) {
 	if (!channelMessageQueues[channelId]?.length)
 		return delete channelHandlers[channelId]
 
-	await initializeChannelLogIfEmpty(channelId, platformAPI)
+	const triggerMessage = channelMessageQueues[channelId]?.[0]
+	await initializeChannelLogIfEmpty(channelId, platformAPI, triggerMessage)
 
 	const myQueue = channelMessageQueues[channelId]
 	const currentChannelLog = channelChatLogs[channelId]
@@ -157,14 +158,20 @@ async function handleMessageQueue(channelId, platformAPI) {
 
 /**
  * 初始化频道日志（如果为空）。
+ * 若传入触发消息且拉取到的历史最后一条与之同 ID，则去掉最后一条，避免与即将入队的触发消息重复。
  * @async
  * @param {string | number} channelId - 频道 ID。
  * @param {PlatformAPI_t} platformAPI - 平台 API。
+ * @param {chatLogEntry_t_ext} [triggerMessage] - 当前队列首条（触发加载的消息），用于去重。
  */
-async function initializeChannelLogIfEmpty(channelId, platformAPI) {
+async function initializeChannelLogIfEmpty(channelId, platformAPI, triggerMessage) {
 	if (!channelChatLogs[channelId]?.length) {
 		const historicalMessages = await platformAPI.fetchChannelHistory(channelId, currentConfig.DefaultMaxFetchCount)
-		const mergedHistoricalLog = mergeChatLogEntries(historicalMessages.sort((a, b) => a.time_stamp - b.time_stamp).slice(0, -1), currentConfig.MergeMessagePeriodMs)
+		const sorted = historicalMessages.sort((a, b) => a.time_stamp - b.time_stamp)
+		const triggerId = triggerMessage?.extension?.platform_message_ids?.[0]
+		const lastId = sorted.length ? sorted[sorted.length - 1].extension?.platform_message_ids?.[0] : undefined
+		const historyWithoutTrigger = (triggerId && lastId === triggerId) ? sorted.slice(0, -1) : sorted
+		const mergedHistoricalLog = mergeChatLogEntries(historyWithoutTrigger, currentConfig.MergeMessagePeriodMs)
 		channelChatLogs[channelId] = mergedHistoricalLog
 		while (channelChatLogs[channelId].length > currentConfig.DefaultMaxMessageDepth)
 			channelChatLogs[channelId].shift()
