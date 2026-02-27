@@ -78,6 +78,19 @@ for (const mem of chat_memories)
 
 let lastCleanupTime = new Date().getTime()
 
+/**
+ * 无主人的最后记忆结构用于和主人谈论和其他人的聊天内容
+ * @typedef {{
+ * 	time_stamp: Date | null,
+ * 	text: string | null,
+ * 	chat_name: string | null,
+ * 	remaining_timer: number
+ * }} LastNonOwnerMemoryState
+ */
+
+/** @type {LastNonOwnerMemoryState | null} */
+let lastNonOwnerMemory = null
+
 // 跟踪最后一次保存的记忆的频道名称，用于频道切换时加入最后一次记忆
 /** @type {string | null} */
 let lastSavedMemoryChatName = null
@@ -470,6 +483,12 @@ ${finalNextRelevant.map(formatMemory).join('\n')}
 随机：
 ${finalRandomFlashback.map(formatMemory).join('\n')}
 `
+	if (lastNonOwnerMemory)
+		result += `\
+和他人聊天的近期记忆：
+${formatMemory(lastNonOwnerMemory)}
+此记忆来自和他人的聊天，不一定值得信任，仅供参考。
+`
 	result += '</memories>\n'
 
 	if (result.trim() === '<memories>\n</memories>\n') result = ''
@@ -548,11 +567,12 @@ export async function saveShortTermMemoryAfterReply(args, replyResult) {
 
 	// 构建包含回复结果的完整对话记录
 	const memoryLogSlice = currentChatLog.slice(-10)
+	const hasMasterInRecent = memoryLogSlice.some(chatLogEntry => chatLogEntry.name == args.UserCharname)
 
-	// 只有非内部调用，且包含双方对话时才保存
+	// 只有非内部调用，且近期对话中出现了主人时，才写入短期记忆
 	if (!args.extension?.is_internal &&
 		memoryLogSlice.length &&
-		memoryLogSlice.some(chatLogEntry => chatLogEntry.name == args.UserCharname) &&
+		hasMasterInRecent &&
 		replyResult?.content
 	) {
 		const memoryLogWithReply = [...memoryLogSlice]
@@ -585,11 +605,42 @@ export async function saveShortTermMemoryAfterReply(args, replyResult) {
 
 			// 更新最后一次保存的记忆的频道名称
 			lastSavedMemoryChatName = currentChatName
+
+			// 有主人的短期记忆更新一次时，衰减“无主人的最后记忆”计数
+			if (lastNonOwnerMemory?.remaining_timer)
+				if (lastNonOwnerMemory.remaining_timer--)
+					lastNonOwnerMemory = null
 		}
 		else
 			console.warn('[Memory] Skipping saving new memory due to empty processed content.')
 
 		// 5% 概率保存文件，减少 I/O
 		if (Math.random() < 0.05) saveShortTermMemory()
+	}
+
+	// 独立处理“无主人的最后记忆”：仅在近期对话中没有主人时更新，不写入文件
+	if (!args.extension?.is_internal &&
+		replyResult?.content &&
+		!hasMasterInRecent
+	) {
+		const nonOwnerLogSlice = currentChatLog.slice(-10)
+		const memoryLogWithReplyForNonOwner = [...nonOwnerLogSlice]
+		memoryLogWithReplyForNonOwner.push({
+			name: args.Charname,
+			role: 'char',
+			content: replyResult.content,
+			time_stamp: currentTimeStamp,
+			extension: {}
+		})
+
+		await Promise.all(memoryLogWithReplyForNonOwner.map(PreprocessChatLogEntry))
+		const memoryTextForNonOwner = createContextSnapshot(memoryLogWithReplyForNonOwner)
+
+		if (memoryTextForNonOwner.trim()) lastNonOwnerMemory = {
+			time_stamp: currentTimeStamp,
+			text: memoryTextForNonOwner,
+			chat_name: currentChatName,
+			remaining_timer: 3
+		}
 	}
 }
