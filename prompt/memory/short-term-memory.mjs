@@ -294,7 +294,6 @@ export async function ShortTermMemoryPrompt(args, logical_results) {
 	// 1. 处理当前对话：取最后5条记录提取关键词
 	const recentLogSlice = currentChatLog.slice(-5)
 	await Promise.all(recentLogSlice.map(PreprocessChatLogEntry))
-	// 优化：使用提取的公共函数
 	const currentKeywords = await extractKeywordsFromChatLog(
 		flatChatLog(recentLogSlice),
 		args.UserCharname,
@@ -567,7 +566,6 @@ export async function saveShortTermMemoryAfterReply(args, replyResult) {
 			})
 
 		await Promise.all(memoryLogWithReply.map(PreprocessChatLogEntry))
-		// 优化：使用提取的公共函数，减少重复代码
 		const newMemoryKeywords = await extractKeywordsFromChatLog(
 			flatChatLog(memoryLogWithReply),
 			args.UserCharname,
