@@ -18,7 +18,7 @@ export async function CodeRunnerPrompt(args, logical_results) {
 	const codePluginPrompts = (
 		await Promise.all(
 			Object.values(args.plugins)
-				.map(plugin => plugin.interfaces?.chat?.GetJSCodePrompt?.(args))
+				.map(plugin => plugin.interfaces?.code_execution?.GetJSCodePrompt?.(args))
 		)
 	).filter(Boolean).join('\n')
 	const availableShells = Object.keys(available).filter(x => available[x])

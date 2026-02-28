@@ -147,7 +147,7 @@ export async function coderunner(result, args) {
 				return '文件已发送'
 			}
 		return Object.assign(js_eval_context, ...(await Promise.all(
-			Object.values(args.plugins).map(plugin => plugin.interfaces?.chat?.GetJSCodeContext?.(args, args.prompt_struct))
+			Object.values(args.plugins).map(plugin => plugin.interfaces?.code_execution?.GetJSCodeContext?.(args))
 		)).filter(Boolean))
 	}
 	/**
