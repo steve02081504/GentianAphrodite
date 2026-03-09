@@ -67,8 +67,8 @@ CPU信息：
 				const parts = line.trim().split(/\s+/)
 				if (parts.length === 3) {
 					const disk = parts[0]
-					const freeSize = parseInt(parts[1], 10)
-					const totalSize = parseInt(parts[2], 10)
+					const freeSize = Number(parts[1])
+					const totalSize = Number(parts[2])
 					diskUsage[disk] = {
 						total: totalSize / 1024 / 1024 / 1024,
 						free: freeSize / 1024 / 1024 / 1024,

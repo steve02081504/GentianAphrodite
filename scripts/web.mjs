@@ -535,7 +535,7 @@ export async function getUrlMetadata(url) {
 			if (filename) record.filename = filename
 			if (contentType) record.type = contentType.trim()
 			if (contentLength) {
-				const size = Number.parseInt(contentLength, 10)
+				const size = Number(contentLength)
 				if (!Number.isNaN(size)) record.size = `${size} bytes`
 			}
 		}

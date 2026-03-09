@@ -320,7 +320,7 @@ export function parseDuration(durationString) {
 	for (const unit in dict) {
 		const match = durationString.match(new RegExp(`(?<value>\\d+)${unit}`))
 		if (match?.groups?.value) {
-			duration += parseInt(match.groups.value) * dict[unit]
+			duration += Number(match.groups.value) * dict[unit]
 			durationString = durationString.replace(match[0], '')
 		}
 	}

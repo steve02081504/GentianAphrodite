@@ -69,7 +69,7 @@ return $windowpid
 `
 				const { stdout, code } = await pwsh_exec(script)
 				if (code || !stdout) return null
-				return parseInt(stdout.trim(), 10)
+				return Number(stdout.trim())
 			}
 
 			case 'darwin': {
@@ -77,7 +77,7 @@ return $windowpid
 				const command = 'osascript -e \'tell application "System Events" to get unix id of first process whose frontmost is true\''
 				const { stdout, code } = await bash_exec(command)
 				if (code || !stdout) return null
-				return parseInt(stdout.trim(), 10)
+				return Number(stdout.trim())
 			}
 
 			case 'linux': {
@@ -231,7 +231,7 @@ function run() {
 					if (!match) return null
 
 					const [, windowId, pidStr, title] = match
-					const pid = parseInt(pidStr, 10)
+					const pid = Number(pidStr)
 					if (!pid) return null // 过滤无效PID
 
 					try {
