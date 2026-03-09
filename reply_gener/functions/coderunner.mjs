@@ -10,6 +10,8 @@ import { toFileObj } from '../../scripts/fileobj.mjs'
 import { newCharReply, statisticDatas } from '../../scripts/statistics.mjs'
 import { captureScreen, sleep } from '../../scripts/tools.mjs'
 import { GetReply } from '../index.mjs'
+
+import { fountApiContext } from './fount-api.mjs'
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
@@ -146,9 +148,10 @@ export async function coderunner(result, args) {
 				if (errors.length) throw errors
 				return '文件已发送'
 			}
-		return Object.assign(js_eval_context, ...(await Promise.all(
-			Object.values(args.plugins).map(plugin => plugin.interfaces?.code_execution?.GetJSCodeContext?.(args))
-		)).filter(Boolean))
+		return Object.assign(js_eval_context, ...(await Promise.all([
+			fountApiContext(),
+			...Object.values(args.plugins).map(plugin => plugin.interfaces?.code_execution?.GetJSCodeContext?.(args))
+		])).filter(Boolean))
 	}
 	/**
 	 * 为 AI 运行 JS 代码。

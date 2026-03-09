@@ -62,6 +62,7 @@ export function GetData() {
 		reality_channel_disables: config.reality_channel_disables,
 		reality_channel_notification_fallback_order: config.reality_channel_notification_fallback_order,
 		disable_prompt: config.disable_prompt,
+		fountApiKey: config.fountApiKey,
 	}
 }
 /**
@@ -86,8 +87,8 @@ export async function SetData(data) {
 		if (data.reality_channel_notification_fallback_order?.[prop])
 			config.reality_channel_notification_fallback_order[prop] = data.reality_channel_notification_fallback_order[prop]
 
-	if (data.disable_prompt)
-		Object.assign(config.disable_prompt, data.disable_prompt)
+	if (data.disable_prompt) Object.assign(config.disable_prompt, data.disable_prompt)
+	if (data.fountApiKey) config.fountApiKey = data.fountApiKey
 }
 
 /**

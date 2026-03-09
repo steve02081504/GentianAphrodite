@@ -4,6 +4,8 @@ import { available } from 'npm:@steve02081504/exec'
 
 import { chardir } from '../../charbase.mjs'
 import { match_keys } from '../../scripts/match.mjs'
+
+import { fountApiPrompt } from './fount-api.mjs'
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
@@ -16,10 +18,11 @@ export async function CodeRunnerPrompt(args, logical_results) {
 	let result = ''
 
 	const codePluginPrompts = (
-		await Promise.all(
-			Object.values(args.plugins)
+		await Promise.all([
+			fountApiPrompt(args, logical_results),
+			...Object.values(args.plugins)
 				.map(plugin => plugin.interfaces?.code_execution?.GetJSCodePrompt?.(args))
-		)
+		])
 	).filter(Boolean).join('\n')
 	const availableShells = Object.keys(available).filter(x => available[x])
 	const defaultShell = process.platform === 'win32' ? available.pwsh ? 'pwsh' : 'powershell' : available.bash ? 'bash' : 'sh'

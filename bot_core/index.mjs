@@ -170,7 +170,7 @@ async function initializeChannelLogIfEmpty(channelId, platformAPI, triggerMessag
 		const sorted = historicalMessages.sort((a, b) => a.time_stamp - b.time_stamp)
 		const triggerId = triggerMessage?.extension?.platform_message_ids?.[0]
 		const lastId = sorted.length ? sorted[sorted.length - 1].extension?.platform_message_ids?.[0] : undefined
-		const historyWithoutTrigger = (triggerId && lastId === triggerId) ? sorted.slice(0, -1) : sorted
+		const historyWithoutTrigger = triggerId && lastId === triggerId ? sorted.slice(0, -1) : sorted
 		const mergedHistoricalLog = mergeChatLogEntries(historyWithoutTrigger, currentConfig.MergeMessagePeriodMs)
 		channelChatLogs[channelId] = mergedHistoricalLog
 		while (channelChatLogs[channelId].length > currentConfig.DefaultMaxMessageDepth)
