@@ -148,6 +148,12 @@ export let currentConfig = {
 export const GentianWords = ['龙胆', 'gentian']
 
 /**
+ * 复读黑名单：命中下列关键词的消息不会被复读。
+ * @type {(string|RegExp)[]}
+ */
+export const repeatBlacklist = ['discord.gg/']
+
+/**
  * 配置 Bot 逻辑层。
  * @param {Partial<BotLogicConfig_t>} newConfig - 一个包含部分或全部新配置项的对象。
  */

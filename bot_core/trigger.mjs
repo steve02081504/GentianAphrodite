@@ -7,7 +7,7 @@ import { newCharReply, newUserMessage } from '../scripts/statistics.mjs'
 import { findMostFrequentElement } from '../scripts/tools.mjs'
 
 import { sendAndLogReply, doMessageReply } from './reply.mjs'
-import { channelLastSendMessageTime, channelMuteStartTimes, currentConfig, inHypnosisChannelId, fuyanMode, setFuyanMode, bannedStrings, channelChatLogs, GentianWords, waitForOwnerTypingToEnd, clearOwnerTypingStartTime } from './state.mjs'
+import { channelLastSendMessageTime, channelMuteStartTimes, currentConfig, inHypnosisChannelId, fuyanMode, setFuyanMode, bannedStrings, channelChatLogs, GentianWords, repeatBlacklist, waitForOwnerTypingToEnd, clearOwnerTypingStartTime } from './state.mjs'
 import { fetchFilesForMessages, isBotCommand } from './utils.mjs'
 
 /**
@@ -448,7 +448,7 @@ async function checkQueueMessageTrigger(currentMessageToProcess, currentChannelL
 		if (
 			(repeat.element?.content || repeat.element?.files?.length) &&
 			repeat.count >= currentConfig.RepetitionTriggerCount &&
-			!base_match_keys(repeat.element.content, [...currentMessageToProcess.extension.OwnerNameKeywords || [], ...rude_words, ...GentianWords]) &&
+			!base_match_keys(repeat.element.content, [...currentMessageToProcess.extension.OwnerNameKeywords || [], ...rude_words, ...GentianWords, ...repeatBlacklist]) &&
 			!isBotCommand(repeat.element.content)
 		) {
 			// 通过，fetch后重新计算复读内容
@@ -463,7 +463,7 @@ async function checkQueueMessageTrigger(currentMessageToProcess, currentChannelL
 			if (
 				(repeat.element?.content || repeat.element?.files?.length) &&
 				repeat.count >= currentConfig.RepetitionTriggerCount &&
-				!base_match_keys(repeat.element.content + '\n' + (repeat.element.files || []).map(file => file.name).join('\n'), [...currentMessageToProcess.extension.OwnerNameKeywords || [], ...rude_words, ...GentianWords]) &&
+				!base_match_keys(repeat.element.content + '\n' + (repeat.element.files || []).map(file => file.name).join('\n'), [...currentMessageToProcess.extension.OwnerNameKeywords || [], ...rude_words, ...GentianWords, ...repeatBlacklist]) &&
 				!isBotCommand(repeat.element.content) &&
 				!repeatCheckLog.some(msg => msg.extension?.platform_user_id == platformAPI.getBotUserId() && summary(msg, false) === summary(repeat.element, false))
 			) {
