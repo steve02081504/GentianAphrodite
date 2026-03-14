@@ -354,15 +354,15 @@ ${selectedTask.get_content()}
 			source_purpose: 'idle'
 		}
 	})
-	if (result.extension?.is_error_report) {
+	if (result?.extension?.is_error_report) {
 		idleIntervalMs *= 2
 		console.log('error occurred in idle task, doubling idle interval to', timeToTimeStr(idleIntervalMs))
 	}
-	else {
+	else if (idleIntervalMs !== defaultIdleIntervalMs) {
 		idleIntervalMs = defaultIdleIntervalMs
 		console.log('no error occurred, resetting idle interval to', timeToTimeStr(idleIntervalMs))
 	}
-	if (!result || result.extension?.is_error_report) return
+	if (!result || result?.extension?.is_error_report) return
 	result.logContextBefore.push(logEntry)
 	await RealityChannel.AddChatLogEntry({ name: '龙胆', ...result })
 }
