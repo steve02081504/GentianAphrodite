@@ -7,16 +7,16 @@ import { match_keys } from '../../scripts/match.mjs'
  * fount API 使用说明
  * @param {chatReplyRequest_t} args - 聊天回复请求参数。
  * @param {logical_results_t} logical_results - 逻辑结果。
- * @returns {Promise<object>} 合并用的 prompt 片段，未触发时返回空 text。
+ * @returns {Promise<string>} js代码上下文，未触发时返回空字符串。
  */
 export async function fountApiPrompt(args, logical_results) {
 	let result = ''
-	if (await match_keys(args, ['fount'], 'any') || (
+	if (await match_keys(args, ['fount', /[走用]api/], 'any') || (
 		(
 			logical_results.in_assist ||
-			await match_keys(args, ['配置', '修复', '设置', '更改'], 'any')
+			await match_keys(args, ['配置', '修复', '设置', '更改', '功能', 'config'], 'any')
 		) &&
-		await match_keys(args, ['fount', '角色', 'AI源', 'API'], 'any')
+		await match_keys(args, ['fount', '角色', 'AI源', 'API', 'shell'], 'any')
 	))
 		result += `\
 你可以通过 fetch 访问 \`\${fountHostUrl}/llms.txt\` 来获取如何操作 fount 系统的指引文档。
@@ -42,12 +42,5 @@ const response = await fetch(\`\${fountHostUrl}/api/whoami?fount-apikey=\${fount
 const data = await response.json()
 \`\`\`
 `
-	return {
-		text: [{
-			content: result,
-			important: 0
-		}],
-		additional_chat_log: [],
-		extension: {},
-	}
+	return result
 }
