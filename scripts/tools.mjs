@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import process from 'node:process'
 
 import { async_eval } from 'https://cdn.jsdelivr.net/gh/steve02081504/async-eval/deno.mjs'
 
@@ -23,8 +24,7 @@ export function arraysEqual(a, b) {
 	if (a.length !== b.length) return false
 
 	for (let i = 0; i < a.length; ++i)
-		if (a[i] !== b[i])
-			return false
+		if (a[i] !== b[i]) return false
 	return true
 }
 
@@ -111,15 +111,6 @@ export function unescapeRegExp(string) {
 }
 
 /**
- * 将字符串中的 Unicode 转义序列替换为它们对应的字符。
- * @param {string} str - 可能包含 Unicode 转义序列的输入字符串。
- * @returns {string} - 替换了 Unicode 转义序列的字符串。
- */
-export function unicodeEscapeToChar(str) {
-	return str.replace(/\\u[\dA-Fa-f]{4}/g, match => String.fromCharCode(parseInt(match.replace('\\u', ''), 16)))
-}
-
-/**
  * 递归地创建给定对象的深层副本。
  * @template T
  * @param {T} object - 要复制的对象。
@@ -157,16 +148,6 @@ export function mergeTree(obj1, obj2, weakMap = new WeakMap()) {
 		if (Object.hasOwnProperty.call(obj2, key)) target[key] = mergeTree(obj1?.[key], obj2?.[key], weakMap)
 
 	return target
-}
-
-/**
- * 将字符串中的 Unicode 转义序列替换为它们对应的字符。
- * @param {string} str - 可能包含 Unicode 转义序列的输入字符串。
- * @returns {string} - 替换了 Unicode 转义序列的字符串。
- */
-export function unescapeUnicode(str) {
-	if (!(Object(str) instanceof String)) str = str.toString()
-	return str.replace(/\\u([\da-f]{4})/gi, (match, p1) => String.fromCharCode(parseInt(p1, 16)))
 }
 
 /**
@@ -371,7 +352,7 @@ const translations = {
 		minute: '分钟', minutes: '分钟',
 		second: '秒', seconds: '秒',
 		millisecond: '毫秒', milliseconds: '毫秒',
-		separator: '',        // 不同时间单位之间的分隔符 (例如 "1天2小时" 中间没有分隔符)
+		separator: '',         // 不同时间单位之间的分隔符 (例如 "1天2小时" 中间没有分隔符)
 		numberUnitSpace: false // 数字和单位之间是否需要空格 (例如 "1天" 中间没有空格)
 	},
 	'en-US': {
