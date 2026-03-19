@@ -195,7 +195,7 @@ async function calculateTriggerPossibility(fountEntry, platformAPI, channelId, c
 	const trailingEngWords = engWords.slice(-3).join(' ')
 	const contentEdgesForEnglishCheck = leadingEngWords + ' ' + trailingEngWords
 
-	const isChineseNamePattern = base_match_keys(contentEdgesForChineseCheck, ['龙胆', /(?<![乌大巨火肝苦])[胆龙][ 亲儿子宝]/])
+	const isChineseNamePattern = base_match_keys(contentEdgesForChineseCheck, ['龙胆', /(?<![乌大巨火肝苦]|big)[胆龙][ 亲儿子宝]/])
 	const isEnglishNamePattern = base_match_keys(contentEdgesForEnglishCheck, ['gentian'])
 	const isBotNamePatternDetected = isChineseNamePattern || isEnglishNamePattern
 
