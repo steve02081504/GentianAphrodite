@@ -250,7 +250,7 @@ async function processMessageFiles(message, ctx) {
 				fileName = `${sticker.file_unique_id}.webm`
 				mimeType = 'video/webm'
 			}
-			else if (sticker.is_animated) {
+			else if (sticker.is_animated)
 				if (sticker.thumbnail) {
 					fileIdToDownload = sticker.thumbnail.file_id
 					fileName = `animated_sticker_thumb_${sticker.file_unique_id}.jpg`
@@ -261,7 +261,6 @@ async function processMessageFiles(message, ctx) {
 					console.warn(`[TelegramInterface] Animated sticker ${sticker.file_unique_id} has no thumbnail, skipping.`)
 					fileIdToDownload = null
 				}
-			}
 			else {
 				fileName = `${sticker.file_unique_id}.webp`
 				mimeType = 'image/webp'

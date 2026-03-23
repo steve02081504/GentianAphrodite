@@ -124,7 +124,7 @@ export async function discordMessageToFountChatLogEntry(message, interfaceConfig
 	// 3. 收集所有附件 (包括原始消息和所有转发/引用快照中的附件)
 	const allAttachments = [
 		...message.attachments.values(),
-		...message.messageSnapshots.flatMap(snapshot => [...snapshot.attachments.values()])
+		...message.messageSnapshots.values().flatMap(snapshot => [...snapshot.attachments.values()])
 	]
 
 	allAttachments.forEach(attachment => {
