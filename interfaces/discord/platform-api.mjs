@@ -10,21 +10,17 @@ import { splitDiscordReply, formatEmbedMentions } from './utils.mjs'
 import { discordWorld } from './world.mjs'
 
 /**
+ * Discord 接口配置类型定义
  * @typedef {import('./config.mjs').DiscordInterfaceConfig_t} DiscordInterfaceConfig_t
- */
-/**
+ * 平台API类型定义
  * @typedef {import('../../bot_core/index.mjs').PlatformAPI_t} PlatformAPI_t
- */
-/**
+ * 聊天日志条目类型定义
  * @typedef {import('../../bot_core/index.mjs').chatLogEntry_t_ext} chatLogEntry_t_ext
- */
-/**
+ * Discord 文本频道类型定义
  * @typedef {import('../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').FountChatReply_t} FountChatReply_t
- */
-/**
+ * Discord 私信频道类型定义
  * @typedef {import('npm:discord.js').TextChannel} DiscordTextChannel
- */
-/**
+ * Discord 私信频道类型定义
  * @typedef {import('npm:discord.js').DMChannel} DiscordDMChannel
  */
 
@@ -36,6 +32,7 @@ import { discordWorld } from './world.mjs'
 export function buildPlatformAPI(interfaceConfig) {
 	const client = discordClientInstance
 	/**
+	 * Discord 平台API类型定义
 	 * @type {PlatformAPI_t}
 	 */
 	const discordPlatformAPI = {

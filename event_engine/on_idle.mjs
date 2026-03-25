@@ -15,6 +15,7 @@ import { timeToTimeStr } from '../scripts/tools.mjs'
 import { initRealityChannel, RealityChannel } from './index.mjs'
 
 /**
+ * 待办任务类型定义
  * @typedef {{
  * 	name: string,
  * 	content: string,
@@ -24,6 +25,7 @@ import { initRealityChannel, RealityChannel } from './index.mjs'
  */
 
 /**
+ * 待办任务列表
  * @type {TodoTask[]}
  */
 const TodoTasks = loadJsonFileIfExists(path.join(chardir, 'memory/todo-tasks.json'), [])
@@ -83,6 +85,7 @@ const defaultTaskWeights = {
 }
 
 /**
+ * 默认的任务权重配置
  * @type {Object.<string, number>}
  */
 const IdleTaskWeights = loadJsonFileIfExists(path.join(chardir, 'memory/idle-task-weights.json'), defaultTaskWeights)
@@ -121,6 +124,7 @@ const baseIdleTasks = [
 	{
 		category: 'collect_info',
 		/**
+		 * 获取任务内容字符串
 		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => '随意浏览主人的硬盘、屏幕、摄像头等，更新和总结有关主人的信息。',
@@ -137,6 +141,7 @@ const baseIdleTasks = [
 	{
 		category: 'organize_memory',
 		/**
+		 * 获取任务内容字符串
 		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => `\
@@ -157,6 +162,7 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 	{
 		category: 'care_user',
 		/**
+		 * 获取任务内容字符串
 		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => `\
@@ -176,6 +182,7 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 	{
 		category: 'self_planning',
 		/**
+		 * 获取任务内容字符串
 		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => `\
@@ -197,6 +204,7 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 	{
 		category: 'plan_for_user',
 		/**
+		 * 获取任务内容字符串
 		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => `\
@@ -213,6 +221,7 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 	{
 		category: 'knowledge_integration',
 		/**
+		 * 获取任务内容字符串
 		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => `\
@@ -257,6 +266,7 @@ ${random(
 	{
 		category: 'learn_interest',
 		/**
+		 * 获取任务内容字符串
 		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => `\
@@ -276,6 +286,7 @@ ${random(
 	{
 		category: 'cleanup_memory',
 		/**
+		 * 获取任务内容字符串
 		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => `\
@@ -308,6 +319,7 @@ export async function onIdleCallback() {
 			allTasks.push({
 				category: 'todo_tasks',
 				/**
+				 * 获取任务内容字符串
 				 * @returns {string} - 任务内容字符串
 				 */
 				get_content: () => `执行 Todo 任务：${todo.name}\n${todo.content}`,

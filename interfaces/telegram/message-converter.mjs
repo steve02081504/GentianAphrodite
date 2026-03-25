@@ -8,9 +8,9 @@ import { telegrafInstance, telegramBotInfo, telegramUserCache, telegramUserIdToD
 import { telegramEntitiesToAiMarkdown } from './utils.mjs'
 
 /**
+ * Telegram 接口配置类型定义
  * @typedef {import('./config.mjs').TelegramInterfaceConfig_t} TelegramInterfaceConfig_t
- */
-/**
+ * 聊天日志条目类型定义
  * @typedef {import('../../bot_core/index.mjs').chatLogEntry_t_ext} chatLogEntry_t_ext
  */
 /** @typedef {import('npm:telegraf').Context} TelegrafContext */

@@ -38,6 +38,7 @@ function initBaseNotifyChannel() {
 		time: new Date(),
 		chat_log: [],
 		/**
+		 * 添加聊天日志条目
 		 * @param {any} entry - 聊天日志条目。
 		 * @returns {void}
 		 */
@@ -45,6 +46,7 @@ function initBaseNotifyChannel() {
 		other_chars: {},
 		plugins: {},
 		/**
+		 * 更新通知通道对象
 		 * @returns {any} - 更新后的通知通道对象。
 		 */
 		Update: () => {

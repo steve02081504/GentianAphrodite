@@ -7,6 +7,7 @@ import { is_dist, charname as BotCharname, username as FountUsername, fountdir }
 import { baseGetReply } from './index.mjs'
 
 /**
+ * 错误处理器类型定义
  * @typedef {import('../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReply_t} FountChatReply_t
  * @typedef {import('../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReplyRequest_t} FountChatReplyRequest_t
  */

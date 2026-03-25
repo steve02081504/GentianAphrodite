@@ -7,16 +7,19 @@ import { buildPlatformAPI } from './platform-api.mjs'
 import { setTelegrafInstance, setTelegramBotInfo, telegramBotInfo, telegramUserIdToDisplayName, telegramDisplayNameToId } from './state.mjs'
 
 /**
+ * 获取Telegram 接口配置模板
  * @typedef {import('./config.mjs').GetBotConfigTemplate} GetBotConfigTemplate
  */
 export { GetBotConfigTemplate } from './config.mjs'
 
 /**
+ * Telegram 接口配置类型定义
  * @typedef {import('./config.mjs').TelegramInterfaceConfig_t} TelegramInterfaceConfig_t
  */
 /** @typedef {import('npm:telegraf').Telegraf} TelegrafInstance */
 
 /**
+ * Telegram 平台API类型定义
  * @type {import('../../bot_core/index.mjs').PlatformAPI_t | null}
  */
 export let telegramPlatformAPI = null

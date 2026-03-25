@@ -10,12 +10,11 @@ import { discordClientInstance, discordUserCache, discordUserIdToDisplayName, di
 import { getMessageFullContent } from './utils.mjs'
 
 /**
+ * Discord 接口配置类型定义
  * @typedef {import('./config.mjs').DiscordInterfaceConfig_t} DiscordInterfaceConfig_t
- */
-/**
+ * 聊天日志条目类型定义
  * @typedef {import('../../bot_core/index.mjs').chatLogEntry_t_ext} chatLogEntry_t_ext
- */
-/**
+ * Discord 消息类型定义
  * @typedef {import('npm:discord.js').Message} DiscordMessage
  */
 

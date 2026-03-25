@@ -6,10 +6,12 @@ import { parseDuration } from './tools.mjs'
 import { getVar, saveVar } from './vars.mjs'
 
 /**
+ * 平台统计数据类型定义
  * @typedef {{ messagesSent: number, statementsSent: number }} PlatformStats
  */
 
 /**
+ * 统计数据类型定义
  * @typedef {{
  *   firstInteraction: {
  *     time: (Date | undefined),
@@ -43,7 +45,7 @@ import { getVar, saveVar } from './vars.mjs'
  *   longestDailyChat: { start: number, end: number },
  *   trackingDailyChat: { start: number, end: number },
  *   avgTokenNum: number
- * }} StatisticDatas
+ * }} StatisticDatas - 统计数据
  */
 
 /**

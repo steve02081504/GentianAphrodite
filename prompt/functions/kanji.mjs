@@ -7,12 +7,11 @@ import { getScopedChatLog } from '../../scripts/match.mjs'
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
+ * zi.tools API 错误类型定义
  * @typedef {object} ApiError
  * @property {boolean} error - 标志是否发生错误。
  * @property {string} message - 错误信息。
- */
-
-/**
+ * zi.tools API 响应类型定义
  * @typedef {Array} ApiResponse - API成功返回的原始 `res` 数据。
  */
 

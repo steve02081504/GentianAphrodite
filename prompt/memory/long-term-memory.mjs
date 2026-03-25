@@ -11,6 +11,7 @@ import { match_keys, match_keys_all } from '../../scripts/match.mjs'
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
+ * 长期记忆类型定义
  * @typedef {{
  * 	trigger: string,
  * 	prompt: string,
@@ -23,6 +24,7 @@ import { match_keys, match_keys_all } from '../../scripts/match.mjs'
  */
 
 /**
+ * 长期记忆列表
  * @type {LongTermMemory[]}
  */
 const LongTermMemories = loadJsonFileIfExists(path.join(chardir, 'memory/long-term-memory.json'), [])
@@ -32,6 +34,7 @@ for (const memory of LongTermMemories) {
 }
 
 /**
+ * 运行长期记忆触发器
  * @param {LongTermMemory} memory 记忆
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
@@ -45,6 +48,7 @@ async function runLongTermMemoryTrigger(memory, args, logical_results) {
 }
 
 /**
+ * 测试长期记忆触发器
  * @param {LongTermMemory} memory 记忆
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
@@ -58,6 +62,7 @@ export async function testLongTermMemoryTrigger(memory, args, logical_results) {
 }
 
 /**
+ * 获取记忆名称匹配的长期记忆对象
  * @param {string} name 记忆名称
  * @returns {LongTermMemory} - 匹配的长期记忆对象。
  */
@@ -71,6 +76,7 @@ const context_prompt_build_table = {
 }
 
 /**
+ * 格式化记忆上下文
  * @param {LongTermMemory} memory 记忆
  * @returns {string} 格式化的记忆上下文
  */
@@ -95,6 +101,7 @@ const prompt_build_table = {
 }
 
 /**
+ * 格式化记忆
  * @param {LongTermMemory} memory 记忆
  * @returns {string} 格式化的记忆
  */
@@ -107,6 +114,7 @@ export function formatLongTermMemory(memory) {
 }
 
 /**
+ * 长期记忆提示函数
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
  * @returns {Promise<single_part_prompt_t>} 长期记忆和相关操作指引组成的Prompt
@@ -214,6 +222,7 @@ trigger的关键词应容易触发并涵盖大部分情况，鼓励使用或\`||
 }
 
 /**
+ * 添加长期记忆
  * @param {LongTermMemory} memory 记忆
  */
 export function addLongTermMemory(memory) {
@@ -224,6 +233,7 @@ export function addLongTermMemory(memory) {
 }
 
 /**
+ * 更新长期记忆
  * @param {{name: string, trigger?: string, prompt?: string, updatedAt?: Date, updatedContext?: string}} memoryUpdate - 包含要更新的记忆字段的对象。
  */
 export function updateLongTermMemory({ name, trigger, prompt, updatedAt, updatedContext }) {
@@ -241,6 +251,7 @@ export function updateLongTermMemory({ name, trigger, prompt, updatedAt, updated
 }
 
 /**
+ * 删除长期记忆
  * @param {string} name 记忆名称
  */
 export function deleteLongTermMemory(name) {
@@ -249,6 +260,7 @@ export function deleteLongTermMemory(name) {
 }
 
 /**
+ * 列出长期记忆
  * @returns {string[]} 记忆名称列表
  */
 export function listLongTermMemory() {
@@ -256,6 +268,7 @@ export function listLongTermMemory() {
 }
 
 /**
+ * 获取随机的n个记忆
  * @param {number} n 数量
  * @returns {LongTermMemory[]} 随机的n个记忆
  */

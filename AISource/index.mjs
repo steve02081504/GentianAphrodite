@@ -6,7 +6,8 @@ import { username } from '../charbase.mjs'
 import { checkVoiceSentinel } from '../event_engine/voice_sentinel.mjs'
 
 /**
- * @type {Record<string, AIsource_t>}
+ * 一个记录所有AI来源的记录表，key为AI来源的名称，value为AI来源的实例
+ * @type {Record<string, AIsource_t>} AI来源记录表
  */
 export let AIsources = {
 	'deep-research': null,
@@ -107,8 +108,8 @@ export function noAISourceAvailable() {
 }
 
 /**
- * @type {AIsource_t | undefined}
  * 记录上一次使用的AI来源。
+ * @type {AIsource_t | undefined}
  */
 export let last_used_AIsource
 

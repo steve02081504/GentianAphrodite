@@ -5,6 +5,7 @@ import { findUrlsInText, getUrlMetadata } from '../../scripts/web.mjs'
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
+ * 最长公共前缀提示函数
  * @param {string[]} strings - 要检查的字符串数组。
  * @returns {string} - 最长公共前缀。
  */
@@ -18,6 +19,7 @@ function longestCommonPrefix(strings) {
 }
 
 /**
+ * 最长公共后缀提示函数
  * @param {string[]} strings - 要检查的字符串数组。
  * @returns {string} - 最长公共后缀。
  */
@@ -48,6 +50,7 @@ function formatUrlListLabel(urlList) {
 }
 
 /**
+ * 获取 URL 元数据列表提示函数
  * @param {string[]} urls - 要获取元数据的 URL 列表。
  * @returns {Promise<Array<{ url: string, metaText: string }>>} - 包含 URL 及其元数据文本的对象列表。
  */
@@ -61,6 +64,7 @@ async function fetchUrlMetaList(urls) {
 }
 
 /**
+ * 按元数据文本分组 URL 列表提示函数
  * @param {Array<{ url: string, metaText: string }>} urlMetaList - URL 元数据对象列表。
  * @returns {Map<string, string[]>} - 键为元数据文本、值为共享该元数据的 URL 列表的映射。
  */
@@ -75,6 +79,7 @@ function groupUrlsByMetaText(urlMetaList) {
 }
 
 /**
+ * 构建元数据部分提示函数
  * @param {Map<string, string[]>} metaToUrls - 元数据文本到 URL 列表的映射。
  * @returns {string[]} - 格式化后的字符串片段数组。
  */
@@ -87,6 +92,7 @@ function buildMetaParts(metaToUrls) {
 
 
 /**
+ * 网页浏览提示函数
  * @param {chatReplyRequest_t} args - 聊天回复请求参数。
  * @param {logical_results_t} logical_results - 逻辑处理结果。
  * @returns {Promise<single_part_prompt_t>} - 网页浏览Prompt

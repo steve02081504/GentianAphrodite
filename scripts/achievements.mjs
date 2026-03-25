@@ -1,5 +1,5 @@
 /**
- * @file
+ * 成就解锁功能模块
  * 该模块提供了用于解锁角色成就的功能。
  */
 import { unlockAchievement as base } from '../../../../../../src/public/parts/shells/achievements/src/api.mjs'

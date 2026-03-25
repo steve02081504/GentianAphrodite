@@ -4,6 +4,7 @@ import { loadAnyPreferredDefaultPart, loadPart } from '../../../../../../src/ser
 import { username } from '../charbase.mjs'
 
 /**
+ * 翻译源类型定义
  * @type {TranslateSource_t | null}
  */
 export let translateSource = null

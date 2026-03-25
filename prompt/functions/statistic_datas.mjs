@@ -6,6 +6,7 @@ import { parseDuration, timeToStr, timeToTimeStr } from '../../scripts/tools.mjs
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
+ * 统计数据提示函数
  * @param {chatReplyRequest_t} args - 聊天回复请求参数。
  * @param {logical_results_t} logical_results - 逻辑处理结果。
  * @returns {Promise<single_part_prompt_t>} - 统计数据Prompt。

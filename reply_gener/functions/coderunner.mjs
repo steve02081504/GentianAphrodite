@@ -86,6 +86,7 @@ export async function coderunner(result, args) {
 		js_eval_context.clear_workspace = clear_workspace
 		if (args.supported_functions.add_message)
 			/**
+			 * 处理回调函数
 			 * @param {string} reason - 回调原因。
 			 * @param {Promise<any>} promise - 相关的 Promise 对象。
 			 * @returns {void}
@@ -94,7 +95,7 @@ export async function coderunner(result, args) {
 				if (!js_eval_context.eval_result && !(promise instanceof Promise))
 					throw new Error('callback函数的第二个参数必须是一个Promise对象')
 				/**
-				 *
+				 * 处理回调函数的回调。
 				 * @param {any} _ - 占位符参数。
 				 * @returns {void}
 				 */
@@ -105,7 +106,7 @@ export async function coderunner(result, args) {
 		const view_files = []
 		let view_files_flag = false
 		/**
-		 *
+		 * 处理查看文件的命令。
 		 * @param {...any} pathOrFileObjs - 文件路径或文件对象。
 		 * @returns {Promise<void>}
 		 */

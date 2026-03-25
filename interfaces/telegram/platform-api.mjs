@@ -10,15 +10,13 @@ import { splitTelegramReply, aiMarkdownToTelegramHtml, parseLogicalChannelId } f
 import { telegramWorld } from './world.mjs'
 
 /**
+ * Telegram 接口配置类型定义
  * @typedef {import('./config.mjs').TelegramInterfaceConfig_t} TelegramInterfaceConfig_t
- */
-/**
+ * 平台API类型定义
  * @typedef {import('../../bot_core/index.mjs').PlatformAPI_t} PlatformAPI_t
- */
-/**
+ * 聊天日志条目类型定义
  * @typedef {import('../../bot_core/index.mjs').chatLogEntry_t_ext} chatLogEntry_t_ext
- */
-/**
+ * Fount 聊天回复类型定义
  * @typedef {import('../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').FountChatReply_t} FountChatReply_t
  */
 /** @typedef {import('npm:telegraf/typings/core/types/typegram').Message} TelegramMessageType */

@@ -1,5 +1,4 @@
 /**
- * @file
  * 一个基于 PvRecorder 的智能语音哨兵模块。
  * 当侦测到声音时，会将其录制下来。如果声音与主人音色匹配，则会触发AI进行回应。
  */
@@ -21,6 +20,7 @@ import { sleep } from '../scripts/tools.mjs'
 import { initRealityChannel, RealityChannel } from './index.mjs'
 
 /**
+ * 录音统计数据类型定义
  * @typedef {object} RecordingStats
  * @property {number} totalRms
  * @property {number} frameCount
@@ -31,6 +31,7 @@ import { initRealityChannel, RealityChannel } from './index.mjs'
  */
 
 /**
+ * 语音哨兵状态类型定义
  * @typedef {object} VoiceSentinelState
  * @property {string} state
  * @property {PvRecorder | null} recorder

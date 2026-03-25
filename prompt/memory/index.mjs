@@ -8,6 +8,7 @@ import { saveShortTermMemory, ShortTermMemoryPrompt } from './short-term-memory.
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
+ * 记忆组成的提示函数
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
  * @returns {Promise<single_part_prompt_t>} 记忆组成的Prompt

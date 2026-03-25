@@ -8,6 +8,7 @@ import { chardir } from '../../charbase.mjs'
 import { match_keys } from '../../scripts/match.mjs'
 
 /**
+ * 主人识别用提示函数
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
  * @returns {Promise<single_part_prompt_t>} 主人识别用Prompt

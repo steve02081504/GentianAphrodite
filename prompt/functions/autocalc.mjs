@@ -4,6 +4,7 @@ import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
+ * 自动计算提示函数
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
  * @returns {Promise<prompt_struct_t>} 返回的提示结构

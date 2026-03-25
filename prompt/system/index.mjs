@@ -14,6 +14,7 @@ import { StickersPrompt } from './stickers.mjs'
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
+ * 系统提示函数
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
  * @returns {Promise<single_part_prompt_t>} 系统Prompt

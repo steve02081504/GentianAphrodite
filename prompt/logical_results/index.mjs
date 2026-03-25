@@ -5,6 +5,7 @@ import { is_PureChinese } from '../../scripts/langdetect.mjs'
 import { getScopedChatLog, match_keys, match_keys_count, PreprocessChatLogEntry } from '../../scripts/match.mjs'
 
 /**
+ * 逻辑结果类型定义
  * @typedef {{
  *  in_multi_char_chat: boolean,
  * 	in_reply_to_master: boolean,
@@ -25,6 +26,7 @@ import { getScopedChatLog, match_keys, match_keys_count, PreprocessChatLogEntry 
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
+ * 构建逻辑结果
  * @param {chatReplyRequest_t} args 聊天回复请求
  * @returns {Promise<logical_results_t>} 逻辑结果
  */

@@ -11,6 +11,7 @@ import { channelLastSendMessageTime, channelMuteStartTimes, currentConfig, inHyp
 import { fetchFilesForMessages, isBotCommand } from './utils.mjs'
 
 /**
+ * 触发结果类型枚举
  * @readonly
  * @enum {symbol}
  */

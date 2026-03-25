@@ -530,6 +530,7 @@ export function deleteShortTermMemory(keyword) {
 }
 
 /**
+ * 获取短期记忆数量
  * @returns {number} - 短期记忆的数量
  */
 export function getShortTermMemoryNum() {

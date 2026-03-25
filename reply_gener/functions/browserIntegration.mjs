@@ -71,6 +71,7 @@ export async function browserIntegration(result, args) {
 	}
 
 	/**
+	 * 浏览器集成命令处理器列表类型定义
 	 * @type {Array<{name: string, regex: RegExp, handler: (match: RegExpMatchArray) => Promise<void>}>}
 	 */
 	const commandProcessors = [
@@ -126,7 +127,7 @@ export async function browserIntegration(result, args) {
 			name: 'get-page-html',
 			regex: /<browser-get-page-html>\s*<pageId>(.*?)<\/pageId>\s*<\/browser-get-page-html>/gs,
 			/**
-			 *
+			 * 处理获取页面HTML内容的命令。
 			 * @param {RegExpMatchArray} match - 匹配对象，包含捕获组。
 			 */
 			handler: async (match) => {
@@ -144,7 +145,7 @@ export async function browserIntegration(result, args) {
 			name: 'get-visible-html',
 			regex: /<browser-get-visible-html>\s*<pageId>(.*?)<\/pageId>\s*<\/browser-get-visible-html>/gs,
 			/**
-			 *
+			 * 处理获取页面可见HTML内容的命令。
 			 * @param {RegExpMatchArray} match - 匹配对象，包含捕获组。
 			 */
 			handler: async (match) => {
@@ -162,7 +163,7 @@ export async function browserIntegration(result, args) {
 			name: 'send-danmaku-to-page',
 			regex: /<browser-send-danmaku-to-page>(?<content>[\S\s]*?)<\/browser-send-danmaku-to-page>/g,
 			/**
-			 *
+			 * 处理发送弹幕的命令。
 			 * @param {RegExpMatchArray} match - 匹配对象，包含捕获组。
 			 */
 			handler: async (match) => {
@@ -202,7 +203,7 @@ export async function browserIntegration(result, args) {
 			name: 'run-js-on-page',
 			regex: /<browser-run-js-on-page>(?<content>[\S\s]*?)<\/browser-run-js-on-page>/g,
 			/**
-			 *
+			 * 处理在页面上运行JS的命令。
 			 * @param {RegExpMatchArray} match - 匹配对象，包含捕获组。
 			 */
 			handler: async (match) => {
@@ -227,7 +228,7 @@ export async function browserIntegration(result, args) {
 			name: 'add-autorun-script',
 			regex: /<browser-add-autorun-script>(?<content>[\S\s]*?)<\/browser-add-autorun-script>/g,
 			/**
-			 *
+			 * 处理添加自动运行脚本的命令。
 			 * @param {RegExpMatchArray} match - 匹配对象，包含捕获组。
 			 */
 			handler: async (match) => {
@@ -255,7 +256,7 @@ export async function browserIntegration(result, args) {
 			name: 'update-autorun-script',
 			regex: /<browser-update-autorun-script>(?<content>[\S\s]*?)<\/browser-update-autorun-script>/g,
 			/**
-			 *
+			 * 处理更新自动运行脚本的命令。
 			 * @param {RegExpMatchArray} match - 匹配对象，包含捕获组。
 			 */
 			handler: async (match) => {
@@ -290,7 +291,7 @@ export async function browserIntegration(result, args) {
 			name: 'remove-autorun-script',
 			regex: /<browser-remove-autorun-script>\s*<id>(.*?)<\/id>\s*<\/browser-remove-autorun-script>/gs,
 			/**
-			 *
+			 * 处理删除自动运行脚本的命令。
 			 * @param {RegExpMatchArray} match - 匹配对象，包含捕获组。
 			 */
 			handler: async (match) => {

@@ -9,9 +9,9 @@ import { discordMessageToFountChatLogEntry } from './message-converter.mjs'
 import { discordClientInstance, setResolvedOwnerId, resolvedOwnerId, discordUserIdToDisplayName, discordDisplayNameToId } from './state.mjs'
 
 /**
+ * Discord 接口配置类型定义
  * @typedef {import('./config.mjs').DiscordInterfaceConfig_t} DiscordInterfaceConfig_t
- */
-/**
+ * 平台API类型定义
  * @typedef {import('../../bot_core/index.mjs').PlatformAPI_t} PlatformAPI_t
  */
 
