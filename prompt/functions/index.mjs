@@ -15,6 +15,7 @@ import { IdleManagementPrompt } from './idle-management.mjs'
 import { infoPrompt } from './info.mjs'
 import { KanjiPrompt } from './kanji.mjs'
 import { NotifyPrompt } from './notify.mjs'
+import { NumberAlchemistPrompt } from './number-alchemist.mjs'
 import { PoemPrompt } from './poem.mjs'
 import { PromptReviewerPrompt } from './prompt-reviewer.mjs'
 import { PromptWriterPrompt } from './promptWriter.mjs'
@@ -42,6 +43,7 @@ export async function FunctionPrompt(args, logical_results) {
 	result.push(RockPaperScissorsPrompt(args, logical_results))
 	result.push(DicePrompt(args, logical_results))
 	result.push(AutoCalcPrompt(args, logical_results))
+	result.push(NumberAlchemistPrompt(args, logical_results))
 	result.push(KanjiPrompt(args, logical_results))
 	result.push(TaroPrompt(args, logical_results))
 	result.push(PoemPrompt(args, logical_results))
