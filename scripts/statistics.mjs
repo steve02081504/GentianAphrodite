@@ -75,11 +75,11 @@ export const statisticDatas = getVar('statistics', {
 		NsfwMessagesSent: 0,
 		InHypnosisMessagesSent: 0,
 		byPlatform: {
-			discord: {
+			telegram: {
 				messagesSent: 0,
 				statementsSent: 0,
 			},
-			telegram: {
+			discord: {
 				messagesSent: 0,
 				statementsSent: 0,
 			},
@@ -94,11 +94,11 @@ export const statisticDatas = getVar('statistics', {
 		totalMessagesSent: 0,
 		totalStatementsSent: 0,
 		byPlatform: {
-			discord: {
+			telegram: {
 				messagesSent: 0,
 				statementsSent: 0,
 			},
-			telegram: {
+			discord: {
 				messagesSent: 0,
 				statementsSent: 0,
 			},

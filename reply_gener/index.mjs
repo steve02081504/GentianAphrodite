@@ -104,8 +104,8 @@ export async function baseGetReply(args) {
 	if (noAISourceAvailable()) return Object.assign(result, noAIreply(args))
 	// 注入角色插件
 	args.plugins = Object.assign({}, plugins, args.plugins)
-	args.plugins.discord_api ??= await get_discord_api_plugin()
 	args.plugins.telegram_api ??= await get_telegram_api_plugin()
+	args.plugins.discord_api ??= await get_discord_api_plugin()
 	const prompt_struct = Object.assign(await buildPromptStruct(args), {
 		alternative_charnames: [
 			'Gentian', /Gentian(•|·)Aphrodite/, '龙胆', /龙胆(•|·)阿芙萝黛蒂/

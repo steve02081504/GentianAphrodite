@@ -40,8 +40,8 @@ export const config = {
 		voice_sentinel: false
 	},
 	reality_channel_notification_fallback_order: {
-		idle: ['discord', 'telegram', 'system'],
-		'voice-processing': ['system', 'discord', 'telegram']
+		idle: ['telegram', 'discord', 'system'],
+		'voice-processing': ['system', 'telegram', 'discord']
 	},
 	disable_prompt: {
 		camera: false

@@ -64,20 +64,6 @@ Object.assign(GentianAphrodite, {
 			GetPromptForOther,
 			GetReply,
 		},
-		discord: {
-			/**
-			 * 当 Discord 客户端准备就绪时执行。
-			 * @param {import('npm:discord.js').Client} client - Discord 客户端实例。
-			 * @param {object} config - 配置对象。
-			 * @returns {Promise<void>}
-			 */
-			OnceClientReady: (client, config) => import('./interfaces/discord/index.mjs').then(mod => mod.DiscordBotMain(client, config)),
-			/**
-			 * 获取机器人配置模板。
-			 * @returns {Promise<object>} - 机器人配置模板对象。
-			 */
-			GetBotConfigTemplate: () => import('./interfaces/discord/index.mjs').then(mod => mod.GetBotConfigTemplate()),
-		},
 		telegram: {
 			/**
 			 * 设置 Telegram 机器人。
@@ -91,6 +77,20 @@ Object.assign(GentianAphrodite, {
 			 * @returns {Promise<object>} - 机器人配置模板对象。
 			 */
 			GetBotConfigTemplate: () => import('./interfaces/telegram/index.mjs').then(mod => mod.GetBotConfigTemplate()),
+		},
+		discord: {
+			/**
+			 * 当 Discord 客户端准备就绪时执行。
+			 * @param {import('npm:discord.js').Client} client - Discord 客户端实例。
+			 * @param {object} config - 配置对象。
+			 * @returns {Promise<void>}
+			 */
+			OnceClientReady: (client, config) => import('./interfaces/discord/index.mjs').then(mod => mod.DiscordBotMain(client, config)),
+			/**
+			 * 获取机器人配置模板。
+			 * @returns {Promise<object>} - 机器人配置模板对象。
+			 */
+			GetBotConfigTemplate: () => import('./interfaces/discord/index.mjs').then(mod => mod.GetBotConfigTemplate()),
 		},
 		shellassist: {
 			/**

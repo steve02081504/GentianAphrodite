@@ -26,8 +26,8 @@
 - **`reply_gener/` (功能实现)**: `prompt/functions/`中声明工具的具体代码实现；**所有回复请求的最终执行处**（`GetReply`），与平台无关。
   - `functions/`: 具体功能的实现代码。
   - `noAI/`: 在未配置 AI 源时提供预设回复（`noAIreply`），由主流程在检测到无可用 AI 源时调用。
-- **`bot_core/` (Discord/Telegram 消息流水线)**: **仅**处理来自 **Discord** 与 **Telegram** 的聊天消息：入队、频道历史拉取、触发判断、群组逻辑、回复发送等。其他入口（见下文「请求入口」）不经过 bot_core，直接走 `reply_gener`。
-- **`interfaces/` (平台与能力接口)**: 对接不同使用方式；其中 **discord**、**telegram** 将平台消息转为统一格式后交给 **bot_core**，**shellassist** 等则直接调用 `GetReply`，不经过 bot_core。
+- **`bot_core/` (Telegram/Discord 消息流水线)**: **仅**处理来自 **Telegram** 与 **Discord** 的聊天消息：入队、频道历史拉取、触发判断、群组逻辑、回复发送等。其他入口（见下文「请求入口」）不经过 bot_core，直接走 `reply_gener`。
+- **`interfaces/` (平台与能力接口)**: 对接不同使用方式；其中 **telegram**、**discord** 将平台消息转为统一格式后交给 **bot_core**，**shellassist** 等则直接调用 `GetReply`，不经过 bot_core。
 - **`event_engine/` (后台事件)**: 处理定时任务、空闲任务、语音哨兵等非用户直接触发的后台逻辑；内部直接调用 `GetReply`，不经过 bot_core。当前子模块包括 `on_idle.mjs`（空闲任务与 Todo）、`voice_sentinel.mjs`（语音相关）、`index.mjs`（如 Reality Channel 等）。
 - **`.esh/` (Shell Profile)**: 包含提供给 Shell 的自定义命令和 logo。
 
@@ -37,15 +37,15 @@
 
 | 入口 | 是否经过 bot_core | 说明 |
 |------|-------------------|------|
-| **Discord** (`interfaces/discord`) | ✅ 是 | 消息 → 转 fount 格式 → `bot_core.processIncomingMessage` → 队列与触发 → `GetReply` → 平台发送 |
-| **Telegram** (`interfaces/telegram`) | ✅ 是 | 同上 |
+| **Telegram** (`interfaces/telegram`) | ✅ 是 | 消息 → 转 fount 格式 → `bot_core.processIncomingMessage` → 队列与触发 → `GetReply` → 平台发送 |
+| **Discord** (`interfaces/discord`) | ✅ 是 | 同上 |
 | **主聊天界面** (`main.mjs` 的 `interfaces.chat`) | ❌ 否 | 直接使用 `GetPrompt` / `GetReply` |
 | **Shell 辅助** (`interfaces/shellassist`) | ❌ 否 | 自建 `chat_log` 与 `extension`，直接调用 `GetReply` |
 | **event_engine**（on_idle、voice_sentinel 等） | ❌ 否 | 直接调用 `GetReply`，并通过 `extension.enable_prompts` 等驱动行为 |
 | **计时器回调** (`interfaces.timers.TimerCallback`) | ❌ 否 | 由 `reply_gener/functions/timer.mjs` 等处理，不经过 bot_core |
 | **browserIntegration** | ❌ 否 | 回调直接进 `reply_gener` 侧逻辑 |
 
-因此：**“核心”是 prompt + reply_gener**；**bot_core 仅是 Discord/Telegram 两条平台上的消息流水线**，不是全项目消息的唯一中枢。
+因此：**“核心”是 prompt + reply_gener**；**bot_core 仅是 Telegram/Discord 两条平台上的消息流水线**，不是全项目消息的唯一中枢。
 
 ---
 
@@ -75,13 +75,13 @@
 
 ## 3. 核心数据结构: `reply_request.extension`
 
-`reply_request.extension` 对象是在整个系统中附加和传播上下文信息的关键容器。以下字段中，与“平台”相关的（如 `platform`、`platform_user_id`、`platform_channel_id`、`is_from_owner`、`mentions_bot` 等）主要由 **Discord/Telegram + bot_core** 流水线填充；其他入口可能只设置部分字段或使用 `source_purpose` 等自定义标识。
+`reply_request.extension` 对象是在整个系统中附加和传播上下文信息的关键容器。以下字段中，与“平台”相关的（如 `platform`、`platform_user_id`、`platform_channel_id`、`is_from_owner`、`mentions_bot` 等）主要由 **Telegram/Discord + bot_core** 流水线填充；其他入口可能只设置部分字段或使用 `source_purpose` 等自定义标识。
 
-- **`platform` (string)**: 来源平台；仅当请求经 **Discord** 或 **Telegram** 且由 bot_core 流水线处理时为 `'discord'` / `'telegram'`。其他入口（如 shellassist、event_engine、主聊天界面）可能无此字段或使用其他标识（如 `extension.source_purpose === 'shell-assist'`）。
-- **`platform_user_id` (string)**: 平台用户 ID（Discord/Telegram 路径下由 bot_core 侧填充）。
+- **`platform` (string)**: 来源平台；仅当请求经 **Telegram** 或 **Discord** 且由 bot_core 流水线处理时为 `'discord'` / `'telegram'`。其他入口（如 shellassist、event_engine、主聊天界面）可能无此字段或使用其他标识（如 `extension.source_purpose === 'shell-assist'`）。
+- **`platform_user_id` (string)**: 平台用户 ID（Telegram/Discord 路径下由 bot_core 侧填充）。
 - **`platform_channel_id` (string)**: 平台频道 ID（同上）。
-- **`platform_message_ids` (array)**: 平台消息ID列表（Discord/Telegram），用于消息编辑/删除追踪。
-- **`replied_to_message_id` (string)**: 该消息回复的原始消息ID（Discord/Telegram）。
+- **`platform_message_ids` (array)**: 平台消息ID列表（Telegram/Discord），用于消息编辑/删除追踪。
+- **`replied_to_message_id` (string)**: 该消息回复的原始消息ID（Telegram/Discord）。
 - **`is_from_owner` (boolean)**: 消息是否来自主人。
 - **`is_direct_message` (boolean)**: 是否为私信。
 - **`mentions_bot` (boolean)**: 是否提及机器人。
@@ -172,7 +172,7 @@
 - **`enable_prompts`机制**:
   - 用于在特定场景（如后台任务）强制激活功能，会绕过`match_keys`等常规条件。
   - 访问嵌套属性时（如`args.extension?.enable_prompts?.info?.timeDateFestival`），**务必使用可选链(`?.`)**，避免运行时错误。
-- **模块职责划分**: `bot_core/` **仅**处理 Discord 与 Telegram 的聊天消息流水线（入队、触发、回复发送等）；`event_engine/` 处理后台任务（如 on_idle），直接调用 `GetReply`。其他入口（chat、shellassist、timers、browserIntegration）均不经过 bot_core。切勿混淆。
+- **模块职责划分**: `bot_core/` **仅**处理 Telegram 与 Discord 的聊天消息流水线（入队、触发、回复发送等）；`event_engine/` 处理后台任务（如 on_idle），直接调用 `GetReply`。其他入口（chat、shellassist、timers、browserIntegration）均不经过 bot_core。切勿混淆。
 - **计时器回调分发**:
   - **AI工具调用型 (`<set-timer>`)**: 由`reply_gener/functions/timer.mjs`处理。
   - **系统级后台计时器**: 由`event_engine/`设置，**必须**在`main.mjs`的`interfaces.timers.TimerCallback`中分发。

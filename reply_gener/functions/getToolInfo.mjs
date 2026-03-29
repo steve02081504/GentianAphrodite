@@ -59,7 +59,7 @@ export default {
 	info: {
 		'zh-CN': {
 			name: '<角色名>', // 角色的名字
-			avatar: '<头像的url地址，可以是fount本地文件，详见 https://discord.com/channels/1288934771153440768/1298658096746594345/1303168947624869919 >', // 角色的头像
+			avatar: '<头像的url地址，可以是fount本地文件，详见 https://github.com/Xiaoqiush81/fount-Guide-for-dummies/blob/main/docs/dev-advanced.md >', // 角色的头像
 			description: '<角色的一句话介绍>', // 角色的简短介绍
 			description_markdown: \\\`\\\\
 <角色的完整介绍，支持markdown语法>
@@ -413,7 +413,7 @@ export default {
 	info: {
 		'': {
 			name: '<角色名>',
-			avatar: '<角色的头像url，可以留空，也可以是本地文件，详见 https://discord.com/channels/1288934771153440768/1298658096746594345/1303168947624869919 >',
+			avatar: '<角色的头像url，可以留空，也可以是本地文件，详见 https://github.com/Xiaoqiush81/fount-Guide-for-dummies/blob/main/docs/dev-advanced.md >',
 			description: '<一句话简介>',
 			description_markdown: '<简介，支持markdown语法>',
 			version: '<版本号>',

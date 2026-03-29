@@ -36,19 +36,19 @@ async function sendRealityNotification(message, purpose, danmakuOpts = {}) {
 		console.warn('[RealityNotify] Danmaku failed:', e)
 	})
 
-	const order = config.reality_channel_notification_fallback_order?.[purpose] ?? ['discord', 'telegram', 'system']
+	const order = config.reality_channel_notification_fallback_order?.[purpose] ?? ['telegram', 'discord', 'system']
 	for (const method of order)
 		try {
 			switch (method) {
-				case 'discord':
-					if (discordPlatformAPI?.sendDirectMessageToOwner) {
-						await discordPlatformAPI.sendDirectMessageToOwner(message)
-						return
-					}
-					break
 				case 'telegram':
 					if (telegramPlatformAPI?.sendDirectMessageToOwner) {
 						await telegramPlatformAPI.sendDirectMessageToOwner(message)
+						return
+					}
+					break
+				case 'discord':
+					if (discordPlatformAPI?.sendDirectMessageToOwner) {
+						await discordPlatformAPI.sendDirectMessageToOwner(message)
 						return
 					}
 					break
