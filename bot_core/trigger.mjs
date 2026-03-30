@@ -168,7 +168,7 @@ async function calculateNonOwnerTriggerIncrement(fountEntry, content, platformAP
 			if (fuyanMode) return { newPossible: 0, fuyanExit: true }
 			else possible += 100
 
-		if (base_match_keys(content, ['你主人', '你的主人'])) possible += 100
+		if (base_match_keys(content, ['你主人', '你的主人', /(your|yours|you's) master/])) possible += 100
 	}
 	return { newPossible: possible, fuyanExit: false }
 }
