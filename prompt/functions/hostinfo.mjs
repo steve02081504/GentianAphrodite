@@ -34,26 +34,55 @@ CPU架构：${arch()}
 
 	if (args.extension?.enable_prompts?.hostInfo || all_info || await match_keys(args, [/cpu(占用|用了)/i, /cpu使用(率|情况)/i, /cpu(的|什么|是什么|)(信息|型号|频率)/i, /cpu(多少核|核心)/i], 'user')) {
 		// 使用 node-os-utils 获取 CPU 信息
-		const osinfo = await import('npm:node-os-utils@1.3.7').then(m => m.default)
-		const cpuInfo = await osinfo.cpu.average()
-		const cpuUsage = (1 - cpuInfo.avgIdle / cpuInfo.avgTotal) * 100
+		const { OSUtils } = await import('npm:node-os-utils').then(m => m.default)
+		const osinfo = new OSUtils()
+		const [usageRes, infoRes] = await Promise.all([
+			osinfo.cpu.usage(),
+			osinfo.cpu.info(),
+		])
+		const cpuUsagePct = usageRes.success ? usageRes.data.toFixed(2) + '%' : 'N/A'
+		let model
+		let cores
+		let freqMhz
+		if (infoRes.success) {
+			const ci = infoRes.data
+			model = ci.model?.replaceAll?.('\x00', '')
+			cores = ci.threads ?? ci.cores
+			freqMhz = ci.maxFrequency || ci.baseFrequency
+		}
+		else {
+			model = osinfo.cpu.model()?.replaceAll?.('\x00', '')
+			cores = osinfo.cpu.count()
+		}
+		if (!freqMhz) {
+			const freqRes = await osinfo.cpu.frequency()
+			if (freqRes.success) freqMhz = Math.max(...freqRes.data?.map?.(f => f.frequency) || [])
+		}
 		result += `\
 CPU信息：
-型号：${osinfo.cpu.model().replaceAll('\x00', '')}
-核心数：${osinfo.cpu.count()}
-频率：${cpuInfo.avgTotal / 1000} GHz
-使用率：${cpuUsage.toFixed(2)}%
+型号：${model}
+核心数：${cores}
+频率：${freqMhz >= 1000 ? (freqMhz / 1000).toFixed(2) + 'GHz' : freqMhz.toFixed(2) + 'MHz'}
+使用率：${cpuUsagePct}
 `
 	}
 	if (args.extension?.enable_prompts?.hostInfo || await match_keys(args, [/内存(占用|用了)/i, /内存使用(率|情况)/i, /(还剩|多少|已用|空闲)内存/i, /内存(还剩|多少|已用|空闲)/i], 'user')) {
-		const osinfo = await import('npm:node-os-utils@1.3.7').then(m => m.default)
-		const memInfo = await osinfo.mem.info()
-		result += `\
+		const { OSUtils } = await import('npm:node-os-utils').then(m => m.default)
+		const osinfo = new OSUtils()
+		const memRes = await osinfo.memory.info()
+		if (memRes.success) {
+			const memInfo = memRes.data
+			result += `\
 内存信息：
-总量：${memInfo.totalMemMb} MB
-已用：${memInfo.usedMemMb.toFixed(2)} MB
-空闲：${memInfo.freeMemMb.toFixed(2)} MB
-使用率：${(memInfo.usedMemMb / memInfo.totalMemMb * 100).toFixed(2)}%
+总量：${memInfo.total.toMB().toFixed(2)} MB
+已用：${memInfo.used.toMB().toFixed(2)} MB
+空闲：${memInfo.free.toMB().toFixed(2)} MB
+使用率：${memInfo.usagePercentage.toFixed(2)}%
+`
+		}
+		else
+			result += `\
+内存信息：无法获取（${memRes.error?.message ?? 'unknown'}）
 `
 	}
 
