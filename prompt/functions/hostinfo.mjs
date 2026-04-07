@@ -40,29 +40,29 @@ CPU架构：${arch()}
 			osinfo.cpu.usage(),
 			osinfo.cpu.info(),
 		])
-		let cpuUsagePct = usageRes.success ? usageRes.data.toFixed(2) : 'N/A'
+		const cpuUsagePct = usageRes.success ? usageRes.data.toFixed(2) : 'N/A'
 		let model
 		let cores
-		let freqHz
+		let freqMhz
 		if (infoRes.success) {
 			const ci = infoRes.data
 			model = ci.model.replaceAll('\x00', '')
 			cores = ci.threads ?? ci.cores
-			freqHz = ci.maxFrequency || ci.baseFrequency
+			freqMhz = ci.maxFrequency || ci.baseFrequency
 		}
 		else {
 			model = osinfo.cpu.model().replaceAll('\x00', '')
 			cores = osinfo.cpu.count()
 		}
-		if (!freqHz) {
+		if (!freqMhz) {
 			const freqRes = await osinfo.cpu.frequency()
-			if (freqRes.success) freqHz = Math.max(...(freqRes.data?.map?.(f => f.frequency)) || [])
+			if (freqRes.success) freqMhz = Math.max(...freqRes.data?.map?.(f => f.frequency) || [])
 		}
 		result += `\
 CPU信息：
 型号：${model}
 核心数：${cores}
-频率：${freqHz >= 1e6 ? (freqHz / 1e9).toFixed(2) + 'GHz' : (freqHz / 1000).toFixed(2) + 'MHz'}
+频率：${freqMhz >= 1000 ? (freqMhz / 1000).toFixed(2) + 'GHz' : freqMhz.toFixed(2) + 'MHz'}
 使用率：${cpuUsagePct}%
 `
 	}
