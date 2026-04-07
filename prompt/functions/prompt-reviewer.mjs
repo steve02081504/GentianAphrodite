@@ -1,7 +1,8 @@
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
+ * 提示词审查提示函数
  * @param {chatReplyRequest_t} args - 聊天回复请求参数。
  * @param {logical_results_t} logical_results - 逻辑处理结果。
  * @returns {Promise<string>} - Prompt 审查结果。

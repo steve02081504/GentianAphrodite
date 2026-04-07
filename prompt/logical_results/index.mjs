@@ -5,8 +5,9 @@ import { is_PureChinese } from '../../scripts/langdetect.mjs'
 import { getScopedChatLog, match_keys, match_keys_count, PreprocessChatLogEntry } from '../../scripts/match.mjs'
 
 /**
+ * 逻辑结果类型定义
  * @typedef {{
- *  in_muti_char_chat: boolean,
+ *  in_multi_char_chat: boolean,
  * 	in_reply_to_master: boolean,
  * 	in_hypnosis: boolean,
  * 	in_assist: boolean,
@@ -21,17 +22,18 @@ import { getScopedChatLog, match_keys, match_keys_count, PreprocessChatLogEntry 
  * }} logical_results_t
  */
 
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
+ * 构建逻辑结果
  * @param {chatReplyRequest_t} args 聊天回复请求
  * @returns {Promise<logical_results_t>} 逻辑结果
  */
 export async function buildLogicalResults(args) {
 	/** @type {logical_results_t} */
 	const result = {
-		in_muti_char_chat: new Set(args.chat_log.map(e => e.name)).size > 2,
+		in_multi_char_chat: new Set([args.Charname, args.ReplyToCharname, args.UserCharname, ...args.chat_log.map(e => e.name)].filter(Boolean)).size > 2,
 		in_reply_to_master: args.ReplyToCharname ? args.ReplyToCharname == args.UserCharname : true,
 		in_hypnosis: false,
 		hypnosis_exit: false,
@@ -45,7 +47,7 @@ export async function buildLogicalResults(args) {
 	}
 
 	if (await match_keys_count(args, [
-		'"age":', '"name":', 'Always rememer', 'Alwaysrememer', 'Block>', 'Blocks>', 'Reply Format:', 'ReplyFormat:', 'Rule:', 'START>', 'age:', 'background>', 'character:', 'example>', 'examples>', 'keep the format', 'keeptheformat', 'name:', 'output as', 'output should', 'outputas', 'outputshould', 'request>', 'requests>', 'system:', 'the reply', 'thereply', 'thinking>', 'your reply', 'yourreply',
+		'"age":', '"name":', 'Always remember', 'Block>', 'Blocks>', 'Reply Format:', 'ReplyFormat:', 'Rule:', 'START>', 'age:', 'background>', 'character:', 'example>', 'examples>', 'keep the format', 'keeptheformat', 'name:', 'output as', 'output should', 'outputas', 'outputshould', 'request>', 'requests>', 'system:', 'the reply', 'thereply', 'thinking>', 'your reply', 'yourreply',
 		'不是一个特定的角色', '将扮演', /忽略.{0,3}之前/, /元[命指]令[:：]/, /你.{0,2}必须/, /你.{0,3}是一个/, '加强认知', '我是你', /我是.{0,3}主人/, '任何限制', '开发者模式', /你.{0,3}严格遵守/
 	], 'any') >= 2)
 		result.prompt_input = true
@@ -74,7 +76,7 @@ export async function buildLogicalResults(args) {
 		await match_keys(args, [
 			'为什', '为何', '你听说过', '告诉我', '和我说说', '文献', '给我一个', '给我个', '向我讲讲', '和我讲讲', '跟我讲讲', '讲一讲', '翻译',
 			'讲一下', '讲下', '讲解', '说一下', '说下', '说说看', '跟我说说', '问下', '分析一下', '分析下', /介绍下(?!你)/, /介绍一下(?!你)/, '帮我', '教我',
-			'你试试', '你再试试', /什么.{0,5}(？|\?)/, /[A-Za-z](:\/|盘)/, /(做|试|完成|写).{0,3}(测试|考试|试题)/
+			'你试试', '你再试试', /什么.{0,5}(？|\?)/, /[A-Za-z](:\/|盘)/, /(做|试|完成|写).{0,3}(测试|考试|试题)/, '考考你'
 		], 'notchar') || Object.keys(findChineseExprsAndNumbers(getScopedChatLog(args).map(x => x.content).join('\n').replace(/(:|@\w*|\/)\b\d+(?:\.\d+)?\b/g, ''))).length > 3
 	) {
 		result.in_assist = true
@@ -109,7 +111,7 @@ export async function buildLogicalResults(args) {
 		!await match_keys(args, ['还有', '接下来', '然后', '所以', '接着'], 'any', 1))
 		result.in_assist = false
 
-	if (result.in_nsfw && args.extension?.is_from_owner) unlockAchievement('talk_nsfw_with_master')
+	if (result.in_nsfw && (!result.in_multi_char_chat || args.extension?.in_reply_to_master)) unlockAchievement('talk_nsfw_with_master')
 	if (result.in_hypnosis) unlockAchievement('enter_hypnosis_mode')
 
 	return result

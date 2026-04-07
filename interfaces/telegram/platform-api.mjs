@@ -10,20 +10,32 @@ import { splitTelegramReply, aiMarkdownToTelegramHtml, parseLogicalChannelId } f
 import { telegramWorld } from './world.mjs'
 
 /**
+ * Telegram 接口配置类型定义
  * @typedef {import('./config.mjs').TelegramInterfaceConfig_t} TelegramInterfaceConfig_t
- */
-/**
+ * 平台API类型定义
  * @typedef {import('../../bot_core/index.mjs').PlatformAPI_t} PlatformAPI_t
- */
-/**
+ * 聊天日志条目类型定义
  * @typedef {import('../../bot_core/index.mjs').chatLogEntry_t_ext} chatLogEntry_t_ext
- */
-/**
- * @typedef {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').FountChatReply_t} FountChatReply_t
+ * Fount 聊天回复类型定义
+ * @typedef {import('../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').FountChatReply_t} FountChatReply_t
  */
 /** @typedef {import('npm:telegraf/typings/core/types/typegram').Message} TelegramMessageType */
 
 const CAPTION_LENGTH_LIMIT = 1024 // Telegram 的说明文字长度限制
+
+/**
+ * 从 AI Markdown 正文中提取 Telegram 贴纸 file_id，并移除对应标记（格式见 message-converter / sticker.mjs）。
+ * @param {string} markdown
+ * @returns {{ cleanMarkdown: string, stickerIds: string[] }}
+ */
+function extractStickerIdsFromMarkdown(markdown) {
+	const stickerIds = []
+	const cleanMarkdown = (markdown || '').replace(/<:([^:]+):[^:]*:[^>]*>\s*/g, (_, id) => {
+		stickerIds.push(id)
+		return ''
+	}).trim()
+	return { cleanMarkdown, stickerIds }
+}
 
 /**
  * 如果说明文字过长，则尝试多种策略进行截断。
@@ -183,13 +195,6 @@ async function sendFiles(bot, platformChatId, messageThreadId, baseOptions, file
 			firstSentTelegramMessage = sentMsg
 	}
 
-	const stickerRegex = /&lt;:([^:]+):[^:]*:[^>]*&gt;\s*/g
-	const stickerIDarray = []
-	let match
-	while ((match = stickerRegex.exec(htmlContent)) !== null) {
-		stickerIDarray.push(match[1])
-		htmlContent = htmlContent.replace(match[0], '')
-	}
 	if (!mainTextSentAsCaption && htmlContent.trim()) {
 		const remainingHtmlParts = splitTelegramReply(htmlContent, 4096)
 		for (const part of remainingHtmlParts) try {
@@ -199,13 +204,6 @@ async function sendFiles(bot, platformChatId, messageThreadId, baseOptions, file
 		} catch (e) {
 			console.error(`[TelegramInterface] Failed to send remaining HTML text (ChatID: ${platformChatId}, ThreadID: ${messageThreadId}):`, e)
 		}
-	}
-	for (const stickerID of stickerIDarray) try {
-		const sentMsg = await tryFewTimes(() => bot.telegram.sendSticker(platformChatId, stickerID, baseOptions))
-		if (sentMsg && !firstSentTelegramMessage)
-			firstSentTelegramMessage = sentMsg
-	} catch (e) {
-		console.error(`[TelegramInterface] Failed to send sticker message (ChatID: ${platformChatId}, ThreadID: ${baseOptions.message_thread_id}):`, e)
 	}
 
 	return firstSentTelegramMessage
@@ -220,13 +218,6 @@ async function sendFiles(bot, platformChatId, messageThreadId, baseOptions, file
  * @returns {Promise<TelegramMessageType | null>} - 发送的 Telegram 消息对象或 null。
  */
 async function sendTextMessages(bot, platformChatId, baseOptions, htmlContent) {
-	const stickerRegex = /&lt;:([^:]+):[^:]*:[^>]*&gt;\s*/g
-	const stickerIDarray = []
-	let match
-	while ((match = stickerRegex.exec(htmlContent)) !== null) {
-		stickerIDarray.push(match[1])
-		htmlContent = htmlContent.replace(match[0], '')
-	}
 	let firstSentTelegramMessage = null
 	if (htmlContent.trim()) {
 		const textParts = splitTelegramReply(htmlContent, 4096)
@@ -237,13 +228,6 @@ async function sendTextMessages(bot, platformChatId, baseOptions, htmlContent) {
 		} catch (e) {
 			console.error(`[TelegramInterface] Failed to send HTML text message (ChatID: ${platformChatId}, ThreadID: ${baseOptions.message_thread_id}):`, e)
 		}
-	}
-	for (const stickerID of stickerIDarray) try {
-		const sentMsg = await tryFewTimes(() => bot.telegram.sendSticker(platformChatId, stickerID, baseOptions))
-		if (sentMsg && !firstSentTelegramMessage)
-			firstSentTelegramMessage = sentMsg
-	} catch (e) {
-		console.error(`[TelegramInterface] Failed to send sticker message (ChatID: ${platformChatId}, ThreadID: ${baseOptions.message_thread_id}):`, e)
 	}
 
 	return firstSentTelegramMessage
@@ -296,30 +280,36 @@ export function buildPlatformAPI(interfaceConfig) {
 			const { chatId, threadId: threadIdFromLogicalId } = parseLogicalChannelId(logicalChannelId)
 			const platformChatId = chatId
 
-			let aiMarkdownContent = fountReplyPayload.content || ''
+			const rawAiMarkdown = fountReplyPayload.content_for_show || fountReplyPayload.content || ''
+			const { cleanMarkdown, stickerIds } = extractStickerIdsFromMarkdown(rawAiMarkdown)
 			const files = fountReplyPayload.files || []
 			const parseMode = 'HTML'
 
 			const messageThreadId = originalMessageEntry?.extension?.telegram_message_thread_id || threadIdFromLogicalId
 
-			const htmlContent = aiMarkdownToTelegramHtml(aiMarkdownContent)
-
-			let firstSentTelegramMessage = null
 			const initialBaseOptions = {
 				parse_mode: parseMode,
 				...messageThreadId && { message_thread_id: messageThreadId }
 			}
 
-			const { aiMarkdownContent: finalAiMarkdownContent, baseOptions: finalBaseOptions } = prepareReplyParameters(originalMessageEntry, aiMarkdownContent, initialBaseOptions)
-			aiMarkdownContent = finalAiMarkdownContent
+			const { aiMarkdownContent: finalAiMarkdownContent, baseOptions: finalBaseOptions } = prepareReplyParameters(originalMessageEntry, cleanMarkdown, initialBaseOptions)
+			const htmlContent = aiMarkdownToTelegramHtml(finalAiMarkdownContent)
 
-			firstSentTelegramMessage = await dispatchMessageSender(
+			let firstSentTelegramMessage = await dispatchMessageSender(
 				telegrafInstance, platformChatId, messageThreadId, finalBaseOptions,
-				files, aiMarkdownContent, htmlContent
+				files, finalAiMarkdownContent, htmlContent
 			)
 
+			for (const stickerId of stickerIds) try {
+				const sentMsg = await tryFewTimes(() => telegrafInstance.telegram.sendSticker(platformChatId, stickerId, finalBaseOptions))
+				if (sentMsg && !firstSentTelegramMessage)
+					firstSentTelegramMessage = sentMsg
+			} catch (e) {
+				console.error(`[TelegramInterface] Failed to send sticker message (ChatID: ${platformChatId}, ThreadID: ${finalBaseOptions.message_thread_id}):`, e)
+			}
+
 			if (firstSentTelegramMessage) {
-				if (fountReplyPayload && (fountReplyPayload.content || fountReplyPayload.files?.length))
+				if (fountReplyPayload && (fountReplyPayload.content_for_show || fountReplyPayload.content || fountReplyPayload.files?.length))
 					aiReplyObjectCache[firstSentTelegramMessage.message_id] = fountReplyPayload
 
 				return await telegramMessageToFountChatLogEntry(telegrafInstance, firstSentTelegramMessage, interfaceConfig)
@@ -348,7 +338,7 @@ export function buildPlatformAPI(interfaceConfig) {
 		 * 获取指定 Telegram 频道或群组的历史消息。
 		 * @param {string | number} logicalChannelId - 目标 Telegram 频道或群组的逻辑 ID。
 		 * @param {number} limit - 要获取的消息数量上限。
-		 * @returns {Promise<chatLogEntry_t_ext[]>} - 转换后的 fount 聊天日志条目数组。 转换后的 fount 聊天日志条目数组。
+		 * @returns {Promise<chatLogEntry_t_ext[]>} - 转换后的 fount 聊天日志条目数组。
 		 */
 		async fetchChannelHistory(logicalChannelId, limit) {
 			const { chatId, threadId } = parseLogicalChannelId(logicalChannelId)

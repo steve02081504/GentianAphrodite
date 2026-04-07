@@ -17,20 +17,19 @@ export const get_telegram_api_plugin = triggeringMessage => ({
 		}
 	},
 	interfaces: {
-		chat: {
+		code_execution: {
 			/**
 			 * 获取用于生成 JS 代码的 Prompt。
 			 * @param {object} args - 参数对象。
-			 * @param {object} result - 结果对象。
 			 * @returns {string | undefined} - JS 代码 Prompt 字符串或 undefined。
 			 */
-			GetJSCodePrompt: async (args, result) => {
+			GetJSCodePrompt: async (args) => {
 				if (
 					await match_keys(args, rude_words, 'any', 6) ||
 					await match_keys(args, lewd_words, 'other', 3) ||
 					await match_keys(args, [
 						'身份组', '群', '频道', '设置', '服务器', 'ban', '踢了', '禁言',
-						'管理', '操作', '权限', '置顶', '分区', '分组', '帖子', '表情', '帖纸',
+						'管理', '操作', '权限', '置顶', '分区', '分组', '帖子', '表情', '贴纸',
 						'修改', '封禁', '邀请', /生成{0,3}链接/, '话题', '投票', '动态', '匿名',
 						'删了', '删掉', 'tg', 'telegram', 'https://t.me/'
 					], 'any', 3)
@@ -52,10 +51,9 @@ telegram_client: 你的Telegraf Bot实例
 			/**
 			 * 获取 JS 代码执行的上下文。
 			 * @param {object} args - 参数对象。
-			 * @param {object} result - 结果对象。
 			 * @returns {object | undefined} - JS 代码上下文对象或 undefined。
 			 */
-			GetJSCodeContext: async (args, result) => {
+			GetJSCodeContext: async (args) => {
 				if (triggeringMessage)
 					return {
 						message: triggeringMessage,

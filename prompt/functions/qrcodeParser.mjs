@@ -1,9 +1,10 @@
 import { decodeQrCodeFromBuffer } from '../../scripts/qrcode.mjs'
 import { findUrlsInText, getUrlMetadata } from '../../scripts/web.mjs'
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
+ * 二维码解析提示函数
  * @param {chatReplyRequest_t} args - 聊天回复请求参数。
  * @param {logical_results_t} logical_results - 逻辑处理结果。
  * @returns {Promise<string>} - 二维码解析结果。
@@ -13,7 +14,7 @@ export async function qrcodeParserPrompt(args, logical_results) {
 
 	for (const log of logs) {
 		if (log.extension?.decodedQRCodes) continue
-		const imgs = (log.files || []).filter(x => x.mime_type.startsWith('image/'))
+		const imgs = (log.files || []).filter(x => x?.mime_type?.startsWith?.('image/'))
 		const qrcodes = (await Promise.all(
 			imgs.map(img => decodeQrCodeFromBuffer(img.buffer))
 		)).filter(arr => arr.length)
@@ -24,7 +25,7 @@ export async function qrcodeParserPrompt(args, logical_results) {
 			const urls = decodedContents.flatMap(content => findUrlsInText(content))
 			const metas = (await Promise.all(urls.map(async url => {
 				const meta = await getUrlMetadata(url)
-				if (meta?.length) return `\`${url}\`：\n${meta.join('\n')}`
+				if (Object.keys(meta || {}).length) return `\`${url}\`：\n${String(meta)}`
 			}))).filter(Boolean)
 
 			let content = `上条消息中图片内的二维码内容是：\n\`\`\`${decodedContents.join('\n')}\`\`\``

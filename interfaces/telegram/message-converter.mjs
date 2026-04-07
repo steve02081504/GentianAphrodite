@@ -8,9 +8,9 @@ import { telegrafInstance, telegramBotInfo, telegramUserCache, telegramUserIdToD
 import { telegramEntitiesToAiMarkdown } from './utils.mjs'
 
 /**
+ * Telegram 接口配置类型定义
  * @typedef {import('./config.mjs').TelegramInterfaceConfig_t} TelegramInterfaceConfig_t
- */
-/**
+ * 聊天日志条目类型定义
  * @typedef {import('../../bot_core/index.mjs').chatLogEntry_t_ext} chatLogEntry_t_ext
  */
 /** @typedef {import('npm:telegraf').Context} TelegrafContext */
@@ -162,11 +162,43 @@ function extractFileInfo(message, fileId, fileNameFallback, mimeTypeFallback) {
 }
 
 /**
+ * 将贴纸对象转换为 AI 可识别的文本标记，格式为 `<:fileId:setName:emoji>`。
+ * 此标记可被平台层解析为对应的贴纸 file_id，从而在回复时发送实物贴纸。
+ * @param {import('npm:telegraf/typings/core/types/typegram').Sticker} sticker - Telegram 贴纸对象。
+ * @returns {string} - 贴纸文本标记。
+ */
+function buildStickerTextDescription(sticker) {
+	return `<:${sticker.file_id}:${sticker.set_name || 'unknown_set'}:${sticker.emoji || ''}>`
+}
+
+/**
+ * 将 Telegram 消息的文本内容（含实体格式化、回复引用、贴纸描述）统一构建为 AI Markdown 字符串。
+ * - 使用 `telegramEntitiesToAiMarkdown` 将实体标注转换为 AI 方言 Markdown；
+ * - 若消息是回复，则在内容前插入引用块（由 `telegramEntitiesToAiMarkdown` 处理）；
+ * - 若消息包含贴纸，则在文本末尾追加贴纸的文本描述标记。
+ * @param {TelegramMessageType} message - 原始 Telegram 消息对象。
+ * @param {string | undefined} rawText - 消息的原始文本（text 或 caption）。
+ * @param {import('npm:telegraf/typings/core/types/typegram').MessageEntity[] | undefined} entities - 消息实体数组。
+ * @param {TelegramMessageType | undefined} replyToMessage - 被回复的消息（已过滤主题创建消息），传入 undefined 则不添加引用。
+ * @returns {string} - 构建完成的 AI Markdown 文本内容。
+ */
+function buildEntryTextContent(message, rawText, entities, replyToMessage) {
+	const entityMarkdown = telegramEntitiesToAiMarkdown(rawText, entities, telegramBotInfo || undefined, replyToMessage)
+	if (!message.sticker)
+		return entityMarkdown
+	const stickerDesc = buildStickerTextDescription(message.sticker)
+	return [entityMarkdown, stickerDesc].filter(Boolean).join('\n\n')
+}
+
+/**
  * 处理并下载附加到 Telegram 消息的文件。
+ * 返回值是一个**惰性异步函数数组**（`Array<() => Promise<FileObject>>`），而非已解析的文件对象。
+ * 这是为了支持 `bot_core/utils.mjs` 中 `fetchFiles()` 的按需并发拉取模式：
+ * 文件只会在真正需要时（如判断复读触发后）才被下载，避免对不需要处理的消息浪费带宽。
  * @async
  * @param {TelegramMessageType} message - Telegram 消息对象。
  * @param {TelegrafContext | undefined} ctx - Telegraf 上下文对象。
- * @returns {Promise<Array<{name: string, buffer: Buffer, mime_type: string, description: string}>>} - 文件信息数组。
+ * @returns {Promise<Array<() => Promise<{name: string, buffer: Buffer, mime_type: string, description: string} | undefined>>>} - 惰性文件下载函数数组。
  */
 async function processMessageFiles(message, ctx) {
 	const filesArr = []
@@ -207,7 +239,7 @@ async function processMessageFiles(message, ctx) {
 	}
 
 	try {
-		if ('sticker' in message && message.sticker) {
+		if (message.sticker) {
 			const { sticker } = message
 			let fileIdToDownload = sticker.file_id
 			let fileName
@@ -219,8 +251,8 @@ async function processMessageFiles(message, ctx) {
 				mimeType = 'video/webm'
 			}
 			else if (sticker.is_animated)
-				if (sticker.thumb) {
-					fileIdToDownload = sticker.thumb.file_id
+				if (sticker.thumbnail) {
+					fileIdToDownload = sticker.thumbnail.file_id
 					fileName = `animated_sticker_thumb_${sticker.file_unique_id}.jpg`
 					mimeType = 'image/jpeg'
 					description += ' (动画贴纸的缩略图)'
@@ -294,13 +326,7 @@ export async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, messa
 		console.log(`[TelegramInterface] Identified a reply to owner's topic creation message. Message ID: ${message.message_id}, Replied To Message ID: ${message.reply_to_message.message_id}, Thread ID: ${message.message_thread_id}. This will NOT trigger 'mentions_owner' for AI context if not also an @mention.`)
 
 	const replyToMessageForAiPrompt = isReplyToOwnerTopicCreationMessage ? undefined : message.reply_to_message
-	let content = telegramEntitiesToAiMarkdown(rawText, entities, telegramBotInfo || undefined, replyToMessageForAiPrompt)
-	if ('sticker' in message && message.sticker) {
-		const sticker = message.sticker
-		const description = `<:${sticker.file_id}:${sticker.set_name || 'unknown_set'}:${sticker.emoji || ''}>`
-		content += `\n\n${description}`
-		content = content.trim()
-	}
+	const content = buildEntryTextContent(message, rawText, entities, replyToMessageForAiPrompt)
 
 	const files = await processMessageFiles(message, ctx)
 
@@ -314,11 +340,11 @@ export async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, messa
 
 	/** @type {chatLogEntry_t_ext} */
 	const fountEntry = {
+		content,
 		...aiReplyObjectCache[message.message_id],
 		time_stamp: message.edit_date ? message.edit_date * 1000 : message.date * 1000,
 		role: isFromOwner ? 'user' : 'char',
 		name: senderName,
-		content,
 		files,
 		extension: {
 			platform: 'telegram',

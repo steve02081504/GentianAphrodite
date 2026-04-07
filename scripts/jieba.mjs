@@ -5,6 +5,7 @@ const jieba = Jieba.withDict(dict)
 const tfIdf = TfIdf.withDict(idf)
 
 /**
+ * 结巴分词功能模块
  * @namespace jieba
  */
 export default {

@@ -2,11 +2,12 @@ import { in_docker, in_termux } from '../../../../../../../src/scripts/env.mjs'
 import { match_keys } from '../../scripts/match.mjs'
 import { decodeQrCodeFromBuffer } from '../../scripts/qrcode.mjs'
 import { captureScreen } from '../../scripts/tools.mjs'
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
+ * 截图提示函数
  * @param {chatReplyRequest_t} args - 聊天回复请求参数。
  * @param {logical_results_t} logical_results - 逻辑处理结果。
  * @returns {Promise<single_part_prompt_t>} - 可能带有截图的Prompt
@@ -35,9 +36,9 @@ export async function ScreenshotPrompt(args, logical_results) {
 这是你主人的屏幕截图，供你参考。
 `,
 				qrcodes?.length ? `\
-其中的二维码解码结果是:${qrcodes.join('\n')}
+其中的二维码解码结果是：${qrcodes.join('\n')}
 `: '',
-				logical_results.in_muti_char_chat ? `\
+				logical_results.in_multi_char_chat ? `\
 <<记得保护你主人的隐私，未经允许不要向其他人透漏内容>>
 `: ''].filter(Boolean).join(''),
 			files: [{

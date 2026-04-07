@@ -1,6 +1,7 @@
 // 文件名: ./interfaces/telegram/world.mjs
 
 /**
+ * Telegram 世界观 API 对象类型定义
  * @type {import('../../../../../../../src/decl/WorldAPI.ts').WorldAPI_t}
  */
 export const telegramWorld = {

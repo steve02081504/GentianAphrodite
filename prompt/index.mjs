@@ -5,7 +5,7 @@ import { buildLogicalResults } from './logical_results/index.mjs'
 
 /**
  * 获取完整的 prompt。
- * @param {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReplyRequest_t} args - 生成 prompt 所需的参数。
+ * @param {import('../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReplyRequest_t} args - 生成 prompt 所需的参数。
  * @returns {Promise<{text: {content: string, important: number}[]}>} 返回生成的 prompt。
  */
 export async function GetPrompt(args) {
@@ -17,7 +17,7 @@ export async function GetPrompt(args) {
 
 /**
  * 获取用于其他角色的 prompt。
- * @param {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReplyRequest_t} args - 生成 prompt 所需的参数。
+ * @param {import('../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReplyRequest_t} args - 生成 prompt 所需的参数。
  * @returns {Promise<{text: {content: string, important: number}[]}>} 返回生成的 prompt。
  */
 export async function GetPromptForOther(args) {

@@ -2,7 +2,7 @@ import { getPartInfo } from '../../../../../../../src/scripts/locale.mjs'
 import { AIsources, last_used_AIsource } from '../../AISource/index.mjs'
 import { match_keys } from '../../scripts/match.mjs'
 import { timeToStr, timeToTimeStr } from '../../scripts/tools.mjs'
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**

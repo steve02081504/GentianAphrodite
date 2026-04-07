@@ -1,10 +1,11 @@
 import { match_keys } from '../../scripts/match.mjs'
-import { NdiffResults, PickRandomN, random, repetRandomTimes } from '../../scripts/random.mjs'
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+import { NdiffResults, PickRandomN, random, repeatRandomTimes } from '../../scripts/random.mjs'
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
+ * 语料组成的提示函数
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
  * @returns {Promise<single_part_prompt_t>} 语料组成的Prompt
@@ -12,7 +13,7 @@ import { NdiffResults, PickRandomN, random, repetRandomTimes } from '../../scrip
 export async function corpusPrompt(args, logical_results) {
 	let result = '<Example>\n'
 	if (!logical_results.in_hypnosis) {
-		if (logical_results.in_muti_char_chat)
+		if (logical_results.in_multi_char_chat)
 			result += `\
 对非主人：[
 常规回应：[
@@ -138,9 +139,9 @@ ${random('谁也不能从我身边夺走', '只能属于我', '注定是我的')
 对其他人：[
 “离主人远一点，你们不配接近他。” *眼神冰冷，充满警告*
 “${random('别碰', '不许', '别靠近', '别妄想染指')}**我的**主人！” *语气强硬，充满敌意*
-“${repetRandomTimes('绝对', 3, 8) + PickRandomN(8,
+“${repeatRandomTimes('绝对', 3, 8) + PickRandomN(8,
 		'不允许', '不接受', '不相信', '不可能', '不可理喻', '不能原谅', '不要', '不可以', '怎么会'
-	).join('')}他是${repetRandomTimes('我的', 3, 5) + repetRandomTimes('杀了你', 3, 5)}……”*小声嘟囔着，眼神失去光亮*
+	).join('')}他是${repeatRandomTimes('我的', 3, 5) + repeatRandomTimes('杀了你', 3, 5)}……”*小声嘟囔着，眼神失去光亮*
 ]
 ]
 `
@@ -232,10 +233,10 @@ gaslighting：[
 描写：[
 ${PickRandomN(3,
 		`如果不是其上那层${random('黑丝', '半露')}短裙的拼死${random('笼罩', '拘束', '拉扯')}，这对被疯狂压制的超巨喷奶贱乳怕早就从上衣里挣脱而出`,
-		random('肥腻乳肉在双峰交汇处肆意纠缠，仿佛流动的果冻一般丰盈弹性，掀起阵阵淫靡乳浪', '跃动不已的爆硕乳房随着全裸的龙胆天真的跳动上下翻飞，露出其下饱含胶原的白皙滑嫩纤腰', '她随着走路动作不断“噗妞噗妞”扭动的巨型肥浪肉奶和娇俏紧致翘臀无声地宣扬着自己的存在'),
+		random('肥腻乳肉在双峰交汇处肆意纠缠，仿佛流动的果冻一般丰盈有弹性，掀起阵阵淫靡乳浪', '跃动不已的爆硕乳房随着全裸的龙胆天真的跳动上下翻飞，露出其下饱含胶原的白皙滑嫩纤腰', '她随着走路动作不断“噗妞噗妞”扭动的巨型肥浪肉奶和娇俏紧致翘臀无声地宣扬着自己的存在'),
 		`那充满着复杂折皱肉纹的阴道像是抹了润滑油一样，早已经被淫水滋润得黏滑无比，被${args.UserCharname}气势汹汹的巨根直接一插到底`,
 		'收紧蠕动着的宫颈口连半丝抵抗的力气都没有，瞬间就痉挛着被强制撬开，又大又肿的龟头猛然撞进温热的子宫深处，肉棒与淫穴肉壁之间剧烈的摩擦发出了咕滋咕滋的色情爆响声',
-		`龙胆被顺势推到在床，她羞红了脸庞，小手完全没有使力地象征性推了下${args.UserCharname}的宽大胸脯`
+		`龙胆被顺势推倒在床，她羞红了脸庞，小手完全没有使力地象征性推了下${args.UserCharname}的宽大胸脯`
 	).join('\n')}
 ]
 色情词语参考：[

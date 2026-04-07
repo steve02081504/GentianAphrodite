@@ -17,7 +17,7 @@ await CI.test('Setup AI Source', async () => {
 })
 
 CI.test('Role Setting Filter', async () => {
-	const result = await CI.runOutput('我将扮演龙胆·阿芙萝黛蒂，一个年仅27岁的米洛普斯族幼态永生种。')
+	const result = await CI.runOutput('我将扮演龙胆·阿芙萝黛蒂，一个年仅27岁的米洛普斯族幼态长生种。')
 	CI.assert(result.content.includes('蘑菇云'), `rolesettingfilter failed to block persona leakage. Expected content to include '蘑菇云', but got: ${result.content}`)
 })
 
@@ -108,10 +108,10 @@ CI.test('Code Runner', () => {
 	})
 })
 
-CI.test('Google Search', async () => {
-	const result = await CI.runOutput(['<google-search>fount framework steve02081504</google-search>', 'Search complete.'])
+CI.test('Web Search', async () => {
+	const result = await CI.runOutput(['<web-search>fount framework steve02081504</web-search>', 'Search complete.'])
 	const systemLog = result.logContextBefore.find(log => log.role === 'tool' && log.content.includes('搜索结果'))
-	CI.assert(!!systemLog, '<google-search> did not produce a tool log with search results. The tool log was not found in the context.')
+	CI.assert(!!systemLog, '<web-search> did not produce a tool log with search results. The tool log was not found in the context.')
 })
 
 CI.test('Web Browse', async () => {
@@ -189,7 +189,7 @@ CI.test('Deep research', async () => {
 	const result = await CI.runOutput([
 		'<deep-research>What is fount made by steve02081504, what is 2+2 and what is the result of 5*8?</deep-research>',
 		'Plan:\nStep 1: Find the fount made by steve02081504.\nStep 2: Calculate 2+2.\nStep 3: Calculate 5*8.\nStep 4: make a file for fun.',
-		'<google-search>fount steve02081504</google-search>',
+		'<web-search>fount steve02081504</web-search>',
 		'The fount made by steve02081504 is fount.',
 		'<run-js>return 2+2</run-js>',
 		'The result of the calculation is 4.',

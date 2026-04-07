@@ -42,11 +42,11 @@
 			"locked_description": "GentianAphrodite.achievements.use_coderunner.locked_description",
 			"locked_icon": "https://api.iconify.design/line-md/question-circle.svg"
 		},
-		"use_googlesearch": {
-			"name": "GentianAphrodite.achievements.use_googlesearch.name",
-			"description": "GentianAphrodite.achievements.use_googlesearch.description",
-			"icon": "https://api.iconify.design/mdi/google.svg",
-			"locked_description": "GentianAphrodite.achievements.use_googlesearch.locked_description",
+		"use_websearch": {
+			"name": "GentianAphrodite.achievements.use_websearch.name",
+			"description": "GentianAphrodite.achievements.use_websearch.description",
+			"icon": "https://api.iconify.design/line-md/search.svg",
+			"locked_description": "GentianAphrodite.achievements.use_websearch.locked_description",
 			"locked_icon": "https://api.iconify.design/line-md/question-circle.svg"
 		},
 		"use_webbrowse": {

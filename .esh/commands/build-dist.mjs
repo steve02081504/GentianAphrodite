@@ -1,11 +1,11 @@
 import fs from 'node:fs'
 
 import terser from 'npm:@rollup/plugin-terser'
+import { exec } from 'npm:@steve02081504/exec'
 import { rollup } from 'npm:rollup'
 import obfuscator from 'npm:rollup-plugin-obfuscator'
 import { visualizer } from 'npm:rollup-plugin-visualizer'
 
-import { exec } from '../../scripts/exec.mjs'
 import { nicerWriteFileSync } from '../../scripts/tools.mjs'
 
 // 创建dist目录

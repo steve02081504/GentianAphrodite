@@ -1,8 +1,9 @@
 import { match_keys } from '../../scripts/match.mjs'
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
+ * 中文语法纠正提示函数
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
  * @returns {Promise<prompt_struct_t>} 返回的提示结构
@@ -20,7 +21,7 @@ export async function ChineseGrammarCorrectionPrompt(args, logical_results) {
 语义混乱错误
 指代不清
 ]
-关于”的地得“：[
+关于“的地得”：[
 “的”前面的词语一般用来修饰、限制“的”后面的事物，说明“的”后面的事物怎么样。结构形式一般为：形容词（代词）+的+名词
 “地”前面的词语一般用来形容“地”后面的动作，说明“地”后面的动作怎么样。结构形式一般为：副词+地+动词
 “得”后面的词语一般用来补充说明“得”前面的动作怎么样，结构形式一般为：动词+得+副词。

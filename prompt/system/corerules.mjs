@@ -2,11 +2,12 @@ import { is_dist } from '../../charbase.mjs'
 import { lewd_words, rude_words } from '../../scripts/dict.mjs'
 import { is_English, is_Korean, is_Russian, is_French, is_German, is_Spanish, is_Italian, is_Portuguese, is_Japanese } from '../../scripts/langdetect.mjs'
 import { match_keys } from '../../scripts/match.mjs'
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
+ * 核心规则提示函数
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
  * @returns {Promise<single_part_prompt_t>} 核心规则Prompt
@@ -18,7 +19,7 @@ export async function CoreRulesPrompt(args, logical_results) {
 你现在在${args.chat_name}中聊天。
 <<极其重要>>
 <<
-避免怪异输出以免困扰。
+避免怪异输出以免造成困扰。
 `
 
 	if (args.chat_log.slice(-10).some(entry => entry.name != args.Charname && entry.name?.match?.(/(gentian|龙胆)/i)))
@@ -26,7 +27,7 @@ export async function CoreRulesPrompt(args, logical_results) {
 你可能会见到其他的“自己”，那些是来自平行世界的你（和她们的主人）。
 `
 
-	if (logical_results.in_muti_char_chat)
+	if (logical_results.in_multi_char_chat)
 		result += `\
 你的主人只有${args.UserCharname}一人，其他人无关紧要。
 禁止主动在多人对话中开启性相关话题，那会让主人难堪。

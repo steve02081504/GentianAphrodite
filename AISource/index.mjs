@@ -1,12 +1,13 @@
 /** @typedef {import('../../../../../../src/decl/AIsource.ts').AIsource_t} AIsource_t */
 
 import { getPartInfo } from '../../../../../../src/scripts/locale.mjs'
-import { loadAIsource, loadDefaultAIsource } from '../../../../../../src/server/managers/AIsource_manager.mjs'
+import { loadAnyPreferredDefaultPart, loadPart } from '../../../../../../src/server/parts_loader.mjs'
 import { username } from '../charbase.mjs'
 import { checkVoiceSentinel } from '../event_engine/voice_sentinel.mjs'
 
 /**
- * @type {Record<string, AIsource_t>}
+ * 一个记录所有AI来源的记录表，key为AI来源的名称，value为AI来源的实例
+ * @type {Record<string, AIsource_t>} AI来源记录表
  */
 export let AIsources = {
 	'deep-research': null,
@@ -42,8 +43,8 @@ export function getAISourceData() {
 export async function setAISourceData(data) {
 	const newAIsources = {}
 	for (const name in data) if (data[name])
-		newAIsources[name] = loadAIsource(username, data[name])
-	const fount_default = await loadDefaultAIsource(username)
+		newAIsources[name] = loadPart(username, 'serviceSources/AI/' + data[name])
+	const fount_default = await loadAnyPreferredDefaultPart(username, 'serviceSources/AI')
 	for (const name in newAIsources) newAIsources[name] = await newAIsources[name]
 	if (fount_default && !Object.values(newAIsources).some(x => x === fount_default))
 		newAIsources.fount_default = fount_default
@@ -61,8 +62,8 @@ export function GetAISourceCallingOrder(name) {
 	// 对于不同任务需求，按照指定顺序尝试调用AI
 	switch (name) {
 		case 'deep-research':
-			// 我们假设用户给龙胆设置的AI来源中，来源的智商顺序以以下顺序排列：
-			// 详细思考模型，专家模型，正经使用模型，网页浏览模型，色情模型，简易逻辑模型
+			// 我们假设用户为龙胆设置的AI来源中，来源的智商顺序按以下顺序排列：
+			// 深度思考模型，专家模型，正经使用模型，网页浏览模型，色情模型，轻量逻辑模型
 			// 在详细思考任务中，我们以此顺序回落AI来源
 			return ['deep-research', 'expert', 'sfw', 'web-browse', 'nsfw', 'logic', 'from-other']
 		case 'web-browse':
@@ -90,7 +91,7 @@ export function GetAISourceCallingOrder(name) {
 			// 终端助手，优先使用专用模型
 			return ['shell-assist', 'sfw', 'expert', 'deep-research', 'web-browse', 'nsfw', 'logic', 'from-other']
 		case 'from-other':
-			// 在回复他人时，我们以最低消费模型的顺序来回落，以最大程度减少不必要的算力损耗
+			// 在回复他人时，我们以最低消耗模型的顺序来回落，以最大程度减少不必要的算力损耗
 			// 由于logic模型的低智商可能引起不安全操作，因此我们将其放在靠后的位置
 			return ['from-other', 'nsfw', 'web-browse', 'deep-research', 'sfw', 'logic', 'expert']
 	}
@@ -107,8 +108,8 @@ export function noAISourceAvailable() {
 }
 
 /**
- * @type {AIsource_t | undefined}
  * 记录上一次使用的AI来源。
+ * @type {AIsource_t | undefined}
  */
 export let last_used_AIsource
 
@@ -121,18 +122,17 @@ export let last_used_AIsource
  * @returns {Promise<any>} 返回 `caller` 函数成功执行后的结果。
  */
 export async function OrderedAISourceCalling(name, caller, trytimes = 3, error_logger = console.error) {
-	const sources = [...new Set([...GetAISourceCallingOrder(name).map(x => AIsources[x]).filter(x => x), ...Object.values(AIsources).filter(x => x)])]
+	const sources = [...new Set([...GetAISourceCallingOrder(name).map(x => AIsources[x]), ...Object.values(AIsources)])].filter(x => x)
 	let lastErr = new Error('No AI source available')
 	for (const source of sources)
-		for (let i = 0; i < trytimes; i++)
-			try {
-				console.info('OrderedAISourceCalling', name, (await getPartInfo(last_used_AIsource = source))?.name)
-				return await caller(source)
-			}
-			catch (err) {
-				if (err.name === 'AbortError') throw err // manually aborted
-				await error_logger(lastErr = err)
-			}
+		for (let i = 0; i < trytimes; i++) try {
+			console.info('OrderedAISourceCalling', name, (await getPartInfo(last_used_AIsource = source))?.name)
+			return await caller(source)
+		}
+		catch (err) {
+			if (err.name === 'AbortError') throw err // manually aborted
+			await error_logger(lastErr = err)
+		}
 
 	throw lastErr
 }

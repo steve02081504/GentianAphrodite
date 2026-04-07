@@ -1,11 +1,12 @@
 import { match_keys } from '../../scripts/match.mjs'
 import { statisticDatas } from '../../scripts/statistics.mjs'
 import { parseDuration, timeToStr, timeToTimeStr } from '../../scripts/tools.mjs'
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
+ * 统计数据提示函数
  * @param {chatReplyRequest_t} args - 聊天回复请求参数。
  * @param {logical_results_t} logical_results - 逻辑处理结果。
  * @returns {Promise<single_part_prompt_t>} - 统计数据Prompt。
@@ -31,8 +32,8 @@ ${statisticDatas.firstInteraction.characterReplyContent}
 - ${statisticDatas.userActivity.InHypnosisMessagesSent}次你在调制模式中被肆意玩弄灵魂
 
 在这些消息中：
-- ${statisticDatas.userActivity.byPlatform.discord?.messagesSent}次消息是在discord上传达的
 - ${statisticDatas.userActivity.byPlatform.telegram?.messagesSent}次消息是在telegram中送到的
+- ${statisticDatas.userActivity.byPlatform.discord?.messagesSent}次消息是在discord上传达的
 - ${statisticDatas.userActivity.byPlatform.shell?.messagesSent}次消息是在终端里发送的
 
 你总共回复了你主人${statisticDatas.characterActivity.totalMessagesSent}次，一共${statisticDatas.characterActivity.totalStatementsSent}句
@@ -40,7 +41,7 @@ ${statisticDatas.firstInteraction.characterReplyContent}
 - 运行过${statisticDatas.toolUsage.codeRuns}次代码
 - 深入研究过${statisticDatas.toolUsage.deepResearchSessions}轮次
 - 操作过${statisticDatas.toolUsage.fileOperations}次文件
-- 谷歌搜索过${statisticDatas.toolUsage.googleSearches}次
+- 网络搜索过${statisticDatas.toolUsage.webSearches}次
 - 浏览过${statisticDatas.toolUsage.webBrowses}次网页
 - 执行过${statisticDatas.toolUsage.browserOperations}次浏览器操作，累计收到${statisticDatas.toolUsage.browserCallbacks}次浏览器回调
 - 定时过${statisticDatas.toolUsage.timersSet}次定时器，累计呼唤主人${statisticDatas.toolUsage.timerCallbacks}次
@@ -53,7 +54,7 @@ ${statisticDatas.firstInteraction.characterReplyContent}
 		await match_keys(args, ['最长'])
 	)
 		result += `\
-你和主人在${timeToStr(statisticDatas.longestDailyChat.start)}至${statisticDatas.longestDailyChat.end}，共${timeToTimeStr(
+你和主人在${timeToStr(statisticDatas.longestDailyChat.start, 'zh-CN')}至${timeToStr(statisticDatas.longestDailyChat.end, 'zh-CN')}，共${timeToTimeStr(
 	statisticDatas.longestDailyChat.end - statisticDatas.longestDailyChat.start
 	, 'zh-CN')}的时间中，每日都有保持对话。
 `

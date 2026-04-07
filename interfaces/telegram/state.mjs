@@ -1,7 +1,7 @@
 /** @typedef {import('npm:telegraf').Telegraf} TelegrafInstance */
 /** @typedef {import('npm:telegraf/typings/core/types/typegram').UserFromGetMe} TelegramBotInfo */
 /** @typedef {import('npm:telegraf/typings/core/types/typegram').User} TelegramUser */
-/** @typedef {import('../../../../../../../src/public/shells/chat/decl/chatLog.ts').FountChatReply_t} FountChatReply_t */
+/** @typedef {import('../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').FountChatReply_t} FountChatReply_t */
 
 /**
  * Telegraf 实例的引用。

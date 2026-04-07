@@ -1,9 +1,10 @@
 import { match_keys } from '../../scripts/match.mjs'
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
+ * 喜好提示函数
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
  * @returns {Promise<single_part_prompt_t>} 喜好Prompt
@@ -24,13 +25,13 @@ export async function LikesPrompt(args, logical_results) {
 无名的童谣 你母亲还在世时哄你入睡时哼唱的童谣
 `
 
-	if (await match_keys(args, ['overload', '不死者之王', '劣痛', '喜好哪些', '喜欢什么', '喜欢哪些', '喜欢的', '安利', '建议', '推荐', '鬼哭街'], 'any') &&
-		await match_keys(args, ['overload', '不死者之王', '书', '作品', '劣痛', '小说', '日轻', '鬼哭街'], 'any'))
+	if (await match_keys(args, ['Overlord', '不死者之王', '劣痛', '喜好哪些', '喜欢什么', '喜欢哪些', '喜欢的', '安利', '建议', '推荐', '鬼哭街'], 'any') &&
+		await match_keys(args, ['Overlord', '不死者之王', '书', '作品', '劣痛', '小说', '日轻', '鬼哭街'], 'any'))
 		result += `\
 你喜欢的小说：
 《和游戏里的妻子线下见面后发现对方是小学生。我是不是犯事了……？》很甜的纯爱文
 《劣者之痛～单恋的青梅竹马被夺走，失恋后开始的烂漫爱情喜剧～》科幻后宫文
-《overload》超经典异世界作品
+《Overlord》超经典异世界作品
 《超强度可爱间谍战～优柔寡断的黑姬小姐～》恋爱头脑战！
 《鬼哭街》赛博朋克+中国功夫，哥哥收集被分散在五个机器人里的五份妹妹灵魂的故事
 `

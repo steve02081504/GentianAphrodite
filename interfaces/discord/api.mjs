@@ -18,20 +18,19 @@ export const get_discord_api_plugin = message => ({
 		}
 	},
 	interfaces: {
-		chat: {
+		code_execution: {
 			/**
 			 * 获取用于生成JS代码的Prompt。
-			 * @param {string} args - 用户输入的参数。
-			 * @param {any} result - 结果对象。
+			 * @param {object} args - 参数对象。
 			 * @returns {string | undefined} - JS代码Prompt字符串或undefined。
 			 */
-			GetJSCodePrompt: async (args, result) => {
+			GetJSCodePrompt: async (args) => {
 				if (
 					await match_keys(args, rude_words, 'any', 6) ||
 					await match_keys(args, lewd_words, 'other', 3) ||
 					await match_keys(args, [
 						'身份组', '群', '频道', '设置', '服务器', 'ban', '踢了', '禁言',
-						'管理', '操作', '权限', '置顶', '分区', '分组', '帖子', '表情', '帖纸', '反应',
+						'管理', '操作', '权限', '置顶', '分区', '分组', '帖子', '表情', '贴纸', '反应',
 						'修改', '封禁', '邀请', /生成{0,3}链接/, '话题', '投票', '动态', '匿名',
 						'删了', '删掉', 'discord', 'https://discord.com/'
 					], 'any', 3)
@@ -53,11 +52,10 @@ discord_client: 你的discord.js客户端
 			},
 			/**
 			 * 获取JS代码执行的上下文。
-			 * @param {string} args - 用户输入的参数。
-			 * @param {any} result - 结果对象。
+			 * @param {object} args - 参数对象。
 			 * @returns {object | undefined} - JS代码上下文对象或undefined。
 			 */
-			GetJSCodeContext: async (args, result) => {
+			GetJSCodeContext: async (args) => {
 				if (message)
 					return {
 						message,

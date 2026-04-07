@@ -1,5 +1,7 @@
+import { setInterval, clearInterval } from 'node:timers'
+
 import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
-import { loadDefaultPersona } from '../../../../../../src/server/managers/persona_manager.mjs'
+import { loadAnyPreferredDefaultPart } from '../../../../../../src/server/parts_loader.mjs'
 import { charname as BotCharname, username as FountUsername, GentianAphrodite } from '../charbase.mjs'
 
 import { handleError } from './error.mjs'
@@ -8,12 +10,12 @@ import { fetchFilesForMessages, updateBotNameMapping } from './utils.mjs'
 
 /**
  * fount 聊天回复对象类型。
- * @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReply_t} FountChatReply_t
+ * @typedef {import('../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReply_t} FountChatReply_t
  */
 
 /**
  * fount 聊天回复请求对象类型。
- * @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReplyRequest_t} FountChatReplyRequest_t
+ * @typedef {import('../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReplyRequest_t} FountChatReplyRequest_t
  */
 
 /**
@@ -89,7 +91,7 @@ async function buildReplyRequest(triggerMessage, platformAPI, channelId, request
 		locales: localhostLocales,
 		time: new Date(),
 		world: platformWorld,
-		user: loadDefaultPersona(FountUsername),
+		user: await loadAnyPreferredDefaultPart(FountUsername, 'personas'),
 		char: GentianAphrodite,
 		other_chars: [],
 		plugins: activePlugins,
@@ -101,7 +103,7 @@ async function buildReplyRequest(triggerMessage, platformAPI, channelId, request
 		 * @returns {Promise<chatLogEntry_t_ext | null>} 如果成功发送，则返回创建的聊天记录条目，否则返回 null。
 		 */
 		async AddChatLogEntry(replyFromChar) {
-			if (replyFromChar && (replyFromChar.content || replyFromChar.files?.length))
+			if (replyFromChar && (replyFromChar.content_for_show || replyFromChar.content || replyFromChar.files?.length))
 				return await sendAndLogReply(replyFromChar, platformAPI, channelId, triggerMessage)
 
 			return null
@@ -143,11 +145,12 @@ async function processAIReply(aiFinalReply, platformAPI, channelId, triggerMessa
 
 	if (!aiFinalReply) return
 
-	for (const bannedStr of bannedStrings)
-		if (aiFinalReply.content)
-			aiFinalReply.content = aiFinalReply.content.replaceAll(bannedStr, '')
+	for (const bannedStr of bannedStrings) {
+		aiFinalReply.content_for_show = aiFinalReply.content_for_show.replaceAll(bannedStr, '')
+		aiFinalReply.content = aiFinalReply.content.replaceAll(bannedStr, '')
+	}
 
-	if (aiFinalReply.content || aiFinalReply.files?.length)
+	if (aiFinalReply.content_for_show || aiFinalReply.content || aiFinalReply.files?.length)
 		await sendAndLogReply(aiFinalReply, platformAPI, channelId, aiFinalReply.extension?.replied_to_message_id ? undefined : triggerMessage)
 
 }
@@ -160,7 +163,7 @@ async function processAIReply(aiFinalReply, platformAPI, channelId, triggerMessa
  * @param {string | number} channelId - 消息所在的频道 ID。
  */
 export async function doMessageReply(triggerMessage, platformAPI, channelId) {
-	let typingInterval = setInterval(() => { platformAPI.sendTyping(channelId).catch(() => { }) }, 5000)
+	let typingInterval = setInterval(() => { platformAPI.sendTyping(channelId).catch(() => { }) }, 5000).unref()
 	/**
 	 * 清除正在发送的“输入中”状态的定时器。
 	 */
@@ -195,7 +198,7 @@ export async function doMessageReply(triggerMessage, platformAPI, channelId) {
  * @returns {Promise<chatLogEntry_t_ext | null>} 返回第一条成功发送的消息对应的 fount Entry，如果发送失败或无内容则返回 null。
  */
 export async function sendAndLogReply(replyToSend, platformAPI, channelId, repliedToMessageEntry) {
-	if (!replyToSend.content && !replyToSend.files?.length) {
+	if (!(replyToSend.content_for_show || replyToSend.content || replyToSend.files?.length)) {
 		console.warn('[BotLogic] sendAndLogReply: Attempted to send empty message, skipped.', replyToSend)
 		return null
 	}

@@ -1,12 +1,13 @@
 import util from 'node:util'
 
-import { getConnectedPages, getBrowseHistory, getMostRecentPageInfo } from '../../../../../../../src/public/shells/browserIntegration/src/api.mjs'
+import { getConnectedPages, getBrowseHistory, getMostRecentPageInfo } from '../../../../../../../src/public/parts/shells/browserIntegration/src/api.mjs'
 import { match_keys } from '../../scripts/match.mjs'
 
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
+ * 浏览器集成提示函数
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
  * @returns {Promise<prompt_struct_t>} 返回的提示结构

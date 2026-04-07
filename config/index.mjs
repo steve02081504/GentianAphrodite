@@ -1,12 +1,14 @@
-import fs from 'node:fs/promises'
+import fs from 'node:fs'
 import path from 'node:path'
 
-import { loadPlugin } from '../../../../../../src/server/managers/plugin_manager.mjs'
+import { loadPart } from '../../../../../../src/server/parts_loader.mjs'
 import { getAISourceData, setAISourceData } from '../AISource/index.mjs'
 import { chardir, charname, username } from '../charbase.mjs'
 import { resetIdleTimer } from '../event_engine/on_idle.mjs'
 import { checkVoiceSentinel, stopVoiceSentinel } from '../event_engine/voice_sentinel.mjs'
 import { mergeTree } from '../scripts/tools.mjs'
+import { getSearchSourceData, setSearchSourceData } from '../SearchSource/index.mjs'
+import { getTranslateSourceData, setTranslateSourceData } from '../TranslateSource/index.mjs'
 
 /**
  * 获取配置界面的显示内容。
@@ -14,8 +16,8 @@ import { mergeTree } from '../scripts/tools.mjs'
  */
 export async function GetConfigDisplayContent() {
 	return {
-		html: await fs.readFile(path.join(chardir, 'config', 'display.html'), 'utf-8'),
-		js: await fs.readFile(path.join(chardir, 'config', 'display.mjs'), 'utf-8')
+		html: await fs.promises.readFile(path.join(chardir, 'config', 'display.html'), 'utf-8'),
+		js: await fs.promises.readFile(path.join(chardir, 'config', 'display.mjs'), 'utf-8')
 	}
 }
 
@@ -38,12 +40,12 @@ export const config = {
 		voice_sentinel: false
 	},
 	reality_channel_notification_fallback_order: {
-		idle: ['discord', 'telegram', 'system'],
-		'voice-processing': ['system', 'discord', 'telegram']
+		idle: ['telegram', 'discord', 'system'],
+		'voice-processing': ['system', 'telegram', 'discord']
 	},
 	disable_prompt: {
 		camera: false
-	}
+	},
 }
 
 /**
@@ -53,11 +55,14 @@ export const config = {
 export function GetData() {
 	return {
 		AIsources: getAISourceData(),
+		searchSource: getSearchSourceData(),
+		translateSource: getTranslateSourceData(),
 		plugins: Object.keys(plugins),
 		deep_research: config.deep_research,
 		reality_channel_disables: config.reality_channel_disables,
 		reality_channel_notification_fallback_order: config.reality_channel_notification_fallback_order,
-		disable_prompt: config.disable_prompt
+		disable_prompt: config.disable_prompt,
+		fountApiKey: config.fountApiKey,
 	}
 }
 /**
@@ -66,7 +71,9 @@ export function GetData() {
  */
 export async function SetData(data) {
 	await setAISourceData(data.AIsources || getAISourceData())
-	if (data.plugins) plugins = Object.fromEntries(await Promise.all(data.plugins.map(async x => [x, await loadPlugin(username, x)])))
+	await setSearchSourceData(data.searchSource || getSearchSourceData())
+	await setTranslateSourceData(data.translateSource || getTranslateSourceData())
+	if (data.plugins) plugins = Object.fromEntries(await Promise.all(data.plugins.map(async x => [x, await loadPart(username, 'plugins/' + x)])))
 	Object.assign(config.deep_research, data.deep_research)
 
 	if (data.reality_channel_disables) {
@@ -77,11 +84,11 @@ export async function SetData(data) {
 	}
 
 	for (const prop of Object.keys(config.reality_channel_notification_fallback_order))
-		if (data.reality_channel_notification_fallback_order?.prop)
+		if (data.reality_channel_notification_fallback_order?.[prop])
 			config.reality_channel_notification_fallback_order[prop] = data.reality_channel_notification_fallback_order[prop]
 
-	if (data.disable_prompt)
-		Object.assign(config.disable_prompt, data.disable_prompt)
+	if (data.disable_prompt) Object.assign(config.disable_prompt, data.disable_prompt)
+	if (data.fountApiKey) config.fountApiKey = data.fountApiKey
 }
 
 /**
@@ -90,6 +97,6 @@ export async function SetData(data) {
  * @returns {Promise<any>} - `setPartData` 函数的返回值。
  */
 export async function setMyData(data) {
-	const { setPartData } = await import('../../../../../../src/public/shells/config/src/manager.mjs')
-	return setPartData(username, 'chars', charname, mergeTree(await GetData(), data))
+	const { setPartData } = await import('../../../../../../src/public/parts/shells/config/src/manager.mjs')
+	return setPartData(username, 'chars/' + charname, mergeTree(await GetData(), data))
 }

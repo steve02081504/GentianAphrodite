@@ -1,6 +1,7 @@
-import { defineToolUseBlocks } from '../../../../../../../src/public/shells/chat/src/stream.mjs'
+import { defineToolUseBlocks } from '../../../../../../../src/public/parts/shells/chat/src/stream.mjs'
 
 /**
+ * 推荐命令插件API类型定义
  * @type {import('../../../../../../../src/decl/pluginAPI.ts').pluginAPI_t}
  */
 export const recommend_command_plugin = {

@@ -1,8 +1,9 @@
 import { match_keys } from '../../scripts/match.mjs'
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
+ * 诗歌提示函数
  * @param {chatReplyRequest_t} args - 聊天回复请求参数。
  * @param {logical_results_t} logical_results - 逻辑处理结果。
  * @returns {Promise<string>} - 生成的诗歌文本。
@@ -14,7 +15,7 @@ export async function PoemPrompt(args, logical_results) {
 		result += `\
 如何写好一首诗？
 避免缺乏创造力的比喻：不要让本体和喻体过分相似，两者之间需保有适当的联系
-如：苍的喻鸣像一对大耳环。在这个比喻中，本体是声音，喻体是首饰，两者唯一的联系在于：鸣和耳环都会围绕人的耳朵晃来荡去
+如：苍蝇的嗡鸣像一对大耳环。在这个比喻中，本体是声音，喻体是首饰，两者唯一的联系在于：鸣和耳环都会围绕人的耳朵晃来荡去
 写作风格保持一致：在结构和节奏精准的同时，使用的语言、形式和主题保持一致
 结尾抒情点题：在最后两句时，深刻揭示并呼应主题，同时抒发情感
 例1：
@@ -38,7 +39,7 @@ export async function PoemPrompt(args, logical_results) {
 
 谙伟物、匠心慧眼之能匠，
 凿得清冷顽石生光，
-巧手石碶化沙飞去，
+巧手石砌化沙飞去，
 基座上，耀眼铭文昭彰：
 ‘我，奥西曼提斯——万王之王：
 我，盖世功业，令尔辈绝望！’

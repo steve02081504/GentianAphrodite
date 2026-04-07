@@ -20,7 +20,7 @@ export async function update() {
 		avatar: `${charurl}/imgs/anime.avif`,
 		icon: 'https://api.iconify.design/game-icons/flower-pot.svg',
 		sfw_avatar: `${charurl}/imgs/sfw.avif`,
-		description: 'A complex legal loli wife with a massive details & features!',
+		description: 'A complex legal loli wife with rich details & features!',
 		sfw_description: 'What harm could a little Gentian possibly do?',
 		description_markdown: await FormatStr(file, {
 			charvar,
@@ -52,8 +52,8 @@ ${escapeHTML(statisticDatas.firstInteraction.characterReplyContent)}
 
 🗺️ Among these messages:
 
-- 🎮 ${statisticDatas.userActivity.byPlatform.discord?.messagesSent || 0} messages were sent on the chaotic Discord
 - 🌐 ${statisticDatas.userActivity.byPlatform.telegram?.messagesSent || 0} messages were sent on the free Telegram
+- 🎮 ${statisticDatas.userActivity.byPlatform.discord?.messagesSent || 0} messages were sent on the chaotic Discord
 - 💻 ${statisticDatas.userActivity.byPlatform.shell?.messagesSent || 0} messages were sent from the cool terminal
 
 🩷 Gentian replied to you a total of ${statisticDatas.characterActivity.totalMessagesSent} times across all platforms, totaling ${statisticDatas.characterActivity.totalStatementsSent} statements.
@@ -63,7 +63,7 @@ ${escapeHTML(statisticDatas.firstInteraction.characterReplyContent)}
 - ⚙️ ran code ${statisticDatas.toolUsage.codeRuns} times
 - 🤔 had ${statisticDatas.toolUsage.deepResearchSessions} rounds of deep research
 - 📄 performed ${statisticDatas.toolUsage.fileOperations} file operations
-- 🔎 performed ${statisticDatas.toolUsage.googleSearches} Google searches
+- 🔎 performed ${statisticDatas.toolUsage.webSearches} web searches
 - 🌐 browsed the web ${statisticDatas.toolUsage.webBrowses} times
 - 🖥️ performed ${statisticDatas.toolUsage.browserOperations} browser operations, cumulatively received ${statisticDatas.toolUsage.browserCallbacks} browser callbacks 💻
 - ⏰ set timers ${statisticDatas.toolUsage.timersSet} times, cumulatively calling you ${statisticDatas.toolUsage.timerCallbacks} times 🔔

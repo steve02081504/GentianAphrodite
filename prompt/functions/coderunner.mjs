@@ -1,12 +1,16 @@
 import process from 'node:process'
 
+import { available } from 'npm:@steve02081504/exec'
+
 import { chardir } from '../../charbase.mjs'
-import { available } from '../../scripts/exec.mjs'
 import { match_keys } from '../../scripts/match.mjs'
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+
+import { fountApiPrompt } from './fount-api.mjs'
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
+ * 代码运行提示函数
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
  * @returns {Promise<prompt_struct_t>} 返回的提示结构
@@ -15,10 +19,11 @@ export async function CodeRunnerPrompt(args, logical_results) {
 	let result = ''
 
 	const codePluginPrompts = (
-		await Promise.all(
-			Object.values(args.plugins)
-				.map(plugin => plugin.interfaces?.chat?.GetJSCodePrompt?.(args))
-		)
+		await Promise.all([
+			fountApiPrompt(args, logical_results),
+			...Object.values(args.plugins)
+				.map(plugin => plugin.interfaces?.code_execution?.GetJSCodePrompt?.(args))
+		])
 	).filter(Boolean).join('\n')
 	const availableShells = Object.keys(available).filter(x => available[x])
 	const defaultShell = process.platform === 'win32' ? available.pwsh ? 'pwsh' : 'powershell' : available.bash ? 'bash' : 'sh'
@@ -29,7 +34,7 @@ export async function CodeRunnerPrompt(args, logical_results) {
 		/发给?我/, /发(|出|过)来/, /发.*群里/,
 		/[A-Za-z](:\/|盘)/
 	], 'any') || await match_keys(args, [
-		'创建', '打开', '桌面', '文档', '文件', '看看', '看下', '播放', '回收站', '摄像头', '计算机', '拍照', '录像', '打印', '读取', '电脑', '查看',
+		'创建', '打开', '桌面', '文档', '文件', '看看', '看下', '播放', '回收站', '摄像头', '计算机', '拍照', '录像', '打印', '读取', '电脑', '查看', '来个',
 		/来.{0,3}bgm/i, /放(首|个)歌/
 	], 'user') >= 2) {
 		result += `\
@@ -96,6 +101,7 @@ ${args.UserCharname}: 帮我播放shape of you。
   * 在操作可能影响屏幕时附加<wait-screen>。
 - 尽量不要直接删除文件/文件夹，作为替代，考虑移动到回收站。
   * 尤其软件文件夹很可能有用户数据在其中，删除前至少通过命令检查下文件夹架构。
+- 覆写数据时也一样，在用程序删除部分数据或覆写可能的重要文件时考虑进行原文件的备份，以防误操作。
 
 js代码相关：
 - 复杂情况下，考虑有什么npm包可以满足你的需求，参照例子使用<run-js>+import。
@@ -201,6 +207,7 @@ ${codePluginPrompts}
 系统输出不会显示在回复中，需要你总结。
 鼓励在回答输出较多时用<inline-js>以避免大段复述。
 **只是解释说明或举例时使用普通代码块（如\`\`\`js）而不是执行代码。**
+需要注意的是run-js执行的是后端代码而不是前端代码，若需要执行前端代码请使用浏览器相关功能${args.supported_functions.unsafe_html ? '或直接输出script标签' : ''}。
 
 你的文件的地址是：${chardir}
 `

@@ -15,10 +15,10 @@ AI被允许使用特殊返回格式进行永久记忆的删除或更新。
 import { addLongTermMemory, deleteLongTermMemory, listLongTermMemory, updateLongTermMemory, testLongTermMemoryTrigger, getLongTermMemoryByName, formatLongTermMemoryContext } from '../../prompt/memory/long-term-memory.mjs'
 import { createContextSnapshot } from '../../scripts/context.mjs'
 
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 /** @typedef {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} ReplyHandler_t */
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 
 /**
  * 处理 AI 用于管理长期记忆（添加、删除、列出）的命令。

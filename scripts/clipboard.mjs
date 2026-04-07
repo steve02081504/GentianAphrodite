@@ -1,4 +1,4 @@
-import fs from 'node:fs/promises'
+import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
@@ -64,9 +64,9 @@ export async function writeImage(imageSource) {
 	const fileObj = await toFileObj(imageSource)
 
 	const tempDir = path.join(os.tmpdir(), 'clipboard-temp')
-	await fs.mkdir(tempDir, { recursive: true })
+	await fs.promises.mkdir(tempDir, { recursive: true })
 	const tempPath = path.join(tempDir, fileObj.name)
-	await fs.writeFile(tempPath, fileObj.buffer)
+	await fs.promises.writeFile(tempPath, fileObj.buffer)
 
 	await copyImg(tempPath)
 

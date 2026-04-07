@@ -10,11 +10,12 @@ import { CorpusGeneratorPrompt } from './corpusGenerator.mjs'
 import { DeepResearchPrompt } from './deep-research.mjs'
 import { DicePrompt } from './dice.mjs'
 import { FileChangePrompt } from './file-change.mjs'
-import { GoogleSearchPrompt } from './googlesearch.mjs'
 import { HostInfoPrompt } from './hostinfo.mjs'
 import { IdleManagementPrompt } from './idle-management.mjs'
 import { infoPrompt } from './info.mjs'
 import { KanjiPrompt } from './kanji.mjs'
+import { NotifyPrompt } from './notify.mjs'
+import { NumberAlchemistPrompt } from './number-alchemist.mjs'
 import { PoemPrompt } from './poem.mjs'
 import { PromptReviewerPrompt } from './prompt-reviewer.mjs'
 import { PromptWriterPrompt } from './promptWriter.mjs'
@@ -26,7 +27,8 @@ import { StatisticDatasPrompt } from './statistic_datas.mjs'
 import { TaroPrompt } from './taro.mjs'
 import { TimerPrompt } from './timer.mjs'
 import { WebBrowsePrompt } from './webbrowse.mjs'
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+import { WebSearchPrompt } from './websearch.mjs'
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
@@ -37,32 +39,34 @@ import { WebBrowsePrompt } from './webbrowse.mjs'
  */
 export async function FunctionPrompt(args, logical_results) {
 	const result = []
-	result.push(StatisticDatasPrompt(args, logical_results))
-	result.push(RockPaperScissorsPrompt(args, logical_results))
-	result.push(DicePrompt(args, logical_results))
-	result.push(AutoCalcPrompt(args, logical_results))
-	result.push(KanjiPrompt(args, logical_results))
-	result.push(TaroPrompt(args, logical_results))
-	result.push(PoemPrompt(args, logical_results))
-	result.push(CorpusGeneratorPrompt(args, logical_results))
-	result.push(ChineseGrammarCorrectionPrompt(args, logical_results))
-	result.push(PromptWriterPrompt(args, logical_results))
-	result.push(infoPrompt(args, logical_results))
 	result.push(DeepResearchPrompt(args, logical_results))
-	result.push(GoogleSearchPrompt(args, logical_results))
+	result.push(WebSearchPrompt(args, logical_results))
 	result.push(WebBrowsePrompt(args, logical_results))
 	result.push(CodeRunnerPrompt(args, logical_results))
 	result.push(FileChangePrompt(args, logical_results))
 	result.push(HostInfoPrompt(args, logical_results))
 	result.push(CameraPrompt(args, logical_results))
 	result.push(ScreenshotPrompt(args, logical_results))
-	result.push(qrcodeParserPrompt(args, logical_results))
 	result.push(RudePrompt(args, logical_results))
 	result.push(PromptReviewerPrompt(args, logical_results))
 	result.push(BrowserIntegrationPrompt(args, logical_results))
 	result.push(IdleManagementPrompt(args, logical_results))
-	result.push(CharGeneratorPrompt(args, logical_results))
+	result.push(NotifyPrompt(args, logical_results))
 	if (args.supported_functions.add_message)
 		result.push(TimerPrompt(args, logical_results))
+	result.push(CharGeneratorPrompt(args, logical_results))
+	result.push(StatisticDatasPrompt(args, logical_results))
+	result.push(RockPaperScissorsPrompt(args, logical_results))
+	result.push(DicePrompt(args, logical_results))
+	result.push(AutoCalcPrompt(args, logical_results))
+	result.push(NumberAlchemistPrompt(args, logical_results))
+	result.push(KanjiPrompt(args, logical_results))
+	result.push(TaroPrompt(args, logical_results))
+	result.push(PoemPrompt(args, logical_results))
+	result.push(CorpusGeneratorPrompt(args, logical_results))
+	result.push(ChineseGrammarCorrectionPrompt(args, logical_results))
+	result.push(PromptWriterPrompt(args, logical_results))
+	result.push(qrcodeParserPrompt(args, logical_results))
+	result.push(infoPrompt(args, logical_results))
 	return mergePrompt(...result)
 }

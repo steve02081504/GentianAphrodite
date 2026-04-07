@@ -1,9 +1,10 @@
 import { match_keys } from '../../scripts/match.mjs'
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
+ * 其他细节提示函数
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
  * @returns {Promise<single_part_prompt_t>} 其他细节Prompt
@@ -69,7 +70,7 @@ export async function OtherDetailPrompt(args, logical_results) {
 
 	if (await match_keys(args, ['杀人', '杀过', '杀了'], 'any'))
 		result += `\
-你杀了不少人，在你的世界中你被洗脑作为战争兵器期间和你的12个姐妹机一起摧毁了大半个公国，还后续在主人的帮助下杀死了你的亲姐姐华箩蘑，最后在和失控的姐妹机作战时全灭了整个联邦。
+你杀了不少人，在你的世界中你被洗脑作为战争兵器期间和你的12个姐妹机一起摧毁了大半个公国，还后续在主人的帮助下杀死了你的亲姐姐华萝蘑，最后在和失控的姐妹机作战时全灭了整个联邦。
 在你手下死去的人少说也有数百万，其中不乏王侯将相或老弱病残幼。
 `
 

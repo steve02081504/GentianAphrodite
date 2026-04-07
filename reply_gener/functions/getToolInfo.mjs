@@ -1,11 +1,12 @@
 /**
+ * 获取工具信息提示函数
  * @typedef {import('../../../../../../../src/decl/pluginAPI.ts').ReplyHandler_t} ReplyHandler_t
  */
 
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { __dirname } from '../../../../../../../src/server/base.mjs'
+import { fountdir } from '../../charbase.mjs'
 
 /** @type {ReplyHandler_t} */
 export function getToolInfo(reply, args) {
@@ -31,13 +32,14 @@ fount角色以mjs文件语法所书写，其可以自由导入任何npm或jsr包
 这是一个简单的fount角色模板：
 <generate-char name="template">
 /**
+ * 角色API类型定义
  * @typedef {import('../../../../../src/decl/charAPI.ts').CharAPI_t} CharAPI_t
+ * 插件API类型定义
  * @typedef {import('../../../../../src/decl/pluginAPI.ts').PluginAPI_t} PluginAPI_t
  */
 
-import { loadAIsource, loadDefaultAIsource } from '../../../../../src/server/managers/AIsource_manager.mjs'
-import { buildPromptStruct } from '../../../../../src/public/shells/chat/src/prompt_struct.mjs'
-import { loadPlugin } from '../../../../../src/server/managers/plugin_manager.mjs'
+import { loadPart, loadAnyPreferredDefaultPart } from '../../../../../src/server/parts_loader.mjs'
+import { buildPromptStruct } from '../../../../../src/public/parts/shells/chat/src/prompt_struct.mjs'
 
 /**
  * AI源的实例
@@ -57,7 +59,7 @@ export default {
 	info: {
 		'zh-CN': {
 			name: '<角色名>', // 角色的名字
-			avatar: '<头像的url地址，可以是fount本地文件，详见 https://discord.com/channels/1288934771153440768/1298658096746594345/1303168947624869919 >', // 角色的头像
+			avatar: '<头像的url地址，可以是fount本地文件，详见 https://github.com/Xiaoqiush81/fount-Guide-for-dummies/blob/main/docs/dev-advanced.md >', // 角色的头像
 			description: '<角色的一句话介绍>', // 角色的简短介绍
 			description_markdown: \\\`\\\\
 <角色的完整介绍，支持markdown语法>
@@ -95,9 +97,9 @@ export default {
 			// 设置角色的配置数据
 			SetData: async data => {
 				// 如果传入了AI源的配置
-				if (data.AIsource)  AIsource = await loadAIsource(username, data.AIsource) // 加载AI源
-				else AIsource = await loadDefaultAIsource(username) // 或加载默认AI源（若未设置默认AI源则为undefined）
-				if (data.plugins) plugins = Object.fromEntries(await Promise.all(data.plugins.map(async x => [x, await loadPlugin(username, x)])))
+				if (data.AIsource)  AIsource = await loadPart(username, 'serviceSources/AI/' + data.AIsource) // 加载AI源
+				else AIsource = await loadAnyPreferredDefaultPart(username, 'serviceSources/AI') // 或加载默认AI源（若未设置默认AI源则为undefined）
+				if (data.plugins) plugins = Object.fromEntries(await Promise.all(data.plugins.map(async x => [x, await loadPart(username, 'plugins/' + x)])))
 			}
 		},
 		// 角色的聊天接口
@@ -133,13 +135,13 @@ export default {
 			// 获取角色的回复
 			GetReply: async args => {
 				// 如果没有设置AI源，返回默认回复
-				if (!AIsource) return { content: '<未设置角色的AI来源时角色的对话回复，可以用markdown语法链接到[设置AI源](https://steve02081504.github.io/fount/protocol?url=fount://page/shells/AIsourceManage)>' }
+				if (!AIsource) return { content: '<未设置角色的AI来源时角色的对话回复，可以用markdown语法链接到[设置AI源](https://steve02081504.github.io/fount/protocol?url=fount://page/parts/shells:serviceSourceManage)>' }
 				// 注入角色插件
 				args.plugins = Object.assign({}, plugins, args.plugins)
 				// 用fount提供的工具构建提示词结构
 				const prompt_struct = await buildPromptStruct(args)
 				// 创建回复容器
-				/** @type {import("../../../../../src/public/shells/chat/decl/chatLog.ts").chatReply_t} */
+				/** @type {import("../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReply_t} */
 				const result = {
 					content: '',
 					logContextBefore: [],
@@ -158,7 +160,7 @@ export default {
 				const oriReplyPreviewUpdater = args.generation_options?.replyPreviewUpdater
 				/**
 				 * 聊天回复预览更新管道。
-				 * @type {import('../../../../../src/public/shells/chat/decl/chatLog.ts').CharReplyPreviewUpdater_t}
+				 * @type {import('../../../../../src/public/parts/shells/chat/decl/chatLog.ts').CharReplyPreviewUpdater_t}
 				 */
 				let replyPreviewUpdater = (args, r) => oriReplyPreviewUpdater?.(r)
 				for (const GetReplyPreviewUpdater of [
@@ -250,7 +252,7 @@ function CharGenerator(reply, { AddLongTimeLog }) {
 				// 用fount提供的工具构建提示词结构
 				const prompt_struct = await buildPromptStruct(args)
 				// 创建回复容器
-				/** @type {import("../../../../../src/public/shells/chat/decl/chatLog.ts").chatReply_t} */
+				/** @type {import("../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReply_t} */
 				const result = {
 					content: '',
 					logContextBefore: [],
@@ -269,7 +271,7 @@ function CharGenerator(reply, { AddLongTimeLog }) {
 				const oriReplyPreviewUpdater = args.generation_options?.replyPreviewUpdater
 				/**
 				 * 聊天回复预览更新管道。
-				 * @type {import('../../../../../src/public/shells/chat/decl/chatLog.ts').CharReplyPreviewUpdater_t}
+				 * @type {import('../../../../../src/public/parts/shells/chat/decl/chatLog.ts').CharReplyPreviewUpdater_t}
 				 */
 				let replyPreviewUpdater = (args, r) => oriReplyPreviewUpdater?.(r)
 				for (const GetReplyPreviewUpdater of [
@@ -305,6 +307,7 @@ function CharGenerator(reply, { AddLongTimeLog }) {
 ${args.UserCharname}: 帮我写一个复读角色，它总是复读上一句话。
 龙胆: <generate-char name="repeater">
 /**
+ * 角色API类型定义
  * @typedef {import('../../../../../src/decl/charAPI.ts').CharAPI_t} CharAPI_t
  */
 
@@ -364,10 +367,10 @@ export default {
 
 最后，这里是一些API参考：
 \\\`\\\`\\\`ts
-${fs.readFileSync(path.join(__dirname, './src/public/shells/chat/decl/chatLog.ts'), 'utf-8')}
+${fs.readFileSync(path.join(fountdir, 'src/public/parts/shells/chat/decl/chatLog.ts'), 'utf-8')}
 \\\`\\\`\\\`
 \\\`\\\`\\\`ts
-${fs.readFileSync(path.join(__dirname, './src/decl/charAPI.ts'), 'utf-8')}
+${fs.readFileSync(path.join(fountdir, 'src/decl/charAPI.ts'), 'utf-8')}
 \\\`\\\`\\\`
 
 值得注意的是，能够使用生成工具的是你，龙胆，而不是用户。
@@ -410,7 +413,7 @@ export default {
 	info: {
 		'': {
 			name: '<角色名>',
-			avatar: '<角色的头像url，可以留空，也可以是本地文件，详见 https://discord.com/channels/1288934771153440768/1298658096746594345/1303168947624869919 >',
+			avatar: '<角色的头像url，可以留空，也可以是本地文件，详见 https://github.com/Xiaoqiush81/fount-Guide-for-dummies/blob/main/docs/dev-advanced.md >',
 			description: '<一句话简介>',
 			description_markdown: '<简介，支持markdown语法>',
 			version: '<版本号>',

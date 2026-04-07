@@ -1,7 +1,13 @@
 import path from 'node:path'
 
-import { exec } from './scripts/exec.mjs'
+import { exec } from 'npm:@steve02081504/exec'
 
+import { __dirname } from '../../../../../src/server/base.mjs'
+/**
+ * 当前 fount 的目录路径。
+ * @type {string}
+ */
+export const fountdir = __dirname
 /**
  * 指示当前是否为分发版本。
  * @type {boolean}
@@ -21,7 +27,7 @@ export const charname = path.basename(chardir)
  * 当前角色的 URL 路径。
  * @type {string}
  */
-export const charurl = `/chars/${encodeURIComponent(path.basename(chardir))}`
+export const charurl = `/parts/chars:${encodeURIComponent(path.basename(chardir))}`
 /**
  * 当前角色的版本信息，通常是 Git 标签或短哈希。
  * @type {string}

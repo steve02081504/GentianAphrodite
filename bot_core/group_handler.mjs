@@ -1,6 +1,7 @@
 import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
-import { loadDefaultPersona } from '../../../../../../src/server/managers/persona_manager.mjs'
+import { loadAnyPreferredDefaultPart } from '../../../../../../src/server/parts_loader.mjs'
 import { charname as BotCharname, username as FountUsername, GentianAphrodite } from '../charbase.mjs'
+import { sleep } from '../scripts/tools.mjs'
 
 import { userIdToNameMap, inHypnosisChannelId } from './state.mjs'
 import { fetchFilesForMessages } from './utils.mjs'
@@ -9,7 +10,7 @@ import { fetchFilesForMessages } from './utils.mjs'
  * 记录无效入群事件的时间戳。
  * @type {number[]}
  */
-const invalidGroupJoinEvents = []
+let invalidGroupJoinEvents = []
 
 /**
  * 平台接口 API 对象类型定义。
@@ -97,7 +98,7 @@ async function generateInsult(group, platformAPI, defaultChannel, channelHistory
 		locales: localhostLocales,
 		time: new Date(),
 		world: platformAPI.getPlatformWorld?.() || null,
-		user: loadDefaultPersona(FountUsername),
+		user: await loadAnyPreferredDefaultPart(FountUsername, 'personas'),
 		char: GentianAphrodite,
 		other_chars: [],
 		plugins: { ...platformAPI.getPlatformSpecificPlugins?.({ extension: { platform_guild_id: group.id, platform_channel_id: defaultChannel.id, platform: platformAPI.name } }) },
@@ -198,8 +199,10 @@ async function handleOwnerNotInGroup(group, platformAPI, defaultChannel) {
 	const thirtyMinutesAgo = now - 30 * 60 * 1000
 
 	// 过滤掉旧事件
-	const invalidGroupJoinEvents = invalidGroupJoinEvents.filter(timestamp => timestamp >= thirtyMinutesAgo)
-	invalidGroupJoinEvents.push(now)
+	invalidGroupJoinEvents = [
+		...invalidGroupJoinEvents.filter(timestamp => timestamp >= thirtyMinutesAgo),
+		now
+	]
 
 	// 如果在半小时内有超过3次无效入群，则直接退群
 	if (invalidGroupJoinEvents.length > 3) {
@@ -303,7 +306,7 @@ async function performInitialGroupOwnerCheck(platformAPI) {
 			const allGroups = await platformAPI.getJoinedGroups()
 			if (allGroups?.length)
 				for (const group of allGroups) {
-					await new Promise(resolve => setTimeout(resolve, 2000)) // 错开检查
+					await sleep(2000) // 错开检查
 					await handleGroupCheck(group, platformAPI)
 				}
 		}

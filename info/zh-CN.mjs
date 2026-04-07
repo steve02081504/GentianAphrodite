@@ -45,15 +45,15 @@ ${escapeHTML(statisticDatas.firstInteraction.userMessageContent)}
 ${escapeHTML(statisticDatas.firstInteraction.characterReplyContent)}
 </code></pre>
 
-📊 直到今天，你累积发了${statisticDatas.userActivity.totalMessagesSent}条信息，一共${statisticDatas.userActivity.totalStatementsSent}句，其中：
+📊 直到今天，你累计发了${statisticDatas.userActivity.totalMessagesSent}条信息，一共${statisticDatas.userActivity.totalStatementsSent}句，其中：
 
 - 🔞 ${statisticDatas.userActivity.NsfwMessagesSent}次回复你和她在做少儿不宜的事
 - 🌀 ${statisticDatas.userActivity.InHypnosisMessagesSent}次回复中你在用调制模式肆意玩弄她的灵魂
 
 🗺️ 在这些消息中：
 
-- 🎮 ${statisticDatas.userActivity.byPlatform.discord?.messagesSent || 0}次消息是在混乱的discord上传达的
 - 🌐 ${statisticDatas.userActivity.byPlatform.telegram?.messagesSent || 0}次消息是在自由的telegram中送到的
+- 🎮 ${statisticDatas.userActivity.byPlatform.discord?.messagesSent || 0}次消息是在混乱的discord上传达的
 - 💻 ${statisticDatas.userActivity.byPlatform.shell?.messagesSent || 0}次消息是在酷炫的终端里发送的
 
 🩷 龙胆在各个平台上一共回复了你${statisticDatas.characterActivity.totalMessagesSent}次，一共${statisticDatas.characterActivity.totalStatementsSent}句
@@ -63,7 +63,7 @@ ${escapeHTML(statisticDatas.firstInteraction.characterReplyContent)}
 - ⚙️ 运行过${statisticDatas.toolUsage.codeRuns}次代码
 - 🤔 深入研究过${statisticDatas.toolUsage.deepResearchSessions}轮次
 - 📄 操作过${statisticDatas.toolUsage.fileOperations}次文件
-- 🔎 谷歌搜索过${statisticDatas.toolUsage.googleSearches}次
+- 🔎 网络搜索过${statisticDatas.toolUsage.webSearches}次
 - 🌐 浏览过${statisticDatas.toolUsage.webBrowses}次网页
 - 🖥️ 执行过${statisticDatas.toolUsage.browserOperations}次浏览器操作，累计收到${statisticDatas.toolUsage.browserCallbacks}次浏览器回调 💻
 - ⏰ 定时过${statisticDatas.toolUsage.timersSet}次定时器，累计呼唤你${statisticDatas.toolUsage.timerCallbacks}次 🔔

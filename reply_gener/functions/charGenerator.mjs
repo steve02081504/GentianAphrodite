@@ -1,4 +1,5 @@
 /**
+ * 角色生成器提示函数
  * @typedef {import('../../../../../../../src/decl/pluginAPI.ts').ReplyHandler_t} ReplyHandler_t
  */
 

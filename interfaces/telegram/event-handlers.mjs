@@ -4,9 +4,9 @@ import { telegramMessageToFountChatLogEntry } from './message-converter.mjs'
 import { constructLogicalChannelId } from './utils.mjs'
 
 /**
+ * Telegram 接口配置类型定义
  * @typedef {import('./config.mjs').TelegramInterfaceConfig_t} TelegramInterfaceConfig_t
- */
-/**
+ * Telegram 客户端类型定义
  * @typedef {import('../../bot_core/index.mjs').PlatformAPI_t} PlatformAPI_t
  */
 /** @typedef {import('npm:telegraf').Telegraf} TelegrafInstance */

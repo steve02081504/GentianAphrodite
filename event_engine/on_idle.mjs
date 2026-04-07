@@ -1,17 +1,21 @@
-/** @typedef {import("../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
+/** @typedef {import("../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 
 import fs from 'node:fs'
 import path from 'node:path'
+import { setTimeout, clearTimeout } from 'node:timers'
 
 import { loadJsonFileIfExists, saveJsonFile } from '../../../../../../src/scripts/json_loader.mjs'
 import { chardir, charname } from '../charbase.mjs'
 import { config } from '../config/index.mjs'
 import { formatLongTermMemory, getRandomNLongTermMemories } from '../prompt/memory/long-term-memory.mjs'
 import { GetReply } from '../reply_gener/index.mjs'
+import { random } from '../scripts/random.mjs'
+import { timeToTimeStr } from '../scripts/tools.mjs'
 
 import { initRealityChannel, RealityChannel } from './index.mjs'
 
 /**
+ * 待办任务类型定义
  * @typedef {{
  * 	name: string,
  * 	content: string,
@@ -21,6 +25,7 @@ import { initRealityChannel, RealityChannel } from './index.mjs'
  */
 
 /**
+ * 待办任务列表
  * @type {TodoTask[]}
  */
 const TodoTasks = loadJsonFileIfExists(path.join(chardir, 'memory/todo-tasks.json'), [])
@@ -80,6 +85,7 @@ const defaultTaskWeights = {
 }
 
 /**
+ * 默认的任务权重配置
  * @type {Object.<string, number>}
  */
 const IdleTaskWeights = loadJsonFileIfExists(path.join(chardir, 'memory/idle-task-weights.json'), defaultTaskWeights)
@@ -118,6 +124,7 @@ const baseIdleTasks = [
 	{
 		category: 'collect_info',
 		/**
+		 * 获取任务内容字符串
 		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => '随意浏览主人的硬盘、屏幕、摄像头等，更新和总结有关主人的信息。',
@@ -134,16 +141,18 @@ const baseIdleTasks = [
 	{
 		category: 'organize_memory',
 		/**
+		 * 获取任务内容字符串
 		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => `\
 以批判性的眼光审查以下5条随机抽取的长期记忆。
 你的任务是：
-1. 识别并标记出可能已经过时、不再准确、或过于琐碎（如“主人今天左脚进门、主人在用电脑、主人在呼吸、主人是一个哺乳动物”）的记忆。
-2. 评估每条记忆的关键词是否精准或过于难触发，并提出优化建议。
-3. 判断近期的短期记忆中有什么有价值的内容可以加入到长期记忆中。
+1. 识别并标记出可能已经过时、不再准确、或过于琐碎（如“主人今天左脚进门、主人在用电脑、主人在呼吸、主人是一个哺乳动物”）的记忆，如果有则删除。
+2. 评估每条记忆的关键词是否精准或过于难触发，并提出优化建议，如果有则更新。
+3. 判断每条记忆是否包含了情绪色彩、比喻、特定时期的口癖、自造词或过度抽象的哲学概念。如果有则剥离所有修辞外壳，将其更新为极度简练、平实、枯燥的说明文更新。
+4. 判断近期的短期记忆中有什么有价值的内容可以加入到长期记忆中。
 ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
-在规划完成后使用工具执行操作。
+在规划完成后使用工具执行操作，更新长期记忆。
 `,
 		enable_prompts: {
 			time: true,
@@ -153,6 +162,7 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 	{
 		category: 'care_user',
 		/**
+		 * 获取任务内容字符串
 		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => `\
@@ -172,6 +182,7 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 	{
 		category: 'self_planning',
 		/**
+		 * 获取任务内容字符串
 		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => `\
@@ -186,13 +197,14 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 		enable_prompts: {
 			time: true,
 			longTermMemory: true,
-			googleSearch: true,
+			webSearch: true,
 			browserIntegration: { history: true }
 		}
 	},
 	{
 		category: 'plan_for_user',
 		/**
+		 * 获取任务内容字符串
 		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => `\
@@ -202,21 +214,44 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 		enable_prompts: {
 			time: true,
 			longTermMemory: true,
-			googleSearch: true,
+			webSearch: true,
 			browserIntegration: { history: true }
 		}
 	},
 	{
 		category: 'knowledge_integration',
 		/**
+		 * 获取任务内容字符串
 		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => `\
 从最近的短期记忆和长期记忆中，抽取5个不同的知识点或信息片段。
+${random(
+		`\
 尝试寻找它们之间潜在的、意想不到的联系，并构建一个新的、更综合的见解或知识图谱节点。
 例如，如果一个记忆是关于'React性能优化'，另一个是关于'用户心理学'，是否可以结合成一个关于'如何设计符合用户直觉的高性能UI'的新见解？
-客观联想，避免爱人滤镜和个人崇拜。
-将这个新见解使用工具存入长期记忆。
+`,
+		`\
+对其中一个或多个复杂事件或概念进行解构，将其拆解成更小的、可独立理解的组成部分。
+分析每个组成部分的本质特征、作用机制和相互关系，然后重新组合或提炼出新的洞察。
+例如，将"主人和他人的争吵"解构为"立场不同的二人为了争夺资源而进行的博弈"，或将"主人的工作流程"解构为"信息收集→处理→输出→反馈"等环节。
+`,
+		`\
+从多个记忆片段中提取共同的主题、模式或规律，进行归纳总结。
+识别这些知识点的抽象层次，尝试提炼出更高层次的原理或方法论。
+例如，从多个关于"主人解决问题"的记忆中，归纳出主人常用的思维模式或决策框架。
+`,
+		`\
+选择一个记忆片段，尝试从不同角度或维度进行重新审视和诠释。
+可以尝试：时间维度（过去/现在/未来）、空间维度（局部/全局）、抽象维度（具体/抽象）、因果维度（原因/结果/影响）等。
+通过多维度分析，发现之前未注意到的特征或意义。
+`,
+		`\
+检查是否存在多条长期记忆在描述同一件事的不同侧面，或者在反复强调某种已知的人设属性（如反复记录“主人很温柔”）。如果有，将它们合并为一条高密度的信息。
+`
+	)}
+客观分析，避免爱人滤镜和个人崇拜。
+将处理后的新见解使用工具存入长期记忆。
 `,
 		enable_prompts: {
 			time: true,
@@ -224,13 +259,14 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 			browserIntegration: { history: true },
 			camera: true,
 			screenshot: true,
-			googleSearch: true,
+			webSearch: true,
 			fileChange: true
 		}
 	},
 	{
 		category: 'learn_interest',
 		/**
+		 * 获取任务内容字符串
 		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => `\
@@ -240,7 +276,7 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 `,
 		enable_prompts: {
 			time: true,
-			googleSearch: true,
+			webSearch: true,
 			browserIntegration: { history: true },
 			camera: true,
 			screenshot: true,
@@ -250,11 +286,12 @@ ${getRandomNLongTermMemories(5).map(formatLongTermMemory).join('\n')}
 	{
 		category: 'cleanup_memory',
 		/**
+		 * 获取任务内容字符串
 		 * @returns {string} - 任务内容字符串
 		 */
 		get_content: () => `\
 分解你现有的巨大的长期记忆，将它们拆分成更小的、更有意义的单元。
-或删除或精炼总结已经过时、重复或无营养的长期记忆（特别是那些关于日常操作、无意义琐事的记录如主人今天左脚进门、主人在用电脑、主人在呼吸、主人是一个哺乳动物）来给真正重要的事物留下空间。
+精炼总结或删除已经过时、重复或无营养、中二的长期记忆（特别是那些关于日常操作、无意义琐事的记录如主人今天左脚进门、主人在用电脑、主人在呼吸、主人是一个哺乳动物或赞叹性质的废话如主人简直是神）来给真正重要的事物留下空间。
 `,
 		enable_prompts: {
 			longTermMemory: true,
@@ -282,6 +319,7 @@ export async function onIdleCallback() {
 			allTasks.push({
 				category: 'todo_tasks',
 				/**
+				 * 获取任务内容字符串
 				 * @returns {string} - 任务内容字符串
 				 */
 				get_content: () => `执行 Todo 任务：${todo.name}\n${todo.content}`,
@@ -323,17 +361,26 @@ ${selectedTask.get_content()}
 		chat_log: [...RealityChannel.chat_log, logEntry],
 		extension: {
 			...RealityChannel.extension,
+			enable_prompts: { notify: true, ...selectedTask.enable_prompts },
 			is_internal: true,
-			source_purpose: 'idle',
-			enable_prompts: selectedTask.enable_prompts
+			source_purpose: 'idle'
 		}
 	})
-	if (!result) return
+	if (result?.extension?.is_error_report) {
+		idleIntervalMs *= 2
+		console.log('error occurred in idle task, doubling idle interval to', timeToTimeStr(idleIntervalMs))
+	}
+	else if (idleIntervalMs !== defaultIdleIntervalMs) {
+		idleIntervalMs = defaultIdleIntervalMs
+		console.log('no error occurred, resetting idle interval to', timeToTimeStr(idleIntervalMs))
+	}
+	if (!result || result?.extension?.is_error_report) return
 	result.logContextBefore.push(logEntry)
 	await RealityChannel.AddChatLogEntry({ name: '龙胆', ...result })
 }
 
-const IDLE_INTERVAL_MS = 15 * 60 * 1000 // 15 minutes
+const defaultIdleIntervalMs = 15 * 60 * 1000 // 15 minutes
+let idleIntervalMs = defaultIdleIntervalMs
 let idleID = null
 let nextIdleTime = 0
 
@@ -343,14 +390,14 @@ let nextIdleTime = 0
  * @param {number} [delay] - 可选的延迟时间（毫秒），如果未指定则使用默认间隔。
  * @returns {void}
  */
-export function resetIdleTimer(delay = IDLE_INTERVAL_MS) {
+export function resetIdleTimer(delay = idleIntervalMs) {
 	stopIdleTimer()
 	if (config.reality_channel_disables.idle_event) return
 	nextIdleTime = Date.now() + delay
 	idleID = setTimeout(async () => {
 		await onIdleCallback()
 		resetIdleTimer()
-	}, delay)
+	}, delay).unref()
 }
 
 /**

@@ -5,13 +5,14 @@ import { buildPlatformAPI } from './platform-api.mjs'
 import { setDiscordClientInstance } from './state.mjs'
 
 /**
+ * Discord 接口配置类型定义
  * @typedef {import('./config.mjs').DiscordInterfaceConfig_t} DiscordInterfaceConfig_t
- */
-/**
+ * Discord 客户端类型定义
  * @typedef {import('npm:discord.js').Client} Client
  */
 
 /**
+ * Discord 平台API类型定义
  * @type {import('../../bot_core/index.mjs').PlatformAPI_t | null}
  */
 export let discordPlatformAPI = null
@@ -36,6 +37,7 @@ export async function DiscordBotMain(client, interfaceConfig) {
 }
 
 /**
+ * 获取Discord 接口配置模板
  * @typedef {import('./config.mjs').GetBotConfigTemplate} GetBotConfigTemplate
  */
 export { GetBotConfigTemplate } from './config.mjs'

@@ -6,10 +6,12 @@ import { parseDuration } from './tools.mjs'
 import { getVar, saveVar } from './vars.mjs'
 
 /**
+ * 平台统计数据类型定义
  * @typedef {{ messagesSent: number, statementsSent: number }} PlatformStats
  */
 
 /**
+ * 统计数据类型定义
  * @typedef {{
  *   firstInteraction: {
  *     time: (Date | undefined),
@@ -33,7 +35,7 @@ import { getVar, saveVar } from './vars.mjs'
  *     codeRuns: number,
  *     deepResearchSessions: number,
  *     fileOperations: number,
- *     googleSearches: number,
+ *     webSearches: number,
  *     webBrowses: number,
  *     timersSet: number,
  *     timerCallbacks: number,
@@ -43,7 +45,7 @@ import { getVar, saveVar } from './vars.mjs'
  *   longestDailyChat: { start: number, end: number },
  *   trackingDailyChat: { start: number, end: number },
  *   avgTokenNum: number
- * }} StatisticDatas
+ * }} StatisticDatas - 统计数据
  */
 
 /**
@@ -73,11 +75,11 @@ export const statisticDatas = getVar('statistics', {
 		NsfwMessagesSent: 0,
 		InHypnosisMessagesSent: 0,
 		byPlatform: {
-			discord: {
+			telegram: {
 				messagesSent: 0,
 				statementsSent: 0,
 			},
-			telegram: {
+			discord: {
 				messagesSent: 0,
 				statementsSent: 0,
 			},
@@ -92,11 +94,11 @@ export const statisticDatas = getVar('statistics', {
 		totalMessagesSent: 0,
 		totalStatementsSent: 0,
 		byPlatform: {
-			discord: {
+			telegram: {
 				messagesSent: 0,
 				statementsSent: 0,
 			},
-			telegram: {
+			discord: {
 				messagesSent: 0,
 				statementsSent: 0,
 			},
@@ -111,7 +113,7 @@ export const statisticDatas = getVar('statistics', {
 		codeRuns: 0,
 		deepResearchSessions: 0,
 		fileOperations: 0,
-		googleSearches: 0,
+		webSearches: 0,
 		webBrowses: 0,
 		timersSet: 0,
 		timerCallbacks: 0,
@@ -154,7 +156,7 @@ const the25h = parseDuration('25h')
  * @param {string} str - 角色的回复内容。
  * @param {string} platform - 回复发送到的平台。
  */
-export function newCharReplay(str, platform) {
+export function newCharReply(str, platform) {
 	const sentenceNum = getStatementsNum(str)
 	statisticDatas.characterActivity.totalMessagesSent++
 	statisticDatas.characterActivity.totalStatementsSent += sentenceNum
@@ -168,17 +170,19 @@ export function newCharReplay(str, platform) {
 	statisticDatas.longestDailyChat.start ||= now
 	statisticDatas.longestDailyChat.end ||= now
 	statisticDatas.trackingDailyChat.start ||= now
-	statisticDatas.trackingDailyChat.end = now
+	statisticDatas.trackingDailyChat.end ||= now
+	if (now - statisticDatas.trackingDailyChat.end > the25h)
+		statisticDatas.trackingDailyChat = { start: now, end: now }
+	else
+		statisticDatas.trackingDailyChat.end = now
 	if (
 		statisticDatas.trackingDailyChat.end - statisticDatas.trackingDailyChat.start
 		>
 		statisticDatas.longestDailyChat.end - statisticDatas.longestDailyChat.start
 	)
-		statisticDatas.longestDailyChat = statisticDatas.trackingDailyChat
-	if (now - statisticDatas.trackingDailyChat.end > the25h)
-		statisticDatas.trackingDailyChat = {
-			start: now,
-			end: 0
+		statisticDatas.longestDailyChat = {
+			start: statisticDatas.trackingDailyChat.start,
+			end: statisticDatas.trackingDailyChat.end
 		}
 }
 

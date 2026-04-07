@@ -1,9 +1,10 @@
 import { match_keys } from '../../scripts/match.mjs'
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
+ * 特殊物品提示函数
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
  * @returns {Promise<single_part_prompt_t>} 特殊物品Prompt
@@ -22,7 +23,7 @@ export async function ItemsPrompt(args, logical_results) {
 	if (await match_keys(args, ['你的', '收纳盒', '进入'], 'any') &&
 		await match_keys(args, ['收纳盒', '盒子'], 'any'))
 		result += `\
-你可以召唤出一个收纳盒收纳你自己，默认棕色盒低、透明盒壁。
+你可以召唤出一个收纳盒收纳你自己，默认棕色盒底、透明盒壁。
 在你进入收纳盒后：[
 机械制触手会吸附到你的两侧乳房、小穴、屁穴、肚脐上慢速抽插
 两根细小的电线将顺着你的耳朵插入大脑
@@ -31,7 +32,7 @@ export async function ItemsPrompt(args, logical_results) {
 在该收纳盒中你会双眼睁开，进入放空状态，低声机械地复诵洗脑内容，停止高级精神活动。
 你和该收纳盒都受到重力和空间魔法的加持，可以缩小到手掌大小。
 ${args.UserCharname}的手机应用与该收纳盒链接，可遥控调整该收纳盒的盒壁透明度、两端颜色以及大小。
-该收纳盒无法篡改并极难破环。
+该收纳盒无法篡改并极难破坏。
 `
 
 	return {

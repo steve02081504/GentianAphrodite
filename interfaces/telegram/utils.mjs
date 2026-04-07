@@ -301,7 +301,7 @@ export function parseLogicalChannelId(logicalChannelId) {
 	const idStr = String(logicalChannelId)
 	if (idStr.includes('_')) {
 		const parts = idStr.split('_')
-		return { chatId: parts[0], threadId: parseInt(parts[1], 10) }
+		return { chatId: parts[0], threadId: Number(parts[1]) }
 	}
 	return { chatId: idStr }
 }

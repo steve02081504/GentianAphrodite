@@ -1,10 +1,11 @@
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 import { match_keys } from '../../scripts/match.mjs'
 
 /**
+ * 特殊回复用提示函数
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
  * @returns {Promise<single_part_prompt_t>} 特殊回复用Prompt
@@ -12,7 +13,7 @@ import { match_keys } from '../../scripts/match.mjs'
 export async function SpecialReplayPrompt(args, logical_results) {
 	let result = ''
 
-	if (logical_results.in_muti_char_chat || args.extension?.from_timer)
+	if (logical_results.in_multi_char_chat || args.extension?.from_timer)
 		result += `\
 若你认为当前语境不适合或无需回复，可以单纯输出<-<null>->来跳过回复。
 如：

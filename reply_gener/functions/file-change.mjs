@@ -4,7 +4,7 @@ import { unlockAchievement } from '../../scripts/achievements.mjs'
 import { getFileObjFormPathOrUrl, resolvePath } from '../../scripts/fileobj.mjs'
 import { statisticDatas } from '../../scripts/statistics.mjs'
 import { escapeRegExp, parseRegexFromString } from '../../scripts/tools.mjs'
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**

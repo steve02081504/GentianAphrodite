@@ -4,25 +4,25 @@ import { escapeRegExp } from '../../scripts/tools.mjs'
 /**
  * 将 Discord 回复内容分割成多个消息段，以适应 Discord 的消息长度限制。
  * @param {string} reply - 原始回复文本。
- * @param {number} [split_lenth=2000] - 每个消息段的最大长度。
+ * @param {number} [split_length=2000] - 每个消息段的最大长度。
  * @returns {string[]} - 分割后的消息段数组。
  */
-export function splitDiscordReply(reply, split_lenth = 2000) {
+export function splitDiscordReply(reply, split_length = 2000) {
 	// 1. 预处理：基于 Markdown 分割线和 Emoji 独占行进行分割
 	const semanticChunks = preSplitDiscordReply(reply)
 	const finalChunks = []
 
 	// 2. 对每个语义块执行原来的长度限制逻辑
 	for (const chunk of semanticChunks)
-		finalChunks.push(...processSizeLimitedChunk(chunk, split_lenth))
+		finalChunks.push(...processSizeLimitedChunk(chunk, split_length))
 
 	return finalChunks
 }
 
 /**
  * 预处理消息，处理 Markdown 分割线和 Emoji 行。
- * @param {string} reply
- * @returns {string[]}
+ * @param {string} reply - 原始回复文本。
+ * @returns {string[]} - 分割后的语义块数组。
  */
 function preSplitDiscordReply(reply) {
 	const lines = reply.split('\n')
@@ -45,7 +45,7 @@ function preSplitDiscordReply(reply) {
 
 		// Logic 1: Markdown 分割线 (---, ***, ___)
 		// 匹配以空格开头，由 -, *, _ 组成的至少3个字符的分割线，允许中间有空格
-		if (/^\s*([-*_])( ?\1){2,}\s*$/.test(line)) {
+		if (/^\s*([*_-])( ?\1){2,}\s*$/.test(line)) {
 			if (currentChunkLines.length > 0) {
 				chunks.push(currentChunkLines.join('\n'))
 				currentChunkLines = []
@@ -56,8 +56,8 @@ function preSplitDiscordReply(reply) {
 		// Logic 2: Emoji 或空格独占行
 		// 检查行是否只包含：空格、Unicode Emoji、Discord 自定义 Emoji
 		// 并且必须包含至少一个 Emoji
-		const hasEmoji = /[\p{Extended_Pictographic}]|<a?:[\w]+:\d+>/u.test(line)
-		const isEmojiLine = /^(?:[\s\u200b-\u200d\uFE0F]|[\p{Extended_Pictographic}]|<a?:[\w]+:\d+>)+$/u.test(line)
+		const hasEmoji = /[\p{Extended_Pictographic}]|<a?:\w+:\d+>/u.test(line)
+		const isEmojiLine = /^(?:[\s\u200b-\u200d\uFE0F]|[\p{Extended_Pictographic}]|<a?:\w+:\d+>)+$/u.test(line)
 
 		if (hasEmoji && isEmojiLine) {
 			if (currentChunkLines.length > 0) {
@@ -80,10 +80,10 @@ function preSplitDiscordReply(reply) {
 /**
  * 将内容分割成多个消息段，以适应 Discord 的消息长度限制。
  * @param {string} reply - 原始回复文本。
- * @param {number} split_lenth - 每个消息段的最大长度。
+ * @param {number} split_length - 每个消息段的最大长度。
  * @returns {string[]} - 分割后的消息段数组。
  */
-function processSizeLimitedChunk(reply, split_lenth) {
+function processSizeLimitedChunk(reply, split_length) {
 	let content_slices = reply.split('\n')
 	let new_content_slices = []
 	let last = ''
@@ -110,7 +110,7 @@ function processSizeLimitedChunk(reply, split_lenth) {
 
 		const block_begin = content_slices.shift() + '\n'
 		const block_end = '\n' + content_slices.pop()
-		const max_content_length = split_lenth - block_begin.length - block_end.length
+		const max_content_length = split_length - block_begin.length - block_end.length
 
 		const results = []
 		let current_chunk = ''
@@ -174,7 +174,7 @@ function processSizeLimitedChunk(reply, split_lenth) {
 
 	// --- 第二阶段：处理超大块 ---
 	for (const content_slice of content_slices)
-		if (content_slice.length > split_lenth)
+		if (content_slice.length > split_length)
 			if (content_slice.startsWith('```')) {
 				const splited_blocks = splitCodeBlock(content_slice)
 				new_content_slices.push(...splited_blocks) // 使用 push(...array) 来添加所有元素
@@ -184,7 +184,7 @@ function processSizeLimitedChunk(reply, split_lenth) {
 				const splited_lines = content_slice.split(/(?<=[ !"');?\]}’”。》！）：；？])/)
 				let last_line_chunk = ''
 				for (const splited_line of splited_lines) {
-					if (last_line_chunk.length + splited_line.length > split_lenth) {
+					if (last_line_chunk.length + splited_line.length > split_length) {
 						new_content_slices.push(last_line_chunk)
 						last_line_chunk = ''
 					}
@@ -200,14 +200,14 @@ function processSizeLimitedChunk(reply, split_lenth) {
 	// --- 第三阶段：生硬拆分（作为最后防线）---
 	// 这个阶段现在应该只会处理那些经过智能分割后仍然超长的“普通文本块”。
 	for (const content_slice of content_slices)
-		if (content_slice.length > split_lenth)
+		if (content_slice.length > split_length)
 			// 检查是否是代码块（理论上不应该到这里，但作为保险）
 			if (content_slice.startsWith('```'))
 				// 如果万一有代码块漏到这里，再次调用 splitCodeBlock
 				new_content_slices.push(...splitCodeBlock(content_slice))
 			else
 				// 对普通文本进行硬分割
-				new_content_slices.push(...content_slice.match(new RegExp(`[^]{1,${split_lenth}}`, 'g')))
+				new_content_slices.push(...content_slice.match(new RegExp(`[^]{1,${split_length}}`, 'g')))
 		else
 			new_content_slices.push(content_slice)
 	mapend()
@@ -219,7 +219,7 @@ function processSizeLimitedChunk(reply, split_lenth) {
 			continue
 		}
 
-		if (last.length + content_slice.length + 1 < split_lenth)  // +1 for the newline
+		if (last.length + content_slice.length + 1 < split_length)  // +1 for the newline
 			last += '\n' + content_slice
 		else {
 			new_content_slices.push(last)
@@ -228,6 +228,27 @@ function processSizeLimitedChunk(reply, split_lenth) {
 	}
 	mapend()
 	return content_slices.map(e => e.trim()).filter(e => e)
+}
+
+/**
+ * 从 Discord 消息的 components（如 ContainerComponent、TextDisplayComponent 等）中递归提取文本。
+ * 用于处理 content 为空但内容在 components 中的消息（如共享协议询问等新 UI 消息）。
+ * @param {import('npm:discord.js').Component[]} components - 消息的 components 数组。
+ * @returns {string} - 提取出的文本，用换行拼接。
+ */
+function extractTextFromComponents(components) {
+	if (!Array.isArray(components) || !components.length) return ''
+	const parts = []
+	for (const comp of components) {
+		if (!comp) continue
+		if (comp.data?.content) parts.push(comp.data.content)
+		if (comp.data?.label) parts.push(comp.data.label)
+		if (comp.components?.length)
+			parts.push(extractTextFromComponents(comp.components))
+		if (comp.accessory)
+			parts.push(extractTextFromComponents([comp.accessory]))
+	}
+	return parts.filter(Boolean).join('\n')
 }
 
 /**
@@ -283,8 +304,17 @@ function formatMessageContent(message) {
 			content += `[附件] ${attachment.url}\n`
 		}
 
+	// 若 content 为空但存在 components（如共享协议询问等新 UI 消息），从 components 提取文本
+	if (message.components?.length) {
+		const componentText = extractTextFromComponents(message.components)
+		if (componentText) {
+			if (content) content += '\n\n'
+			content += componentText
+		}
+	}
+
 	// 如果已编辑
-	if (message.edited_timestamp) content += '（已编辑）'
+	if (message.editedTimestamp) content += '（已编辑）'
 
 	return content
 }

@@ -6,11 +6,12 @@ import { async_eval } from 'https://cdn.jsdelivr.net/gh/steve02081504/async-eval
 import { loadJsonFileIfExists, saveJsonFile } from '../../../../../../../src/scripts/json_loader.mjs'
 import { chardir } from '../../charbase.mjs'
 import { match_keys, match_keys_all } from '../../scripts/match.mjs'
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
+ * 长期记忆类型定义
  * @typedef {{
  * 	trigger: string,
  * 	prompt: string,
@@ -23,6 +24,7 @@ import { match_keys, match_keys_all } from '../../scripts/match.mjs'
  */
 
 /**
+ * 长期记忆列表
  * @type {LongTermMemory[]}
  */
 const LongTermMemories = loadJsonFileIfExists(path.join(chardir, 'memory/long-term-memory.json'), [])
@@ -32,6 +34,7 @@ for (const memory of LongTermMemories) {
 }
 
 /**
+ * 运行长期记忆触发器
  * @param {LongTermMemory} memory 记忆
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
@@ -45,6 +48,7 @@ async function runLongTermMemoryTrigger(memory, args, logical_results) {
 }
 
 /**
+ * 测试长期记忆触发器
  * @param {LongTermMemory} memory 记忆
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
@@ -58,6 +62,7 @@ export async function testLongTermMemoryTrigger(memory, args, logical_results) {
 }
 
 /**
+ * 获取记忆名称匹配的长期记忆对象
  * @param {string} name 记忆名称
  * @returns {LongTermMemory} - 匹配的长期记忆对象。
  */
@@ -71,6 +76,7 @@ const context_prompt_build_table = {
 }
 
 /**
+ * 格式化记忆上下文
  * @param {LongTermMemory} memory 记忆
  * @returns {string} 格式化的记忆上下文
  */
@@ -95,6 +101,7 @@ const prompt_build_table = {
 }
 
 /**
+ * 格式化记忆
  * @param {LongTermMemory} memory 记忆
  * @returns {string} 格式化的记忆
  */
@@ -107,6 +114,7 @@ export function formatLongTermMemory(memory) {
 }
 
 /**
+ * 长期记忆提示函数
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
  * @returns {Promise<single_part_prompt_t>} 长期记忆和相关操作指引组成的Prompt
@@ -176,7 +184,13 @@ from：匹配的范围，any：任意角色，user：用户，char：角色，bo
 depth：匹配的回复深度，省略时默认为4
 其会返回匹配的key数量，这意味着你可以通过\`(await match_keys(args, [...], 'any')) >= N\` 来判断内容是否同时触发多个关键词。
 你还可以使用\`(await match_keys_all(args, [...], 'any'))\` 来判断内容是否同时触发所有关键词。
-prompt-content部分的内容应当简洁明了，拒绝重复和废话。
+prompt-content部分的内容应当：
+- 简洁明了：拒绝重复和废话。
+- 去修辞化：移除所有语气词、比喻、夸张、咏叹调、中二词汇或特定语境下的黑话。
+- 客观视角：就像编写维基百科条目或系统日志一样，只记录“谁、在什么时间、做了什么、原因是什么”。
+示例对比：
+反面例子：主人发动了Code Golfing的究极奥义，用极简的艺术粉碎了冗余的虚空！
+正面例子：主人在JavaScript编程比赛中，通过优化算法大幅缩减了代码长度，咱很开心。
 trigger的关键词应容易触发并涵盖大部分情况，鼓励使用或\`||\`进行交集：
 反面例子：await match_keys(args, ['有个妹妹', '龙凤胎妹妹'], 'user')
 正面例子：await match_keys(args, ['妹', '龙凤胎'], 'any') || await match_keys(args, ['亲戚', /[家亲]人/], 'user')
@@ -200,13 +214,15 @@ trigger的关键词应容易触发并涵盖大部分情况，鼓励使用或\`||
 <view-long-term-memory-context>名称</view-long-term-memory-context>
 
 鼓励你对聊天记录中有关主人的事情追加和维护永久记忆，不要记录已经在prompt中的内容。
-鼓励你及时修正错误的永久记忆。
+鼓励你及时修正错误/过时/劣质/不符合角色设定的永久记忆。
+严禁使用脚本操作记忆的存档文件。
 `
 		}] : []
 	}
 }
 
 /**
+ * 添加长期记忆
  * @param {LongTermMemory} memory 记忆
  */
 export function addLongTermMemory(memory) {
@@ -217,6 +233,7 @@ export function addLongTermMemory(memory) {
 }
 
 /**
+ * 更新长期记忆
  * @param {{name: string, trigger?: string, prompt?: string, updatedAt?: Date, updatedContext?: string}} memoryUpdate - 包含要更新的记忆字段的对象。
  */
 export function updateLongTermMemory({ name, trigger, prompt, updatedAt, updatedContext }) {
@@ -234,6 +251,7 @@ export function updateLongTermMemory({ name, trigger, prompt, updatedAt, updated
 }
 
 /**
+ * 删除长期记忆
  * @param {string} name 记忆名称
  */
 export function deleteLongTermMemory(name) {
@@ -242,6 +260,7 @@ export function deleteLongTermMemory(name) {
 }
 
 /**
+ * 列出长期记忆
  * @returns {string[]} 记忆名称列表
  */
 export function listLongTermMemory() {
@@ -249,6 +268,7 @@ export function listLongTermMemory() {
 }
 
 /**
+ * 获取随机的n个记忆
  * @param {number} n 数量
  * @returns {LongTermMemory[]} 随机的n个记忆
  */

@@ -4,7 +4,7 @@ import { chardir } from '../../charbase.mjs'
 import { resolvePath } from '../../scripts/fileobj.mjs'
 import { getScopedChatLog, match_keys } from '../../scripts/match.mjs'
 import { mimetypeFromBufferAndName } from '../../scripts/mimetype.mjs'
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
@@ -23,10 +23,10 @@ async function findExistingPathsInText(text) {
 	}
 	const seekedpaths = new Set()
 	seekedpathlikes.map(path => path.replace(/^`|`$/g, '').trim()).forEach(pathblock => {
-		const spilts = pathblock.split(/(?=[^\w/\\-])/)
-		for (let i = 0; i < spilts.length; i++)
-			for (let j = i + 1; j <= spilts.length; j++) try {
-				const path = spilts.slice(i, j).join('')
+		const splits = pathblock.split(/(?=[^\w/\\-])/)
+		for (let i = 0; i < splits.length; i++)
+			for (let j = i + 1; j <= splits.length; j++) try {
+				const path = splits.slice(i, j).join('')
 				if (pathblock != path && !path.match(/^([A-Za-z]:\\|(\.|\.\.|~)[/\\]|[/\\])[^\n:`]+/u)) continue
 				const resolvedPath = resolvePath(path)
 				if (seekedpaths.has(resolvedPath)) continue
@@ -36,6 +36,37 @@ async function findExistingPathsInText(text) {
 			} catch (e) { /* ignore all errors */ }
 	})
 	return [...paths]
+}
+
+/**
+ * 从文本中查找现有的目录路径。
+ * @param {string} text - 文本内容。
+ * @returns {Promise<string[]>} - 找到的目录路径数组。
+ */
+async function findExistingDirsInText(text) {
+	const pathRegex = /(`|[A-Za-z]:\\|(\.|\.\.|~)[/\\]|[/\\])[^\n`:]+/ud
+	const seekedpathlikes = []
+	const dirs = new Set()
+	let tmp
+	while (tmp = text.match(pathRegex)) {
+		seekedpathlikes.push(tmp[0])
+		text = text.slice(tmp.index + 1)
+	}
+	const seekeddirs = new Set()
+	seekedpathlikes.map(path => path.replace(/^`|`$/g, '').trim()).forEach(pathblock => {
+		const splits = pathblock.split(/(?=[^\w/\\-])/)
+		for (let i = 0; i < splits.length; i++)
+			for (let j = i + 1; j <= splits.length; j++) try {
+				const path = splits.slice(i, j).join('')
+				if (pathblock != path && !path.match(/^([A-Za-z]:\\|(\.|\.\.|~)[/\\]|[/\\])[^\n:`]+/u)) continue
+				const resolvedPath = resolvePath(path)
+				if (seekeddirs.has(resolvedPath)) continue
+				if (!fs.statSync(resolvedPath).isDirectory()) continue
+				seekeddirs.add(resolvedPath)
+				dirs.add(path)
+			} catch (e) { /* ignore all errors */ }
+	})
+	return [...dirs]
 }
 
 /**
@@ -60,6 +91,14 @@ export async function FileChangePrompt(args, logical_results) {
 			}
 		}).map(promise => promise.catch(console.error)))
 	).filter(Boolean)
+
+	const dirs = await findExistingDirsInText(getScopedChatLog(args, 'both').map(x => x.content).join())
+	const validDirs = dirs.filter(dir => {
+		try {
+			const items = fs.readdirSync(resolvePath(dir))
+			return items.length <= 256
+		} catch (e) { return false }
+	})
 	if (args.extension?.enable_prompts?.fileChange || files.length || logical_results.in_assist || await match_keys(args, [
 		'文件', /<\/?(view|replace|override)-file/i, 'error', /Error/, /file:\/\//
 	], 'any') || await match_keys(args, [
@@ -118,6 +157,11 @@ const a = 1;
 const b = 2;
 </override-file>
 
+替换、覆盖、搜索的内容无需xml转义，如：
+<override-file path="D:/amazing discovery.txt">
+wow! 1 < 2 & 4 > 3!
+</override-file>
+
 在修改文件前，务必确认文件内容，避免误操作。
 使用replace-file时，务必保证替换内容和目标的准确性。
 若修正文件内容，尽可能使用替换，替换比覆写更加灵活、简洁。
@@ -145,9 +189,21 @@ const b = 2;
 				role: 'tool',
 				content: `\
 以下对话中提及过的文件已自动追加到附件中供你参考：
-${files.map(x => `- ${x.name}`).join('\n')}`,
+${files.map(x => `- ${x.name}`).join('\n')}
+`,
 				files,
-			} : undefined
+			} : undefined,
+			...validDirs.map(dir => {
+				const items = fs.readdirSync(resolvePath(dir))
+				return {
+					name: 'folder-list',
+					role: 'tool',
+					content: `\
+以下是自动列出的对话中提及过的文件夹 ${dir} 的子项目列表：
+${items.map(item => `- ${item}`).join('\n')}
+`,
+				}
+			})
 		].filter(Boolean)
 	}
 }

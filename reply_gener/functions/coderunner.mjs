@@ -2,15 +2,17 @@ import { Buffer } from 'node:buffer'
 import util from 'node:util'
 
 import { async_eval } from 'https://cdn.jsdelivr.net/gh/steve02081504/async-eval/deno.mjs'
+import { available, shell_exec_map } from 'npm:@steve02081504/exec'
 
-import { defineInlineToolUses } from '../../../../../../../src/public/shells/chat/src/stream.mjs'
+import { defineInlineToolUses } from '../../../../../../../src/public/parts/shells/chat/src/stream.mjs'
 import { unlockAchievement } from '../../scripts/achievements.mjs'
-import { available, shell_exec_map } from '../../scripts/exec.mjs'
 import { toFileObj } from '../../scripts/fileobj.mjs'
-import { newCharReplay, statisticDatas } from '../../scripts/statistics.mjs'
-import { captureScreen } from '../../scripts/tools.mjs'
+import { newCharReply, statisticDatas } from '../../scripts/statistics.mjs'
+import { captureScreen, sleep } from '../../scripts/tools.mjs'
 import { GetReply } from '../index.mjs'
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
+
+import { fountApiContext } from './fount-api.mjs'
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
@@ -46,7 +48,7 @@ ${code}
 		if (!reply) return
 		reply.logContextBefore.push(feedback)
 		await logger({ name: '龙胆', ...reply })
-		newCharReplay(reply.content, args.extension?.platform || 'chat')
+		newCharReply(reply.content, args.extension?.platform || 'chat')
 	}
 	catch (error) {
 		console.error(`Error processing callback for "${reason}":`, error)
@@ -84,6 +86,7 @@ export async function coderunner(result, args) {
 		js_eval_context.clear_workspace = clear_workspace
 		if (args.supported_functions.add_message)
 			/**
+			 * 处理回调函数
 			 * @param {string} reason - 回调原因。
 			 * @param {Promise<any>} promise - 相关的 Promise 对象。
 			 * @returns {void}
@@ -92,7 +95,7 @@ export async function coderunner(result, args) {
 				if (!js_eval_context.eval_result && !(promise instanceof Promise))
 					throw new Error('callback函数的第二个参数必须是一个Promise对象')
 				/**
-				 *
+				 * 处理回调函数的回调。
 				 * @param {any} _ - 占位符参数。
 				 * @returns {void}
 				 */
@@ -103,7 +106,7 @@ export async function coderunner(result, args) {
 		const view_files = []
 		let view_files_flag = false
 		/**
-		 *
+		 * 处理查看文件的命令。
 		 * @param {...any} pathOrFileObjs - 文件路径或文件对象。
 		 * @returns {Promise<void>}
 		 */
@@ -146,9 +149,10 @@ export async function coderunner(result, args) {
 				if (errors.length) throw errors
 				return '文件已发送'
 			}
-		return Object.assign(js_eval_context, ...(await Promise.all(
-			Object.values(args.plugins).map(plugin => plugin.interfaces?.chat?.GetJSCodeContext?.(args, args.prompt_struct))
-		)).filter(Boolean))
+		return Object.assign(js_eval_context, ...(await Promise.all([
+			fountApiContext(),
+			...Object.values(args.plugins).map(plugin => plugin.interfaces?.code_execution?.GetJSCodeContext?.(args))
+		])).filter(Boolean))
 	}
 	/**
 	 * 为 AI 运行 JS 代码。
@@ -158,77 +162,89 @@ export async function coderunner(result, args) {
 	async function run_jscode_for_AI(code) {
 		return async_eval(code, await get_js_eval_context(code))
 	}
-	// 解析wait-screen
-	const wait_screen = Number(result.content.match(/<wait-screen>(?<timeout>\d*?)<\/wait-screen>/)?.groups?.timeout?.trim?.() || 0)
 	/**
-	 * 获取屏幕截图。
-	 * @returns {Promise<{name: string, buffer: Buffer, mime_type: string} | undefined>} - 返回一个包含屏幕截图信息的对象，如果 `wait_screen` 为 0 则返回 undefined。
+	 * 等待指定秒数后截屏。
+	 * @param {number} delaySeconds - 截图前等待秒数；0 表示立即截图。
+	 * @returns {Promise<{name: string, buffer: Buffer, mime_type: string}>} - 截图对象。
 	 */
-	async function get_screen() {
-		if (!wait_screen) return
-		await new Promise(resolve => setTimeout(resolve, wait_screen * 1000))
+	async function waitAndCapture(delaySeconds) {
+		await sleep(delaySeconds * 1000)
 		try {
 			return { name: 'screenshot.png', buffer: await captureScreen(), mime_type: 'image/png' }
-		}
-		catch (e) {
+		} catch (e) {
 			console.error(e)
 			return { name: 'error.log', buffer: Buffer.from(`Error: ${e.stack}`), mime_type: 'text/plain' }
 		}
 	}
 
+	// 将 run-* 与 wait-screen 作为平级步骤，按在 content 中的出现顺序排列
+	const steps = []
+	for (const m of result.content.matchAll(/<run-js>(?<code>[^]*?)<\/run-js>/g))
+		steps.push({ index: m.index, type: 'run', runType: 'js', code: m.groups.code, fullText: m[0] })
+	for (const shell_name in shell_exec_map) {
+		if (!available[shell_name]) continue
+		const re = new RegExp(`<run-${shell_name}>(?<code>[^]*?)<\\/run-${shell_name}>`, 'g')
+		for (const m of result.content.matchAll(re))
+			steps.push({ index: m.index, type: 'run', runType: shell_name, code: m.groups.code, fullText: m[0] })
+	}
+	for (const m of result.content.matchAll(/<wait-screen>(?<timeout>\d*?)<\/wait-screen>/g))
+		steps.push({ index: m.index, type: 'wait-screen', timeout: Number(m.groups?.timeout?.trim?.() || 0) })
+	steps.sort((a, b) => a.index - b.index)
+
 	let processed = false
-	const jsrunner_matches = [...result.content.matchAll(/<run-js>(?<code>[^]*?)<\/run-js>/g)]
-	for (const match of jsrunner_matches) {
-		const jsrunner = match.groups.code
-		unlockAchievement('use_coderunner')
-		statisticDatas.toolUsage.codeRuns++
+	if (steps.some(s => s.type === 'run'))
 		AddLongTimeLog({
 			name: '龙胆',
 			role: 'char',
-			content: '<run-js>' + jsrunner + '</run-js>' + (wait_screen ? `\n<wait-screen>${wait_screen}</wait-screen>` : ''),
+			content: steps.map(s => s.type === 'run' ? s.fullText : `<wait-screen>${s.timeout}</wait-screen>`).join('\n'),
 			files: []
 		})
-		console.info('AI运行的JS代码：', jsrunner)
-		const coderesult = await run_jscode_for_AI(jsrunner)
-		console.info('coderesult', coderesult)
-		AddLongTimeLog({
+
+	// 严格按步骤顺序执行：run 执行后推入工具消息；若下一步是 wait-screen 则等待截屏并推入**上一个**工具消息的 files
+	for (let i = 0; i < steps.length; i++) {
+		const step = steps[i]
+		const toolEntry = {
 			name: 'coderunner',
 			role: 'tool',
-			content: '执行结果：\n' + util.inspect(coderesult, { depth: 4 }),
-			files: [await get_screen()].filter(Boolean)
-		})
-		result.extension.execed_codes[jsrunner] = coderesult
-		processed = true
-	}
-
-	for (const shell_name in shell_exec_map) {
-		if (!available[shell_name]) continue
-		const runner_regex = new RegExp(`<run-${shell_name}>(?<code>[^]*?)<\\/run-${shell_name}>`, 'g')
-		const runner_matches = [...result.content.matchAll(runner_regex)]
-		for (const match of runner_matches) {
-			const runner = match.groups.code
+			content: '',
+			files: []
+		}
+		if (step.type === 'wait-screen') {
+			const screenshot = await waitAndCapture(step.timeout)
+			toolEntry.files.push(screenshot)
+			continue
+		}
+		else {
 			unlockAchievement('use_coderunner')
 			statisticDatas.toolUsage.codeRuns++
-			AddLongTimeLog({
-				name: '龙胆',
-				role: 'char',
-				content: `<run-${shell_name}>` + runner + `</run-${shell_name}>` + (wait_screen ? `\n<wait-screen>${wait_screen}</wait-screen>` : ''),
-				files: []
-			})
-			console.info(`AI运行的${shell_name}代码：`, runner)
-			let shell_result
-			try { shell_result = await shell_exec_map[shell_name](runner, { no_ansi_terminal_sequences: true }) } catch (err) { shell_result = err }
-			result.extension.execed_codes[runner] = shell_result
-			if (shell_result.stdall) { shell_result = { ...shell_result }; delete shell_result.stdout; delete shell_result.stderr }
-			console.info(`${shell_name} result`, shell_result)
-			AddLongTimeLog({
-				name: 'coderunner',
-				role: 'tool',
-				content: '执行结果：\n' + util.inspect(shell_result),
-				files: [await get_screen()].filter(Boolean)
-			})
-			processed = true
 		}
+		if (step.runType === 'js') {
+			console.info('AI运行的JS代码：', step.code)
+			const coderesult = await run_jscode_for_AI(step.code)
+			console.info('coderesult', coderesult)
+			toolEntry.content = '执行结果：\n' + util.inspect(coderesult, { depth: 4 })
+			result.extension.execed_codes[step.code] = coderesult
+		}
+		else {
+			const shell_name = step.runType
+			console.info(`AI运行的${shell_name}代码：`, step.code)
+			let shell_result
+			try { shell_result = await shell_exec_map[shell_name](step.code, { no_ansi_terminal_sequences: true }) } catch (err) { shell_result = err }
+			result.extension.execed_codes[step.code] = shell_result
+			if (shell_result.stdall)
+				for (const key of ['stdout', 'stderr'])
+					delete shell_result[key]
+			console.info(`${shell_name} result`, shell_result)
+			toolEntry.content = '执行结果：\n' + util.inspect(shell_result)
+		}
+		AddLongTimeLog(toolEntry)
+		let next
+		while ((next = steps[i + 1])?.type === 'wait-screen') {
+			const screenshot = await waitAndCapture(next.timeout)
+			toolEntry.files.push(screenshot)
+			i++ // 已消费该 wait-screen
+		}
+		processed = true
 	}
 
 	// inline js code

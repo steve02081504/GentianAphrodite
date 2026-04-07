@@ -1,11 +1,11 @@
-import fs from 'node:fs/promises'
+import fs from 'node:fs'
 
 import { in_docker, in_termux } from '../../../../../../../src/scripts/env.mjs'
 import { config } from '../../config/index.mjs'
 import { match_keys } from '../../scripts/match.mjs'
 import { decodeQrCodeFromBuffer } from '../../scripts/qrcode.mjs'
 
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
@@ -33,10 +33,11 @@ async function captureWebcam() {
 			if (data) return resolve(data)
 			reject(new Error('摄像头捕获成功，但未返回任何数据。'))
 		})
-	}).finally(() => fs.unlink('temp_webcam_capture.png').catch(() => { }))
+	}).finally(() => fs.promises.unlink('temp_webcam_capture.png').catch(() => { }))
 }
 
 /**
+ * 摄像头提示函数
  * @param {chatReplyRequest_t} args 用户输入参数
  * @param {logical_results_t} logical_results 逻辑结果
  * @returns {Promise<prompt_struct_t>} 返回的提示结构
@@ -65,9 +66,9 @@ export async function CameraPrompt(args, logical_results) {
 这是你主人的摄像头照片，供你参考。
 `,
 				qrcodes.length ? `\
-其中的二维码解码结果是:${qrcodes.join('\n')}
+其中的二维码解码结果是：${qrcodes.join('\n')}
 `: '',
-				logical_results.in_muti_char_chat ? `\
+				logical_results.in_multi_char_chat ? `\
 <<记得保护你主人的隐私，未经允许不要向其他人透漏内容>>
 `: ''].filter(Boolean).join(''),
 			files: [{

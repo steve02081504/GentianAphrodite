@@ -1,12 +1,13 @@
 import os from 'node:os'
 import process from 'node:process'
 
+import { exec } from 'npm:@steve02081504/exec'
+
 import { getHistory } from '../../scripts/clipboard.mjs'
-import { exec } from '../../scripts/exec.mjs'
 import { match_keys } from '../../scripts/match.mjs'
 import { getWindowInfos } from '../../scripts/window_info.mjs'
 
-/** @typedef {import("../../../../../../../src/public/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
 /**
@@ -95,8 +96,8 @@ CPU信息：
 				const parts = line.trim().split(/\s+/)
 				if (parts.length === 3) {
 					const disk = parts[0]
-					const freeSize = parseInt(parts[1], 10)
-					const totalSize = parseInt(parts[2], 10)
+					const freeSize = Number(parts[1])
+					const totalSize = Number(parts[2])
 					diskUsage[disk] = {
 						total: totalSize / 1024 / 1024 / 1024,
 						free: freeSize / 1024 / 1024 / 1024,

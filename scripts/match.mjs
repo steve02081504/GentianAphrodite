@@ -1,15 +1,15 @@
-/** @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatReplyRequest_t} chatReplyRequest_t */
-/** @typedef {import('../../../../../../src/public/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
-import { translate } from 'npm:@vitalets/google-translate-api'
+/** @typedef {import('../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import('../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
 import { francAll } from 'npm:franc'
 import * as OpenCC from 'npm:opencc-js'
 
 import { charname } from '../charbase.mjs'
+import { translateSource } from '../TranslateSource/index.mjs'
 
 import { remove_kaomoji } from './dict.mjs'
 import { normalizeFancyText } from './fancytext.mjs'
 import { is_PureChinese } from './langdetect.mjs'
-import { escapeRegExp } from './tools.mjs'
+import { escapeRegExp, sleep } from './tools.mjs'
 
 const chT2S = OpenCC.Converter({ from: 'twp', to: 'cn' })
 /**
@@ -47,21 +47,23 @@ export async function SimplifyContent(content) {
 	if (!is_PureChinese(simplified_langcheck_content)) {
 		console.info('%ccontent "' + content + '" is not pure chinese, translating it for prompt building logic', 'color: red')
 		console.log('franc result:', francAll(content, { minLength: 0 }))
-		while (true)
-			try {
-				content = (await translate(content, { from: 'auto', to: 'zh-CN' })).text
+		if (translateSource)
+			while (true) try {
+				const result = await translateSource.Translate(content, { from: 'auto', to: 'zh-CN' })
+				content = result.text
 				break
 			}
 			catch (e) {
 				if (e.name == 'TooManyRequestsError') {
 					console.info('Translate API rate limit exceeded, waiting 5 second before retrying')
-					await new Promise(resolve => setTimeout(resolve, 5000))
+					await sleep(5000)
 				}
 				else {
 					console.error('Failed to translate content "' + content + '": ', e)
 					break
 				}
 			}
+		else console.error('Translate source is not available, skipping translation')
 	}
 	return SimpleSimplify(content)
 }
@@ -104,7 +106,7 @@ export function base_match_keys(content, keys,
 		return Math.max(...contents.map(content => reg_keys.filter(key => content.match(key)).length))
 	}
 ) {
-	// convert all keys to regexp, if it's have chinese like character, no match hole word
+	// convert all keys to regexp; if it contains Chinese-like characters, do not match whole word
 	keys.forEach(key => {
 		if (key instanceof RegExp) key.lastIndex = 0
 	})

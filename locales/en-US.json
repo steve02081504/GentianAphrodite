@@ -82,14 +82,14 @@
 				"description": "Had Gentian execute code for the first time, unlocking her inner programmer.",
 				"locked_description": "Have Gentian execute a piece of code and witness her digital genius."
 			},
-			"use_googlesearch": {
-				"name": "Let Me Google That For You",
-				"description": "Had Gentian perform a Google search, witnessing the AI's information-gathering prowess.",
-				"locked_description": "Have Gentian use Google search and turn her into your personal encyclopedia."
+			"use_websearch": {
+				"name": "Let Me Search That For You",
+				"description": "Had Gentian perform a web search, witnessing the AI's information-gathering prowess.",
+				"locked_description": "Have Gentian use web search and turn her into your personal encyclopedia."
 			},
 			"use_webbrowse": {
 				"name": "Cyber Surfer",
-				"description": "Had Gentian browse a webpage, guiding her through the mysteries of the internet.",
+				"description": "Had Gentian browse a webpage, guiding her through the mysteries of the web.",
 				"locked_description": "Have Gentian browse a webpage and let her be your 'web-guide'."
 			},
 			"use_deep_research": {
@@ -133,7 +133,7 @@
 			},
 			"say_it_back": {
 				"name": "Cross My Heart and Hope to Die...",
-				"description": "You said 'I love you' to Gentian, letting her feel the sincerity of your heart."
+				"description": "You said 'I love you' to Gentian, showing her the sincerity of your heart."
 			}
 		}
 	}

@@ -38,6 +38,7 @@ function initBaseNotifyChannel() {
 		time: new Date(),
 		chat_log: [],
 		/**
+		 * 添加聊天日志条目
 		 * @param {any} entry - 聊天日志条目。
 		 * @returns {void}
 		 */
@@ -45,6 +46,7 @@ function initBaseNotifyChannel() {
 		other_chars: {},
 		plugins: {},
 		/**
+		 * 更新通知通道对象
 		 * @returns {any} - 更新后的通知通道对象。
 		 */
 		Update: () => {
@@ -62,7 +64,7 @@ function initBaseNotifyChannel() {
  * @param {Function} func - 要执行的函数，它将接收一个更新后的渠道对象作为参数。
  * @returns {Promise<any>} - 函数的返回值。
  */
-export async function UseNofityAbleChannel(func) {
+export async function UseNotifyAbleChannel(func) {
 	initBaseNotifyChannel()
 	for (const channel of [...notifyAbleChannels, baseNotifyChannel]) try {
 		return await func(await channel.Update())
