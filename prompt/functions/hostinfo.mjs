@@ -40,18 +40,18 @@ CPU架构：${arch()}
 			osinfo.cpu.usage(),
 			osinfo.cpu.info(),
 		])
-		const cpuUsagePct = usageRes.success ? usageRes.data.toFixed(2) : 'N/A'
+		const cpuUsagePct = usageRes.success ? usageRes.data.toFixed(2) + '%' : 'N/A'
 		let model
 		let cores
 		let freqMhz
 		if (infoRes.success) {
 			const ci = infoRes.data
-			model = ci.model.replaceAll('\x00', '')
+			model = ci.model?.replaceAll?.('\x00', '')
 			cores = ci.threads ?? ci.cores
 			freqMhz = ci.maxFrequency || ci.baseFrequency
 		}
 		else {
-			model = osinfo.cpu.model().replaceAll('\x00', '')
+			model = osinfo.cpu.model()?.replaceAll?.('\x00', '')
 			cores = osinfo.cpu.count()
 		}
 		if (!freqMhz) {
@@ -63,7 +63,7 @@ CPU信息：
 型号：${model}
 核心数：${cores}
 频率：${freqMhz >= 1000 ? (freqMhz / 1000).toFixed(2) + 'GHz' : freqMhz.toFixed(2) + 'MHz'}
-使用率：${cpuUsagePct}%
+使用率：${cpuUsagePct}
 `
 	}
 	if (args.extension?.enable_prompts?.hostInfo || await match_keys(args, [/内存(占用|用了)/i, /内存使用(率|情况)/i, /(还剩|多少|已用|空闲)内存/i, /内存(还剩|多少|已用|空闲)/i], 'user')) {
