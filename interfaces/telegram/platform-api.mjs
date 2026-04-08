@@ -25,8 +25,8 @@ const CAPTION_LENGTH_LIMIT = 1024 // Telegram 的说明文字长度限制
 
 /**
  * 从 AI Markdown 正文中提取 Telegram 贴纸 file_id，并移除对应标记（格式见 message-converter / sticker.mjs）。
- * @param {string} markdown
- * @returns {{ cleanMarkdown: string, stickerIds: string[] }}
+ * @param {string} markdown - AI 输出的 Markdown 正文。
+ * @returns {{ cleanMarkdown: string, stickerIds: string[] }} - 去除贴纸标记后的正文与解析出的贴纸 file_id 列表。
  */
 function extractStickerIdsFromMarkdown(markdown) {
 	const stickerIds = []

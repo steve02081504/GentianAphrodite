@@ -234,7 +234,7 @@ export async function baseGetReply(args) {
 			: 'from-other')
 		const requestresult = await OrderedAISourceCalling(AItype, async AI => {
 			const result = await AI.StructCall(prompt_struct, args.generation_options)
-			if (!String(result.content).trim()) throw new Error('empty reply')
+			if (!result.content.trim() && !result.files?.length) throw new Error('empty reply')
 			return result
 		})
 		result.content = requestresult.content
@@ -268,7 +268,7 @@ export async function baseGetReply(args) {
 		}
 		result.content = result.content.replace(/\s*<-<(null|error)>->\s*$/, '')
 		if (args.supported_functions.add_message) addNotifyAbleChannel(args)
-		if (!result.content) return null
+		if (!result.content.trim() && !result.files?.length) return null
 		/** @type {(import('../../../../../../src/decl/PluginAPI.ts').ReplyHandler_t)[]} */
 		const replyHandlers = [
 			getToolInfo, CharGenerator, PersonaGenerator,
