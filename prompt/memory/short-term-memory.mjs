@@ -70,11 +70,7 @@ const MAX_RANDOM_FLASHBACK = 2
 // ================= 初始化逻辑 =================
 
 /** @type {MemoryEntry[]} 全局内存中的记忆列表 */
-let chat_memories = loadJsonFileIfExists(path.join(chardir, 'memory/short-term-memory.json'), [])
-
-// 确保时间戳是 Date 对象
-for (const mem of chat_memories)
-	mem.time_stamp = new Date(mem.time_stamp)
+let chat_memories
 
 let lastCleanupTime = new Date().getTime()
 
@@ -82,8 +78,16 @@ let lastCleanupTime = new Date().getTime()
 /** @type {string | null} */
 let lastSavedMemoryChatName = null
 
-// 启动时执行一次清理
-cleanupMemories(new Date())
+/**
+ * 从磁盘加载短期记忆到运行时内存。
+ */
+export function loadShortTermMemoryFromDisk() {
+	chat_memories = loadJsonFileIfExists(path.join(chardir, 'memory/short-term-memory.json'), [])
+	for (const mem of chat_memories)
+		mem.time_stamp = new Date(mem.time_stamp)
+	lastCleanupTime = new Date().getTime()
+	cleanupMemories(new Date())
+}
 
 // ================= 导出工具函数 =================
 

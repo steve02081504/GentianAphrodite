@@ -9,18 +9,17 @@ import { initializeVoiceSentinel, stopVoiceSentinel } from './event_engine/voice
 import { GetGreeting, GetGroupGreeting } from './greetings/index.mjs'
 import { UpdateInfo } from './info/index.mjs'
 import { GetPrompt, GetPromptForOther } from './prompt/index.mjs'
-import { saveMemories } from './prompt/memory/index.mjs'
+import { loadMemoriesFromDisk, saveMemories } from './prompt/memory/index.mjs'
 import { BrowserJsCallback } from './reply_gener/functions/browserIntegration.mjs'
 import { timerCallBack } from './reply_gener/functions/timer.mjs'
 import { GetReply } from './reply_gener/index.mjs'
 import { unlockAchievement } from './scripts/achievements.mjs'
-import { checkAndBackupMemoryFile } from './scripts/backup.mjs'
+import { checkAndBackupDir, checkAndBackupMemoryFile } from './scripts/backup.mjs'
 import { startClipboardListening, stopClipboardListening } from './scripts/clipboard.mjs'
+import { loadStatisticDatasFromDisk } from './scripts/statistics.mjs'
 import { saveVars } from './scripts/vars.mjs'
 
 Object.assign(GentianAphrodite, {
-	info: await UpdateInfo(),
-
 	/**
 	 * 加载角色时执行的初始化操作。
 	 * @param {object} stat - 包含初始化状态的对象。
@@ -29,6 +28,10 @@ Object.assign(GentianAphrodite, {
 		initCharBase(stat)
 		await checkAndBackupMemoryFile('memory/long-term-memory.json')
 		await checkAndBackupMemoryFile('memory/short-term-memory.json')
+		loadMemoriesFromDisk()
+		await checkAndBackupDir('vars')
+		loadStatisticDatasFromDisk()
+		GentianAphrodite.info = await UpdateInfo()
 		addPartLocaleData(username, 'chars/GentianAphrodite', ['zh-CN', 'en-US'], locale => loadJsonFile(chardir + `/locales/${locale}.json`))
 		initializeOnIdleHandler()
 		initializeVoiceSentinel()

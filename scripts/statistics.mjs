@@ -61,77 +61,84 @@ function tokenize(prompt) {
  * 统计数据。
  * @type {StatisticDatas}
  */
-export const statisticDatas = getVar('statistics', {
-	firstInteraction: {
-		time: undefined,
-		userMessageContent: undefined,
-		characterReplyContent: undefined,
-		chat_name: undefined,
-	},
+export let statisticDatas
 
-	userActivity: {
-		totalMessagesSent: 0,
-		totalStatementsSent: 0,
-		NsfwMessagesSent: 0,
-		InHypnosisMessagesSent: 0,
-		byPlatform: {
-			telegram: {
-				messagesSent: 0,
-				statementsSent: 0,
-			},
-			discord: {
-				messagesSent: 0,
-				statementsSent: 0,
-			},
-			shell: {
-				messagesSent: 0,
-				statementsSent: 0,
-			},
-		}
-	},
+/**
+ * 从磁盘加载统计数据（应在 `vars/` 备份恢复之后调用）。
+ */
+export function loadStatisticDatasFromDisk() {
+	statisticDatas = getVar('statistics', {
+		firstInteraction: {
+			time: undefined,
+			userMessageContent: undefined,
+			characterReplyContent: undefined,
+			chat_name: undefined,
+		},
 
-	characterActivity: {
-		totalMessagesSent: 0,
-		totalStatementsSent: 0,
-		byPlatform: {
-			telegram: {
-				messagesSent: 0,
-				statementsSent: 0,
-			},
-			discord: {
-				messagesSent: 0,
-				statementsSent: 0,
-			},
-			shell: {
-				messagesSent: 0,
-				statementsSent: 0,
-			},
-		}
-	},
+		userActivity: {
+			totalMessagesSent: 0,
+			totalStatementsSent: 0,
+			NsfwMessagesSent: 0,
+			InHypnosisMessagesSent: 0,
+			byPlatform: {
+				telegram: {
+					messagesSent: 0,
+					statementsSent: 0,
+				},
+				discord: {
+					messagesSent: 0,
+					statementsSent: 0,
+				},
+				shell: {
+					messagesSent: 0,
+					statementsSent: 0,
+				},
+			}
+		},
 
-	toolUsage: {
-		codeRuns: 0,
-		deepResearchSessions: 0,
-		fileOperations: 0,
-		webSearches: 0,
-		webBrowses: 0,
-		timersSet: 0,
-		timerCallbacks: 0,
-		browserOperations: 0,
-		browserCallbacks: 0,
-	},
+		characterActivity: {
+			totalMessagesSent: 0,
+			totalStatementsSent: 0,
+			byPlatform: {
+				telegram: {
+					messagesSent: 0,
+					statementsSent: 0,
+				},
+				discord: {
+					messagesSent: 0,
+					statementsSent: 0,
+				},
+				shell: {
+					messagesSent: 0,
+					statementsSent: 0,
+				},
+			}
+		},
 
-	longestDailyChat: {
-		start: 0,
-		end: 0,
-	},
-	trackingDailyChat: {
-		start: 0,
-		end: 0,
-	},
+		toolUsage: {
+			codeRuns: 0,
+			deepResearchSessions: 0,
+			fileOperations: 0,
+			webSearches: 0,
+			webBrowses: 0,
+			timersSet: 0,
+			timerCallbacks: 0,
+			browserOperations: 0,
+			browserCallbacks: 0,
+		},
 
-	avgTokenNum: 7400,
-})
+		longestDailyChat: {
+			start: 0,
+			end: 0,
+		},
+		trackingDailyChat: {
+			start: 0,
+			end: 0,
+		},
+
+		avgTokenNum: 7400,
+	})
+}
 
 /**
  * 记录一条新的用户消息以进行统计。

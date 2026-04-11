@@ -121,3 +121,30 @@ If you are sure the memory file is not broken, you can manually delete the backu
 		}
 	})
 }
+
+/**
+ * 备份并恢复目录（递归）。
+ * @param {string} relDirPath 相对于角色目录的目录路径
+ * @returns {Promise<void>}
+ */
+export async function checkAndBackupDir(relDirPath) {
+	const backupDir = path.join(getGentianBackupDir(), relDirPath)
+	const currentDir = path.join(chardir, relDirPath)
+	const currentExists = fs.existsSync(currentDir)
+	const backupExists = fs.existsSync(backupDir)
+
+	if (!backupExists) {
+		if (!currentExists) return
+		fs.cpSync(currentDir, backupDir, { recursive: true, force: true })
+		return
+	}
+
+	if (!currentExists) {
+		fs.cpSync(backupDir, currentDir, { recursive: true, force: true })
+		return
+	}
+
+	// 先补齐当前目录缺失文件，再把当前目录同步回备份目录
+	fs.cpSync(backupDir, currentDir, { recursive: true, force: false, errorOnExist: false })
+	fs.cpSync(currentDir, backupDir, { recursive: true, force: true })
+}

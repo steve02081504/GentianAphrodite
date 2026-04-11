@@ -27,10 +27,18 @@ import { match_keys, match_keys_all } from '../../scripts/match.mjs'
  * 长期记忆列表
  * @type {LongTermMemory[]}
  */
-const LongTermMemories = loadJsonFileIfExists(path.join(chardir, 'memory/long-term-memory.json'), [])
-for (const memory of LongTermMemories) {
-	if (memory.createdAt) memory.createdAt = new Date(memory.createdAt)
-	if (memory.updatedAt) memory.updatedAt = new Date(memory.updatedAt)
+let LongTermMemories
+
+/**
+ * 从磁盘加载长期记忆到运行时内存。
+ */
+export function loadLongTermMemoryFromDisk() {
+	const loaded = loadJsonFileIfExists(path.join(chardir, 'memory/long-term-memory.json'), [])
+	for (const memory of loaded) {
+		if (memory.createdAt) memory.createdAt = new Date(memory.createdAt)
+		if (memory.updatedAt) memory.updatedAt = new Date(memory.updatedAt)
+	}
+	LongTermMemories = loaded
 }
 
 /**
