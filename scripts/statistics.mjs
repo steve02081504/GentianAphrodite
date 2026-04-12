@@ -61,7 +61,10 @@ function tokenize(prompt) {
  * 统计数据。
  * @type {StatisticDatas}
  */
-export let statisticDatas
+export let statisticDatas = {
+	avgTokenNum: 7400,
+	firstInteraction: {}
+}
 
 /**
  * 从磁盘加载统计数据（应在 `vars/` 备份恢复之后调用）。

@@ -27,7 +27,7 @@ import { match_keys, match_keys_all } from '../../scripts/match.mjs'
  * 长期记忆列表
  * @type {LongTermMemory[]}
  */
-let LongTermMemories
+let LongTermMemories = []
 
 /**
  * 从磁盘加载长期记忆到运行时内存。

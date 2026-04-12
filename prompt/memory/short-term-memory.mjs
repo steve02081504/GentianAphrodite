@@ -70,7 +70,7 @@ const MAX_RANDOM_FLASHBACK = 2
 // ================= 初始化逻辑 =================
 
 /** @type {MemoryEntry[]} 全局内存中的记忆列表 */
-let chat_memories
+let chat_memories = []
 
 let lastCleanupTime = new Date().getTime()
 

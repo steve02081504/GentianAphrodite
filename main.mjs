@@ -20,6 +20,8 @@ import { loadStatisticDatasFromDisk } from './scripts/statistics.mjs'
 import { saveVars } from './scripts/vars.mjs'
 
 Object.assign(GentianAphrodite, {
+	info: await UpdateInfo(),
+
 	/**
 	 * 加载角色时执行的初始化操作。
 	 * @param {object} stat - 包含初始化状态的对象。
