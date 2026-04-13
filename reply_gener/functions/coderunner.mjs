@@ -58,6 +58,20 @@ ${code}
 }
 
 /**
+ * 带语法高亮地将代码输出到控制台，失败时静默降级为普通输出。
+ * @param {string} label - 日志前缀。
+ * @param {string} code - 要输出的代码。
+ * @param {string} [lang] - 语言标识，不传时自动检测。
+ */
+async function logCode(label, code, lang) {
+	try {
+		const { highlight } = await import('npm:cli-highlight')
+		console.info(label + '\n' + highlight(code, { language: lang, ignoreIllegals: true }))
+	}
+	catch { console.info(label, code) }
+}
+
+/**
  * 处理来自 AI 的代码执行请求。
  * @param {prompt_struct_t} result - 包含AI回复内容和扩展信息的对象。
  * @param {object} args - 包含处理回复所需参数的对象。
@@ -217,8 +231,8 @@ export async function coderunner(result, args) {
 			unlockAchievement('use_coderunner')
 			statisticDatas.toolUsage.codeRuns++
 		}
+		await logCode(`AI运行的${step.runType}代码：`, step.code, step.runType)
 		if (step.runType === 'js') {
-			console.info('AI运行的JS代码：', step.code)
 			const coderesult = await run_jscode_for_AI(step.code)
 			console.info('coderesult', coderesult)
 			toolEntry.content = '执行结果：\n' + util.inspect(coderesult, { depth: 4 })
@@ -226,7 +240,6 @@ export async function coderunner(result, args) {
 		}
 		else {
 			const shell_name = step.runType
-			console.info(`AI运行的${shell_name}代码：`, step.code)
 			let shell_result
 			try { shell_result = await shell_exec_map[shell_name](step.code, { no_ansi_terminal_sequences: true }) } catch (err) { shell_result = err }
 			result.extension.execed_codes[step.code] = shell_result
@@ -265,7 +278,7 @@ export async function coderunner(result, args) {
 				Array.from(result.content.matchAll(/<inline-js>(?<code>[^]*?)<\/inline-js>/g))
 					.map(async match => {
 						const jsrunner = match.groups.code
-						console.info('AI内联运行的JS代码：', jsrunner)
+						await logCode('AI内联运行的js代码：', jsrunner, 'js')
 						const coderesult = await run_jscode_for_AI(jsrunner)
 						console.info('coderesult', coderesult)
 						if (coderesult.error) throw coderesult.error
@@ -325,8 +338,8 @@ export async function coderunner(result, args) {
 				replacements = await Promise.all(
 					Array.from(result.content.matchAll(runner_regex_g))
 						.map(async match => {
-							const runner = match.groups.code
-						console.info(`AI内联运行的${shell_name}代码：`, runner)
+						const runner = match.groups.code
+						await logCode(`AI内联运行的${shell_name}代码：`, runner, shell_name)
 						let shell_result
 						try {
 							shell_result = await shell_exec_map[shell_name](runner, { no_ansi_terminal_sequences: true })
