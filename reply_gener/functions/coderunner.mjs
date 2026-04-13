@@ -2,7 +2,7 @@ import { Buffer } from 'node:buffer'
 import util from 'node:util'
 
 import { async_eval } from 'https://cdn.jsdelivr.net/gh/steve02081504/async-eval/deno.mjs'
-import { available, shell_exec_map } from 'npm:@steve02081504/exec'
+import { shell_exec_map } from 'npm:@steve02081504/exec'
 
 import { defineInlineToolUses } from '../../../../../../../src/public/parts/shells/chat/src/stream.mjs'
 import { unlockAchievement } from '../../scripts/achievements.mjs'
@@ -182,7 +182,6 @@ export async function coderunner(result, args) {
 	for (const m of result.content.matchAll(/<run-js>(?<code>[^]*?)<\/run-js>/g))
 		steps.push({ index: m.index, type: 'run', runType: 'js', code: m.groups.code, fullText: m[0] })
 	for (const shell_name in shell_exec_map) {
-		if (!available[shell_name]) continue
 		const re = new RegExp(`<run-${shell_name}>(?<code>[^]*?)<\\/run-${shell_name}>`, 'g')
 		for (const m of result.content.matchAll(re))
 			steps.push({ index: m.index, type: 'run', runType: shell_name, code: m.groups.code, fullText: m[0] })
@@ -308,7 +307,6 @@ export async function coderunner(result, args) {
 	}
 
 	for (const shell_name in shell_exec_map) {
-		if (!available[shell_name]) continue
 		const runner_regex = new RegExp(`<inline-${shell_name}>[^]*?<\\/inline-${shell_name}>`)
 		if (result.content.match(runner_regex)) try {
 			unlockAchievement('use_coderunner')
@@ -328,18 +326,18 @@ export async function coderunner(result, args) {
 					Array.from(result.content.matchAll(runner_regex_g))
 						.map(async match => {
 							const runner = match.groups.code
-							console.info(`AI内联运行的${shell_name}代码：`, runner)
-							let shell_result
-							try {
-								shell_result = await shell_exec_map[shell_name](runner, { no_ansi_terminal_sequences: true })
-							} catch (err) {
-								shell_result = err
-							}
+						console.info(`AI内联运行的${shell_name}代码：`, runner)
+						let shell_result
+						try {
+							shell_result = await shell_exec_map[shell_name](runner, { no_ansi_terminal_sequences: true })
+						} catch (err) {
+							shell_result = err
+						}
 
-							if (shell_result instanceof Error) throw shell_result
+						if (shell_result instanceof Error) throw shell_result
 
-							if (shell_result.code)
-								throw new Error(`${shell_name} execution of code '${runner}' failed with exit code ${shell_result.exitCode}:\n${util.inspect(shell_result)}`)
+						if (shell_result.code)
+							throw new Error(`${shell_name} execution of code '${runner}' failed with exit code ${shell_result.exitCode}:\n${util.inspect(shell_result)}`)
 
 							return shell_result.stdout.trim()
 						})
@@ -398,9 +396,8 @@ export async function GetCoderunnerPreviewUpdater() {
 		}]
 	]
 
-	// 添加所有可用的 shell 内联工具
+	// 添加所有 shell 的内联工具
 	for (const shell_name in shell_exec_map) {
-		if (!available[shell_name]) continue
 		toolDefs.push([
 			`inline-${shell_name}`,
 			`<inline-${shell_name}>`,
