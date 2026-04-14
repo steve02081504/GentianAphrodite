@@ -168,7 +168,7 @@ function extractFileInfo(message, fileId, fileNameFallback, mimeTypeFallback) {
  * @returns {string} - 贴纸文本标记。
  */
 function buildStickerTextDescription(sticker) {
-	return `<:${sticker.file_id}:${sticker.set_name || 'unknown_set'}:${sticker.emoji || ''}>`
+	return `<:${sticker.file_id}:${sticker.set_name || 'unknown_set'}:${sticker.emoji || ''}:>`
 }
 
 /**
