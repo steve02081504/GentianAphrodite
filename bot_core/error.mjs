@@ -123,14 +123,15 @@ async function getAISuggestionForError(error, errorMessageForRecord, platformAPI
  * 发送错误报告。
  * @async
  * @param {string} fullReplyContent - 包含错误信息和 AI 建议的完整回复内容。
+ * @param {any[]} files - AI 建议回复中附带的文件（如贴纸）。
  * @param {PlatformAPI_t} platformAPI - 当前平台的 API 对象。
  * @param {Error} originalError - 原始错误对象。
  * @param {chatLogEntry_t_ext | undefined} contextMessage - (可选) 发生错误时的上下文消息条目。
  */
-async function sendErrorReport(fullReplyContent, platformAPI, originalError, contextMessage) {
+async function sendErrorReport(fullReplyContent, files, platformAPI, originalError, contextMessage) {
 	try {
 		if (contextMessage?.extension?.platform_channel_id)
-			await sendAndLogReply({ content: fullReplyContent }, platformAPI, contextMessage.extension.platform_channel_id, undefined)
+			await sendAndLogReply({ content: fullReplyContent, files: files || [] }, platformAPI, contextMessage.extension.platform_channel_id, undefined)
 		else platformAPI.logError(new Error('[BotLogic] Error occurred (no context channel to reply): ' + fullReplyContent.substring(0, 1000) + '...'), undefined)
 	}
 	catch (sendError) {
@@ -156,11 +157,11 @@ export async function handleError(error, platformAPI, contextMessage) {
 
 	const aiSuggestionReply = await getAISuggestionForError(error, errorMessageForRecord, platformAPI, contextMessage)
 
-	let fullReplyContent = errorMessageForRecord + '\n' + (aiSuggestionReply?.content || '')
+	let fullReplyContent = errorMessageForRecord + '\n' + (aiSuggestionReply?.content_for_show || aiSuggestionReply?.content || '')
 	const randomIPDict = {}
 	fullReplyContent = fullReplyContent.replace(/(?:\d{1,3}\.){3}\d{1,3}/g, ip => randomIPDict[ip] ??= Array(4).fill(0).map(() => Math.floor(Math.random() * 255)).join('.'))
 
-	await sendErrorReport(fullReplyContent, platformAPI, error, contextMessage)
+	await sendErrorReport(fullReplyContent, aiSuggestionReply?.files, platformAPI, error, contextMessage)
 
 	platformAPI.logError(error, contextMessage)
 	console.error('[BotLogic] Original error handled:', error, 'Context:', contextMessage)
