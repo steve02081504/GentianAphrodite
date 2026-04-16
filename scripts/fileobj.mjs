@@ -58,14 +58,9 @@ export async function getFileObjFormPathOrUrl(pathOrUrl) {
  * @throws {Error} 如果输入是无效的格式。
  */
 export async function toFileObj(pathOrFileObj) {
-	if (Object(pathOrFileObj) instanceof String)
-		return getFileObjFormPathOrUrl(pathOrFileObj)
+	if (Object(pathOrFileObj) instanceof String) return getFileObjFormPathOrUrl(pathOrFileObj)
 
-	if (pathOrFileObj instanceof Object && 'name' in pathOrFileObj && 'buffer' in pathOrFileObj) {
-		const buffer = Buffer.isBuffer(pathOrFileObj.buffer) ? pathOrFileObj.buffer : Buffer.from(pathOrFileObj.buffer)
-		const mime_type = pathOrFileObj.mime_type || await mimetypeFromBufferAndName(buffer, pathOrFileObj.name)
-		return { name: pathOrFileObj.name, buffer, mime_type }
-	}
-	else
-		throw new Error('无效的输入参数。期望为文件路径字符串、URL字符串或包含name和buffer属性的对象。')
+	const buffer = Buffer.isBuffer(pathOrFileObj.buffer) ? pathOrFileObj.buffer : Buffer.from(pathOrFileObj.buffer)
+	const mime_type = pathOrFileObj.mime_type || await mimetypeFromBufferAndName(buffer, pathOrFileObj.name)
+	return { name: pathOrFileObj.name, buffer, mime_type }
 }

@@ -75,7 +75,7 @@ export function registerEventHandlers(bot, interfaceConfig, telegramPlatformAPI)
 	}
 
 	bot.on('message', async ctx => {
-		if ('message' in ctx.update) {
+		if (ctx.update?.message) {
 			const { message } = ctx.update
 			const logicalChanId = constructLogicalChannelId(message.chat.id, message.message_thread_id)
 
@@ -100,7 +100,7 @@ export function registerEventHandlers(bot, interfaceConfig, telegramPlatformAPI)
 	})
 
 	bot.on('edited_message', async ctx => {
-		if ('edited_message' in ctx.update) {
+		if (ctx.update?.edited_message) {
 			const message = ctx.update.edited_message
 			const logicalChanId = constructLogicalChannelId(message.chat.id, message.message_thread_id)
 

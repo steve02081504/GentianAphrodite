@@ -41,7 +41,7 @@ export async function timer(result, args) {
 			let itemMatch
 			const timersToSet = []
 
-			while ((itemMatch = itemRegex.exec(timerContent))) {
+			while (itemMatch = itemRegex.exec(timerContent)) {
 				const itemContent = itemMatch[1]
 				const timeMatch = itemContent.match(/<time>(.*?)<\/time>/is)
 				const triggerMatch = itemContent.match(/<trigger>(.*?)<\/trigger>/is)

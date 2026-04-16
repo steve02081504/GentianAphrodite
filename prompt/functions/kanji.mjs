@@ -123,7 +123,7 @@ function expandComponents(text) {
 	const pattern = /(?:([\d.一七万三两九二五亿伍八六十千叁四壹捌柒玖百肆贰陆零]+)\s*[\s个只枚]?)?\s*([\p{Unified_Ideograph}])/gu
 
 	let match
-	while ((match = pattern.exec(text))) {
+	while (match = pattern.exec(text)) {
 		const numStr = match[1]
 		const char = match[2]
 

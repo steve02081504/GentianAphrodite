@@ -269,23 +269,23 @@ async function processMessageFiles(message, ctx) {
 				fileDownloadPromises.push(addFile(fileIdToDownload, fileName, mimeType, description, { is_from_vision: true }))
 		}
 
-		if ('photo' in message && message.photo) {
+		if (message.photo) {
 			const photo = message.photo.reduce((prev, current) => (prev.file_size || 0) > (current.file_size || 0) ? prev : current)
 			fileDownloadPromises.push(addFile(photo.file_id, `${photo.file_unique_id}.jpg`, 'image/jpeg', message.caption || '图片'))
 		}
-		if ('document' in message && message.document) {
+		if (message.document) {
 			const doc = message.document
 			fileDownloadPromises.push(addFile(doc.file_id, doc.file_name || `${doc.file_unique_id}`, doc.mime_type, message.caption || '文件'))
 		}
-		if ('voice' in message && message.voice) {
+		if (message.voice) {
 			const { voice } = message
 			fileDownloadPromises.push(addFile(voice.file_id, `${voice.file_unique_id}.ogg`, voice.mime_type || 'audio/ogg', '语音消息'))
 		}
-		if ('audio' in message && message.audio) {
+		if (message.audio) {
 			const { audio } = message
 			fileDownloadPromises.push(addFile(audio.file_id, audio.file_name || `${audio.file_unique_id}.${audio.mime_type?.split('/')[1] || 'mp3'}`, audio.mime_type, audio.title || '音频文件'))
 		}
-		if ('video' in message && message.video) {
+		if (message.video) {
 			const { video } = message
 			fileDownloadPromises.push(addFile(video.file_id, video.file_name || `${video.file_unique_id}.${video.mime_type?.split('/')[1] || 'mp4'}`, video.mime_type, message.caption || '视频文件'))
 		}
