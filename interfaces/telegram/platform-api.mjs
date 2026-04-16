@@ -285,11 +285,11 @@ export function buildPlatformAPI(interfaceConfig) {
 			const files = fountReplyPayload.files || []
 			const parseMode = 'HTML'
 
-			const messageThreadId = originalMessageEntry?.extension?.telegram_message_thread_id || threadIdFromLogicalId
+			const messageThreadId = originalMessageEntry?.extension?.telegram_message_thread_id ?? threadIdFromLogicalId
 
 			const initialBaseOptions = {
 				parse_mode: parseMode,
-				...messageThreadId && { message_thread_id: messageThreadId }
+				...messageThreadId !== undefined && { message_thread_id: messageThreadId }
 			}
 
 			const { aiMarkdownContent: finalAiMarkdownContent, baseOptions: finalBaseOptions } = prepareReplyParameters(originalMessageEntry, cleanMarkdown, initialBaseOptions)
@@ -327,9 +327,9 @@ export function buildPlatformAPI(interfaceConfig) {
 			const { chatId, threadId: threadIdFromLogicalId } = parseLogicalChannelId(logicalChannelId)
 			const platformChatId = chatId
 			try {
-				const messageThreadId = originalMessageEntry?.extension?.telegram_message_thread_id || threadIdFromLogicalId
+				const messageThreadId = originalMessageEntry?.extension?.telegram_message_thread_id ?? threadIdFromLogicalId
 				await telegrafInstance.telegram.sendChatAction(platformChatId, 'typing', {
-					...messageThreadId && { message_thread_id: messageThreadId }
+					...messageThreadId !== undefined && { message_thread_id: messageThreadId }
 				})
 			} catch (e) { /* 静默处理 */ }
 		},
@@ -398,8 +398,8 @@ export function buildPlatformAPI(interfaceConfig) {
 			}
 			else if (chatTitle) {
 				let baseName = `Telegram: Group ${chatTitle.replace(/\s/g, '_')}`
-				const actualThreadId = triggerMessage?.extension?.telegram_message_thread_id || threadId
-				if (actualThreadId)
+				const actualThreadId = triggerMessage?.extension?.telegram_message_thread_id ?? threadId
+				if (actualThreadId !== undefined)
 					baseName += `: Thread ${actualThreadId}`
 
 				return baseName

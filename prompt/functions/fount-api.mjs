@@ -11,7 +11,7 @@ import { match_keys } from '../../scripts/match.mjs'
  */
 export async function fountApiPrompt(args, logical_results) {
 	let result = ''
-	if (await match_keys(args, ['fount', /[走用]api/], 'any') || (
+	if (await match_keys(args, ['fount', /[用走]api/], 'any') || (
 		(
 			logical_results.in_assist ||
 			await match_keys(args, ['配置', '修复', '设置', '更改', '功能', 'config'], 'any')

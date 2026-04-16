@@ -290,7 +290,7 @@ export async function getWindowInfos() {
 		const { identifier, ...windowInfo } = window
 		return {
 			...windowInfo,
-			isActive: activeIdentifier !== null && identifier === activeIdentifier,
+			isActive: identifier === activeIdentifier,
 		}
 	})
 }

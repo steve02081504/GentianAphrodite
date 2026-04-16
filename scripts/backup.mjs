@@ -42,7 +42,7 @@ async function tryStatSize(p) {
  * @returns {string} 格式化后的字节大小
  */
 function formatBytes(n) {
-	if (n == null) return 'N/A'
+	if (!(Object(n) instanceof Number)) return 'N/A'
 	if (n < 1024) return `${n} B`
 	const units = ['KB', 'MB', 'GB', 'TB']
 	let v = n / 1024

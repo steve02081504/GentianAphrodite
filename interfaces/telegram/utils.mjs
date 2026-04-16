@@ -164,12 +164,12 @@ export function aiMarkdownToTelegramHtml(aiMarkdownText) {
 	// 单次扫描处理所有行内格式，代码块（<pre>/<code>）原样保留，避免其内容被误解析
 	// 斜体要求 * 紧贴非空白字符（符合 CommonMark 规范），防止数学乘号被误判
 	html = html.replace(
-		/(<pre[\s\S]*?<\/pre>|<code>[\s\S]*?<\/code>)|\*\*(.+?)\*\*|(?<!\*)\*(?!\s)([^*]+?)(?<!\s)\*(?!\*)|__(.+?)__|~~(.+?)~~/g,
+		/(<pre[\S\s]*?<\/pre>|<code>[\S\s]*?<\/code>)|\*\*(.+?)\*\*|(?<!\*)\*(?!\s)([^*]+?)(?<!\s)\*(?!\*)|__(.+?)__|~~(.+?)~~/g,
 		(match, code, bold, italic, underline, strike) => {
-			if (code !== undefined) return code
-			if (bold !== undefined) return /* html */ `<b>${bold}</b>`
-			if (italic !== undefined) return /* html */ `<i>${italic}</i>`
-			if (underline !== undefined) return /* html */ `<u>${underline}</u>`
+			if (code) return code
+			if (bold) return /* html */ `<b>${bold}</b>`
+			if (italic) return /* html */ `<i>${italic}</i>`
+			if (underline) return /* html */ `<u>${underline}</u>`
 			return /* html */ `<s>${strike}</s>`
 		}
 	)
@@ -291,8 +291,7 @@ function splitHtmlAware(longString, maxLength) {
  * @returns {string} - 格式化后的逻辑频道 ID，例如 "CHATID_THREADID" 或 "CHATID"。
  */
 export function constructLogicalChannelId(chatId, threadId) {
-	if (threadId !== undefined && threadId !== null)
-		return `${chatId}_${threadId}`
+	if (Object(threadId) instanceof Number) return `${chatId}_${threadId}`
 	return String(chatId)
 }
 

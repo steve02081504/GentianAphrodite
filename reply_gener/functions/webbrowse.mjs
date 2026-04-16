@@ -9,7 +9,7 @@ import { MarkdownWebFetch } from '../../scripts/web.mjs'
 /** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
 export async function webbrowse(result, { AddLongTimeLog, prompt_struct }) {
 	const matches = [...result.content.matchAll(/<web-browse>\s*<url>(?<url>.*?)<\/url>\s*<question>(?<question>[\S\s]*?)<\/question>\s*<\/web-browse>/g)]
-	const validMatches = matches.filter(m => m?.groups?.url !== undefined)
+	const validMatches = matches.filter(m => m?.groups?.url?.trim?.())
 	if (!validMatches.length) return false
 
 	// 合并为一条角色消息，鼓励一次回复中多次浏览
