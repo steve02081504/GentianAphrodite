@@ -338,19 +338,19 @@ export async function coderunner(result, args) {
 				replacements = await Promise.all(
 					Array.from(result.content.matchAll(runner_regex_g))
 						.map(async match => {
-						const runner = match.groups.code
-						await logCode(`AI内联运行的${shell_name}代码：`, runner, shell_name)
-						let shell_result
-						try {
-							shell_result = await shell_exec_map[shell_name](runner, { no_ansi_terminal_sequences: true })
-						} catch (err) {
-							shell_result = err
-						}
+							const runner = match.groups.code
+							await logCode(`AI内联运行的${shell_name}代码：`, runner, shell_name)
+							let shell_result
+							try {
+								shell_result = await shell_exec_map[shell_name](runner, { no_ansi_terminal_sequences: true })
+							} catch (err) {
+								shell_result = err
+							}
 
-						if (shell_result instanceof Error) throw shell_result
+							if (shell_result instanceof Error) throw shell_result
 
-						if (shell_result.code)
-							throw new Error(`${shell_name} execution of code '${runner}' failed with exit code ${shell_result.exitCode}:\n${util.inspect(shell_result)}`)
+							if (shell_result.code)
+								throw new Error(`${shell_name} execution of code '${runner}' failed with exit code ${shell_result.exitCode}:\n${util.inspect(shell_result)}`)
 
 							return shell_result.stdout.trim()
 						})
@@ -410,29 +410,27 @@ export async function GetCoderunnerPreviewUpdater() {
 	]
 
 	// 添加所有 shell 的内联工具
-	for (const shell_name in shell_exec_map) {
-		toolDefs.push([
-			`inline-${shell_name}`,
-			`<inline-${shell_name}>`,
-			`</inline-${shell_name}>`,
-			async (code) => {
-				const runner = code
-				let shell_result
-				try {
-					shell_result = await shell_exec_map[shell_name](runner, { no_ansi_terminal_sequences: true })
-				} catch (err) {
-					shell_result = err
-				}
-
-				if (shell_result instanceof Error) throw shell_result
-
-				if (shell_result.code)
-					throw new Error(`${shell_name} execution of code '${runner}' failed with exit code ${shell_result.exitCode}`)
-
-				return shell_result.stdout.trim()
+	for (const shell_name in shell_exec_map) toolDefs.push([
+		`inline-${shell_name}`,
+		`<inline-${shell_name}>`,
+		`</inline-${shell_name}>`,
+		async (code) => {
+			const runner = code
+			let shell_result
+			try {
+				shell_result = await shell_exec_map[shell_name](runner, { no_ansi_terminal_sequences: true })
+			} catch (err) {
+				shell_result = err
 			}
-		])
-	}
+
+			if (shell_result instanceof Error) throw shell_result
+
+			if (shell_result.code)
+				throw new Error(`${shell_name} execution of code '${runner}' failed with exit code ${shell_result.exitCode}`)
+
+			return shell_result.stdout.trim()
+		}
+	])
 
 	return defineInlineToolUses(toolDefs)
 }

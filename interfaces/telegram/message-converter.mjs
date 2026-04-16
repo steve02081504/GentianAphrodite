@@ -116,7 +116,7 @@ function detectMentions(message, rawText, entities, interfaceConfig, chatType) {
 
 	if (message.reply_to_message?.from?.id === Number(interfaceConfig.OwnerUserID)) {
 		const isReplyToOwnerTopicCreation =
-			message.message_thread_id !== undefined &&
+			message.message_thread_id &&
 			message.reply_to_message.message_id === message.message_thread_id &&
 			chatType !== 'private'
 

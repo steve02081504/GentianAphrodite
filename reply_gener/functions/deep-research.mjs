@@ -229,7 +229,7 @@ Step 2: <步骤2主题>
 
 			for (const step of plan) {
 				// Skip steps that were completed in previous cycles (relevant after replanning)
-				if (step.result !== null) {
+				if (step.result) {
 					console.info(`Deep-research: Cycle ${planningCycles}, Skipping Step ${step.step} as it already has a result.`)
 					continue
 				}

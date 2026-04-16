@@ -124,11 +124,11 @@ export async function LongTermMemoryHandler(result, args) {
 				const memoryTrigger = triggerMatch?.groups?.trigger?.trim()
 				const memoryPromptContent = promptContentMatch?.groups?.prompt?.trim()
 
-				if (memoryTrigger !== undefined || memoryPromptContent !== undefined)
+				if (memoryTrigger || memoryPromptContent)
 					try {
 						const logPayload = { name: memoryName }
-						if (memoryTrigger !== undefined) logPayload.trigger = memoryTrigger
-						if (memoryPromptContent !== undefined) logPayload.prompt = memoryPromptContent
+						if (memoryTrigger) logPayload.trigger = memoryTrigger
+						if (memoryPromptContent) logPayload.prompt = memoryPromptContent
 						console.info('AI请求更新永久记忆:', logPayload)
 
 						// Test trigger if it's being updated

@@ -59,7 +59,7 @@ export async function discordMessageToFountChatLogEntry(message, interfaceConfig
 	// 1. 解析并下载自定义表情
 	const emojiRegex = /<(a?):(\w+):(\d+)>/g
 	let emojiMatch
-	while ((emojiMatch = emojiRegex.exec(content)) !== null) {
+	while ((emojiMatch = emojiRegex.exec(content))) {
 		const isAnimated = emojiMatch[1] === 'a'
 		const emojiName = emojiMatch[2]
 		const emojiId = emojiMatch[3]

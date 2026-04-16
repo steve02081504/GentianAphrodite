@@ -22,7 +22,7 @@ export async function NumberAlchemistPrompt(args, logical_results) {
 	if (args.extension?.enable_prompts?.numberAlchemist || await match_keys(args, [/(用|从)\s*[\d.]+\s*(证明|论证)(?:下|一下)?\s*[\d.]+/, /prove\s*[\d.]+\s*(with|by|from)(?: |the|of)?\s*[\d.]+/i], 'any')) {
 		const log = getLog()
 		const pairMap = new Map()
-		const cnMatches = log.matchAll(/(?:用|从)\s*(?<from>[\d.]+)\s*(?:证明|论证)(?:下|一下)?\s*(?<to>[\d.]+)/g)
+		const cnMatches = log.matchAll(/[从用]\s*(?<from>[\d.]+)\s*(?:证明|论证)(?:下|一下)?\s*(?<to>[\d.]+)/g)
 		const enMatches = log.matchAll(/prove\s*(?<from>[\d.]+)\s*(?:with|by|from)(?: |the|of)?\s*(?<to>[\d.]+)/gi)
 		for (const match of [...cnMatches, ...enMatches]) {
 			if (!match?.groups?.from || !match?.groups?.to) continue

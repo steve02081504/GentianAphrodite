@@ -269,13 +269,13 @@ export async function browserIntegration(result, args) {
 				const script = content.match(/<script>([\S\s]*?)<\/script>/s)?.[1]
 				const comment = content.match(/<comment>([\S\s]*?)<\/comment>/s)?.[1]
 
-				if (urlRegex === undefined && script === undefined && comment === undefined)
+				if (!urlRegex || !script || !comment)
 					throw new Error('必须提供 <urlRegex>, <script>, 或 <comment> 标签中的至少一个。')
 
 				const scriptUpdate = {}
-				if (urlRegex !== undefined) scriptUpdate.urlRegex = urlRegex.trim()
-				if (script !== undefined) scriptUpdate.script = script
-				if (comment !== undefined) scriptUpdate.comment = comment.trim()
+				if (urlRegex) scriptUpdate.urlRegex = urlRegex.trim()
+				if (script) scriptUpdate.script = script
+				if (comment) scriptUpdate.comment = comment.trim()
 
 				console.info(`AI请求更新自动运行脚本, id: ${id}:`, scriptUpdate)
 				const updatedScript = updateAutoRunScript(username, id, scriptUpdate)

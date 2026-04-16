@@ -183,7 +183,7 @@ export function RandIntLessThan(x, y = 0, Rng = Math.random) { return Math.floor
 export function shuffleArray(a, Rng = Math.random) {
 	let currentIndex = a.length
 
-	while (currentIndex != 0) {
+	while (currentIndex) {
 		const randomIndex = RandIntLessThan(currentIndex, 0, Rng)
 		currentIndex--;
 		[a[currentIndex], a[randomIndex]] = [a[randomIndex], a[currentIndex]]

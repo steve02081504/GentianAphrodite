@@ -89,7 +89,7 @@ export function chineseToNumber(str) {
 	 * @returns {bigfloat | null} 返回合并后的 bigfloat，如果数组为空则返回 null。
 	 */
 	function merge_math_array() {
-		const result = [...math_array, last_slice].filter(s => s !== null).map(bigfloat).reduce((a, b) => (a || bigfloat(0)).add(b), null)
+		const result = [...math_array, last_slice].filter(s => s).map(bigfloat).reduce((a, b) => (a || bigfloat(0)).add(b), null)
 		math_array = []
 		last_slice = null
 		return result
@@ -100,7 +100,7 @@ export function chineseToNumber(str) {
 			let num = slice.slice(0, -Unit.length)
 			if (!num && last_slice) {
 				Unit = UnitMap[Unit]
-				const arr = [...math_array, last_slice].filter(s => s !== null).map(bigfloat)
+				const arr = [...math_array, last_slice].filter(s => s).map(bigfloat)
 				const last_slice_arr = []
 				while (arr.length && arr[arr.length - 1].lessThan(Unit))
 					last_slice_arr.push(arr.pop())
@@ -110,15 +110,14 @@ export function chineseToNumber(str) {
 				continue
 			}
 			num = new bigfloat(num || 1).mul(UnitMap[Unit])
-			if (last_slice === null)
+			if (!last_slice)
 				last_slice = num
+			else if (last_slice.greaterThan(num)) {
+				math_array.push(last_slice)
+				last_slice = num
+			}
 			else
-				if (last_slice.greaterThan(num)) {
-					math_array.push(last_slice)
-					last_slice = num
-				}
-				else
-					last_slice = last_slice.mul(UnitMap[Unit]).add(num)
+				last_slice = last_slice.mul(UnitMap[Unit]).add(num)
 			continue
 		}
 		else if (slice.match(/^\d+(?:\.\d+)?$/)) {

@@ -128,19 +128,19 @@ export function formatLongTermMemory(memory) {
  * @returns {Promise<single_part_prompt_t>} 长期记忆和相关操作指引组成的Prompt
  */
 export async function LongTermMemoryPrompt(args, logical_results) {
-	const actived_memories = []
+	const activated_memories = []
 	for (const memory of LongTermMemories)
 		if (await runLongTermMemoryTrigger(memory, args, logical_results))
-			actived_memories.push(memory)
+			activated_memories.push(memory)
 
-	const activated_memories_text = actived_memories.length ? `\
+	const activated_memories_text = activated_memories.length ? `\
 <activated-memories>
-${actived_memories.map(formatLongTermMemory).join('\n')}
+${activated_memories.map(formatLongTermMemory).join('\n')}
 </activated-memories>
 ` : ''
 
 	const random_memories = getRandomNLongTermMemories(2)
-		.filter(rand_mem => !actived_memories.some(act_mem => act_mem.name === rand_mem.name))
+		.filter(rand_mem => !activated_memories.some(act_mem => act_mem.name === rand_mem.name))
 
 	const random_memories_text = random_memories.length ? `\
 <random-memories>
@@ -250,10 +250,10 @@ export function updateLongTermMemory({ name, trigger, prompt, updatedAt, updated
 
 	const memoryToUpdate = LongTermMemories[memoryIndex]
 
-	if (trigger !== undefined) memoryToUpdate.trigger = trigger
-	if (prompt !== undefined) memoryToUpdate.prompt = prompt
-	if (updatedAt !== undefined) memoryToUpdate.updatedAt = updatedAt
-	if (updatedContext !== undefined) memoryToUpdate.updatedContext = updatedContext
+	if (trigger) memoryToUpdate.trigger = trigger
+	if (prompt) memoryToUpdate.prompt = prompt
+	if (updatedAt) memoryToUpdate.updatedAt = updatedAt
+	if (updatedContext) memoryToUpdate.updatedContext = updatedContext
 
 	saveLongTermMemory()
 }
