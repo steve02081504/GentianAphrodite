@@ -4,6 +4,7 @@
  *  OwnerUserID: string,
  *  OwnerUserName: string,
  *  OwnerNameKeywords: string[],
+ *  MediaGroupFlushMs: number,
  * }} TelegramInterfaceConfig_t
  */
 
@@ -19,5 +20,6 @@ export function GetBotConfigTemplate() {
 			'your_name_keyword1',
 			'your_name_keyword2',
 		],
+		MediaGroupFlushMs: 550,
 	}
 }

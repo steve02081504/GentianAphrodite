@@ -300,6 +300,184 @@ async function processMessageFiles(message, ctx) {
 }
 
 /**
+ * 相册合并：抽取各分片的正文片段与提及状态；同一条合并日志内仅注入一次「回复引用」块，避免重复。
+ * @param {TelegramMessageType[]} sorted - 已按 `message_id` 排好序的媒体组消息。
+ * @param {TelegramInterfaceConfig_t} interfaceConfig - Telegram 接口配置（主人 ID、关键词等）。
+ * @param {TelegrafContext | undefined} ctx - Telegraf 上下文；与单条转换 API 对齐，当前构建正文未使用。
+ * @returns {{ contentParts: string[], content: string, mentionsOwner: boolean, mentionsBot: boolean, hadReplyToOwnerTopicCreationMessage: boolean }} 各分片正文、拼接全文及提及相关标志。
+ */
+function extractContentPartsAndMentions(sorted, interfaceConfig, ctx) {
+	void ctx
+	const { chat } = sorted[0]
+	const contentParts = []
+	let mentionsOwner = false
+	let mentionsBot = false
+	let hadReplyToOwnerTopicCreationMessage = false
+	let replyQuotedInjected = false
+
+	for (const message of sorted) {
+		const rawText = message.text || message.caption
+		const entities = message.entities || message.caption_entities
+		const { mentionsOwner: mo, isReplyToOwnerTopicCreationMessage } = detectMentions(message, rawText, entities, interfaceConfig, chat.type)
+
+		if (mo) mentionsOwner = true
+		let replyToMessageForAiPrompt
+		if (isReplyToOwnerTopicCreationMessage) hadReplyToOwnerTopicCreationMessage = true
+		else if (message.reply_to_message && !replyQuotedInjected) {
+			replyToMessageForAiPrompt = message.reply_to_message
+			replyQuotedInjected = true
+		}
+
+		contentParts.push(buildEntryTextContent(message, rawText, entities, replyToMessageForAiPrompt))
+		if (checkIfBotIsMentioned(rawText, message)) mentionsBot = true
+	}
+
+	return {
+		contentParts,
+		content: contentParts.join('\n'),
+		mentionsOwner,
+		mentionsBot,
+		hadReplyToOwnerTopicCreationMessage,
+	}
+}
+
+/**
+ * 对相册内每条消息分别调用 `processMessageFiles`，再扁平化为单一 `files` 数组。
+ * @param {TelegramMessageType[]} sorted - 已排序的媒体组消息。
+ * @param {TelegrafContext | undefined} ctx - 用于拉取文件的 Telegraf API 上下文。
+ * @returns {Promise<Array>} 各消息 `processMessageFiles` 结果的扁平数组（惰性下载函数，与单条消息的 `files` 字段一致）。
+ */
+async function aggregateFilesFromMessages(sorted, ctx) {
+	const filesNested = await Promise.all(sorted.map(m => processMessageFiles(m, ctx)))
+	return filesNested.flat()
+}
+
+/**
+ * 合并相册内各 `message_id` 在 `aiReplyObjectCache` 中的条目并清空缓存键。
+ * @param {TelegramMessageType[]} sorted - 已排序的媒体组消息。
+ * @returns {{ mergedAiReply: Record<string, unknown>, mergedAiReplyExtension: Record<string, unknown> }} 供展开到 `fountEntry` 与其 `extension` 的缓存片段。
+ */
+function mergeAiReplyCacheForMessages(sorted) {
+	let mergedAiReply = {}
+	let mergedAiReplyExtension = {}
+	for (const message of sorted) {
+		const mid = message.message_id
+		const cached = aiReplyObjectCache[mid]
+		if (!cached) continue
+		mergedAiReply = { ...mergedAiReply, ...cached }
+		if (cached.extension)
+			mergedAiReplyExtension = { ...mergedAiReplyExtension, ...cached.extension }
+		delete aiReplyObjectCache[mid]
+	}
+	return { mergedAiReply, mergedAiReplyExtension }
+}
+
+/**
+ * 组装相册合并后的单条 `chatLogEntry_t_ext`（含 `extension.platform_message_ids` 等）。
+ * @param {{
+ * 	sorted: TelegramMessageType[];
+ * 	primary: TelegramMessageType;
+ * 	interfaceConfig: TelegramInterfaceConfig_t;
+ * 	senderName: string;
+ * 	content: string;
+ * 	contentParts: string[];
+ * 	mentionsOwner: boolean;
+ * 	mentionsBot: boolean;
+ * 	files: unknown[];
+ * 	mergedAiReply: Record<string, unknown>;
+ * 	mergedAiReplyExtension: Record<string, unknown>;
+ * }} params - 已由主流程算好的排序、正文、文件与缓存合并结果。
+ * @returns {chatLogEntry_t_ext} 可直接入队交给 `bot_core` 的聊天日志条目。
+ */
+function buildFountEntry(params) {
+	const {
+		sorted, primary, interfaceConfig, senderName, content, contentParts,
+		mentionsOwner, mentionsBot, files, mergedAiReply, mergedAiReplyExtension,
+	} = params
+	const fromUser = primary.from
+	const { chat } = primary
+	const messageWithReply = sorted.find(m => m.reply_to_message)
+	const isDirectMessage = chat.type === 'private'
+	const isFromOwner = String(fromUser.id) === String(interfaceConfig.OwnerUserID)
+
+	return {
+		content,
+		...mergedAiReply,
+		time_stamp: Math.max(...sorted.map(m => (m.edit_date ?? m.date) * 1000)),
+		role: isFromOwner ? 'user' : 'char',
+		name: senderName,
+		files,
+		extension: {
+			platform: 'telegram',
+			OwnerNameKeywords: interfaceConfig.OwnerNameKeywords,
+			platform_message_ids: sorted.map(m => m.message_id),
+			content_parts: contentParts,
+			platform_channel_id: chat.id,
+			platform_user_id: fromUser.id,
+			platform_chat_type: chat.type,
+			platform_chat_title: chat.type !== 'private' ? chat.title : undefined,
+			is_direct_message: isDirectMessage,
+			is_from_owner: isFromOwner,
+			mentions_bot: mentionsBot,
+			mentions_owner: mentionsOwner,
+			telegram_message_obj: primary,
+			telegram_media_group_id: primary.media_group_id,
+			...primary.message_thread_id && { telegram_message_thread_id: primary.message_thread_id },
+			...messageWithReply?.reply_to_message && { telegram_reply_to_message_id: messageWithReply.reply_to_message.message_id },
+			...mergedAiReplyExtension,
+		},
+	}
+}
+
+/**
+ * 将同一相册（`media_group_id` 相同）的多条 Telegram 消息合并为一条 `chatLogEntry_t_ext`。
+ * `platform_message_ids` 与 `content_parts` 按 `message_id` 排序对齐，便于 `processMessageUpdate` 逐条编辑。
+ * @param {TelegrafContext | import('npm:telegraf').Telegraf} ctxOrBotInstance - Telegraf 的上下文对象或 bot 实例。
+ * @param {TelegramMessageType[]} messages - 属于同一媒体组的消息数组（调用方已去重）。
+ * @param {TelegramInterfaceConfig_t} interfaceConfig - 此 Telegram 接口的配置对象。
+ * @returns {Promise<chatLogEntry_t_ext | null>} 合并成功则返回一条日志条目；无有效内容时返回 `null`。
+ */
+export async function telegramMediaGroupMessagesToFountChatLogEntry(ctxOrBotInstance, messages, interfaceConfig) {
+	if (!messages?.length) return null
+
+	const sorted = [...messages].sort((a, b) => a.message_id - b.message_id)
+	const primary = sorted[0]
+	if (!primary.from) return null
+
+	for (const m of sorted)
+		if (m.from?.id !== primary.from.id || m.chat.id !== primary.chat.id)
+			console.warn('[TelegramInterface] Media group member chat/from mismatch, still merging.', {
+				media_group_id: primary.media_group_id,
+				expected_from: primary.from.id,
+				got_from: m.from?.id,
+			})
+
+	const ctx = ctxOrBotInstance?.telegram ? ctxOrBotInstance : undefined
+	const { senderName } = processUserInfo(primary.from)
+
+	const { contentParts, content, mentionsOwner, mentionsBot } = extractContentPartsAndMentions(sorted, interfaceConfig, ctx)
+	const files = await aggregateFilesFromMessages(sorted, ctx)
+	const { mergedAiReply, mergedAiReplyExtension } = mergeAiReplyCacheForMessages(sorted)
+
+	if (!content.trim() && !files.length)
+		return null
+
+	return buildFountEntry({
+		sorted,
+		primary,
+		interfaceConfig,
+		senderName,
+		content,
+		contentParts,
+		mentionsOwner,
+		mentionsBot,
+		files,
+		mergedAiReply,
+		mergedAiReplyExtension,
+	})
+}
+
+/**
  * 将 Telegram 消息上下文转换为 Bot 核心逻辑可以理解的 Fount 聊天日志条目格式。
  * 这个函数处理文本、贴纸、文件、提及以及其他 Telegram 特有的消息属性，
  * 将它们统一成一个标准的 `chatLogEntry_t_ext` 对象。
