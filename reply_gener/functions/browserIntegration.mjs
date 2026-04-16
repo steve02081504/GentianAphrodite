@@ -269,7 +269,7 @@ export async function browserIntegration(result, args) {
 				const script = content.match(/<script>([\S\s]*?)<\/script>/s)?.[1]
 				const comment = content.match(/<comment>([\S\s]*?)<\/comment>/s)?.[1]
 
-				if (!urlRegex && !script && !comment)
+				if (urlRegex === undefined && script === undefined && comment === undefined)
 					throw new Error('必须提供 <urlRegex>, <script>, 或 <comment> 标签中的至少一个。')
 
 				const scriptUpdate = {}
