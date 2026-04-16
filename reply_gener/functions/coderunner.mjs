@@ -350,7 +350,7 @@ export async function coderunner(result, args) {
 							if (shell_result instanceof Error) throw shell_result
 
 							if (shell_result.code)
-								throw new Error(`${shell_name} execution of code '${runner}' failed with exit code ${shell_result.exitCode}:\n${util.inspect(shell_result)}`)
+								throw new Error(`${shell_name} execution of code '${runner}' failed with exit code ${shell_result.code}:\n${util.inspect(shell_result)}`)
 
 							return shell_result.stdout.trim()
 						})
@@ -426,7 +426,7 @@ export async function GetCoderunnerPreviewUpdater() {
 			if (shell_result instanceof Error) throw shell_result
 
 			if (shell_result.code)
-				throw new Error(`${shell_name} execution of code '${runner}' failed with exit code ${shell_result.exitCode}`)
+				throw new Error(`${shell_name} execution of code '${runner}' failed with exit code ${shell_result.code}`)
 
 			return shell_result.stdout.trim()
 		}

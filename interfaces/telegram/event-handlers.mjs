@@ -41,18 +41,19 @@ export function registerEventHandlers(bot, interfaceConfig, telegramPlatformAPI)
 	const flushTelegramMediaGroup = async bufferKey => {
 		const state = telegramMediaGroupBuffers.get(bufferKey)
 		if (!state) return
-		telegramMediaGroupBuffers.delete(bufferKey)
-		if (state.timer) {
-			clearTimeout(state.timer)
-			state.timer = null
-		}
 		try {
 			const fountEntry = await telegramMediaGroupMessagesToFountChatLogEntry(state.ctx, state.messages, interfaceConfig)
 			if (fountEntry)
 				await processIncomingMessage(fountEntry, telegramPlatformAPI, state.logicalChanId)
+			telegramMediaGroupBuffers.delete(bufferKey)
+			if (state.timer) {
+				clearTimeout(state.timer)
+				state.timer = null
+			}
 		}
 		catch (e) {
 			console.error('[TelegramInterface] flushTelegramMediaGroup failed:', e)
+			scheduleMediaGroupFlush(state, bufferKey)
 		}
 	}
 

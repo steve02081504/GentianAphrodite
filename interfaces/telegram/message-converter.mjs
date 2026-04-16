@@ -116,8 +116,7 @@ function detectMentions(message, rawText, entities, interfaceConfig, chatType) {
 
 	if (message.reply_to_message?.from?.id === Number(interfaceConfig.OwnerUserID)) {
 		const isReplyToOwnerTopicCreation =
-			message.message_thread_id &&
-			message.reply_to_message.message_id === message.message_thread_id &&
+			message.reply_to_message.message_id === message.message_thread_id
 			chatType !== 'private'
 
 		if (isReplyToOwnerTopicCreation)
@@ -422,7 +421,7 @@ function buildFountEntry(params) {
 			mentions_owner: mentionsOwner,
 			telegram_message_obj: primary,
 			telegram_media_group_id: primary.media_group_id,
-			...primary.message_thread_id && { telegram_message_thread_id: primary.message_thread_id },
+			...primary.message_thread_id !== undefined && { telegram_message_thread_id: primary.message_thread_id },
 			...messageWithReply?.reply_to_message && { telegram_reply_to_message_id: messageWithReply.reply_to_message.message_id },
 			...mergedAiReplyExtension,
 		},
@@ -538,7 +537,7 @@ export async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, messa
 			mentions_bot: mentionsBot,
 			mentions_owner: mentionsOwner,
 			telegram_message_obj: message,
-			...message.message_thread_id && { telegram_message_thread_id: message.message_thread_id },
+			...message.message_thread_id !== undefined && { telegram_message_thread_id: message.message_thread_id },
 			...message.reply_to_message && { telegram_reply_to_message_id: message.reply_to_message.message_id },
 			...aiReplyObjectCache[message.message_id]?.extension,
 		}

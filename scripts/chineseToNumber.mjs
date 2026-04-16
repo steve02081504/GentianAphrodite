@@ -112,12 +112,14 @@ export function chineseToNumber(str) {
 			num = new bigfloat(num || 1).mul(UnitMap[Unit])
 			if (!last_slice)
 				last_slice = num
-			else if (last_slice.greaterThan(num)) {
-				math_array.push(last_slice)
-				last_slice = num
+			else {
+				last_slice = bigfloat(last_slice)
+				if (last_slice.greaterThan(num)) {
+					math_array.push(last_slice)
+					last_slice = num
+				}
+				else last_slice = last_slice.mul(UnitMap[Unit]).add(num)
 			}
-			else
-				last_slice = last_slice.mul(UnitMap[Unit]).add(num)
 			continue
 		}
 		else if (slice.match(/^\d+(?:\.\d+)?$/)) {

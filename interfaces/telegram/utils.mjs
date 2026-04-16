@@ -291,7 +291,7 @@ function splitHtmlAware(longString, maxLength) {
  * @returns {string} - 格式化后的逻辑频道 ID，例如 "CHATID_THREADID" 或 "CHATID"。
  */
 export function constructLogicalChannelId(chatId, threadId) {
-	if (threadId) return `${chatId}_${threadId}`
+	if (threadId !== undefined) return `${chatId}_${threadId}`
 	return String(chatId)
 }
 
