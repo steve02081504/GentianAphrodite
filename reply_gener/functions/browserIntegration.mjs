@@ -273,9 +273,9 @@ export async function browserIntegration(result, args) {
 					throw new Error('必须提供 <urlRegex>, <script>, 或 <comment> 标签中的至少一个。')
 
 				const scriptUpdate = {}
-				if (urlRegex) scriptUpdate.urlRegex = urlRegex.trim()
-				if (script) scriptUpdate.script = script
-				if (comment) scriptUpdate.comment = comment.trim()
+				if (urlRegex !== undefined) scriptUpdate.urlRegex = urlRegex.trim()
+				if (script !== undefined) scriptUpdate.script = script
+				if (comment !== undefined) scriptUpdate.comment = comment.trim()
 
 				console.info(`AI请求更新自动运行脚本, id: ${id}:`, scriptUpdate)
 				const updatedScript = updateAutoRunScript(username, id, scriptUpdate)
