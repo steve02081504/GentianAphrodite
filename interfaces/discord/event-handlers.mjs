@@ -32,7 +32,7 @@ export async function registerEventHandlers(interfaceConfig, discordPlatformAPI)
 			throw e
 		}))
 		if (!fetchedMessage)
-			return console.log(`[DiscordInterface] Message ${message.id} not found or deleted, skipping processing.`)
+			return
 
 		const fountEntry = await discordMessageToFountChatLogEntry(fetchedMessage, interfaceConfig)
 		if (fountEntry)
@@ -57,7 +57,7 @@ export async function registerEventHandlers(interfaceConfig, discordPlatformAPI)
 			throw e
 		}))
 		if (!fetchedNewMessage)
-			return console.log(`[DiscordInterface] Updated message ${newMessage.id} not found or deleted, skipping processing.`)
+			return
 
 		const fountEntry = await discordMessageToFountChatLogEntry(fetchedNewMessage, interfaceConfig)
 		if (fountEntry)

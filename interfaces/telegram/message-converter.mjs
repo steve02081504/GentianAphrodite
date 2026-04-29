@@ -499,9 +499,6 @@ export async function telegramMessageToFountChatLogEntry(ctxOrBotInstance, messa
 
 	const { mentionsOwner, isReplyToOwnerTopicCreationMessage } = detectMentions(message, rawText, entities, interfaceConfig, chat.type)
 
-	if (isReplyToOwnerTopicCreationMessage)
-		console.log(`[TelegramInterface] Identified a reply to owner's topic creation message. Message ID: ${message.message_id}, Replied To Message ID: ${message.reply_to_message.message_id}, Thread ID: ${message.message_thread_id}. This will NOT trigger 'mentions_owner' for AI context if not also an @mention.`)
-
 	const replyToMessageForAiPrompt = isReplyToOwnerTopicCreationMessage ? undefined : message.reply_to_message
 	const content = buildEntryTextContent(message, rawText, entities, replyToMessageForAiPrompt)
 

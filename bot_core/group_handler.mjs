@@ -182,7 +182,6 @@ async function sendInsultAndLeaveGroup(group, platformAPI, defaultChannel) {
 		await platformAPI.leaveGroup(group.id)
 	else
 		console.warn(`[BotLogic] leaveGroup not implemented for ${platformAPI.name}. Cannot leave group ${group.id}.`)
-
 }
 
 /**
@@ -274,7 +273,6 @@ function setupOnGroupJoinHandler(platformAPI) {
 		})
 	else
 		console.warn(`[BotLogic] onGroupJoin not implemented for platform: ${platformAPI.name}`)
-
 }
 
 /**
@@ -313,9 +311,6 @@ async function performInitialGroupOwnerCheck(platformAPI) {
 		catch (e) {
 			console.error(`[BotLogic] Error fetching joined groups for ${platformAPI.name} fallback check:`, e)
 		}
-	else if (!usedOptimizedCheck)
-		console.log(`[BotLogic] No group checking mechanism available for ${platformAPI.name} at startup (Neither getOwnerPresenceInGroups nor getJoinedGroups are fully supported/implemented).`)
-
 }
 
 /**
@@ -336,7 +331,6 @@ function setupOnOwnerLeaveGroupHandler(platformAPI) {
 		})
 	else
 		console.warn(`[BotLogic] onOwnerLeaveGroup not implemented for platform: ${platformAPI.name}.`)
-
 }
 
 /**

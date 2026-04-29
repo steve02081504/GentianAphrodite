@@ -90,10 +90,8 @@ export async function discordMessageToFountChatLogEntry(message, interfaceConfig
 
 	// 2. 下载贴纸 (Stickers)
 	message.stickers.forEach(sticker => {
-		if (sticker.format === 3) { // 3 is LOTTIE format, skip it
-			console.log(`[DiscordInterface] Skipping Lottie sticker: ${sticker.name}`)
+		if (sticker.format === 3) // 3 is LOTTIE format, skip it
 			return
-		}
 		if (!sticker.url) {
 			console.error('[DiscordInterface] Sticker has no url:', sticker)
 			return

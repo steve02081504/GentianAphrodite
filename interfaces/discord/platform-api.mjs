@@ -291,7 +291,6 @@ export function buildPlatformAPI(interfaceConfig) {
 		 */
 		onGroupJoin: onJoinCallback => {
 			client.on(Events.GuildCreate, async guild => {
-				console.log(`[DiscordInterface] Joined new guild: ${guild.name} (ID: ${guild.id})`)
 				/** @type {import('../../bot_core/index.mjs').GroupObject} */
 				const groupObject = {
 					id: guild.id,

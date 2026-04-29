@@ -99,7 +99,6 @@ async function trySendFileOrFallbackText(
 		console.warn(`[TelegramInterface] Attempting to send ${file.name} as document instead...`)
 		try {
 			sentMsg = await tryFewTimes(() => bot.telegram.sendDocument(platformChatId, fileSource, sendOptions))
-			console.log(`[TelegramInterface] Successfully sent ${file.name} as document.`)
 		}
 		catch (e2) {
 			console.error(`[TelegramInterface] Failed to send ${file.name} as document as well:`, e2)
@@ -340,9 +339,7 @@ export function buildPlatformAPI(interfaceConfig) {
 		 * @param {number} limit - 要获取的消息数量上限。
 		 * @returns {Promise<chatLogEntry_t_ext[]>} - 转换后的 fount 聊天日志条目数组。
 		 */
-		async fetchChannelHistory(logicalChannelId, limit) {
-			const { chatId, threadId } = parseLogicalChannelId(logicalChannelId)
-			console.warn(`[TelegramInterface] fetchChannelHistory not fully implemented in Telegram interface (LogicalID: ${logicalChannelId}, PlatformChatID: ${chatId}, ThreadID: ${threadId}). Relying on in-memory logs.`)
+		async fetchChannelHistory() {
 			return []
 		},
 
@@ -489,7 +486,6 @@ export function buildPlatformAPI(interfaceConfig) {
 					if ((oldStatus === 'left' || oldStatus === 'kicked' || oldStatus === 'restricted') &&
 						(newStatus === 'member' || newStatus === 'administrator') &&
 						(chat.type === 'group' || chat.type === 'supergroup')) {
-						console.log(`[TelegramInterface] Joined new group: ${chat.title} (ID: ${chat.id})`)
 						/** @type {import('../../bot_core/index.mjs').GroupObject} */
 						const groupObject = {
 							id: chat.id,
