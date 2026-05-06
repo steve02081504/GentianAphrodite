@@ -1,6 +1,6 @@
 import { Buffer } from 'node:buffer'
 import fs from 'node:fs'
-import { inspect } from 'node:util'
+import process from 'node:process'
 
 import { compareTwoStrings as string_similarity } from 'npm:string-similarity'
 
@@ -227,7 +227,7 @@ export async function baseGetReply(args) {
 	regen: while (true) {
 		if (!is_dist && process.env.EdenOS) {
 			console.log('logical_results', logical_results)
-			console.log('prompt_struct', inspect(prompt_struct, { depth: 4, colors: true }))
+			console.log('prompt_struct', prompt_struct)
 		}
 		const AItype = args.extension?.source_purpose ?? (logical_results.in_reply_to_master ?
 			logical_results.in_nsfw ? 'nsfw' : logical_results.in_assist ? 'expert' : 'sfw'
