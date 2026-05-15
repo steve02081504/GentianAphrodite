@@ -5,7 +5,10 @@ import process from 'node:process'
 import { compareTwoStrings as string_similarity } from 'npm:string-similarity'
 
 import { buildPromptStruct } from '../../../../../../src/public/parts/shells/chat/src/prompt_struct.mjs'
-import { defineInlineToolUses, defineToolUseBlocks } from '../../../../../../src/public/parts/shells/chat/src/stream.mjs'
+import {
+	defineInlineToolUses,
+	defineToolUseBlocks,
+} from '../../../../../../src/public/parts/shells/chat/src/stream.mjs'
 import { noAISourceAvailable, OrderedAISourceCalling } from '../AISource/index.mjs'
 import { chardir, is_dist } from '../charbase.mjs'
 import { plugins } from '../config/index.mjs'
@@ -25,7 +28,7 @@ import { browserIntegration } from './functions/browserIntegration.mjs'
 import { CharGenerator, PersonaGenerator } from './functions/charGenerator.mjs'
 import { coderunner, GetCoderunnerPreviewUpdater } from './functions/coderunner.mjs'
 import { deepResearch } from './functions/deep-research.mjs'
-import { file_change } from './functions/file-change.mjs'
+import { file_change, fileOperationToolUseBlocks } from './functions/file-change.mjs'
 import { getToolInfo } from './functions/getToolInfo.mjs'
 import { IdleManagementHandler } from './functions/idle-management.mjs'
 import { LongTermMemoryHandler } from './functions/long-term-memory.mjs'
@@ -150,17 +153,7 @@ export async function baseGetReply(args) {
 	for (const GetReplyPreviewUpdater of [
 		defineToolUseBlocks([
 			// File operations (file-change.mjs)
-			{ start: '<view-file>', end: '</view-file>' },
-			{ start: '<replace-file>', end: '</replace-file>' },
-			{ start: /<override-file[^>]*>/, end: '</override-file>' },
-
-			// Code execution (coderunner.mjs)
-			{ start: '<run-js>', end: '</run-js>' },
-			{ start: '<run-bash>', end: '</run-bash>' },
-			{ start: '<run-pwsh>', end: '</run-pwsh>' },
-			{ start: '<run-powershell>', end: '</run-powershell>' },
-			{ start: '<run-cmd>', end: '</run-cmd>' },
-			{ start: '<wait-screen>', end: '</wait-screen>' },
+			...fileOperationToolUseBlocks,
 
 			// Memory management (long-term-memory.mjs & short-term-memory.mjs)
 			{ start: '<add-long-term-memory>', end: '</add-long-term-memory>' },
@@ -214,7 +207,7 @@ export async function baseGetReply(args) {
 		defineInlineToolUses([
 			['gentian-sticker', '<gentian-sticker>', '</gentian-sticker>', () => ''],
 		]),
-		await GetCoderunnerPreviewUpdater(),
+		GetCoderunnerPreviewUpdater(),
 		...Object.values(args.plugins).map(plugin => plugin.interfaces?.chat?.GetReplyPreviewUpdater)
 	].filter(Boolean))
 		replyPreviewUpdater = GetReplyPreviewUpdater(replyPreviewUpdater)
