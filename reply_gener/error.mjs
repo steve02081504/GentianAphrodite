@@ -84,6 +84,7 @@ async function getAISuggestionForError(error, errorMessageForRecord, originalArg
  * @returns {Promise<FountChatReply_t>} 一个包含错误报告的回复对象。
  */
 export async function handleError(error, originalArgs) {
+	debugger
 	const errorStack = error.stack || error.message
 	if (!errorStack) console.trace('Error has no stack:', error)
 	const errorMessageForRecord = `\`\`\`\n${errorStack}\n\`\`\`\n`
