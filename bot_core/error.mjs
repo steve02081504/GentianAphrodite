@@ -148,6 +148,7 @@ async function sendErrorReport(fullReplyContent, files, platformAPI, originalErr
  * @param {chatLogEntry_t_ext | undefined} contextMessage - (可选) 发生错误时的上下文消息条目。
  */
 export async function handleError(error, platformAPI, contextMessage) {
+	debugger
 	const errorStack = error.stack || error.message
 	const errorMessageForRecord = `\`\`\`\n${errorStack}\n\`\`\``
 
