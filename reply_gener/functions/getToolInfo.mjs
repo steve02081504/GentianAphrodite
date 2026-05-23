@@ -39,7 +39,7 @@ fount角色以mjs文件语法所书写，其可以自由导入任何npm或jsr包
  */
 
 import { loadPart, loadAnyPreferredDefaultPart } from '../../../../../src/server/parts_loader.mjs'
-import { buildPromptStruct } from '../../../../../src/public/parts/shells/chat/src/prompt_struct.mjs'
+import { buildPromptStruct } from '../../../../../src/public/parts/shells/chat/src/prompt_struct/index.mjs'
 
 /**
  * AI源的实例

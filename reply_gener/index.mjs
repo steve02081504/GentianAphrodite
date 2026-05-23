@@ -4,7 +4,7 @@ import process from 'node:process'
 
 import { compareTwoStrings as string_similarity } from 'npm:string-similarity'
 
-import { buildPromptStruct } from '../../../../../../src/public/parts/shells/chat/src/prompt_struct.mjs'
+import { buildPromptStruct } from '../../../../../../src/public/parts/shells/chat/src/prompt_struct/index.mjs'
 import {
 	defineInlineToolUses,
 	defineToolUseBlocks,
