@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
-import { getFileExtFormMimetype, mimetypeFromBufferAndName } from './mimetype.mjs'
+import { getFileExtFromMimetype, mimetypeFromBufferAndName } from './mimetype.mjs'
 import { getUrlFilename } from './web.mjs'
 
 const msys_path = process.env.MSYS_ROOT_PATH
@@ -37,7 +37,7 @@ export async function getFileObjFormPathOrUrl(pathOrUrl) {
 		let name = getUrlFilename(pathOrUrl, contentDisposition)
 		const buffer = Buffer.from(await response.arrayBuffer())
 		const mime_type = response.headers.get('content-type') || await mimetypeFromBufferAndName(buffer, name || 'downloaded.bin')
-		name ||= 'downloaded.' + (getFileExtFormMimetype(mime_type) || 'bin')
+		name ||= 'downloaded.' + (getFileExtFromMimetype(mime_type) || 'bin')
 		pathOrUrl = { name, buffer, mime_type }
 	}
 	else {
