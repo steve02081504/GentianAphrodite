@@ -15,7 +15,7 @@ const stickerNameToFileId = {
 	Bored_Grazing: 'CAACAgUAAx0CeySiRQACgehpMtV3c99JAl9EbFrpn7c4tgMvqgACkBkAAm5wmFVJpnyJH0vH7zYE',
 	Brain_Buffering_Loading: 'CAACAgUAAx0CeySiRQACmfJp1pUFNNvLPsPZbjobi7NWXfJeYwACexoAAoO7kFVxX8_Sm6bAdDsE',
 	Busy_Working: 'CAACAgUAAx0CeySiRQACgexpMtWev4n1gvKnzCibm5B8oxkyLAACoR4AAhimkVX09aiG_-yVIjYE',
-	Calculating_Math_Overload: 'AACAgUAAx0CeySiRQACge5pMtWrh607XTM0neEJj3wvNEdFnwAC3xsAAqnfmVU45-CZuvcrbzYE',
+	Calculating_Math_Overload: 'CAACAgUAAx0CeySiRQACr4hqIR83gD-ueqfARO-UMFePkDft1gAC3xsAAqnfmVU45-CZuvcrbzsE',
 	Cannot_Understand: 'CAACAgUAAx0CeySiRQACgfBpMtW6rep2Uqpom36oqUtF67gNewACyhYAAoqjmFXHzqlBsedL4TYE',
 	Checking_Files: 'CAACAgUAAx0CeySiRQACgfJpMtXNQrtpMD72b7pl2yXXh2tl1QAC7hwAAoUBmVVIPvwB6NrnVDYE',
 	Confident_Smirk: 'CAACAgUAAx0CeySiRQACgfRpMtXchGZzPWPDvcG_6FlbavyvfAACeRkAAnspmFVMvJjwRR4H6DYE',
