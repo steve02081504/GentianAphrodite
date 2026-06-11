@@ -237,10 +237,10 @@ export async function coderunner(result, args) {
 			unlockAchievement('use_coderunner')
 			statisticDatas.toolUsage.codeRuns++
 		}
-		await logCode(`AI运行的${step.runType}代码：`, step.code, step.runType)
+		await logCode(`${args.Charname} running ${step.runType} code:`, step.code, step.runType)
 		if (step.runType === 'js') {
 			const coderesult = await run_jscode_for_AI(step.code)
-			console.info('coderesult', coderesult)
+			console.info(`${args.Charname} JS result:`, coderesult)
 			toolEntry.content = '执行结果：\n' + util.inspect(coderesult, { depth: 4 })
 			result.extension.execed_codes[step.code] = coderesult
 		}
@@ -252,7 +252,7 @@ export async function coderunner(result, args) {
 			if (shell_result.stdall)
 				for (const key of ['stdout', 'stderr'])
 					delete shell_result[key]
-			console.info(`${shell_name} result`, shell_result)
+			console.info(`${args.Charname} ${shell_name} result:`, shell_result)
 			toolEntry.content = '执行结果：\n' + util.inspect(shell_result)
 		}
 		AddLongTimeLog(toolEntry)
@@ -284,9 +284,9 @@ export async function coderunner(result, args) {
 				Array.from(result.content.matchAll(/<inline-js>(?<code>[^]*?)<\/inline-js>/g))
 					.map(async match => {
 						const jsrunner = match.groups.code
-						await logCode('AI内联运行的js代码：', jsrunner, 'js')
+						await logCode(`${args.Charname} running inline JS code:`, jsrunner, 'js')
 						const coderesult = await run_jscode_for_AI(jsrunner)
-						console.info('coderesult', coderesult)
+						console.info(`${args.Charname} inline JS result:`, coderesult)
 						if (coderesult.error) throw coderesult.error
 						return coderesult.result + ''
 					})
@@ -345,7 +345,7 @@ export async function coderunner(result, args) {
 					Array.from(result.content.matchAll(runner_regex_g))
 						.map(async match => {
 							const runner = match.groups.code
-							await logCode(`AI内联运行的${shell_name}代码：`, runner, shell_name)
+							await logCode(`${args.Charname} running inline ${shell_name} code:`, runner, shell_name)
 							let shell_result
 							try {
 								shell_result = await shell_exec_map[shell_name](runner, { no_ansi_terminal_sequences: true })
