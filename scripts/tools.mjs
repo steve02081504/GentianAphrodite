@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import process from 'node:process'
 
-import { async_eval } from 'https://cdn.jsdelivr.net/gh/steve02081504/async-eval/deno.mjs'
+import { async_eval } from 'npm:@steve02081504/async-eval'
 
 /**
  * 暂停执行指定的毫秒数。

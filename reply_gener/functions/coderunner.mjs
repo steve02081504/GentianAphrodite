@@ -1,7 +1,7 @@
 import { Buffer } from 'node:buffer'
 import util from 'node:util'
 
-import { async_eval } from 'https://cdn.jsdelivr.net/gh/steve02081504/async-eval/deno.mjs'
+import { async_eval } from 'npm:@steve02081504/async-eval'
 import { shell_exec_map } from 'npm:@steve02081504/exec'
 
 import {
@@ -112,7 +112,7 @@ export async function coderunner(result, args) {
 			 * @returns {void}
 			 */
 			js_eval_context.callback = (reason, promise) => {
-				if (!js_eval_context.eval_result && !(promise instanceof Promise))
+				if (!(promise instanceof Promise))
 					throw new Error('callback函数的第二个参数必须是一个Promise对象')
 				/**
 				 * 处理回调函数的回调。
@@ -237,10 +237,10 @@ export async function coderunner(result, args) {
 			unlockAchievement('use_coderunner')
 			statisticDatas.toolUsage.codeRuns++
 		}
-		await logCode(`AI运行的${step.runType}代码：`, step.code, step.runType)
+		await logCode(`${args.Charname} running ${step.runType} code:`, step.code, step.runType)
 		if (step.runType === 'js') {
 			const coderesult = await run_jscode_for_AI(step.code)
-			console.info('coderesult', coderesult)
+			console.info(`${args.Charname} JS result:`, coderesult)
 			toolEntry.content = '执行结果：\n' + util.inspect(coderesult, { depth: 4 })
 			result.extension.execed_codes[step.code] = coderesult
 		}
@@ -252,7 +252,7 @@ export async function coderunner(result, args) {
 			if (shell_result.stdall)
 				for (const key of ['stdout', 'stderr'])
 					delete shell_result[key]
-			console.info(`${shell_name} result`, shell_result)
+			console.info(`${args.Charname} ${shell_name} result:`, shell_result)
 			toolEntry.content = '执行结果：\n' + util.inspect(shell_result)
 		}
 		AddLongTimeLog(toolEntry)
@@ -284,9 +284,9 @@ export async function coderunner(result, args) {
 				Array.from(result.content.matchAll(/<inline-js>(?<code>[^]*?)<\/inline-js>/g))
 					.map(async match => {
 						const jsrunner = match.groups.code
-						await logCode('AI内联运行的js代码：', jsrunner, 'js')
+						await logCode(`${args.Charname} running inline JS code:`, jsrunner, 'js')
 						const coderesult = await run_jscode_for_AI(jsrunner)
-						console.info('coderesult', coderesult)
+						console.info(`${args.Charname} inline JS result:`, coderesult)
 						if (coderesult.error) throw coderesult.error
 						return coderesult.result + ''
 					})
@@ -345,7 +345,7 @@ export async function coderunner(result, args) {
 					Array.from(result.content.matchAll(runner_regex_g))
 						.map(async match => {
 							const runner = match.groups.code
-							await logCode(`AI内联运行的${shell_name}代码：`, runner, shell_name)
+							await logCode(`${args.Charname} running inline ${shell_name} code:`, runner, shell_name)
 							let shell_result
 							try {
 								shell_result = await shell_exec_map[shell_name](runner, { no_ansi_terminal_sequences: true })
