@@ -206,21 +206,29 @@ export async function FormatStr(str, formats) {
 		result += str.slice(0, length)
 		str = str.slice(length + 2)
 		let end_index = 0
+		let matched = false
 		find: while (str.indexOf('}', end_index) != -1) { // 我们需要遍历所有的结束符直到表达式跑通
 			end_index = str.indexOf('}', end_index) + 1
 			const expression = str.slice(0, end_index - 1)
 			try {
 				const eval_result = await async_eval(expression, formats)
+				if (eval_result.error) throw eval_result.error
 				result += eval_result.result
 				str = str.slice(end_index)
 				errors.length = 0
+				matched = true
 				break find
 			} catch (error) {
 				errors.push(error)
 			}
 		}
+		if (!matched) {
+			errors.forEach(console.error)
+			errors.length = 0
+			result += `\${${str.slice(0, end_index || str.length)}`
+			str = str.slice(end_index || str.length)
+		}
 	}
-	if (errors.length) errors.map(console.error)
 	result += str
 	return result
 }
