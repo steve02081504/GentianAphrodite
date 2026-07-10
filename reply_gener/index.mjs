@@ -8,7 +8,7 @@ import { buildPromptStruct } from '../../../../../../src/public/parts/shells/cha
 import {
 	defineInlineToolUses,
 	defineToolUseBlocks,
-} from '../../../../../../src/public/parts/shells/chat/src/stream/index.mjs'
+} from '../../../../../../src/public/parts/shells/chat/src/streaming/index.mjs'
 import { noAISourceAvailable, OrderedAISourceCalling } from '../AISource/index.mjs'
 import { chardir, is_dist } from '../charbase.mjs'
 import { plugins } from '../config/index.mjs'

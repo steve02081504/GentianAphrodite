@@ -1,4 +1,4 @@
-import { defineToolUseBlocks } from '../../../../../../../src/public/parts/shells/chat/src/stream/index.mjs'
+import { defineToolUseBlocks } from '../../../../../../../src/public/parts/shells/chat/src/streaming/index.mjs'
 
 /**
  * 推荐命令插件API类型定义

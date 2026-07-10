@@ -10,7 +10,7 @@ import {
 	getChatI18n,
 	renderMarkdownCodeBlock,
 	renderMarkdownInlineCode
-} from '../../../../../../../src/public/parts/shells/chat/src/stream/index.mjs'
+} from '../../../../../../../src/public/parts/shells/chat/src/streaming/index.mjs'
 import { unlockAchievement } from '../../scripts/achievements.mjs'
 import { toFileObj } from '../../scripts/fileobj.mjs'
 import { newCharReply, statisticDatas } from '../../scripts/statistics.mjs'
