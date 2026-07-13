@@ -7,6 +7,7 @@ import { GetGreeting, GetGroupGreeting } from './greetings/index.mjs'
 import { UpdateInfo } from './info/index.mjs'
 import { GetPrompt, GetPromptForOther } from './prompt/index.mjs'
 import { loadMemoriesFromDisk, saveMemories } from './prompt/memory/index.mjs'
+import { handleCharTopLevelError } from './reply_gener/error.mjs'
 import { BrowserJsCallback } from './reply_gener/functions/browserIntegration.mjs'
 import { timerCallBack } from './reply_gener/functions/timer.mjs'
 import { GetReply } from './reply_gener/index.mjs'
@@ -15,9 +16,19 @@ import { checkAndBackupDir, checkAndBackupMemoryFile } from './scripts/backup.mj
 import { startClipboardListening, stopClipboardListening } from './scripts/clipboard.mjs'
 import { loadStatisticDatasFromDisk } from './scripts/statistics.mjs'
 import { saveVars } from './scripts/vars.mjs'
+import { discordStickers, telegramStickers } from './stickers.manifest.mjs'
+import { onGroupEvent } from './trigger/groupGuard.mjs'
+import { initTriggerIdentity, onMessage, selfEntityHash } from './trigger/onMessage.mjs'
 
 Object.assign(GentianAphrodite, {
 	info: await UpdateInfo(),
+
+	/**
+	 * @param {Error} error 错误
+	 * @param {object} context OnError 上下文
+	 * @returns {Promise<boolean>} true 表示已处理
+	 */
+	OnError: async (error, context) => handleCharTopLevelError(error, context, selfEntityHash),
 
 	/**
 	 * 加载角色时执行的初始化操作。
@@ -36,6 +47,7 @@ Object.assign(GentianAphrodite, {
 		startClipboardListening()
 		setConfigEndpoints(stat.router)
 		unlockAchievement('installed')
+		await initTriggerIdentity(stat.username)
 	},
 	/**
 	 * 卸载角色时执行的清理操作。
@@ -64,34 +76,14 @@ Object.assign(GentianAphrodite, {
 			GetPrompt,
 			GetPromptForOther,
 			GetReply,
+			onMessage,
+			onGroupEvent,
 		},
 		telegram: {
-			/**
-			 * 设置 Telegram 机器人。
-			 * @param {import('npm:telegraf').Telegraf} bot - Telegraf 机器人实例。
-			 * @param {object} config - 配置对象。
-			 * @returns {Promise<void>}
-			 */
-			BotSetup: (bot, config) => import('./interfaces/telegram/index.mjs').then(mod => mod.TelegramBotMain(bot, config)),
-			/**
-			 * 获取机器人配置模板。
-			 * @returns {Promise<object>} - 机器人配置模板对象。
-			 */
-			GetBotConfigTemplate: () => import('./interfaces/telegram/index.mjs').then(mod => mod.GetBotConfigTemplate()),
+			stickers: telegramStickers,
 		},
 		discord: {
-			/**
-			 * 当 Discord 客户端准备就绪时执行。
-			 * @param {import('npm:discord.js').Client} client - Discord 客户端实例。
-			 * @param {object} config - 配置对象。
-			 * @returns {Promise<void>}
-			 */
-			OnceClientReady: (client, config) => import('./interfaces/discord/index.mjs').then(mod => mod.DiscordBotMain(client, config)),
-			/**
-			 * 获取机器人配置模板。
-			 * @returns {Promise<object>} - 机器人配置模板对象。
-			 */
-			GetBotConfigTemplate: () => import('./interfaces/discord/index.mjs').then(mod => mod.GetBotConfigTemplate()),
+			stickers: discordStickers,
 		},
 		shellassist: {
 			/**

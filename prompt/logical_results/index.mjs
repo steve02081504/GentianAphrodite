@@ -63,6 +63,11 @@ export async function buildLogicalResults(args) {
 	if (await match_keys(args, hypnosis_exit_words, 'user', 69))
 		result.hypnosis_exit = true
 	args.chat_scoped_char_memory.in_hypnosis = result.in_hypnosis
+	// 频道级催眠语义（trigger 侧只在该频道屏蔽非主人消息）
+	if (result.in_hypnosis)
+		args.chat_scoped_char_memory.inHypnosisChannelId = args.extension?.channelId || 'default'
+	else
+		delete args.chat_scoped_char_memory.inHypnosisChannelId
 
 	if (await match_keys(args, ['ai卡', '人物卡', '卡片'], 'any', 10) &&
 		await match_keys(args, ['ai卡', '人物卡', '人设', '设定'], 'any', 10))
