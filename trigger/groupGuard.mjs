@@ -1,5 +1,5 @@
-import { getChatClient } from '../../../../../../src/public/parts/shells/chat/src/api/index.mjs'
-import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
+import { getChatClient } from '../../../../../../src/public/parts/shells/chat/src/api/client/index.mjs'
+import { localhostLocales } from '../../../../../../src/scripts/i18n/bare.mjs'
 import { loadAnyPreferredDefaultPart } from '../../../../../../src/server/parts_loader.mjs'
 import { GentianAphrodite, charname as BotCharname, username as FountUsername } from '../charbase.mjs'
 import { fetchFilesForMessages } from '../reply_gener/utils.mjs'
@@ -26,7 +26,7 @@ async function checkOwnerPresence(group) {
 }
 
 /**
- * @param {object} event onGroupEvent 事件
+ * @param {object} event OnGroupEvent 事件
  * @param {object[]} channelHistoryForAI 频道历史
  * @returns {Promise<string>} 退群骂人文本
  */
@@ -100,7 +100,7 @@ async function generateInsult(event, channelHistoryForAI) {
 
 /**
  * @param {object} client ChatClient
- * @param {object} event onGroupEvent 事件
+ * @param {object} event OnGroupEvent 事件
  * @param {string} inviteLink 邀请链接
  */
 async function sendOwnerInviteNotifications(client, event, inviteLink) {
@@ -126,7 +126,7 @@ async function sendOwnerInviteNotifications(client, event, inviteLink) {
 
 /**
  * @param {object} client ChatClient
- * @param {object} event onGroupEvent 事件
+ * @param {object} event OnGroupEvent 事件
  */
 async function sendInsultAndLeaveGroup(client, event) {
 	const group = await client.group(event.group.groupId)
@@ -151,7 +151,7 @@ async function sendInsultAndLeaveGroup(client, event) {
 
 /**
  * @param {object} client ChatClient
- * @param {object} event onGroupEvent 事件
+ * @param {object} event OnGroupEvent 事件
  */
 async function handleOwnerNotInGroup(client, event) {
 	const now = Date.now()
@@ -178,7 +178,7 @@ async function handleOwnerNotInGroup(client, event) {
 }
 
 /**
- * @param {object} event onGroupEvent 事件
+ * @param {object} event OnGroupEvent 事件
  */
 async function handleGroupOwnerCheck(event) {
 	if (!selfEntityHash || !FountUsername) return
@@ -191,10 +191,10 @@ async function handleGroupOwnerCheck(event) {
 }
 
 /**
- * @param {Parameters<NonNullable<import('../../../../../../src/decl/charAPI.ts').CharAPI_t['interfaces']['chat']['onGroupEvent']>>[0]} event 群事件
+ * @param {Parameters<NonNullable<import('../../../../../../src/decl/charAPI.ts').CharAPI_t['interfaces']['chat']['OnGroupEvent']>>[0]} event 群事件
  * @returns {Promise<void>}
  */
-export async function onGroupEvent(event) {
+export async function OnGroupEvent(event) {
 	if (event.type === 'member_left') {
 		if (event.member?.entityHash?.toLowerCase() === operatorEntityHash) {
 			const client = await getChatClient(FountUsername, selfEntityHash)

@@ -55,8 +55,8 @@ export async function handleOwnerCommands({
 		const group = await client.group(groupId)
 		const bridge = group.bridge
 		if (bridge?.platform && bridge?.botname) {
-			const { requireBridgeOp } = await import('../../../../../../src/public/parts/shells/chat/src/chat/bridge/ops.mjs')
-			await requireBridgeOp(username, bridge, 'stopSelf')()
+			const { requireBridgeOperation } = await import('../../../../../../src/public/parts/shells/chat/src/chat/bridge/operations.mjs')
+			await requireBridgeOperation(username, bridge, 'stopSelf')()
 		} else await message.reply({ content: inHypnosis ? '无平台连接。' : 'Hub 群没有平台 bot 可停哦～' })
 		return 'exit'
 	}

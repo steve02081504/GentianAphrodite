@@ -16,7 +16,7 @@ import { extractMessageText, isGroupMuted } from './helpers.mjs'
 
 /**
  * @param {object} params 参数
- * @param {object} params.event onMessage 事件
+ * @param {object} params.event OnMessage 事件
  * @param {object} params.message Message 对象
  * @param {object} params.memory chat_scoped_char_memory
  * @param {string} params.platform 平台名
@@ -89,7 +89,7 @@ export async function tryRepeatReply({
 
 /**
  * @param {object} params 参数
- * @param {object} params.event onMessage 事件
+ * @param {object} params.event OnMessage 事件
  * @param {string} params.selfHash 自身 hash
  * @param {string} params.operatorHash 主人 hash
  * @returns {Promise<boolean>} 近期是否只有主人与 bot 在互动

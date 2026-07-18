@@ -17,8 +17,8 @@ import { startClipboardListening, stopClipboardListening } from './scripts/clipb
 import { loadStatisticDatasFromDisk } from './scripts/statistics.mjs'
 import { saveVars } from './scripts/vars.mjs'
 import { discordStickers, telegramStickers } from './stickers.manifest.mjs'
-import { onGroupEvent } from './trigger/groupGuard.mjs'
-import { initTriggerIdentity, onMessage, selfEntityHash } from './trigger/onMessage.mjs'
+import { OnGroupEvent } from './trigger/groupGuard.mjs'
+import { initTriggerIdentity, OnMessage, selfEntityHash } from './trigger/onMessage.mjs'
 
 Object.assign(GentianAphrodite, {
 	info: await UpdateInfo(),
@@ -76,8 +76,8 @@ Object.assign(GentianAphrodite, {
 			GetPrompt,
 			GetPromptForOther,
 			GetReply,
-			onMessage,
-			onGroupEvent,
+			OnMessage,
+			OnGroupEvent,
 		},
 		telegram: {
 			stickers: telegramStickers,

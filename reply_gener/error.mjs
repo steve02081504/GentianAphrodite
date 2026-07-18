@@ -165,7 +165,7 @@ export async function handleCharTopLevelError(error, context, selfEntityHash) {
 
 	const report = await handleError(error, originalArgs)
 	if (context.groupId && context.channelId && report?.content) {
-		const { getChatClient } = await import('../../../../../../src/public/parts/shells/chat/src/api/index.mjs')
+		const { getChatClient } = await import('../../../../../../src/public/parts/shells/chat/src/api/client/index.mjs')
 		const client = await getChatClient(context.username, selfEntityHash)
 		const channel = await client.group(context.groupId).then(group => group.channel(context.channelId))
 		await channel.send({ content: report.content, files: report.files || [] })

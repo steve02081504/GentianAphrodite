@@ -1,8 +1,8 @@
-import { getChatClient } from '../../../../../../src/public/parts/shells/chat/src/api/index.mjs'
+import { getChatClient } from '../../../../../../src/public/parts/shells/chat/src/api/client/index.mjs'
 import { lookupBridgeEntityReverse } from '../../../../../../src/public/parts/shells/chat/src/chat/bridge/identity.mjs'
-import { isCaredBy } from '../../../../../../src/public/parts/shells/chat/src/chat/lib/care.mjs'
 import { messageMentionsEntity } from '../../../../../../src/public/parts/shells/chat/src/chat/lib/mentionFacts.mjs'
 import { resolveOperatorEntityHash } from '../../../../../../src/public/parts/shells/chat/src/chat/lib/replica.mjs'
+import { resolveDeclaredOwnerEntityHash, resolveTrustedOwnerContext } from '../../../../../../src/public/parts/shells/chat/src/entity/master.mjs'
 import { getUserByUsername } from '../../../../../../src/server/auth/index.mjs'
 import { loadAnyPreferredDefaultPart } from '../../../../../../src/server/parts_loader.mjs'
 import { base_match_keys, base_match_keys_count } from '../scripts/match.mjs'
@@ -23,41 +23,45 @@ export function extractMessageText(message) {
 }
 
 /**
- * @param {object} event onMessage 事件
- * @returns {string | undefined} 桥接作者 entityHash
- */
-function bridgeAuthorHash(event) {
-	const msg = event.message
-	const ext = msg?.extension?.bridge
-		|| (msg?.content && typeof msg.content === 'object' ? msg.content.extension?.bridge : undefined)
-	return ext?.authorEntityHash ? String(ext.authorEntityHash).toLowerCase() : undefined
-}
-
-/**
- * @param {object} event onMessage 事件
+ * @param {object} event OnMessage 事件
  * @param {string} selfHash 自身 hash
- * @param {string} operatorHash operator hash
- * @returns {Promise<{ authorHash: string, isFromOwner: boolean, mentionsBot: boolean, mentionsOwner: boolean, client: object, message: object }>} 消息上下文
+ * @param {string} [_legacyOperatorHash] 兼容旧调用；主人以 identity.ownerEntityHash 为准
+ * @returns {Promise<{ authorHash: string, isFromOwner: boolean, attribution: object, mentionsBot: boolean, mentionsOwner: boolean, client: object, message: object, declaredOwnerEntityHash: string | null }>} 消息上下文
  */
-export async function resolveMessageContext(event, selfHash, operatorHash) {
+export async function resolveMessageContext(event, selfHash, _legacyOperatorHash) {
 	const username = event.chatReplyRequest.username
 	const client = await getChatClient(username, selfHash)
 	const message = await client.messageFrom(event)
 	const author = await message.author()
-	const authorHash = bridgeAuthorHash(event) || String(author.entityHash || '').toLowerCase()
-	const isFromOwner = !!(operatorHash && authorHash === operatorHash
-		|| operatorHash && await isCaredBy(username, selfHash, authorHash))
+	const result = await resolveTrustedOwnerContext({
+		username,
+		agentEntityHash: selfHash,
+		eventOrLine: event,
+		authorEntityHash: author?.entityHash || null,
+	})
+	const declaredOwner = result.declaredOwnerEntityHash
+		|| await resolveDeclaredOwnerEntityHash(username, selfHash)
 	const mentionsBot = await messageMentionsEntity(event, selfHash)
-	const mentionsOwner = operatorHash ? await messageMentionsEntity(event, operatorHash) : false
-	return { authorHash, isFromOwner, mentionsBot, mentionsOwner, client, message }
+	const mentionsOwner = declaredOwner ? await messageMentionsEntity(event, declaredOwner) : false
+	return {
+		authorHash: result.authorEntityHash || String(author?.entityHash || '').toLowerCase(),
+		isFromOwner: result.isFromOwner,
+		attribution: result.attribution,
+		mentionsBot,
+		mentionsOwner,
+		client,
+		message,
+		declaredOwnerEntityHash: declaredOwner,
+	}
 }
 
 /**
  * @param {string} replicaUsername replica
+ * @param {string} [agentEntityHash] agent hash；用于读声明主人昵称
  * @returns {Promise<string[]>} 主人称呼关键词
  */
-export async function deriveOwnerNameKeywords(replicaUsername) {
-	/** @type {Set<string>} */
+export async function deriveOwnerNameKeywords(replicaUsername, agentEntityHash = '') {
+	/** @type {Set} */
 	const keywords = new Set()
 	if (replicaUsername) keywords.add(replicaUsername)
 	const user = getUserByUsername(replicaUsername)
@@ -67,10 +71,11 @@ export async function deriveOwnerNameKeywords(replicaUsername) {
 		for (const row of Object.values(persona?.info || {}))
 			if (row?.name) keywords.add(String(row.name))
 	} catch { /* no persona */ }
-	// 平台侧主人昵称（壳启动 claimOperatorBridgeIdentity 写入的反查表）
 	try {
-		const operatorHash = await resolveOperatorEntityHash(replicaUsername)
-		const displayName = operatorHash && lookupBridgeEntityReverse(replicaUsername, operatorHash)?.displayName
+		const ownerHash = agentEntityHash
+			? await resolveDeclaredOwnerEntityHash(replicaUsername, agentEntityHash)
+			: await resolveOperatorEntityHash(replicaUsername)
+		const displayName = ownerHash && lookupBridgeEntityReverse(replicaUsername, ownerHash)?.displayName
 		if (displayName) {
 			const withUsername = displayName.match(/^(.*?)\s*\(@([^)]+)\)$/)
 			if (withUsername) {
@@ -171,12 +176,12 @@ export function muteGroup(memory, groupId) {
 
 /**
  * @param {object} channel Channel 鸭子类型
- * @param {string} operatorHash operator entityHash
+ * @param {string} ownerHash 声明主人 entityHash
  * @param {number} [quietMs=3000] 连续静默窗口
  * @returns {Promise<void>}
  */
-export async function waitForOwnerTypingEnd(channel, operatorHash, quietMs = 3000) {
-	const op = String(operatorHash || '').toLowerCase()
+export async function waitForOwnerTypingEnd(channel, ownerHash, quietMs = 3000) {
+	const op = String(ownerHash || '').toLowerCase()
 	if (!op) return
 	let quietSince = null
 	while (true) {

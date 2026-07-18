@@ -177,7 +177,7 @@ function calculateTriggerPossibility({
 
 /**
  * @param {object} params 参数
- * @param {object} params.event onMessage 事件
+ * @param {object} params.event OnMessage 事件
  * @param {object} params.memory chat_scoped_char_memory
  * @param {boolean} params.isFromOwner 是否主人消息
  * @param {boolean} params.mentionsBot 是否被 @

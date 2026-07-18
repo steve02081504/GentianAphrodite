@@ -1,4 +1,4 @@
-import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
+import { localhostLocales } from '../../../../../../src/scripts/i18n/bare.mjs'
 import { notify as fount_notify } from '../../../../../../src/scripts/notify.mjs'
 import { charname, username, GentianAphrodite } from '../charbase.mjs'
 

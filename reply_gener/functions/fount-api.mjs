@@ -2,7 +2,7 @@
  * fount API 相关，给代码执行中的js功能提供fountHostUrl和fountApiKey变量。
  */
 
-import { generateApiKey } from '../../../../../../../src/server/auth.mjs'
+import { generateApiKey } from '../../../../../../../src/server/auth/index.mjs'
 import { hosturl } from '../../../../../../../src/server/server.mjs'
 import { charname, username } from '../../charbase.mjs'
 import { config, setMyData } from '../../config/index.mjs'

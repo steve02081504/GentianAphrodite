@@ -1,6 +1,7 @@
 import { setCared } from '../../../../../../src/public/parts/shells/chat/src/chat/lib/care.mjs'
-import { agentEntityHash } from '../../../../../../src/public/parts/shells/chat/src/chat/lib/entity.mjs'
-import { getLocalNodeHash, resolveOperatorEntityHash } from '../../../../../../src/public/parts/shells/chat/src/chat/lib/replica.mjs'
+import { resolveOperatorEntityHash } from '../../../../../../src/public/parts/shells/chat/src/chat/lib/replica.mjs'
+import { ensureLocalAgentEntityHash } from '../../../../../../src/public/parts/shells/chat/src/entity/member.mjs'
+import { resolveDeclaredOwnerEntityHash } from '../../../../../../src/public/parts/shells/chat/src/entity/master.mjs'
 import { base_match_keys } from '../scripts/match.mjs'
 import { newUserMessage } from '../scripts/statistics.mjs'
 
@@ -20,16 +21,20 @@ const CHARNAME = 'GentianAphrodite'
 let selfEntityHash = ''
 /** @type {string} */
 let operatorEntityHash = ''
+/** @type {string} */
+let declaredOwnerEntityHash = ''
 /** @type {string[]} */
 let ownerNameKeywords = []
 
 /**
  * @param {string} selfHash 自身 entityHash
  * @param {string} operatorHash operator entityHash
+ * @param {string} [ownerHash] 声明主人
  */
-export function setTriggerIdentity(selfHash, operatorHash) {
+export function setTriggerIdentity(selfHash, operatorHash, ownerHash = '') {
 	selfEntityHash = String(selfHash || '').toLowerCase()
 	operatorEntityHash = String(operatorHash || '').toLowerCase()
+	declaredOwnerEntityHash = String(ownerHash || operatorHash || '').toLowerCase()
 }
 
 /**
@@ -40,18 +45,19 @@ export function setOwnerNameKeywords(keywords) {
 }
 
 /**
- * @param {Parameters<NonNullable<import('../../../../../../src/decl/charAPI.ts').CharAPI_t['interfaces']['chat']['onMessage']>>[0]} event onMessage 事件
+ * @param {Parameters<NonNullable<import('../../../../../../src/decl/charAPI.ts').CharAPI_t['interfaces']['chat']['OnMessage']>>[0]} event OnMessage 事件
  * @returns {Promise<boolean>} 是否愿意回复
  */
-export async function onMessage(event) {
+export async function OnMessage(event) {
 	if (!selfEntityHash) return false
 
 	const memory = event.chatReplyRequest.chat_scoped_char_memory ??= {}
 	const content = extractMessageText(event.message)
 	const platform = event.chatReplyRequest.extension?.bridge?.platform || 'chat'
 	const channelId = event.channel?.channelId || 'default'
-	const { isFromOwner, mentionsBot, mentionsOwner, client, message } =
-		await resolveMessageContext(event, selfEntityHash, operatorEntityHash)
+	const { isFromOwner, mentionsBot, mentionsOwner, client, message, declaredOwnerEntityHash: ownerHash } =
+		await resolveMessageContext(event, selfEntityHash, declaredOwnerEntityHash)
+	const ownerForTyping = ownerHash || declaredOwnerEntityHash || operatorEntityHash
 
 	const commandResult = await handleOwnerCommands({
 		content,
@@ -81,7 +87,7 @@ export async function onMessage(event) {
 		mentionsBot,
 		mentionsOwner,
 		selfHash: selfEntityHash,
-		operatorHash: operatorEntityHash,
+		operatorHash: ownerForTyping,
 		content,
 		ownerNameKeywords,
 	})
@@ -89,7 +95,7 @@ export async function onMessage(event) {
 	if (willTrigger && isFromOwner) {
 		const group = await client.group(event.group.groupId)
 		const channel = await group.channel(channelId)
-		await waitForOwnerTypingEnd(channel, operatorEntityHash)
+		await waitForOwnerTypingEnd(channel, ownerForTyping)
 	}
 
 	return willTrigger
@@ -99,15 +105,17 @@ export async function onMessage(event) {
  * @param {string} replicaUsername replica
  */
 export async function initTriggerIdentity(replicaUsername) {
-	const nodeHash = getLocalNodeHash()
-	const selfHash = agentEntityHash(nodeHash, `chars/${CHARNAME}`)
+	const selfHash = await ensureLocalAgentEntityHash(replicaUsername, CHARNAME)
 	const operatorHash = (await resolveOperatorEntityHash(replicaUsername))?.toLowerCase()
-	setTriggerIdentity(selfHash, operatorHash || '')
-	setOwnerNameKeywords(await deriveOwnerNameKeywords(replicaUsername))
-	if (operatorHash) await setCared(replicaUsername, selfHash, operatorHash, true)
+	const ownerHash = (await resolveDeclaredOwnerEntityHash(replicaUsername, selfHash))?.toLowerCase()
+		|| operatorHash
+		|| ''
+	setTriggerIdentity(selfHash, operatorHash || '', ownerHash)
+	setOwnerNameKeywords(await deriveOwnerNameKeywords(replicaUsername, selfHash))
+	if (ownerHash) await setCared(replicaUsername, selfHash, ownerHash, true)
 }
 
 /**
  *
  */
-export { selfEntityHash, operatorEntityHash, ownerNameKeywords, CHARNAME }
+export { selfEntityHash, operatorEntityHash, declaredOwnerEntityHash, ownerNameKeywords, CHARNAME }

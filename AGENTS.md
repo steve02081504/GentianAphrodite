@@ -28,25 +28,25 @@
 - **`reply_gener/` (功能实现)**: `prompt/functions/`中声明工具的具体代码实现；**所有回复请求的最终执行处**（`GetReply`），与平台无关。
   - `functions/`: 具体功能的实现代码。
   - `noAI/`: 在未配置 AI 源时提供预设回复（`noAIreply`），由主流程在检测到无可用 AI 源时调用。
-- **`trigger/` (M7 触发流水线)**: `interfaces.chat.onMessage` / `onGroupEvent` — `scoring.mjs`（HEAD 关键词表 + inFavor + 龙胆名检测 + 敷衍/催眠/禁言）、`repeat.mjs`（附件复读 + 黑名单）、`commands.mjs`（主人命令）、`groupGuard.mjs`（无主人入群/离群跟随）；主人 `@` 无 `@` 提及等待 `channel.typingUsers()` 3s 静默。
+- **`trigger/` (触发流水线)**: `interfaces.chat.OnMessage` / `OnGroupEvent` — `scoring.mjs`（HEAD 关键词表 + inFavor + 龙胆名检测 + 敷衍/催眠/禁言）、`repeat.mjs`（附件复读 + 黑名单）、`commands.mjs`（主人命令）、`groupGuard.mjs`（无主人入群/离群跟随）；主人 `@` 无 `@` 提及等待 `channel.typingUsers()` 3s 静默。身份用 `ensureLocalAgentEntityHash`（钥派生），**禁止**旧路径派生 `agentEntityHash(node, 'chars/X')`。
 - **`interfaces/`**: **telegram/discord** 仅 `api.mjs`（keyword-gated code_execution 插件，由 `reply_gener` 注入）+ **`main.mjs` 声明 `interfaces.*.stickers`**；出站由壳层 bridge 解析 avif/emoji/file_id。**shellassist** 等仍直接 `GetReply`。
 - **`event_engine/` (后台事件)**: 处理定时任务、空闲任务、语音哨兵等非用户直接触发的后台逻辑；内部直接调用 `GetReply`。当前子模块包括 `on_idle.mjs`（空闲任务与 Todo）、`voice_sentinel.mjs`（语音相关）、`index.mjs`（如 Reality Channel 等）。
 - **`.esh/` (Shell Profile)**: 包含提供给 Shell 的自定义命令和 logo。
 
 ### 请求入口与消息流
 
-并非所有请求都走 `onMessage` 触发链。区分如下：
+并非所有请求都走 `OnMessage` 触发链。区分如下：
 
-| 入口 | 是否经 `onMessage` | 说明 |
+| 入口 | 是否经 `OnMessage` | 说明 |
 |------|-------------------|------|
-| **Telegram / Discord bridge** | ✅ 经 `onMessage` | 壳层 DTO → `runTriggerPipeline` → `trigger/onMessage.mjs` → 意愿 true 时 `GetReply`；出站贴纸由壳层读 `interfaces.*.stickers` |
-| **主聊天界面** (`main.mjs` 的 `interfaces.chat`) | ✅ 经 `onMessage` | Hub 原生群同上 |
+| **Telegram / Discord bridge** | ✅ 经 `OnMessage` | 壳层 DTO → `runTriggerPipeline` → `trigger/onMessage.mjs` → 意愿 true 时 `GetReply`；出站贴纸由壳层读 `interfaces.*.stickers` |
+| **主聊天界面** (`main.mjs` 的 `interfaces.chat`) | ✅ 经 `OnMessage` | Hub 原生群同上；主人 = 声明 `ownerEntityHash` 且消息归因可信 |
 | **Shell 辅助** (`interfaces/shellassist`) | ❌ 否 | 自建 `chat_log` 与 `extension`，直接调用 `GetReply` |
 | **event_engine**（on_idle、voice_sentinel 等） | ❌ 否 | 直接调用 `GetReply`，并通过 `extension.enable_prompts` 等驱动行为 |
 | **计时器回调** (`interfaces.timers.TimerCallback`) | ❌ 否 | 由 `reply_gener/functions/timer.mjs` 等处理 |
 | **browserIntegration** | ❌ 否 | 回调直接进 `reply_gener` 侧逻辑 |
 
-因此：**“核心”是 prompt + reply_gener + trigger/onMessage**；平台连接与消息转换归 fount chat shell bridge。
+因此：**“核心”是 prompt + reply_gener + trigger/OnMessage**；平台连接与消息转换归 fount chat shell bridge。
 
 ---
 
@@ -76,9 +76,10 @@
 
 ## 3. 核心数据结构: `reply_request.extension`
 
-`reply_request.extension` 对象是在整个系统中附加和传播上下文信息的关键容器。桥接群请求携带 **`extension.bridge`**（含 `platform`、`authorEntityHash` 等）；主人判定在 `onMessage` 内用 `isCaredBy` + operator entityHash。
+`reply_request.extension` 对象是在整个系统中附加和传播上下文信息的关键容器。桥接群请求携带 **`extension.bridge`**（含 `platform`、`authorEntityHash` 等）；主人判定在 `OnMessage` 内用声明主人（`identity.ownerEntityHash`）+ 可信归因，不再使用 care / 裸 operator 哈希。
 
-- **`extension.bridge` (object)**: 桥接群逐条身份（`platform`、`platformUserId`、`authorEntityHash`、`replyToEventId` 等）；水合进 `chat_log` 条目 `extension.bridge`。主人判定在 `onMessage` 内用 `isCaredBy` + operator entityHash，**不再**使用 `is_from_owner`。
+- **`extension.bridge` (object)**: 桥接群逐条身份（`platform`、`platformUserId`、`authorEntityHash`、`replyToEventId` 等）；水合进 `chat_log` 条目 `extension.bridge`。主人判定在 `OnMessage` 内用 **声明主人**（`identity.ownerEntityHash`，默认 operator）+ **可信归因**（无 `importedFrom` / attribution mismatch）；**不再**把 care 列表或单纯 operator hash 当作主人。
+- **`extension.attribution` / `extension.declaredOwnerEntityHash`**: 壳层水合与 `getChatRequest` 注入；`MasterRecognizePrompt` 对 mismatch 消息发最高优先级防伪警告。
 - **`is_direct_message` (boolean)**: 是否为私信。
 - **`mentions_bot` (boolean)**: 是否提及机器人。
 - **`content_parts` (array)**: 消息分段，用于重建消息（如包含编辑历史或多段内容）。
@@ -168,7 +169,20 @@
 - **`enable_prompts`机制**:
   - 用于在特定场景（如后台任务）强制激活功能，会绕过`match_keys`等常规条件。
   - 访问嵌套属性时（如`args.extension?.enable_prompts?.info?.timeDateFestival`），**务必使用可选链(`?.`)**，避免运行时错误。
-- **模块职责划分**: `trigger/` 处理入站触发与就地命令；`event_engine/` 处理后台任务（如 on_idle），直接调用 `GetReply`。shellassist、timers、browserIntegration 等不经 `onMessage`。
+- **模块职责划分**: `trigger/` 处理入站触发与就地命令；`event_engine/` 处理后台任务（如 on_idle），直接调用 `GetReply`。shellassist、timers、browserIntegration 等不经 `OnMessage`。
 - **计时器回调分发**:
   - **AI工具调用型 (`<set-timer>`)**: 由`reply_gener/functions/timer.mjs`处理。
   - **系统级后台计时器**: 由`event_engine/`设置，**必须**在`main.mjs`的`interfaces.timers.TimerCallback`中分发。
+
+### 与 fount together 分支的对接面
+
+壳层契约以 fount `gentian_shell_contract` fixture 为准。对齐时注意：
+
+| 旧写法 | 新写法 |
+|---|---|
+| `interfaces.chat.onMessage` / `onGroupEvent` | **`OnMessage` / `OnGroupEvent`**（大小写必须与 `charAPI.ts` 一致，否则触发链静默不跑） |
+| `src/scripts/i18n.mjs` | `src/scripts/i18n/bare.mjs`（`localhostLocales`） |
+| `src/server/auth.mjs` | `src/server/auth/index.mjs` |
+| `chat/lib/entity.mjs` → `agentEntityHash(...)` | `entity/member.mjs` → `ensureLocalAgentEntityHash(username, charname)` |
+| `bridge/ops.mjs` → `requireBridgeOp` | `bridge/operations.mjs` → `requireBridgeOperation` |
+| `chat/src/api/index.mjs` / `api/client.mjs` | `chat/src/api/client/index.mjs` → `getChatClient` |

@@ -1,4 +1,4 @@
-import { localhostLocales } from '../../../../../../src/scripts/i18n.mjs'
+import { localhostLocales } from '../../../../../../src/scripts/i18n/bare.mjs'
 import { charname, GentianAphrodite, username } from '../charbase.mjs'
 
 /**

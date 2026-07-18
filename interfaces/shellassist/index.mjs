@@ -1,4 +1,4 @@
-import { localhostLocales } from '../../../../../../../src/scripts/i18n.mjs'
+import { localhostLocales } from '../../../../../../../src/scripts/i18n/bare.mjs'
 import { loadAnyPreferredDefaultPart } from '../../../../../../../src/server/parts_loader.mjs'
 import { username, GentianAphrodite } from '../../charbase.mjs'
 import { GetReply } from '../../reply_gener/index.mjs'

@@ -1,7 +1,7 @@
 import { sendDanmakuToPage } from '../../../../../../../src/public/parts/shells/browserIntegration/src/api.mjs'
-import { getChatClient } from '../../../../../../../src/public/parts/shells/chat/src/api/index.mjs'
-import { agentEntityHash } from '../../../../../../../src/public/parts/shells/chat/src/chat/lib/entity.mjs'
-import { getLocalNodeHash, resolveOperatorEntityHash } from '../../../../../../../src/public/parts/shells/chat/src/chat/lib/replica.mjs'
+import { getChatClient } from '../../../../../../../src/public/parts/shells/chat/src/api/client/index.mjs'
+import { resolveOperatorEntityHash } from '../../../../../../../src/public/parts/shells/chat/src/chat/lib/replica.mjs'
+import { ensureLocalAgentEntityHash } from '../../../../../../../src/public/parts/shells/chat/src/entity/member.mjs'
 import { notify as systemNotify } from '../../../../../../../src/scripts/notify.mjs'
 import { charname, username } from '../../charbase.mjs'
 import { config } from '../../config/index.mjs'
@@ -29,7 +29,7 @@ function parseNotifyAttrs(attrs) {
 async function sendDirectMessageToOwner(message) {
 	const operatorHash = (await resolveOperatorEntityHash(username))?.toLowerCase()
 	if (!operatorHash) return false
-	const selfHash = agentEntityHash(getLocalNodeHash(), `chars/${charname}`)
+	const selfHash = await ensureLocalAgentEntityHash(username, charname)
 	const client = await getChatClient(username, selfHash)
 	const dm = await client.openDm(operatorHash)
 	const channel = await dm.defaultChannel()
