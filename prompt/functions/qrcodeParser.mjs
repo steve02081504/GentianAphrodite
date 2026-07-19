@@ -35,6 +35,7 @@ export async function qrcodeParserPrompt(args, logical_results) {
 			log.logContextAfter ??= []
 			log.logContextAfter.push({
 				name: 'system',
+				uid: 'system',
 				role: 'system',
 				content,
 				charVisibility: [args.char_id]

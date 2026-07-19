@@ -49,6 +49,7 @@ export async function webbrowse(result, { AddLongTimeLog, prompt_struct }) {
 ${markdown}
 `,
 					name: 'system',
+					uid: 'system',
 					role: 'system'
 				},
 				{
@@ -57,6 +58,7 @@ ${markdown}
 ${question}
 `,
 					name: 'system',
+					uid: 'system',
 					role: 'system'
 				}
 			]

@@ -204,6 +204,7 @@ export function timerCallBack(callbackdata) {
 	statisticDatas.toolUsage.timerCallbacks++
 	const logEntry = {
 		name: 'system',
+		uid: 'system',
 		role: 'system',
 		content: `\
 定时器“${reason}”到期

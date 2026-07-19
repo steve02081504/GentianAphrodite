@@ -33,6 +33,7 @@ async function callback_handler(args, reason, code, result) {
 	const feedback = {
 		role: 'tool',
 		name: 'coderunner.callback',
+		uid: 'system',
 		content: `\
 你的js代码中的callback函数被调用了
 原因是：${reason}

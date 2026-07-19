@@ -45,6 +45,7 @@ export async function IdleManagementHandler(result, args) {
 
 			AddLongTimeLog({
 				name: 'system',
+				uid: 'system',
 				role: 'tool',
 				content: systemLogContent,
 				files: []
@@ -74,6 +75,7 @@ export async function IdleManagementHandler(result, args) {
 
 			AddLongTimeLog({
 				name: 'system',
+				uid: 'system',
 				role: 'tool',
 				content: systemLogContent,
 				files: []
@@ -124,6 +126,7 @@ export async function IdleManagementHandler(result, args) {
 
 			AddLongTimeLog({
 				name: 'system',
+				uid: 'system',
 				role: 'tool',
 				content: systemLogContent,
 				files: []
@@ -147,6 +150,7 @@ export async function IdleManagementHandler(result, args) {
 
 			AddLongTimeLog({
 				name: 'system',
+				uid: 'system',
 				role: 'tool',
 				content: systemLogContent,
 				files: []
@@ -167,6 +171,7 @@ export async function IdleManagementHandler(result, args) {
 
 		AddLongTimeLog({
 			name: 'system',
+			uid: 'system',
 			role: 'tool',
 			content: systemLogContent,
 			files: []

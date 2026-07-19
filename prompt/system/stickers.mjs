@@ -25,6 +25,7 @@ ${fs.readdirSync(chardir + '/public/imgs/stickers').map(i => i.slice(0, -5)).joi
 		text: [],
 		additional_chat_log: [{
 			name: 'system',
+			uid: 'system',
 			role: 'system',
 			content: result,
 			files: []

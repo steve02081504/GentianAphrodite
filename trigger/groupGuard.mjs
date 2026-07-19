@@ -5,19 +5,28 @@ import { GentianAphrodite, charname as BotCharname, username as FountUsername } 
 import { fetchFilesForMessages } from '../reply_gener/utils.mjs'
 import { sleep } from '../scripts/tools.mjs'
 
-import { operatorEntityHash, selfEntityHash } from './onMessage.mjs'
+import { operatorEntityHash, declaredOwnerEntityHash, selfEntityHash } from './onMessage.mjs'
 
 /** @type {number[]} */
 let invalidGroupJoinEvents = []
+
+/**
+ * @returns {string} 声明主人或 operator 的 entityHash
+ */
+function ownerHashForPresence() {
+	return String(declaredOwnerEntityHash || operatorEntityHash || '').toLowerCase()
+}
 
 /**
  * @param {object} group Group 鸭子类型
  * @returns {Promise<boolean>} 主人是否在群内
  */
 async function checkOwnerPresence(group) {
+	const ownerHash = ownerHashForPresence()
+	if (!ownerHash) return true
 	try {
 		const { members } = await group.members()
-		return members.some(member => String(member.entityHash || '').toLowerCase() === operatorEntityHash)
+		return members.some(member => String(member.entityHash || '').toLowerCase() === ownerHash)
 	}
 	catch (error) {
 		console.warn(`[Gentian groupGuard] member list failed for ${group.id}, assuming owner present:`, error)
@@ -54,9 +63,13 @@ async function generateInsult(event, channelHistoryForAI) {
 现在发挥你的聪明才智随便骂几句，随后你会自动退出群组。
 `
 	const insultRequestContext = [
-		...channelHistoryForAI,
+		...channelHistoryForAI.map(row => ({
+			...row,
+			uid: row.uid || 'user',
+		})),
 		{
 			name: 'system',
+			uid: 'system',
 			role: 'system',
 			time_stamp: Date.now(),
 			content: insultSystemPrompt,
@@ -70,7 +83,9 @@ async function generateInsult(event, channelHistoryForAI) {
 		chat_name: `${groupNameForAI}-invalid-group`,
 		char_id: BotCharname,
 		Charname: `${fountBotDisplayName} (咱自己)`,
+		CharUid: selfEntityHash || 'char',
 		UserCharname: FountUsername,
+		UserUid: ownerHashForPresence() || 'user',
 		ReplyToCharname: '',
 		locales: localhostLocales,
 		time: new Date(),
@@ -114,11 +129,12 @@ async function sendOwnerInviteNotifications(client, event, inviteLink) {
 		await channel.send({ content: inviteMessage })
 	}
 
+	const ownerHash = ownerHashForPresence()
 	const groups = await client.groups()
 	for (const group of groups) {
 		if (group.id === event.group.groupId) continue
 		const { members } = await group.members()
-		if (!members.some(member => String(member.entityHash || '').toLowerCase() === operatorEntityHash)) continue
+		if (!members.some(member => String(member.entityHash || '').toLowerCase() === ownerHash)) continue
 		const channel = await group.defaultChannel()
 		await channel.send({ content: `@${FountUsername} ${inviteMessage}` })
 	}
@@ -136,6 +152,7 @@ async function sendInsultAndLeaveGroup(client, event) {
 		const messages = await channel.messages({ limit: 10 })
 		channelHistoryForAI = messages.map(row => ({
 			name: row.content?.displayName || 'user',
+			uid: row.content?.extension?.bridge?.authorEntityHash || row.sender || 'user',
 			role: 'user',
 			content: typeof row.content === 'string' ? row.content : row.content?.content || '',
 			time_stamp: row.time || Date.now(),
@@ -196,7 +213,7 @@ async function handleGroupOwnerCheck(event) {
  */
 export async function OnGroupEvent(event) {
 	if (event.type === 'member_left') {
-		if (event.member?.entityHash?.toLowerCase() === operatorEntityHash) {
+		if (event.member?.entityHash?.toLowerCase() === ownerHashForPresence()) {
 			const client = await getChatClient(FountUsername, selfEntityHash)
 			await client.group(event.group.groupId).then(group => group.leave())
 		}

@@ -2,7 +2,7 @@ import { unlockAchievement } from '../../scripts/achievements.mjs'
 import { findChineseExprsAndNumbers } from '../../scripts/chineseToNumber.mjs'
 import { lewd_words } from '../../scripts/dict.mjs'
 import { is_PureChinese } from '../../scripts/langdetect.mjs'
-import { getScopedChatLog, match_keys, match_keys_count, PreprocessChatLogEntry } from '../../scripts/match.mjs'
+import { getScopedChatLog, isReplyToNonMaster, match_keys, match_keys_count, PreprocessChatLogEntry } from '../../scripts/match.mjs'
 
 /**
  * 逻辑结果类型定义
@@ -33,8 +33,10 @@ import { getScopedChatLog, match_keys, match_keys_count, PreprocessChatLogEntry 
 export async function buildLogicalResults(args) {
 	/** @type {logical_results_t} */
 	const result = {
-		in_multi_char_chat: new Set([args.Charname, args.ReplyToCharname, args.UserCharname, ...args.chat_log.map(e => e.name)].filter(Boolean)).size > 2,
-		in_reply_to_master: args.ReplyToCharname ? args.ReplyToCharname == args.UserCharname : true,
+		in_multi_char_chat: args.UserUid || args.CharUid
+			? new Set([args.CharUid, args.ReplyToUid, args.UserUid, ...args.chat_log.map(e => e.uid)].filter(Boolean)).size > 2
+			: new Set([args.Charname, args.ReplyToCharname, args.UserCharname, ...args.chat_log.map(e => e.name)].filter(Boolean)).size > 2,
+		in_reply_to_master: !isReplyToNonMaster(args),
 		in_hypnosis: false,
 		hypnosis_exit: false,
 		in_assist: false,

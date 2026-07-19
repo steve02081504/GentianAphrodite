@@ -129,6 +129,7 @@ export async function WebBrowsePrompt(args, logical_results) {
 		log.logContextAfter ??= []
 		log.logContextAfter.push({
 			name: 'system',
+			uid: 'system',
 			role: 'system',
 			content: `\
 上条消息中链接的元信息如下：

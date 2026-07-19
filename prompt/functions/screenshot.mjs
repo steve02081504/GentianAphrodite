@@ -31,6 +31,7 @@ export async function ScreenshotPrompt(args, logical_results) {
 		} catch (e) { console.error(e) }
 		additional_chat_log.push({
 			name: 'system',
+			uid: 'system',
 			role: 'system',
 			content: [`\
 这是你主人的屏幕截图，供你参考。

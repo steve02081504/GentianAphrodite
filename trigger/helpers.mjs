@@ -76,14 +76,7 @@ export async function deriveOwnerNameKeywords(replicaUsername, agentEntityHash =
 			? await resolveDeclaredOwnerEntityHash(replicaUsername, agentEntityHash)
 			: await resolveOperatorEntityHash(replicaUsername)
 		const displayName = ownerHash && lookupBridgeEntityReverse(replicaUsername, ownerHash)?.displayName
-		if (displayName) {
-			const withUsername = displayName.match(/^(.*?)\s*\(@([^)]+)\)$/)
-			if (withUsername) {
-				keywords.add(withUsername[1].trim())
-				keywords.add(withUsername[2].trim())
-			}
-			else keywords.add(displayName)
-		}
+		if (displayName) keywords.add(displayName)
 	} catch { /* no bridge identity */ }
 	const filtered = [...keywords].filter(word => word && word.length >= 2)
 	return filtered.length ? filtered : [...keywords].filter(Boolean)

@@ -5,7 +5,7 @@ import { loadJsonFileIfExists, saveJsonFile } from '../../../../../../../src/scr
 import { chardir } from '../../charbase.mjs'
 import { createContextSnapshot } from '../../scripts/context.mjs'
 import jieba from '../../scripts/jieba.mjs'
-import { flatChatLog, match_keys, PreprocessChatLogEntry } from '../../scripts/match.mjs'
+import { flatChatLog, isCharSpeaker, isUserSpeaker, match_keys, PreprocessChatLogEntry } from '../../scripts/match.mjs'
 import { findMostFrequentElement } from '../../scripts/tools.mjs'
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
@@ -126,7 +126,12 @@ export function getHighestScoreShortTermMemory() {
  * @param {string} Charname - AI角色名
  * @returns {Promise<KeywordInfo[]>} - 关键词列表
  */
-async function extractKeywordsFromChatLog(chat_log, UserCharname, Charname) {
+/**
+ * @param {chatLogEntry_t[]} chat_log 聊天记录
+ * @param {chatReplyRequest_t} args 请求（用于 uid / 显示名比对）
+ * @returns {Promise<{ word: string, weight: number }[]>} 关键词
+ */
+async function extractKeywordsFromChatLog(chat_log, args) {
 	const keywordMap = {}
 
 	for (const entry of chat_log) {
@@ -136,8 +141,8 @@ async function extractKeywordsFromChatLog(chat_log, UserCharname, Charname) {
 
 		// 权重加成：当前角色(User/Char)说的话权重更高
 		let multiplier = 1.0
-		if (entry.name == Charname) multiplier = 2.0
-		else if (entry.name == UserCharname) multiplier = 2.7
+		if (isCharSpeaker(entry, args)) multiplier = 2.0
+		else if (isUserSpeaker(entry, args)) multiplier = 2.7
 
 		// 使用 Jieba 提取关键词
 		for (const kw of jieba.extract(text, 72))
@@ -300,8 +305,7 @@ export async function ShortTermMemoryPrompt(args, logical_results) {
 	await Promise.all(recentLogSlice.map(PreprocessChatLogEntry))
 	const currentKeywords = await extractKeywordsFromChatLog(
 		flatChatLog(recentLogSlice),
-		args.UserCharname,
-		args.Charname
+		args,
 	)
 
 	// 2. 记忆评分：计算所有记忆与当前对话的相关性
@@ -557,13 +561,14 @@ export async function saveShortTermMemoryAfterReply(args, replyResult) {
 	// 只有非内部调用，且包含双方对话时才保存
 	if (!args.extension?.is_internal &&
 		memoryLogSlice.length &&
-		memoryLogSlice.some(chatLogEntry => chatLogEntry.name == args.UserCharname) &&
+		memoryLogSlice.some(chatLogEntry => isUserSpeaker(chatLogEntry, args)) &&
 		replyResult?.content
 	) {
 		const memoryLogWithReply = [...memoryLogSlice]
 		if (replyResult.content)
 			memoryLogWithReply.push({
 				name: args.Charname,
+				uid: args.CharUid,
 				role: 'char',
 				content: replyResult.content,
 				time_stamp: currentTimeStamp,
@@ -573,8 +578,7 @@ export async function saveShortTermMemoryAfterReply(args, replyResult) {
 		await Promise.all(memoryLogWithReply.map(PreprocessChatLogEntry))
 		const newMemoryKeywords = await extractKeywordsFromChatLog(
 			flatChatLog(memoryLogWithReply),
-			args.UserCharname,
-			args.Charname
+			args,
 		)
 		const memoryText = createContextSnapshot(memoryLogWithReply)
 

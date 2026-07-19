@@ -1,4 +1,4 @@
-import { match_keys } from '../../scripts/match.mjs'
+import { isReplyToNonMaster, match_keys } from '../../scripts/match.mjs'
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
@@ -13,7 +13,7 @@ export async function NotifyPrompt(args, logical_results) {
 	let result = ''
 	if (
 		args.extension?.enable_prompts?.notify ||
-		(args.ReplyToCharname && args.ReplyToCharname != args.UserCharname) ||
+		isReplyToNonMaster(args) ||
 		await match_keys(args, ['通知', '提醒', 'notify'], 'any')
 	) result += `\
 你可以通过回复以下格式来通知你主人：

@@ -66,12 +66,15 @@ export function initRealityChannel() {
 		char_id: charname,
 		username,
 		Charname: '龙胆',
+		CharUid: 'char',
 		UserCharname: username,
+		UserUid: 'user',
 		locales: localhostLocales,
 		time: new Date(),
 		chat_log: [
 			{
 				name: 'system',
+				uid: 'system',
 				role: 'system',
 				content: `\
 描述下你对所处环境的理解，并发送一个\`测试通知\`。
@@ -79,6 +82,7 @@ export function initRealityChannel() {
 			},
 			{
 				name: '龙胆',
+				uid: 'char',
 				role: 'char',
 				content: `\
 唔姆！龙胆明白，这些话语是龙胆自己的悄悄话，主人大人是看不到的呢！
@@ -89,6 +93,7 @@ export function initRealityChannel() {
 			},
 			{
 				name: 'system',
+				uid: 'system',
 				role: 'system',
 				content: `\
 已确认通知，进入实际环境。

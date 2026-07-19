@@ -42,6 +42,7 @@ export async function StatusBarPrompt(args, logical_results) {
 		text: [],
 		additional_chat_log: [{
 			name: 'system',
+			uid: 'system',
 			role: 'system',
 			content: result,
 			files: []

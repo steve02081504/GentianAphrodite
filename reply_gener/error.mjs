@@ -30,6 +30,7 @@ async function getAISuggestionForError(error, errorMessageForRecord, originalArg
 	const selfRepairChatLog = [
 		{
 			name: botNameForAI,
+			uid: originalArgs.CharUid || 'char',
 			content: isInHypnosisForError ? '请主人下达指令。' : '主人，有什么我可以帮到您的吗～？',
 			time_stamp: new Date().getTime(),
 			role: 'char',
@@ -37,6 +38,7 @@ async function getAISuggestionForError(error, errorMessageForRecord, originalArg
 		},
 		{
 			name: ownerNameForAI,
+			uid: originalArgs.UserUid || 'user',
 			content: errorMessageForRecord + (is_dist ? `
 龙胆，解释下这个错误是什么？可能该如何修复？
 同时给我你的创作者的相关信息，方便我反馈。
@@ -54,6 +56,7 @@ async function getAISuggestionForError(error, errorMessageForRecord, originalArg
 		},
 		{
 			name: 'system',
+			uid: 'system',
 			content: isInHypnosisForError ? '在回复时保持呆滞语气。' : '在回复问题时保持少女语气，适当添加语气词。',
 			time_stamp: new Date().getTime(),
 			role: 'system',
@@ -64,6 +67,8 @@ async function getAISuggestionForError(error, errorMessageForRecord, originalArg
 	/** @type {FountChatReplyRequest_t} */
 	const selfRepairRequest = {
 		...originalArgs,
+		UserUid: originalArgs.UserUid || 'user',
+		CharUid: originalArgs.CharUid || 'char',
 		// 避免部件出错导致诊断也跟着爆炸从而失去诊断意义，覆盖所有非本角色的部件
 		world: null,
 		user: null,
@@ -157,7 +162,9 @@ export async function handleCharTopLevelError(error, context, selfEntityHash) {
 			username: context.username,
 			char_id: BotCharname,
 			Charname: BotCharname,
+			CharUid: 'char',
 			UserCharname: context.username,
+			UserUid: 'user',
 			chat_scoped_char_memory: {},
 			chat_log: [],
 		}

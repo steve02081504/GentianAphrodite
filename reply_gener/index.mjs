@@ -21,7 +21,7 @@ import { get_telegram_api_plugin } from '../interfaces/telegram/api.mjs'
 import { buildLogicalResults } from '../prompt/logical_results/index.mjs'
 import { saveShortTermMemoryAfterReply } from '../prompt/memory/short-term-memory.mjs'
 import { unlockAchievement } from '../scripts/achievements.mjs'
-import { match_keys } from '../scripts/match.mjs'
+import { match_keys, isUserSpeaker } from '../scripts/match.mjs'
 import { addNotifyAbleChannel } from '../scripts/notify.mjs'
 import { newCharReply, newUserMessage, saveStatisticDatas, statisticDatas } from '../scripts/statistics.mjs'
 import { MergeMessagePeriodMs } from '../trigger/constants.mjs'
@@ -67,6 +67,9 @@ export function getLongTimeLogAdder(result, prompt_struct, max_forever_looping_n
 	 * @param {chatLogEntry_t} entry - 要添加的日志条目。
 	 */
 	function AddLongTimeLog(entry) {
+		entry.uid ??= entry.role === 'char' ? prompt_struct.CharUid
+			: entry.role === 'user' ? prompt_struct.UserUid
+			: 'system'
 		entry.charVisibility = [prompt_struct.char_id]
 		result?.logContextBefore?.push?.(entry)
 		prompt_struct.char_prompt.additional_chat_log.push(entry)
@@ -81,6 +84,7 @@ export function getLongTimeLogAdder(result, prompt_struct, max_forever_looping_n
 			else if (forever_looping_num >= warning_forever_looping_num)
 				AddLongTimeLog({
 					name: 'system',
+					uid: 'system',
 					role: 'system',
 					content: `\
 警告：你好像陷入了无限循环，请尽快结束循环，否则系统将强制结束对话并在评估流程中扣分。
@@ -135,7 +139,7 @@ export async function baseGetReply(args) {
 	const logical_results = await buildLogicalResults(args, prompt_struct, 0)
 	const AddLongTimeLog = getLongTimeLogAdder(result, prompt_struct)
 	const last_entry = args.chat_log.slice(-1)[0]
-	if (last_entry?.name == args.UserCharname && last_entry.role == 'user') {
+	if (last_entry?.role == 'user' && isUserSpeaker(last_entry, args)) {
 		newUserMessage(last_entry.content, args.extension?.bridge?.platform || 'chat')
 		if (await match_keys(args, ['爱你'], 'user'))
 			unlockAchievement('say_it_back')
@@ -257,6 +261,7 @@ export async function baseGetReply(args) {
 				lastlog.logContextAfter ??= []
 				lastlog.logContextAfter.push({
 					name: '龙胆',
+					uid: args.CharUid,
 					role: 'char',
 					content: '<-<null>->',
 					charVisibility: [args.char_id]
@@ -270,6 +275,7 @@ export async function baseGetReply(args) {
 				lastlog.logContextAfter ??= []
 				lastlog.logContextAfter.push({
 					name: '龙胆',
+					uid: args.CharUid,
 					role: 'char',
 					content: '<-<error>->',
 					charVisibility: [args.char_id]
@@ -301,7 +307,7 @@ export async function baseGetReply(args) {
 		if (continue_regen) continue regen
 		break
 	}
-	if (last_entry?.name == args.UserCharname && last_entry.role == 'user') {
+	if (last_entry?.role == 'user' && isUserSpeaker(last_entry, args)) {
 		if (logical_results.in_nsfw)
 			statisticDatas.userActivity.NsfwMessagesSent++
 		if (logical_results.in_hypnosis && !logical_results.hypnosis_exit)
