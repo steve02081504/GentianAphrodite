@@ -2,6 +2,7 @@ import {
 	fetchFilesForMessages,
 	isBotCommand,
 	rowAuthorHash,
+	rowIsFromChar,
 	rowIsFromSelf,
 	rowTextContent,
 	summaryFilesHex,
@@ -99,7 +100,7 @@ export async function ownerBotOnlyInteraction({ event, selfHash, operatorHash })
 	if (log.length < 2) return false
 	return log.slice(-7).every(row => {
 		const author = rowAuthorHash(row)
-		return author === operatorHash || author === selfHash || row.charId || row.content?.role === 'char'
+		return author === operatorHash || author === selfHash || rowIsFromChar(row)
 	})
 }
 

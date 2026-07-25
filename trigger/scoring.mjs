@@ -199,7 +199,7 @@ export async function shouldTriggerReply({
 	const trimmedContent = String(content || '').trim().replace(/^@\S+(?:\s+@\S+)*\s*/, '')
 
 	if (isDm && isFromOwner) return true
-	if (isDm && chatLog.some(row => row.charId || row.content?.role === 'char')) return true
+	if (isDm && chatLog.some(row => row.role === 'char')) return true
 
 	// 催眠是频道级语义：只在被催眠的频道里屏蔽非主人消息
 	if (memory.inHypnosisChannelId && memory.inHypnosisChannelId === channelId && !isFromOwner) return false

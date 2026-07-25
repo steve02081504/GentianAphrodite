@@ -5,6 +5,7 @@ import { resolveOperatorEntityHash } from '../../../../../../src/public/parts/sh
 import { resolveDeclaredOwnerEntityHash, resolveTrustedOwnerContext } from '../../../../../../src/public/parts/shells/chat/src/entity/master.mjs'
 import { getUserByUsername } from '../../../../../../src/server/auth/index.mjs'
 import { loadAnyPreferredDefaultPart } from '../../../../../../src/server/parts_loader.mjs'
+import { rowIsFromSelf } from '../reply_gener/utils.mjs'
 import { base_match_keys, base_match_keys_count } from '../scripts/match.mjs'
 import { sleep } from '../scripts/tools.mjs'
 
@@ -15,11 +16,7 @@ import { GentianWords, MuteDurationMs } from './constants.mjs'
  * @returns {string} 纯文本内容
  */
 export function extractMessageText(message) {
-	const raw = message?.content
-	if (typeof raw === 'string') return raw.trim()
-	if (raw?.type === 'text' && raw.content != null) return String(raw.content).trim()
-	if (raw && typeof raw === 'object' && raw.content != null) return String(raw.content).trim()
-	return String(raw ?? '').trim()
+	return String(message?.content ?? '').trim()
 }
 
 /**
@@ -126,18 +123,10 @@ export function detectOtherGentianBot(chatLog, selfHash) {
 		return Date.now() - ts < 5 * 60 * 1000
 	})
 	const text = recent
-		.filter(row => rowAuthorHashFromLog(row) !== selfHash && !row.charId && row.content?.role !== 'char')
+		.filter(row => !rowIsFromSelf(row, selfHash))
 		.map(row => extractMessageText(row))
 		.join('\n')
 	return !!(base_match_keys_count(text, GentianWords) && base_match_keys_count(text, ['主人', 'master']) > 1)
-}
-
-/**
- * @param {object} row chat_log 行
- * @returns {string} 作者 entityHash（小写）
- */
-function rowAuthorHashFromLog(row) {
-	return String(row.extension?.bridge?.authorEntityHash || row.extension?.authorEntityHash || row.sender || '').toLowerCase()
 }
 
 /**
@@ -197,8 +186,7 @@ export async function waitForOwnerTypingEnd(channel, ownerHash, quietMs = 3000) 
  * @returns {number} 最后 bot 消息时间戳
  */
 export function lastBotMessageTimestamp(chatLog, selfHash) {
-	const row = [...chatLog || []].reverse().find(entry =>
-		entry.charId || entry.content?.role === 'char' || rowAuthorHashFromLog(entry) === selfHash)
+	const row = [...chatLog || []].reverse().find(entry => rowIsFromSelf(entry, selfHash))
 	return row ? new Date(row.time_stamp || 0).getTime() : 0
 }
 
@@ -209,7 +197,6 @@ export function lastBotMessageTimestamp(chatLog, selfHash) {
  */
 export function messagesSinceLastBotReply(chatLog, selfHash) {
 	const log = chatLog || []
-	const lastBotIndex = log.findLastIndex(entry =>
-		entry.charId || entry.content?.role === 'char' || rowAuthorHashFromLog(entry) === selfHash)
+	const lastBotIndex = log.findLastIndex(entry => rowIsFromSelf(entry, selfHash))
 	return lastBotIndex === -1 ? log.length : log.slice(lastBotIndex + 1).length
 }
