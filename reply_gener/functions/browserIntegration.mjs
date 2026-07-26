@@ -389,7 +389,7 @@ ${util.inspect(data, { depth: null })}
 			if (!result) return
 			result.logContextBefore.push(logEntry)
 			await channel.AddChatLogEntry({ name: '龙胆', ...result })
-			newCharReply(result.content, channel.extension?.bridge?.platform || 'chat')
+			newCharReply(result.content, channel.extension?.chat?.bridge?.platform || 'chat')
 		}
 		catch (error) {
 			console.error('Error processing browser callback:', error)

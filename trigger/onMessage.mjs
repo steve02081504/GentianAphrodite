@@ -53,7 +53,7 @@ export async function OnMessage(event) {
 
 	const memory = event.chatReplyRequest.chat_scoped_char_memory ??= {}
 	const content = extractMessageText(event.message)
-	const platform = event.chatReplyRequest.extension?.bridge?.platform || 'chat'
+	const platform = event.chatReplyRequest.extension?.chat?.bridge?.platform || 'chat'
 	const channelId = event.channel?.channelId || 'default'
 	const { isFromOwner, mentionsBot, mentionsOwner, client, message, declaredOwnerEntityHash: ownerHash } =
 		await resolveMessageContext(event, selfEntityHash, declaredOwnerEntityHash)

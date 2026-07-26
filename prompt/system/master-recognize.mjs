@@ -18,15 +18,15 @@ export async function MasterRecognizePrompt(args, logical_results) {
 
 	if (isReplyToNonMaster(args)) {
 		// 优先取被回复者本人消息行上的逐条桥接事实，找不到再退到最近一条
-		const bridgeRows = args.chat_log.filter(row => row.extension?.bridge)
+		const bridgeRows = args.chat_log.filter(row => row.extension?.chat?.bridge)
 		const bridgeFacts = (
 			bridgeRows.findLast(row =>
 				args.ReplyToUid
 					? row.uid === args.ReplyToUid
 					: row.name === args.ReplyToCharname
 			) ?? bridgeRows.at(-1)
-		)?.extension?.bridge
-		const platformHint = args.extension?.bridge?.platform || bridgeFacts?.platform
+		)?.extension?.chat?.bridge
+		const platformHint = args.extension?.chat?.bridge?.platform || bridgeFacts?.platform
 		const replyLabel = args.ReplyToCharname || args.ReplyToUid || '对方'
 		const suspectIdentity = bridgeFacts?.authorDisplayName || bridgeFacts?.platformUserId
 			? `（桥接身份线索：${[bridgeFacts?.authorDisplayName, bridgeFacts?.platformUserId].filter(Boolean).join(' / ')}）`

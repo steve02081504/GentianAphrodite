@@ -9,13 +9,7 @@ import { Buffer } from 'node:buffer'
 export function mergeChatLogEntries(logEntries, mergeMessagePeriodMs) {
 	if (!logEntries?.length) return []
 	const newLog = []
-	let lastEntry = {
-		...logEntries[0],
-		extension: {
-			...logEntries[0].extension,
-			platform_message_ids: [...logEntries[0].extension?.platform_message_ids || []],
-		},
-	}
+	let lastEntry = { ...logEntries[0] }
 
 	for (let i = 1; i < logEntries.length; i++) {
 		const currentEntry = logEntries[i]
@@ -27,24 +21,11 @@ export function mergeChatLogEntries(logEntries, mergeMessagePeriodMs) {
 			lastEntry.content += '\n' + currentEntry.content
 			lastEntry.files = currentEntry.files
 			lastEntry.time_stamp = currentEntry.time_stamp
-			lastEntry.extension = {
-				...lastEntry.extension,
-				...currentEntry.extension,
-				platform_message_ids: Array.from(new Set([
-					...lastEntry.extension?.platform_message_ids || [],
-					...currentEntry.extension?.platform_message_ids || [],
-				])),
-			}
+			lastEntry.extension = { ...lastEntry.extension, ...currentEntry.extension }
 		}
 		else {
 			newLog.push(lastEntry)
-			lastEntry = {
-				...currentEntry,
-				extension: {
-					...currentEntry.extension,
-					platform_message_ids: [...currentEntry.extension?.platform_message_ids || []],
-				},
-			}
+			lastEntry = { ...currentEntry }
 		}
 	}
 	newLog.push(lastEntry)

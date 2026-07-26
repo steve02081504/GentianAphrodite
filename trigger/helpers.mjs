@@ -12,6 +12,8 @@ import { sleep } from '../scripts/tools.mjs'
 import { GentianWords, MuteDurationMs } from './constants.mjs'
 
 /**
+ * OnMessage / chat_log 正文已是 fount `chatLogEntry_t.content`（string）。
+ * 平台/DAG 线格式由壳层 ChatClient / 水合层消化，角色侧不拆包。
  * @param {object} message 消息行
  * @returns {string} 纯文本内容
  */
@@ -157,6 +159,8 @@ export function muteGroup(memory, groupId) {
 }
 
 /**
+ * 等主人停止输入后再回。仅在确实观察到主人 typing 时才等待静默窗口；
+ * Telegram 等不入账用户 typing 的平台首次查询即为空，应立即返回，避免固定卡 3s。
  * @param {object} channel Channel 鸭子类型
  * @param {string} ownerHash 声明主人 entityHash
  * @param {number} [quietMs=3000] 连续静默窗口
@@ -165,11 +169,17 @@ export function muteGroup(memory, groupId) {
 export async function waitForOwnerTypingEnd(channel, ownerHash, quietMs = 3000) {
 	const op = String(ownerHash || '').toLowerCase()
 	if (!op) return
+	/**
+	 * @returns {Promise<boolean>} 主人是否正在输入
+	 */
+	async function ownerIsTyping() {
+		const typing = await channel.typingUsers()
+		return typing.some(hash => String(hash).toLowerCase() === op)
+	}
+	if (!await ownerIsTyping()) return
 	let quietSince = null
 	while (true) {
-		const typing = await channel.typingUsers()
-		const ownerTyping = typing.some(hash => String(hash).toLowerCase() === op)
-		if (ownerTyping) {
+		if (await ownerIsTyping()) {
 			quietSince = null
 			await sleep(200)
 			continue

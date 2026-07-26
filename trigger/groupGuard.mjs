@@ -97,7 +97,7 @@ async function generateInsult(event, channelHistoryForAI) {
 		chat_scoped_char_memory: memory,
 		chat_log: await fetchFilesForMessages(insultRequestContext),
 		extension: {
-			bridge: event.group.bridge,
+			chat: { bridge: event.group.bridge },
 			groupId: event.group.groupId,
 			channelId: event.channel.channelId,
 		},
@@ -150,12 +150,15 @@ async function sendInsultAndLeaveGroup(client, event) {
 	let channelHistoryForAI = []
 	try {
 		const messages = await channel.messages({ limit: 10 })
-		channelHistoryForAI = messages.map(row => ({
-			name: row.content?.displayName || 'user',
-			uid: row.content?.extension?.bridge?.authorEntityHash || row.sender || 'user',
-			role: 'user',
-			content: typeof row.content === 'string' ? row.content : row.content?.content || '',
-			time_stamp: row.time || Date.now(),
+		channelHistoryForAI = await Promise.all(messages.map(async row => {
+			const author = await row.author()
+			return {
+				name: author?.displayName || 'user',
+				uid: author?.entityHash || 'user',
+				role: 'user',
+				content: String(row.content ?? ''),
+				time_stamp: row.time || Date.now(),
+			}
 		}))
 	}
 	catch { /* history optional */ }

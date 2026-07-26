@@ -28,7 +28,7 @@
 - **`reply_gener/` (功能实现)**: `prompt/functions/`中声明工具的具体代码实现；**所有回复请求的最终执行处**（`GetReply`），与平台无关。
   - `functions/`: 具体功能的实现代码。
   - `noAI/`: 在未配置 AI 源时提供预设回复（`noAIreply`），由主流程在检测到无可用 AI 源时调用。
-- **`trigger/` (触发流水线)**: `interfaces.chat.OnMessage` / `OnGroupEvent` — `scoring.mjs`（HEAD 关键词表 + inFavor + 龙胆名检测 + 敷衍/催眠/禁言）、`repeat.mjs`（附件复读 + 黑名单）、`commands.mjs`（主人命令）、`groupGuard.mjs`（无主人入群/离群跟随）；主人 `@` 无 `@` 提及等待 `channel.typingUsers()` 3s 静默。身份用 `ensureLocalAgentEntityHash`（钥派生），**禁止**旧路径派生 `agentEntityHash(node, 'chars/X')`。
+- **`trigger/` (触发流水线)**: `interfaces.chat.OnMessage` / `OnGroupEvent` — `scoring.mjs`（HEAD 关键词表 + inFavor + 龙胆名检测 + 敷衍/催眠/禁言）、`repeat.mjs`（附件复读 + 黑名单）、`commands.mjs`（主人命令，含「龙胆」→「主人」唤名彩蛋就地 reply）、`groupGuard.mjs`（无主人入群/离群跟随）；主人消息触发后仅在 `channel.typingUsers()` **已观察到主人正在输入**时才等 3s 静默（Telegram 等无用户 typing 入账的平台立即放行）。身份用 `ensureLocalAgentEntityHash`（钥派生），**禁止**旧路径派生 `agentEntityHash(node, 'chars/X')`。
 - **`interfaces/`**: **telegram/discord** 仅 `api.mjs`（keyword-gated code_execution 插件，由 `reply_gener` 注入）+ **`main.mjs` 声明 `interfaces.*.stickers`**；出站由壳层 bridge 解析 avif/emoji/file_id。**shellassist** 等仍直接 `GetReply`。
 - **`event_engine/` (后台事件)**: 处理定时任务、空闲任务、语音哨兵等非用户直接触发的后台逻辑；内部直接调用 `GetReply`。当前子模块包括 `on_idle.mjs`（空闲任务与 Todo）、`voice_sentinel.mjs`（语音相关）、`index.mjs`（如 Reality Channel 等）。
 - **`.esh/` (Shell Profile)**: 包含提供给 Shell 的自定义命令和 logo。
@@ -76,10 +76,11 @@
 
 ## 3. 核心数据结构: `reply_request.extension`
 
-`reply_request.extension` 对象是在整个系统中附加和传播上下文信息的关键容器。桥接群请求携带 **`extension.bridge`**（含 `platform`、`authorEntityHash` 等）；主人判定在 `OnMessage` 内用声明主人（`identity.ownerEntityHash`）+ 可信归因，不再使用 care / 裸 operator 哈希。
+`reply_request.extension` 对象是在整个系统中附加和传播上下文信息的关键容器。桥接群请求携带壳层侧车 **`extension.chat.bridge`**（含 `platform`、`authorEntityHash` 等）；主人判定在 `OnMessage` 内用声明主人（`identity.ownerEntityHash`）+ 可信归因，不再使用 care / 裸 operator 哈希。
 
-- **`extension.bridge` (object)**: 桥接群逐条身份（`platform`、`platformUserId`、`authorEntityHash`、`replyToEventId` 等）；水合进 `chat_log` 条目 `extension.bridge`。主人判定在 `OnMessage` 内用 **声明主人**（`identity.ownerEntityHash`，默认 operator）+ **可信归因**（无 `importedFrom` / attribution mismatch）；**不再**把 care 列表或单纯 operator hash 当作主人。
-- **`extension.attribution` / `extension.declaredOwnerEntityHash`**: 壳层水合与 `getChatRequest` 注入；`MasterRecognizePrompt` 对 mismatch 消息发最高优先级防伪警告。
+- **`extension.chat.bridge` (object)**: 桥接群逐条身份（`platform`、`platformUserId`、`authorEntityHash`、`replyToEventId` 等）；水合进 `chat_log` 条目 `extension.chat.bridge`。主人判定在 `OnMessage` 内用 **声明主人**（`identity.ownerEntityHash`，默认 operator）+ **可信归因**（无 `importedFrom` / attribution mismatch）；**不再**把 care 列表或单纯 operator hash 当作主人。
+- **消息正文**：`OnMessage` / `chat_log` / ChatClient `Message.content` 恒为 fount `chatLogEntry_t` 的 **string**；角色逻辑直接读 `content`，不拆包。
+- **`extension.chat.attribution` / `extension.chat.eventId` / `extension.chat.replyTo`**: 壳层水合与 `getChatRequest` 注入；`extension.declaredOwnerEntityHash` 仍在顶层。`MasterRecognizePrompt` 对 mismatch 消息发最高优先级防伪警告。
 - **`is_direct_message` (boolean)**: 是否为私信。
 - **`mentions_bot` (boolean)**: 是否提及机器人。
 - **`content_parts` (array)**: 消息分段，用于重建消息（如包含编辑历史或多段内容）。

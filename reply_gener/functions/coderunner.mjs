@@ -55,7 +55,7 @@ ${code}
 		if (!reply) return
 		reply.logContextBefore.push(feedback)
 		await logger({ name: '龙胆', ...reply })
-		newCharReply(reply.content, args.extension?.bridge?.platform || 'chat')
+		newCharReply(reply.content, args.extension?.chat?.bridge?.platform || 'chat')
 	}
 	catch (error) {
 		console.error(`Error processing callback for "${reason}":`, error)

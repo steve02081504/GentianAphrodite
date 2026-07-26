@@ -116,7 +116,7 @@ export async function baseGetReply(args) {
 	// 同人 180s 窗口消息合并（旧 bot_core 队列合并语义），减少 prompt 里的碎片消息
 	args.chat_log = mergeChatLogEntries(args.chat_log, MergeMessagePeriodMs)
 	// 注入角色插件与平台 API 插件（keyword-gated code_execution）
-	const bridgePlatform = args.extension?.bridge?.platform
+	const bridgePlatform = args.extension?.chat?.bridge?.platform
 	const groupId = args.extension?.groupId
 	const channelId = args.extension?.channelId
 	const triggerEntry = findTriggerChatLogEntry(args.chat_log)
@@ -140,7 +140,7 @@ export async function baseGetReply(args) {
 	const AddLongTimeLog = getLongTimeLogAdder(result, prompt_struct)
 	const last_entry = args.chat_log.slice(-1)[0]
 	if (last_entry?.role == 'user' && isUserSpeaker(last_entry, args)) {
-		newUserMessage(last_entry.content, args.extension?.bridge?.platform || 'chat')
+		newUserMessage(last_entry.content, args.extension?.chat?.bridge?.platform || 'chat')
 		if (await match_keys(args, ['爱你'], 'user'))
 			unlockAchievement('say_it_back')
 
@@ -312,7 +312,7 @@ export async function baseGetReply(args) {
 			statisticDatas.userActivity.NsfwMessagesSent++
 		if (logical_results.in_hypnosis && !logical_results.hypnosis_exit)
 			statisticDatas.userActivity.InHypnosisMessagesSent++
-		newCharReply(result.content, args.extension?.bridge?.platform || 'chat')
+		newCharReply(result.content, args.extension?.chat?.bridge?.platform || 'chat')
 		if (!statisticDatas.firstInteraction.time) {
 			statisticDatas.firstInteraction = {
 				time: Date.now(),
