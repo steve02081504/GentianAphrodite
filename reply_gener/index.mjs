@@ -374,6 +374,10 @@ export async function GetReply(args) {
 	}
 	catch (error) {
 		console.error(`[ReplyGener] Error in GetReply for chat "${args.chat_name}":`, error)
+		if (!(error instanceof Error)) {
+			error = Object.assign(new Error(`GetReply 捕获到非 Error: ${String(error)}`), { cause: error })
+			Error.captureStackTrace(error)
+		}
 		if (!error.skip_auto_fix) return handleError(error, args)
 		else throw error
 	}

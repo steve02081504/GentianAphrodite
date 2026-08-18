@@ -91,7 +91,13 @@ async function getAISuggestionForError(error, errorMessageForRecord, originalArg
 export async function handleError(error, originalArgs) {
 	// 故意保留 debugger：本地调试错误报告生成管线时在此断点检查 stack / originalArgs
 	debugger
-	const errorStack = error.stack || error.message
+	// 仅当收到非 Error 值（如 undefined）时停靠，避免正常 throw/catch 频繁打断调试
+	if (!(error instanceof Error)) {
+		error = new Error(`handleError 收到非 Error: ${String(error)}`)
+		Error.captureStackTrace(error, handleError) // error.stack = 谁把非 Error 传进来的
+		console.error('[Gentian handleError] 非 Error 传入, catch 点栈:', error.stack)
+	}
+	const errorStack = error.stack || String(error)
 	if (!errorStack) console.trace('Error has no stack:', error)
 	const errorMessageForRecord = `\`\`\`\n${errorStack}\n\`\`\`\n`
 
@@ -140,7 +146,12 @@ export async function handleError(error, originalArgs) {
  * @returns {Promise<boolean>} 是否已处理
  */
 export async function handleCharTopLevelError(error, context, selfEntityHash) {
-	const errorStack = error.stack || error.message
+	if (!(error instanceof Error)) {
+		error = new Error(`OnError 收到非 Error: ${String(error)}`)
+		Error.captureStackTrace(error, handleCharTopLevelError)
+		console.error('[Gentian OnError] 非 Error 传入, catch 点栈:', error.stack)
+	}
+	const errorStack = error.stack || String(error)
 	if (!errorStack) console.trace('Error has no stack:', error)
 	const errorMessageForRecord = `\`\`\`\n${errorStack}\n\`\`\`\n`
 
@@ -157,7 +168,7 @@ export async function handleCharTopLevelError(error, context, selfEntityHash) {
 			{ replicaUsername: context.username },
 		)
 	}
-	else 
+	else
 		originalArgs = {
 			username: context.username,
 			char_id: BotCharname,
@@ -168,7 +179,6 @@ export async function handleCharTopLevelError(error, context, selfEntityHash) {
 			chat_scoped_char_memory: {},
 			chat_log: [],
 		}
-	
 
 	const report = await handleError(error, originalArgs)
 	if (context.groupId && context.channelId && report?.content) {
