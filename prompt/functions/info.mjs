@@ -49,7 +49,7 @@ export async function infoPrompt(args, logical_results) {
 `
 			else {
 				reversedChatlog = reversedChatlog.slice(reversedChatlog.indexOf(lastUserMessage) + 1)
-				const lastOtherMessage = reversedChatlog.find(x => isUserSpeaker(x, args))
+				const lastOtherMessage = reversedChatlog.find(x => !isUserSpeaker(x, args))
 				const lastOtherMessageTime = lastOtherMessage?.time_stamp
 				if (lastOtherMessage?.time_stamp && timeNow - lastOtherMessageTime > 3000)
 					result += `\

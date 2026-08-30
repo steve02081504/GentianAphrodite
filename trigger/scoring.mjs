@@ -66,24 +66,23 @@ function calculateInFavorScore(content, chatLog, selfHash) {
  * @param {boolean} params.mentionsBot 是否被 @
  * @param {object[]} params.chatLog 聊天记录
  * @param {string} params.selfHash 自身 hash
- * @returns {{ newPossible: number, isMutedUpdate: boolean }} 主人消息加分结果
+ * @returns {{ newPossible: number }} 主人消息加分结果
  */
 function calculateOwnerTriggerIncrement({
 	content, memory, groupId, possible, isInFavor, mentionedWithoutAtFlag, mentionsBot, chatLog, selfHash,
 }) {
-	const isMutedChannelUpdate = false
 	if (mentionedWithoutAtFlag || mentionsBot) {
 		possible += 100
 		clearGroupMute(memory, groupId)
 	}
 	if (isInFavor && base_match_keys(content, ['闭嘴', '安静', '肃静']) && content.length < 10) {
 		muteGroup(memory, groupId)
-		return { newPossible: 0, isMutedUpdate: true }
+		return { newPossible: 0 }
 	}
 	possible += calculateKeywordBasedScore(content)
 	if (isInFavor) possible += calculateInFavorScore(content, chatLog, selfHash)
 	if (!isBotCommand(content)) possible += BaseTriggerChanceToOwner
-	return { newPossible: possible, isMutedUpdate: isMutedChannelUpdate }
+	return { newPossible: possible }
 }
 
 /**
@@ -128,34 +127,30 @@ function calculateNonOwnerTriggerIncrement({
  * @param {object[]} params.chatLog 聊天记录
  * @param {string} params.selfHash 自身 hash
  * @param {boolean} params.hasOtherGentianBot 群内是否有另一只龙胆
- * @returns {{ possibility: number, isMutedChannel: boolean }} 触发概率与静音态
+ * @returns {{ possibility: number }} 触发概率
  */
 function calculateTriggerPossibility({
 	content, memory, groupId, isFromOwner, mentionsBot, mentionsOwner,
 	ownerNameKeywords, chatLog, selfHash, hasOtherGentianBot,
 }) {
 	let possible = 0
-	const mentionedWithoutAtFlag = detectMentionedWithoutAt(content, { hasOtherGentianBot })
-		|| base_match_keys(content, ownerNameKeywords)
+	const ownerNameKeywordsHit = base_match_keys(content, ownerNameKeywords)
+	const mentionedWithoutAtFlag = detectMentionedWithoutAt(content, { hasOtherGentianBot }) || ownerNameKeywordsHit
 
-	possible += base_match_keys(content, ownerNameKeywords) * 7
+	possible += ownerNameKeywordsHit * 7
 	possible += base_match_keys(content, GentianWords) * 5
-	possible += base_match_keys(content, [/(花|华)(萝|箩|罗)(蘑|磨|摩)/g]) * 3
+	possible += base_match_keys(content, [/(花|华)(萝|箩|罗)(蘑|磨|摩)/]) * 3
 
 	const lastBotAt = lastBotMessageTimestamp(chatLog, selfHash)
 	// 时间基准：当前消息时间戳 − 本频道上次 bot 发言时间（与旧 bot_core 对齐，避免离线补发误判）
 	const messageAt = new Date(chatLog.at(-1)?.time_stamp || Date.now()).getTime()
 	const isInFavor = lastBotAt && messageAt - lastBotAt < InteractionFavorPeriodMs
-	let isMutedChannel = isGroupMuted(memory, groupId)
 
 	if (isFromOwner) {
 		const ownerResult = calculateOwnerTriggerIncrement({
 			content, memory, groupId, possible, isInFavor, mentionedWithoutAtFlag, mentionsBot, chatLog, selfHash,
 		})
 		possible = ownerResult.newPossible
-		if (ownerResult.isMutedUpdate)
-			return { possibility: 0, isMutedChannel: true }
-		isMutedChannel = isGroupMuted(memory, groupId)
 	}
 	else {
 		const nonOwnerResult = calculateNonOwnerTriggerIncrement({
@@ -163,16 +158,16 @@ function calculateTriggerPossibility({
 		})
 		possible = nonOwnerResult.newPossible
 		if (nonOwnerResult.fuyanExit)
-			return { possibility: 0, isMutedChannel }
+			return { possibility: 0 }
 	}
 
-	if (mentionsOwner || base_match_keys(content, ownerNameKeywords)) {
+	if (mentionsOwner || ownerNameKeywordsHit) {
 		possible += 7
 		if (base_match_keys(content, rude_words) && memory.fuyanMode)
-			return { possibility: 0, isMutedChannel }
+			return { possibility: 0 }
 	}
 
-	return { possibility: possible, isMutedChannel }
+	return { possibility: possible }
 }
 
 /**
@@ -205,11 +200,11 @@ export async function shouldTriggerReply({
 	if (memory.inHypnosisChannelId && memory.inHypnosisChannelId === channelId && !isFromOwner) return false
 	if (isGroupMuted(memory, groupId)) return false
 
-	if (await ownerBotOnlyInteraction({ event, selfHash, operatorHash }) && isFromOwner)
+	if (ownerBotOnlyInteraction({ event, selfHash, operatorHash }) && isFromOwner)
 		return true
 
 	const hasOtherGentianBot = detectOtherGentianBot(chatLog, selfHash)
-	const { possibility, isMutedChannel } = calculateTriggerPossibility({
+	const { possibility } = calculateTriggerPossibility({
 		content: trimmedContent,
 		memory,
 		groupId,
@@ -222,6 +217,5 @@ export async function shouldTriggerReply({
 		hasOtherGentianBot,
 	})
 
-	if (isMutedChannel) return false
 	return Math.random() * 100 < possibility
 }

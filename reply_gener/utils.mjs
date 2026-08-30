@@ -11,10 +11,12 @@ export function mergeChatLogEntries(logEntries, mergeMessagePeriodMs) {
 	const newLog = []
 	let lastEntry = { ...logEntries[0] }
 
-	for (let i = 1; i < logEntries.length; i++) {
-		const currentEntry = logEntries[i]
+	for (let index = 1; index < logEntries.length; index++) {
+		const currentEntry = logEntries[index]
 		if (
 			lastEntry.name === currentEntry.name &&
+			lastEntry.uid === currentEntry.uid &&
+			lastEntry.role === currentEntry.role &&
 			currentEntry.time_stamp - lastEntry.time_stamp < mergeMessagePeriodMs &&
 			!lastEntry.files?.length
 		) {
@@ -33,11 +35,11 @@ export function mergeChatLogEntries(logEntries, mergeMessagePeriodMs) {
 }
 
 /**
- * @param {string} str 待检查字符串
+ * @param {string} text 待检查字符串
  * @returns {boolean} 是否形似 bot 命令
  */
-export function isBotCommand(str) {
-	return Boolean(String(str || '').match(/^[!$%&/\\！]/))
+export function isBotCommand(text) {
+	return Boolean(text.match(/^[!$%&/\\！]/))
 }
 
 /**

@@ -25,4 +25,4 @@ export const GentianWords = ['龙胆', 'gentian']
 /**
  *
  */
-export const repeatBlacklist = ['discord.gg/']
+export const RepeatBlacklist = ['discord.gg/']

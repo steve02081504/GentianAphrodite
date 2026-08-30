@@ -1,7 +1,8 @@
 import { setCared } from '../../../../../../src/public/parts/shells/chat/src/chat/lib/care.mjs'
 import { resolveOperatorEntityHash } from '../../../../../../src/public/parts/shells/chat/src/chat/lib/replica.mjs'
-import { ensureLocalAgentEntityHash } from '../../../../../../src/public/parts/shells/chat/src/entity/member.mjs'
 import { resolveDeclaredOwnerEntityHash } from '../../../../../../src/public/parts/shells/chat/src/entity/master.mjs'
+import { ensureLocalAgentEntityHash } from '../../../../../../src/public/parts/shells/chat/src/entity/member.mjs'
+import { charname } from '../charbase.mjs'
 import { base_match_keys } from '../scripts/match.mjs'
 import { newUserMessage } from '../scripts/statistics.mjs'
 
@@ -14,8 +15,6 @@ import {
 } from './helpers.mjs'
 import { tryRepeatReply } from './repeat.mjs'
 import { shouldTriggerReply } from './scoring.mjs'
-
-const CHARNAME = 'GentianAphrodite'
 
 /** @type {string} */
 let selfEntityHash = ''
@@ -56,7 +55,7 @@ export async function OnMessage(event) {
 	const platform = event.chatReplyRequest.extension?.chat?.bridge?.platform || 'chat'
 	const channelId = event.channel?.channelId || 'default'
 	const { isFromOwner, mentionsBot, mentionsOwner, client, message, declaredOwnerEntityHash: ownerHash } =
-		await resolveMessageContext(event, selfEntityHash, declaredOwnerEntityHash)
+		await resolveMessageContext(event, selfEntityHash)
 	const ownerForTyping = ownerHash || declaredOwnerEntityHash || operatorEntityHash
 
 	const commandResult = await handleOwnerCommands({
@@ -105,7 +104,7 @@ export async function OnMessage(event) {
  * @param {string} replicaUsername replica
  */
 export async function initTriggerIdentity(replicaUsername) {
-	const selfHash = await ensureLocalAgentEntityHash(replicaUsername, CHARNAME)
+	const selfHash = await ensureLocalAgentEntityHash(replicaUsername, charname)
 	const operatorHash = (await resolveOperatorEntityHash(replicaUsername))?.toLowerCase()
 	const ownerHash = (await resolveDeclaredOwnerEntityHash(replicaUsername, selfHash))?.toLowerCase()
 		|| operatorHash
@@ -118,4 +117,4 @@ export async function initTriggerIdentity(replicaUsername) {
 /**
  *
  */
-export { selfEntityHash, operatorEntityHash, declaredOwnerEntityHash, ownerNameKeywords, CHARNAME }
+export { selfEntityHash, operatorEntityHash, declaredOwnerEntityHash }

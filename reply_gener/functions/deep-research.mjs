@@ -78,6 +78,8 @@ export async function deepResearch(result, args) {
 	/** @type {prompt_struct_t} */
 	const thinking_prompt_struct = {
 		...prompt_struct,
+		UserUid: args.UserUid || 'user',
+		CharUid: args.CharUid || 'char',
 		char_prompt: null, // Will be set dynamically based on the phase (planning vs execution)
 		other_chars_prompt: {},
 		world_prompt: { // Minimal world prompt sufficient for the thinking context
@@ -176,7 +178,7 @@ Step 2: <步骤2主题>
 				thinking_prompt_struct.chat_log.push({
 					content: 'Plan:\n' + plan.map(p => `Step ${p.step}: ${p.topic}`).join('\n') + '\n',
 					name: '龙胆',
-					uid: args.CharUid,
+					uid: thinking_prompt_struct.CharUid,
 					role: 'char',
 				})
 			}
@@ -185,7 +187,7 @@ Step 2: <步骤2主题>
 				thinking_prompt_struct.chat_log.push({
 					content: planText,
 					name: '龙胆',
-					uid: args.CharUid,
+					uid: thinking_prompt_struct.CharUid,
 					role: 'char',
 				})
 				if (retries < initial_plan_max_retries) {
@@ -271,7 +273,7 @@ Step 2: <步骤2主题>
 					const stepOutput = {
 						content: requestResult.content,
 						name: '龙胆',
-						uid: args.CharUid,
+						uid: thinking_prompt_struct.CharUid,
 						role: 'char',
 						files: requestResult.files, // Include files if any were attached to the response
 						logContextBefore: [],
@@ -366,7 +368,7 @@ ${!isFinalCycle ? `
 				thinking_prompt_struct.chat_log.push({
 					content: summaryRaw,
 					name: '龙胆',
-					uid: args.CharUid,
+					uid: thinking_prompt_struct.CharUid,
 					role: 'char',
 				})
 

@@ -12,7 +12,7 @@ import { base_match_keys } from '../scripts/match.mjs'
 import { newCharReply, newUserMessage } from '../scripts/statistics.mjs'
 import { findMostFrequentElement } from '../scripts/tools.mjs'
 
-import { GentianWords, RepetitionTriggerCount, repeatBlacklist } from './constants.mjs'
+import { GentianWords, RepetitionTriggerCount, RepeatBlacklist } from './constants.mjs'
 import { extractMessageText, isGroupMuted } from './helpers.mjs'
 
 /**
@@ -33,7 +33,7 @@ export async function tryRepeatReply({
 
 	const repeatCheckLog = (event.chatReplyRequest.chat_log || []).slice(-10)
 	/** @type {Record<string, number>} */
-	const nameMap = {}
+	let nameMap = {}
 	/**
 	 * @param {object[]} files 文件列表
 	 * @returns {string} 文件摘要
@@ -47,8 +47,9 @@ export async function tryRepeatReply({
 	function summary(row, nameDiff = true) {
 		let result = ''
 		if (nameDiff) {
-			nameMap[row.name] ??= 0
-			result += nameMap[row.name]++ + '\n'
+			const key = rowAuthorHash(row)
+			nameMap[key] ??= 0
+			result += nameMap[key]++ + '\n'
 		}
 		result += rowTextContent(row) + '\n\n'
 		result += summaryFiles(row.files || [])
@@ -60,12 +61,13 @@ export async function tryRepeatReply({
 	if (
 		!(repeatContent || repeat.element?.files?.length) ||
 		repeat.count < RepetitionTriggerCount ||
-		base_match_keys(repeatContent, [...ownerNameKeywords, ...rude_words, ...GentianWords, ...repeatBlacklist]) ||
+		base_match_keys(repeatContent, [...ownerNameKeywords, ...rude_words, ...GentianWords, ...RepeatBlacklist]) ||
 		isBotCommand(repeatContent)
 	) return false
 
 	await fetchFilesForMessages(repeatCheckLog)
 	summaryFiles = summaryFilesHex
+	nameMap = {}
 	repeat = findMostFrequentElement(repeatCheckLog, summary)
 	const refinedContent = rowTextContent(repeat.element)
 	if (
@@ -73,7 +75,7 @@ export async function tryRepeatReply({
 		repeat.count < RepetitionTriggerCount ||
 		base_match_keys(
 			refinedContent + '\n' + (repeat.element.files || []).map(file => file.name).join('\n'),
-			[...ownerNameKeywords, ...rude_words, ...GentianWords, ...repeatBlacklist],
+			[...ownerNameKeywords, ...rude_words, ...GentianWords, ...RepeatBlacklist],
 		) ||
 		isBotCommand(refinedContent) ||
 		repeatCheckLog.some(row =>
@@ -93,21 +95,13 @@ export async function tryRepeatReply({
  * @param {object} params.event OnMessage 事件
  * @param {string} params.selfHash 自身 hash
  * @param {string} params.operatorHash 主人 hash
- * @returns {Promise<boolean>} 近期是否只有主人与 bot 在互动
+ * @returns {boolean} 近期是否只有主人与 bot 在互动
  */
-export async function ownerBotOnlyInteraction({ event, selfHash, operatorHash }) {
+export function ownerBotOnlyInteraction({ event, selfHash, operatorHash }) {
 	const log = event.chatReplyRequest.chat_log || []
 	if (log.length < 2) return false
 	return log.slice(-7).every(row => {
 		const author = rowAuthorHash(row)
 		return author === operatorHash || author === selfHash || rowIsFromChar(row)
 	})
-}
-
-/**
- * @param {string} content 正文
- * @returns {boolean} 是否含辱骂词
- */
-export function isRudeToOwner(content) {
-	return base_match_keys(content, rude_words)
 }

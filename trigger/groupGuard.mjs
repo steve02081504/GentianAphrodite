@@ -76,13 +76,12 @@ async function generateInsult(event, channelHistoryForAI) {
 		},
 	]
 
-	const fountBotDisplayName = (await GentianAphrodite.getPartInfo?.(localhostLocales[0]))?.name || BotCharname
 	const insultRequest = {
 		supported_functions: { markdown: true, files: false, add_message: false, mathjax: false, html: false, unsafe_html: false },
 		username: FountUsername,
 		chat_name: `${groupNameForAI}-invalid-group`,
 		char_id: BotCharname,
-		Charname: `${fountBotDisplayName} (咱自己)`,
+		Charname: `${(await GentianAphrodite.getPartInfo?.(localhostLocales[0]))?.name || BotCharname} (咱自己)`,
 		CharUid: selfEntityHash || 'char',
 		UserCharname: FountUsername,
 		UserUid: ownerHashForPresence() || 'user',
@@ -166,7 +165,6 @@ async function sendInsultAndLeaveGroup(client, event) {
 	const insultMessageContent = await generateInsult(event, channelHistoryForAI)
 	if (insultMessageContent)
 		await channel.send({ content: insultMessageContent })
-	await group.leave()
 }
 
 /**
@@ -193,8 +191,13 @@ async function handleOwnerNotInGroup(client, event) {
 		console.error(`[Gentian groupGuard] invite link failed for ${event.group.groupId}:`, error)
 	}
 
-	await sendOwnerInviteNotifications(client, event, inviteLink)
-	await sendInsultAndLeaveGroup(client, event)
+	try {
+		await sendOwnerInviteNotifications(client, event, inviteLink)
+		await sendInsultAndLeaveGroup(client, event)
+	}
+	finally {
+		await client.group(event.group.groupId).then(group => group.leave())
+	}
 }
 
 /**

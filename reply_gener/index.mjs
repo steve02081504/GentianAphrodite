@@ -365,6 +365,7 @@ export async function GetReply(args) {
 		if (memory?.fuyanMode)
 			return { content: memory.in_hypnosis ? '是的，主人。' : '嗯嗯！' }
 		const result = await baseGetReply(args)
+		if (result == null) return null
 		for (const bannedStr of memory?.bannedStrings || []) {
 			if (result.content_for_show != null)
 				result.content_for_show = result.content_for_show.replaceAll(bannedStr, '')

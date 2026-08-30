@@ -24,10 +24,9 @@ export function extractMessageText(message) {
 /**
  * @param {object} event OnMessage 事件
  * @param {string} selfHash 自身 hash
- * @param {string} [_legacyOperatorHash] 兼容旧调用；主人以 identity.ownerEntityHash 为准
  * @returns {Promise<{ authorHash: string, isFromOwner: boolean, attribution: object, mentionsBot: boolean, mentionsOwner: boolean, client: object, message: object, declaredOwnerEntityHash: string | null }>} 消息上下文
  */
-export async function resolveMessageContext(event, selfHash, _legacyOperatorHash) {
+export async function resolveMessageContext(event, selfHash) {
 	const username = event.chatReplyRequest.username
 	const client = await getChatClient(username, selfHash)
 	const message = await client.messageFrom(event)
@@ -88,20 +87,14 @@ export async function deriveOwnerNameKeywords(replicaUsername, agentEntityHash =
  */
 export function detectMentionedWithoutAt(content, env = {}) {
 	const text = String(content || '').trim()
-	const firstFiveChars = text.substring(0, 5)
-	const lastFiveChars = text.substring(text.length - 5)
-	const contentEdgesForChineseCheck = firstFiveChars + ' ' + lastFiveChars
+	const contentEdgesForChineseCheck = text.substring(0, 5) + ' ' + text.substring(text.length - 5)
 
 	const engWords = text.split(' ')
-	const leadingEngWords = engWords.slice(0, 6).join(' ')
-	const trailingEngWords = engWords.slice(-3).join(' ')
-	const contentEdgesForEnglishCheck = leadingEngWords + ' ' + trailingEngWords
+	const contentEdgesForEnglishCheck = engWords.slice(0, 6).join(' ') + ' ' + engWords.slice(-3).join(' ')
 
-	const isChineseNamePattern = base_match_keys(contentEdgesForChineseCheck, [
+	const isBotNamePatternDetected = base_match_keys(contentEdgesForChineseCheck, [
 		'龙胆', /(?<![乌大巨火肝苦]|big)[胆龙][ 亲儿子宝，]/,
-	])
-	const isEnglishNamePattern = base_match_keys(contentEdgesForEnglishCheck, ['gentian'])
-	const isBotNamePatternDetected = isChineseNamePattern || isEnglishNamePattern
+	]) || base_match_keys(contentEdgesForEnglishCheck, ['gentian'])
 
 	const isPossessiveOrStatePhrase = base_match_keys(text, [
 		/(龙胆(有(?!没有)|能|这边|目前|[^ 。你，]{0,3}的)|(gentian('s|is|are|can|has)))/i,
@@ -164,9 +157,10 @@ export function muteGroup(memory, groupId) {
  * @param {object} channel Channel 鸭子类型
  * @param {string} ownerHash 声明主人 entityHash
  * @param {number} [quietMs=3000] 连续静默窗口
+ * @param {number} [totalTimeoutMs=30000] 总等待上限，超过后无论主人是否仍在输入都返回
  * @returns {Promise<void>}
  */
-export async function waitForOwnerTypingEnd(channel, ownerHash, quietMs = 3000) {
+export async function waitForOwnerTypingEnd(channel, ownerHash, quietMs = 3000, totalTimeoutMs = 30000) {
 	const op = String(ownerHash || '').toLowerCase()
 	if (!op) return
 	/**
@@ -177,8 +171,10 @@ export async function waitForOwnerTypingEnd(channel, ownerHash, quietMs = 3000) 
 		return typing.some(hash => String(hash).toLowerCase() === op)
 	}
 	if (!await ownerIsTyping()) return
+	const startTime = Date.now()
 	let quietSince = null
 	while (true) {
+		if (Date.now() - startTime >= totalTimeoutMs) return
 		if (await ownerIsTyping()) {
 			quietSince = null
 			await sleep(200)
@@ -196,7 +192,7 @@ export async function waitForOwnerTypingEnd(channel, ownerHash, quietMs = 3000) 
  * @returns {number} 最后 bot 消息时间戳
  */
 export function lastBotMessageTimestamp(chatLog, selfHash) {
-	const row = [...chatLog || []].reverse().find(entry => rowIsFromSelf(entry, selfHash))
+	const row = (chatLog || []).findLast(entry => rowIsFromSelf(entry, selfHash))
 	return row ? new Date(row.time_stamp || 0).getTime() : 0
 }
 
