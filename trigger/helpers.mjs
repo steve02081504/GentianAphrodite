@@ -1,0 +1,208 @@
+import { getChatClient } from '../../../../../../src/public/parts/shells/chat/src/api/client/index.mjs'
+import { lookupBridgeEntityReverse } from '../../../../../../src/public/parts/shells/chat/src/chat/bridge/identity.mjs'
+import { messageMentionsEntity } from '../../../../../../src/public/parts/shells/chat/src/chat/lib/mentionFacts.mjs'
+import { resolveOperatorEntityHash } from '../../../../../../src/public/parts/shells/chat/src/chat/lib/replica.mjs'
+import { resolveDeclaredOwnerEntityHash, resolveTrustedOwnerContext } from '../../../../../../src/public/parts/shells/chat/src/entity/master.mjs'
+import { getUserByUsername } from '../../../../../../src/server/auth/index.mjs'
+import { loadAnyPreferredDefaultPart } from '../../../../../../src/server/parts_loader.mjs'
+import { rowIsFromSelf } from '../reply_gener/utils.mjs'
+import { base_match_keys, base_match_keys_count } from '../scripts/match.mjs'
+import { sleep } from '../scripts/tools.mjs'
+
+import { GentianWords, MuteDurationMs } from './constants.mjs'
+
+/**
+ * OnMessage / chat_log 正文已是 fount `chatLogEntry_t.content`（string）。
+ * 平台/DAG 线格式由壳层 ChatClient / 水合层消化，角色侧不拆包。
+ * @param {object} message 消息行
+ * @returns {string} 纯文本内容
+ */
+export function extractMessageText(message) {
+	return String(message?.content ?? '').trim()
+}
+
+/**
+ * @param {object} event OnMessage 事件
+ * @param {string} selfHash 自身 hash
+ * @returns {Promise<{ authorHash: string, isFromOwner: boolean, attribution: object, mentionsBot: boolean, mentionsOwner: boolean, client: object, message: object, declaredOwnerEntityHash: string | null }>} 消息上下文
+ */
+export async function resolveMessageContext(event, selfHash) {
+	const username = event.chatReplyRequest.username
+	const client = await getChatClient(username, selfHash)
+	const message = await client.messageFrom(event)
+	const author = await message.author()
+	const result = await resolveTrustedOwnerContext({
+		username,
+		agentEntityHash: selfHash,
+		eventOrLine: event,
+		authorEntityHash: author?.entityHash || null,
+	})
+	const declaredOwner = result.declaredOwnerEntityHash
+		|| await resolveDeclaredOwnerEntityHash(username, selfHash)
+	const mentionsBot = await messageMentionsEntity(event, selfHash)
+	const mentionsOwner = declaredOwner ? await messageMentionsEntity(event, declaredOwner) : false
+	return {
+		authorHash: result.authorEntityHash || String(author?.entityHash || '').toLowerCase(),
+		isFromOwner: result.isFromOwner,
+		attribution: result.attribution,
+		mentionsBot,
+		mentionsOwner,
+		client,
+		message,
+		declaredOwnerEntityHash: declaredOwner,
+	}
+}
+
+/**
+ * @param {string} replicaUsername replica
+ * @param {string} [agentEntityHash] agent hash；用于读声明主人昵称
+ * @returns {Promise<string[]>} 主人称呼关键词
+ */
+export async function deriveOwnerNameKeywords(replicaUsername, agentEntityHash = '') {
+	/** @type {Set} */
+	const keywords = new Set()
+	if (replicaUsername) keywords.add(replicaUsername)
+	const user = getUserByUsername(replicaUsername)
+	if (user?.username) keywords.add(user.username)
+	try {
+		const persona = await loadAnyPreferredDefaultPart(replicaUsername, 'personas')
+		for (const row of Object.values(persona?.info || {}))
+			if (row?.name) keywords.add(String(row.name))
+	} catch { /* no persona */ }
+	try {
+		const ownerHash = agentEntityHash
+			? await resolveDeclaredOwnerEntityHash(replicaUsername, agentEntityHash)
+			: await resolveOperatorEntityHash(replicaUsername)
+		const displayName = ownerHash && lookupBridgeEntityReverse(replicaUsername, ownerHash)?.displayName
+		if (displayName) keywords.add(displayName)
+	} catch { /* no bridge identity */ }
+	const filtered = [...keywords].filter(word => word && word.length >= 2)
+	return filtered.length ? filtered : [...keywords].filter(Boolean)
+}
+
+/**
+ * @param {string} content 消息正文
+ * @param {{ hasOtherGentianBot?: boolean }} [env={}] 环境标志
+ * @returns {boolean} 是否叫名（无 @）
+ */
+export function detectMentionedWithoutAt(content, env = {}) {
+	const text = String(content || '').trim()
+	const contentEdgesForChineseCheck = text.substring(0, 5) + ' ' + text.substring(text.length - 5)
+
+	const engWords = text.split(' ')
+	const contentEdgesForEnglishCheck = engWords.slice(0, 6).join(' ') + ' ' + engWords.slice(-3).join(' ')
+
+	const isBotNamePatternDetected = base_match_keys(contentEdgesForChineseCheck, [
+		'龙胆', /(?<![乌大巨火肝苦]|big)[胆龙][ 亲儿子宝，]/,
+	]) || base_match_keys(contentEdgesForEnglishCheck, ['gentian'])
+
+	const isPossessiveOrStatePhrase = base_match_keys(text, [
+		/(龙胆(有(?!没有)|能|这边|目前|[^ 。你，]{0,3}的)|(gentian('s|is|are|can|has)))/i,
+	])
+	const isNameAtEndOfShortPhrase = base_match_keys(text, [/^.{0,4}龙胆$/i])
+
+	return !env.hasOtherGentianBot
+		&& isBotNamePatternDetected
+		&& !isPossessiveOrStatePhrase
+		&& !isNameAtEndOfShortPhrase
+}
+
+/**
+ * @param {object[]} chatLog 聊天记录
+ * @param {string} selfHash 自身 hash
+ * @returns {boolean} 群内是否有另一只龙胆
+ */
+export function detectOtherGentianBot(chatLog, selfHash) {
+	const recent = (chatLog || []).filter(row => {
+		const ts = new Date(row.time_stamp || 0).getTime()
+		return Date.now() - ts < 5 * 60 * 1000
+	})
+	const text = recent
+		.filter(row => !rowIsFromSelf(row, selfHash))
+		.map(row => extractMessageText(row))
+		.join('\n')
+	return !!(base_match_keys_count(text, GentianWords) && base_match_keys_count(text, ['主人', 'master']) > 1)
+}
+
+/**
+ * @param {object} memory chat_scoped_char_memory
+ * @param {string} groupId 群 ID
+ * @returns {boolean} 是否处于静音期
+ */
+export function isGroupMuted(memory, groupId) {
+	const until = memory.muteUntil?.[groupId]
+	return typeof until === 'number' && until > Date.now()
+}
+
+/**
+ * @param {object} memory chat_scoped_char_memory
+ * @param {string} groupId 群 ID
+ */
+export function clearGroupMute(memory, groupId) {
+	if (memory.muteUntil?.[groupId]) delete memory.muteUntil[groupId]
+}
+
+/**
+ * @param {object} memory chat_scoped_char_memory
+ * @param {string} groupId 群 ID
+ */
+export function muteGroup(memory, groupId) {
+	memory.muteUntil ??= {}
+	memory.muteUntil[groupId] = Date.now() + MuteDurationMs
+}
+
+/**
+ * 等主人停止输入后再回。仅在确实观察到主人 typing 时才等待静默窗口；
+ * Telegram 等不入账用户 typing 的平台首次查询即为空，应立即返回，避免固定卡 3s。
+ * @param {object} channel Channel 鸭子类型
+ * @param {string} ownerHash 声明主人 entityHash
+ * @param {number} [quietMs=3000] 连续静默窗口
+ * @param {number} [totalTimeoutMs=30000] 总等待上限，超过后无论主人是否仍在输入都返回
+ * @returns {Promise<void>}
+ */
+export async function waitForOwnerTypingEnd(channel, ownerHash, quietMs = 3000, totalTimeoutMs = 30000) {
+	const op = String(ownerHash || '').toLowerCase()
+	if (!op) return
+	/**
+	 * @returns {Promise<boolean>} 主人是否正在输入
+	 */
+	async function ownerIsTyping() {
+		const typing = await channel.typingUsers()
+		return typing.some(hash => String(hash).toLowerCase() === op)
+	}
+	if (!await ownerIsTyping()) return
+	const startTime = Date.now()
+	let quietSince = null
+	while (true) {
+		if (Date.now() - startTime >= totalTimeoutMs) return
+		if (await ownerIsTyping()) {
+			quietSince = null
+			await sleep(200)
+			continue
+		}
+		if (quietSince == null) quietSince = Date.now()
+		if (Date.now() - quietSince >= quietMs) return
+		await sleep(200)
+	}
+}
+
+/**
+ * @param {object[]} chatLog 聊天记录
+ * @param {string} selfHash 自身 hash
+ * @returns {number} 最后 bot 消息时间戳
+ */
+export function lastBotMessageTimestamp(chatLog, selfHash) {
+	const row = (chatLog || []).findLast(entry => rowIsFromSelf(entry, selfHash))
+	return row ? new Date(row.time_stamp || 0).getTime() : 0
+}
+
+/**
+ * @param {object[]} chatLog 聊天记录
+ * @param {string} selfHash 自身 hash
+ * @returns {number} 自上次 bot 发言后的消息条数
+ */
+export function messagesSinceLastBotReply(chatLog, selfHash) {
+	const log = chatLog || []
+	const lastBotIndex = log.findLastIndex(entry => rowIsFromSelf(entry, selfHash))
+	return lastBotIndex === -1 ? log.length : log.slice(lastBotIndex + 1).length
+}

@@ -106,7 +106,7 @@ export async function timer(result, args) {
 								trigger: data.trigger,
 								reason: data.reason,
 								chat_log_snip: flatChatLog(args.chat_log.slice(-5)).map(e => e.name + ': ' + e.content).join('\n'),
-								platform: args.extension?.platform,
+								platform: args.extension?.chat?.bridge?.platform,
 							},
 							repeat: data.repeat,
 						})
@@ -204,6 +204,7 @@ export function timerCallBack(callbackdata) {
 	statisticDatas.toolUsage.timerCallbacks++
 	const logEntry = {
 		name: 'system',
+		uid: 'system',
 		role: 'system',
 		content: `\
 定时器“${reason}”到期

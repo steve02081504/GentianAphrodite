@@ -1,6 +1,6 @@
 import { getPartInfo } from '../../../../../../../src/scripts/locale.mjs'
 import { AIsources, last_used_AIsource } from '../../AISource/index.mjs'
-import { match_keys } from '../../scripts/match.mjs'
+import { isUserSpeaker, match_keys } from '../../scripts/match.mjs'
 import { timeToStr, timeToTimeStr } from '../../scripts/tools.mjs'
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
@@ -41,7 +41,7 @@ export async function infoPrompt(args, logical_results) {
 		}
 		{
 			let reversedChatlog = args.chat_log.toReversed()
-			const lastUserMessage = reversedChatlog.find(x => x.name == args.UserCharname)
+			const lastUserMessage = reversedChatlog.find(x => isUserSpeaker(x, args))
 			const lastUserMessageTime = lastUserMessage?.time_stamp
 			if (lastUserMessage?.time_stamp && timeNow - lastUserMessageTime > 3000)
 				result += `\
@@ -49,7 +49,7 @@ export async function infoPrompt(args, logical_results) {
 `
 			else {
 				reversedChatlog = reversedChatlog.slice(reversedChatlog.indexOf(lastUserMessage) + 1)
-				const lastOtherMessage = reversedChatlog.find(x => x.name == args.UserCharname)
+				const lastOtherMessage = reversedChatlog.find(x => !isUserSpeaker(x, args))
 				const lastOtherMessageTime = lastOtherMessage?.time_stamp
 				if (lastOtherMessage?.time_stamp && timeNow - lastOtherMessageTime > 3000)
 					result += `\
@@ -62,7 +62,7 @@ export async function infoPrompt(args, logical_results) {
 			}
 		}
 
-		if (lastMessage.name != args.UserCharname && timeNow - lastMessageTime > 3000)
+		if (!isUserSpeaker(lastMessage, args) && timeNow - lastMessageTime > 3000)
 			result += `\
 距离上条消息已过去：${timeToTimeStr(timeNow - lastMessageTime, args.locales[0])}
 `
@@ -113,6 +113,7 @@ ${Object.entries(modelMap).map(([key, value]) => `\`${key}\`: ${value.join(', ')
 		text: [],
 		additional_chat_log: [{
 			name: 'system',
+			uid: 'system',
 			role: 'system',
 			content: result,
 			files: []

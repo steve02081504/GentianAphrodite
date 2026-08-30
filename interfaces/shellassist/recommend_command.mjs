@@ -1,4 +1,4 @@
-import { defineToolUseBlocks } from '../../../../../../../src/public/parts/shells/chat/src/stream.mjs'
+import { defineToolUseBlocks } from '../../../../../../../src/public/parts/shells/chat/src/streaming/index.mjs'
 
 /**
  * 推荐命令插件API类型定义
@@ -31,6 +31,7 @@ export const recommend_command_plugin = {
 						{
 							role: 'system',
 							name: 'system',
+							uid: 'system',
 							content: `\
 你可以通过回复以下格式来推荐命令让${args.UserCharname}选择是否执行：
 <recommend-command>

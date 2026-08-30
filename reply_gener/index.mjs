@@ -4,24 +4,27 @@ import process from 'node:process'
 
 import { compareTwoStrings as string_similarity } from 'npm:string-similarity'
 
-import { buildPromptStruct } from '../../../../../../src/public/parts/shells/chat/src/prompt_struct.mjs'
+import {
+	findTriggerChatLogEntry,
+	hydrateBridgeNativeContext,
+} from '../../../../../../src/public/parts/shells/chat/src/chat/lib/codeBridgeContext.mjs'
+import { buildPromptStruct } from '../../../../../../src/public/parts/shells/chat/src/prompt_struct/index.mjs'
 import {
 	defineInlineToolUses,
 	defineToolUseBlocks,
-} from '../../../../../../src/public/parts/shells/chat/src/stream.mjs'
+} from '../../../../../../src/public/parts/shells/chat/src/streaming/index.mjs'
 import { noAISourceAvailable, OrderedAISourceCalling } from '../AISource/index.mjs'
 import { chardir, is_dist } from '../charbase.mjs'
 import { plugins } from '../config/index.mjs'
 import { get_discord_api_plugin } from '../interfaces/discord/api.mjs'
-import { getDiscordSticker } from '../interfaces/discord/sticker.mjs'
 import { get_telegram_api_plugin } from '../interfaces/telegram/api.mjs'
-import { getTelegramSticker } from '../interfaces/telegram/sticker.mjs'
 import { buildLogicalResults } from '../prompt/logical_results/index.mjs'
 import { saveShortTermMemoryAfterReply } from '../prompt/memory/short-term-memory.mjs'
 import { unlockAchievement } from '../scripts/achievements.mjs'
-import { match_keys } from '../scripts/match.mjs'
+import { match_keys, isUserSpeaker } from '../scripts/match.mjs'
 import { addNotifyAbleChannel } from '../scripts/notify.mjs'
 import { newCharReply, newUserMessage, saveStatisticDatas, statisticDatas } from '../scripts/statistics.mjs'
+import { MergeMessagePeriodMs } from '../trigger/constants.mjs'
 
 import { handleError } from './error.mjs'
 import { browserIntegration } from './functions/browserIntegration.mjs'
@@ -39,6 +42,7 @@ import { timer } from './functions/timer.mjs'
 import { webbrowse } from './functions/webbrowse.mjs'
 import { websearch } from './functions/websearch.mjs'
 import { noAIreply } from './noAI/index.mjs'
+import { mergeChatLogEntries } from './utils.mjs'
 
 /** @typedef {import("../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
@@ -63,6 +67,9 @@ export function getLongTimeLogAdder(result, prompt_struct, max_forever_looping_n
 	 * @param {chatLogEntry_t} entry - 要添加的日志条目。
 	 */
 	function AddLongTimeLog(entry) {
+		entry.uid ??= entry.role === 'char' ? prompt_struct.CharUid
+			: entry.role === 'user' ? prompt_struct.UserUid
+			: 'system'
 		entry.charVisibility = [prompt_struct.char_id]
 		result?.logContextBefore?.push?.(entry)
 		prompt_struct.char_prompt.additional_chat_log.push(entry)
@@ -77,6 +84,7 @@ export function getLongTimeLogAdder(result, prompt_struct, max_forever_looping_n
 			else if (forever_looping_num >= warning_forever_looping_num)
 				AddLongTimeLog({
 					name: 'system',
+					uid: 'system',
 					role: 'system',
 					content: `\
 警告：你好像陷入了无限循环，请尽快结束循环，否则系统将强制结束对话并在评估流程中扣分。
@@ -105,10 +113,24 @@ export async function baseGetReply(args) {
 		extension: {},
 	}
 	if (noAISourceAvailable()) return Object.assign(result, noAIreply(args))
-	// 注入角色插件
-	args.plugins = Object.assign({}, plugins, args.plugins)
-	args.plugins.telegram_api ??= await get_telegram_api_plugin()
-	args.plugins.discord_api ??= await get_discord_api_plugin()
+	// 同人 180s 窗口消息合并（旧 bot_core 队列合并语义），减少 prompt 里的碎片消息
+	args.chat_log = mergeChatLogEntries(args.chat_log, MergeMessagePeriodMs)
+	// 注入角色插件与平台 API 插件（keyword-gated code_execution）
+	const bridgePlatform = args.extension?.chat?.bridge?.platform
+	const groupId = args.extension?.groupId
+	const channelId = args.extension?.channelId
+	const triggerEntry = findTriggerChatLogEntry(args.chat_log)
+	let nativeContext = null
+	if (bridgePlatform && groupId && channelId && args.username)
+		nativeContext = await hydrateBridgeNativeContext(args.username, groupId, channelId, triggerEntry)
+
+	const platformPlugins = {}
+	if (bridgePlatform === 'telegram')
+		platformPlugins.telegram_api = get_telegram_api_plugin(nativeContext)
+	else if (bridgePlatform === 'discord')
+		platformPlugins.discord_api = get_discord_api_plugin(nativeContext)
+
+	args.plugins = Object.assign({}, plugins, platformPlugins, args.plugins)
 	const prompt_struct = Object.assign(await buildPromptStruct(args), {
 		alternative_charnames: [
 			'Gentian', /Gentian(•|·)Aphrodite/, '龙胆', /龙胆(•|·)阿芙萝黛蒂/
@@ -117,8 +139,8 @@ export async function baseGetReply(args) {
 	const logical_results = await buildLogicalResults(args, prompt_struct, 0)
 	const AddLongTimeLog = getLongTimeLogAdder(result, prompt_struct)
 	const last_entry = args.chat_log.slice(-1)[0]
-	if (last_entry?.name == args.UserCharname && last_entry.role == 'user') {
-		newUserMessage(last_entry.content, args.extension?.platform || 'chat')
+	if (last_entry?.role == 'user' && isUserSpeaker(last_entry, args)) {
+		newUserMessage(last_entry.content, args.extension?.chat?.bridge?.platform || 'chat')
 		if (await match_keys(args, ['爱你'], 'user'))
 			unlockAchievement('say_it_back')
 
@@ -239,6 +261,7 @@ export async function baseGetReply(args) {
 				lastlog.logContextAfter ??= []
 				lastlog.logContextAfter.push({
 					name: '龙胆',
+					uid: args.CharUid,
 					role: 'char',
 					content: '<-<null>->',
 					charVisibility: [args.char_id]
@@ -252,6 +275,7 @@ export async function baseGetReply(args) {
 				lastlog.logContextAfter ??= []
 				lastlog.logContextAfter.push({
 					name: '龙胆',
+					uid: args.CharUid,
 					role: 'char',
 					content: '<-<error>->',
 					charVisibility: [args.char_id]
@@ -283,12 +307,12 @@ export async function baseGetReply(args) {
 		if (continue_regen) continue regen
 		break
 	}
-	if (last_entry?.name == args.UserCharname && last_entry.role == 'user') {
+	if (last_entry?.role == 'user' && isUserSpeaker(last_entry, args)) {
 		if (logical_results.in_nsfw)
 			statisticDatas.userActivity.NsfwMessagesSent++
 		if (logical_results.in_hypnosis && !logical_results.hypnosis_exit)
 			statisticDatas.userActivity.InHypnosisMessagesSent++
-		newCharReply(result.content, args.extension?.platform || 'chat')
+		newCharReply(result.content, args.extension?.chat?.bridge?.platform || 'chat')
 		if (!statisticDatas.firstInteraction.time) {
 			statisticDatas.firstInteraction = {
 				time: Date.now(),
@@ -308,20 +332,15 @@ export async function baseGetReply(args) {
 	for (const match of stickerMatches) {
 		const stickerName = match[1]
 		try {
-			let append = ''
-			if (args.extension?.platform === 'telegram')
-				append = `\n${await getTelegramSticker(stickerName)}`
-			else if (args.extension?.platform === 'discord' && logical_results.in_multi_char_chat) // 在非群聊中用大图
-				append = `\n${await getDiscordSticker(stickerName)}`
-			else
-				result.files.push({
-					name: stickerName + '.avif',
-					buffer: Buffer.from(fs.readFileSync(chardir + '/public/imgs/stickers/' + stickerName + '.avif'), 'base64'),
-					mime_type: 'image/avif'
-				})
+			result.files.push({
+				name: stickerName + '.avif',
+				buffer: Buffer.from(fs.readFileSync(chardir + '/public/imgs/stickers/' + stickerName + '.avif'), 'base64'),
+				mime_type: 'image/avif',
+			})
 			result.content_for_show ??= result.content
-			result.content_for_show = result.content_for_show.replace(match[0], '') + append
-		} catch {
+			result.content_for_show = result.content_for_show.replace(match[0], '')
+		}
+		catch {
 			console.error(`Sticker ${stickerName} not found`)
 			result.content = result.content.replace(match[0], '')
 			if (result.content_for_show)
@@ -342,10 +361,24 @@ export async function baseGetReply(args) {
  */
 export async function GetReply(args) {
 	try {
-		return await baseGetReply(args)
+		const memory = args.chat_scoped_char_memory
+		if (memory?.fuyanMode)
+			return { content: memory.in_hypnosis ? '是的，主人。' : '嗯嗯！' }
+		const result = await baseGetReply(args)
+		if (result == null) return null
+		for (const bannedStr of memory?.bannedStrings || []) {
+			if (result.content_for_show != null)
+				result.content_for_show = result.content_for_show.replaceAll(bannedStr, '')
+			result.content = result.content.replaceAll(bannedStr, '')
+		}
+		return result
 	}
 	catch (error) {
 		console.error(`[ReplyGener] Error in GetReply for chat "${args.chat_name}":`, error)
+		if (!(error instanceof Error)) {
+			error = Object.assign(new Error(`GetReply 捕获到非 Error: ${String(error)}`), { cause: error })
+			Error.captureStackTrace(error)
+		}
 		if (!error.skip_auto_fix) return handleError(error, args)
 		else throw error
 	}

@@ -167,6 +167,7 @@ ${[activated_memories_text, random_memories_text].filter(Boolean).join('\n')}
 		additional_chat_log: enable_memory_prompt ? [{
 			role: 'system',
 			name: 'system',
+			uid: 'system',
 			content: `\
 你可以通过输出以下格式来追加永久记忆：
 <add-long-term-memory>

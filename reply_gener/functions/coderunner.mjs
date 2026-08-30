@@ -10,7 +10,7 @@ import {
 	getChatI18n,
 	renderMarkdownCodeBlock,
 	renderMarkdownInlineCode
-} from '../../../../../../../src/public/parts/shells/chat/src/stream.mjs'
+} from '../../../../../../../src/public/parts/shells/chat/src/streaming/index.mjs'
 import { unlockAchievement } from '../../scripts/achievements.mjs'
 import { toFileObj } from '../../scripts/fileobj.mjs'
 import { newCharReply, statisticDatas } from '../../scripts/statistics.mjs'
@@ -33,6 +33,7 @@ async function callback_handler(args, reason, code, result) {
 	const feedback = {
 		role: 'tool',
 		name: 'coderunner.callback',
+		uid: 'system',
 		content: `\
 你的js代码中的callback函数被调用了
 原因是：${reason}
@@ -54,7 +55,7 @@ ${code}
 		if (!reply) return
 		reply.logContextBefore.push(feedback)
 		await logger({ name: '龙胆', ...reply })
-		newCharReply(reply.content, args.extension?.platform || 'chat')
+		newCharReply(reply.content, args.extension?.chat?.bridge?.platform || 'chat')
 	}
 	catch (error) {
 		console.error(`Error processing callback for "${reason}":`, error)

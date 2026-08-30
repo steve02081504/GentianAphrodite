@@ -229,6 +229,7 @@ export async function KanjiPrompt(args, logical_results) {
 		if (imageBuffer)
 			additional_chat_log.push({
 				name: 'system',
+				uid: 'system',
 				role: 'system',
 				content: `用户疑似正在询问汉字 "${charToLookup}" 的结构。
 为了帮助你准确识别，系统生成了该汉字的图像（见附件）。

@@ -1,4 +1,4 @@
-import { localhostLocales } from '../../../../../../../src/scripts/i18n.mjs'
+import { localhostLocales } from '../../../../../../../src/scripts/i18n/bare.mjs'
 import { loadAnyPreferredDefaultPart } from '../../../../../../../src/server/parts_loader.mjs'
 import { username, GentianAphrodite } from '../../charbase.mjs'
 import { GetReply } from '../../reply_gener/index.mjs'
@@ -34,6 +34,7 @@ export async function shellAssistMain(args) {
 			chat_log.push({
 				role: 'system',
 				name: args.shelltype || '终端',
+				uid: 'system',
 				content: `\
 用户执行了命令: \`${entry.command}\`
 
@@ -47,6 +48,7 @@ stderr: ${entry.error.includes('\n') ? '\n```\n' + entry.error + '\n```' : '`' +
 		else
 			chat_log.push({
 				...entry,
+				uid: entry.uid || (entry.role === 'char' ? 'char' : entry.role === 'user' ? 'user' : 'system'),
 				extension: entry.extension ??= {},
 				files: [],
 			})
@@ -77,6 +79,7 @@ ${args.screen}
 	chat_log.push({
 		role: 'system',
 		name: args.shelltype || '终端',
+		uid: 'system',
 		content: user_doing_now,
 		files: [],
 		extension: {}
@@ -93,7 +96,9 @@ ${args.screen}
 		chat_name: 'shell-assist-' + new Date().getTime(),
 		char_id: 'gentian',
 		Charname: '龙胆',
+		CharUid: 'char',
 		UserCharname: args.UserCharname,
+		UserUid: 'user',
 		locales: localhostLocales,
 		time: new Date(),
 		world: GetShellWorld(args.shelltype),

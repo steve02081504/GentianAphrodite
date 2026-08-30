@@ -345,6 +345,7 @@ export async function onIdleCallback() {
 
 	const logEntry = {
 		name: 'system',
+		uid: 'system',
 		role: 'system',
 		content: `\
 现在是闲置时间，上一次你和你主人的对话已经过去了一段时间，你可以自由地执行一些后台任务。

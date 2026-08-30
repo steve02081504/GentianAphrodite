@@ -78,6 +78,8 @@ export async function deepResearch(result, args) {
 	/** @type {prompt_struct_t} */
 	const thinking_prompt_struct = {
 		...prompt_struct,
+		UserUid: args.UserUid || 'user',
+		CharUid: args.CharUid || 'char',
 		char_prompt: null, // Will be set dynamically based on the phase (planning vs execution)
 		other_chars_prompt: {},
 		world_prompt: { // Minimal world prompt sufficient for the thinking context
@@ -95,6 +97,8 @@ export async function deepResearch(result, args) {
 	const startTime = Date.now()
 	const thinkingArgs = {
 		UserCharname: args.UserCharname,
+		UserUid: args.UserUid || 'user',
+		CharUid: args.CharUid || 'char',
 		username: args.username,
 		chat_log: thinking_prompt_struct.chat_log,
 		AddLongTimeLog: addThinkingLongTimeLog,
@@ -155,6 +159,7 @@ Step 2: <步骤2主题>
 		thinking_prompt_struct.chat_log.push({
 			content: initialPlanPrompt,
 			name: 'system',
+			uid: 'system',
 			role: 'system',
 		})
 
@@ -173,6 +178,7 @@ Step 2: <步骤2主题>
 				thinking_prompt_struct.chat_log.push({
 					content: 'Plan:\n' + plan.map(p => `Step ${p.step}: ${p.topic}`).join('\n') + '\n',
 					name: '龙胆',
+					uid: thinking_prompt_struct.CharUid,
 					role: 'char',
 				})
 			}
@@ -181,12 +187,14 @@ Step 2: <步骤2主题>
 				thinking_prompt_struct.chat_log.push({
 					content: planText,
 					name: '龙胆',
+					uid: thinking_prompt_struct.CharUid,
 					role: 'char',
 				})
 				if (retries < initial_plan_max_retries) {
 					thinking_prompt_struct.chat_log.push({
 						content: `你上次的输出未能解析为有效的计划。请确保你的回答直接以 "Step 1: ..." 开始，或者以 "Plan:" 开头然后紧跟 "Step 1: ..."。步骤必须从1开始且连续。请严格按要求重新生成 (${retries}/${initial_plan_max_retries})。`,
 						name: 'system',
+						uid: 'system',
 						role: 'system',
 					})
 					await sleep(thinking_interval)
@@ -199,6 +207,7 @@ Step 2: <步骤2主题>
 			AddLongTimeLog({
 				content: `无法生成有效的初始计划，已达到最大重试次数 (${initial_plan_max_retries})。思考中止。`,
 				name: 'system',
+				uid: 'system',
 				role: 'system',
 			})
 			return true
@@ -209,6 +218,7 @@ Step 2: <步骤2主题>
 		AddLongTimeLog({
 			content: `在生成初始计划时遇到错误: ${error.message}. 思考中止。`,
 			name: 'system',
+			uid: 'system',
 			role: 'system',
 		})
 		return true
@@ -252,6 +262,7 @@ Step 2: <步骤2主题>
 				thinking_prompt_struct.chat_log.push({
 					content: stepExecutionPrompt,
 					name: 'system',
+					uid: 'system',
 					role: 'system',
 				})
 
@@ -262,6 +273,7 @@ Step 2: <步骤2主题>
 					const stepOutput = {
 						content: requestResult.content,
 						name: '龙胆',
+						uid: thinking_prompt_struct.CharUid,
 						role: 'char',
 						files: requestResult.files, // Include files if any were attached to the response
 						logContextBefore: [],
@@ -288,6 +300,7 @@ Step 2: <步骤2主题>
 							thinking_prompt_struct.chat_log.push({
 								content: '你错误地生成了计划或步骤编号，而不是执行当前步骤。请专注于执行当前步骤 (Step ' + step.step + ') 并输出其最终文本结果、工具调用或障碍说明。',
 								name: 'system',
+								uid: 'system',
 								role: 'system',
 							})
 							await sleep(thinking_interval)
@@ -340,6 +353,7 @@ ${!isFinalCycle ? `
 			thinking_prompt_struct.chat_log.push({
 				content: summaryPrompt,
 				name: 'system',
+				uid: 'system',
 				role: 'system',
 			})
 
@@ -354,6 +368,7 @@ ${!isFinalCycle ? `
 				thinking_prompt_struct.chat_log.push({
 					content: summaryRaw,
 					name: '龙胆',
+					uid: thinking_prompt_struct.CharUid,
 					role: 'char',
 				})
 
@@ -418,6 +433,7 @@ Step 1: ...
 请重试 (${summaryRetries}/${summary_max_retries})。
 `,
 							name: 'system',
+							uid: 'system',
 							role: 'system',
 						})
 						await sleep(thinking_interval)
@@ -449,6 +465,7 @@ ${summaryRaw}
 					thinking_prompt_struct.chat_log.push({
 						content: `${reason} 你上次的输出未能正确处理。请根据当前情况选择一个有效标记并重新生成回答 (${summaryRetries}/${summary_max_retries})。`,
 						name: 'system',
+						uid: 'system',
 						role: 'system',
 					})
 					await sleep(thinking_interval)

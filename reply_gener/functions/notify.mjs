@@ -1,9 +1,10 @@
 import { sendDanmakuToPage } from '../../../../../../../src/public/parts/shells/browserIntegration/src/api.mjs'
+import { getChatClient } from '../../../../../../../src/public/parts/shells/chat/src/api/client/index.mjs'
+import { resolveOperatorEntityHash } from '../../../../../../../src/public/parts/shells/chat/src/chat/lib/replica.mjs'
+import { ensureLocalAgentEntityHash } from '../../../../../../../src/public/parts/shells/chat/src/entity/member.mjs'
 import { notify as systemNotify } from '../../../../../../../src/scripts/notify.mjs'
 import { charname, username } from '../../charbase.mjs'
 import { config } from '../../config/index.mjs'
-import { discordPlatformAPI } from '../../interfaces/discord/index.mjs'
-import { telegramPlatformAPI } from '../../interfaces/telegram/index.mjs'
 
 /** 默认弹幕颜色 */
 const DEFAULT_DANMAKU_COLOR = '#FF69B4'
@@ -18,6 +19,22 @@ function parseNotifyAttrs(attrs) {
 	const color = attrs.match(/(?:^|\s)color\s*=\s*["']([^"']*)["']/i)?.[1]?.trim?.()
 	const fontSize = Number(attrs.match(/(?:^|\s)font[_-]?size\s*=\s*["']([^"']*)["']/i)?.[1]?.trim?.() || 0)
 	return { color, fontSize }
+}
+
+/**
+ * 经 ChatClient 向 operator 发 DM。
+ * @param {string} message 正文
+ * @returns {Promise<boolean>} 是否成功
+ */
+async function sendDirectMessageToOwner(message) {
+	const operatorHash = (await resolveOperatorEntityHash(username))?.toLowerCase()
+	if (!operatorHash) return false
+	const selfHash = await ensureLocalAgentEntityHash(username, charname)
+	const client = await getChatClient(username, selfHash)
+	const dm = await client.openDm(operatorHash)
+	const channel = await dm.defaultChannel()
+	await channel.send({ content: message })
+	return true
 }
 
 /**
@@ -41,16 +58,8 @@ async function sendRealityNotification(message, purpose, danmakuOpts = {}) {
 		try {
 			switch (method) {
 				case 'telegram':
-					if (telegramPlatformAPI?.sendDirectMessageToOwner) {
-						await telegramPlatformAPI.sendDirectMessageToOwner(message)
-						return
-					}
-					break
 				case 'discord':
-					if (discordPlatformAPI?.sendDirectMessageToOwner) {
-						await discordPlatformAPI.sendDirectMessageToOwner(message)
-						return
-					}
+					if (await sendDirectMessageToOwner(message)) return
 					break
 				case 'system':
 					systemNotify(charname, message)

@@ -30,6 +30,7 @@ async function getAISuggestionForError(error, errorMessageForRecord, originalArg
 	const selfRepairChatLog = [
 		{
 			name: botNameForAI,
+			uid: originalArgs.CharUid || 'char',
 			content: isInHypnosisForError ? '请主人下达指令。' : '主人，有什么我可以帮到您的吗～？',
 			time_stamp: new Date().getTime(),
 			role: 'char',
@@ -37,6 +38,7 @@ async function getAISuggestionForError(error, errorMessageForRecord, originalArg
 		},
 		{
 			name: ownerNameForAI,
+			uid: originalArgs.UserUid || 'user',
 			content: errorMessageForRecord + (is_dist ? `
 龙胆，解释下这个错误是什么？可能该如何修复？
 同时给我你的创作者的相关信息，方便我反馈。
@@ -54,6 +56,7 @@ async function getAISuggestionForError(error, errorMessageForRecord, originalArg
 		},
 		{
 			name: 'system',
+			uid: 'system',
 			content: isInHypnosisForError ? '在回复时保持呆滞语气。' : '在回复问题时保持少女语气，适当添加语气词。',
 			time_stamp: new Date().getTime(),
 			role: 'system',
@@ -64,6 +67,8 @@ async function getAISuggestionForError(error, errorMessageForRecord, originalArg
 	/** @type {FountChatReplyRequest_t} */
 	const selfRepairRequest = {
 		...originalArgs,
+		UserUid: originalArgs.UserUid || 'user',
+		CharUid: originalArgs.CharUid || 'char',
 		// 避免部件出错导致诊断也跟着爆炸从而失去诊断意义，覆盖所有非本角色的部件
 		world: null,
 		user: null,
@@ -84,8 +89,15 @@ async function getAISuggestionForError(error, errorMessageForRecord, originalArg
  * @returns {Promise<FountChatReply_t>} 一个包含错误报告的回复对象。
  */
 export async function handleError(error, originalArgs) {
+	// 故意保留 debugger：本地调试错误报告生成管线时在此断点检查 stack / originalArgs
 	debugger
-	const errorStack = error.stack || error.message
+	// 仅当收到非 Error 值（如 undefined）时停靠，避免正常 throw/catch 频繁打断调试
+	if (!(error instanceof Error)) {
+		error = new Error(`handleError 收到非 Error: ${String(error)}`)
+		Error.captureStackTrace(error, handleError) // error.stack = 谁把非 Error 传进来的
+		console.error('[Gentian handleError] 非 Error 传入, catch 点栈:', error.stack)
+	}
+	const errorStack = error.stack || String(error)
 	if (!errorStack) console.trace('Error has no stack:', error)
 	const errorMessageForRecord = `\`\`\`\n${errorStack}\n\`\`\`\n`
 
@@ -103,10 +115,12 @@ export async function handleError(error, originalArgs) {
 		const anotherErrorStack = anotherError.stack || anotherError.message
 		const isHypnosisContextForError = !!originalArgs.chat_scoped_char_memory?.in_hypnosis
 
+		const noIdeaText = isHypnosisContextForError ? '抱歉，洗脑母畜龙胆没有解决思路。' : '没什么解决思路呢？'
+		// 自修流程炸出同一个错误时没必要再贴一遍相同的栈
 		if (`${error.name}: ${error.message}` === `${anotherError.name}: ${anotherError.message}`)
-			aiSuggestionReply = { content: isHypnosisContextForError ? '抱歉，洗脑母畜龙胆没有解决思路。' : '没什么解决思路呢？' }
-
-		aiSuggestionReply = { content: '```\n' + anotherErrorStack + '\n```\n' + (isHypnosisContextForError ? '抱歉，洗脑母畜龙胆没有解决思路。' : '没什么解决思路呢？') }
+			aiSuggestionReply = { content: noIdeaText }
+		else
+			aiSuggestionReply = { content: '```\n' + anotherErrorStack + '\n```\n' + noIdeaText }
 	}
 
 	let fullReplyContent = errorMessageForRecord + '\n' + (aiSuggestionReply?.content || '')
@@ -122,4 +136,58 @@ export async function handleError(error, originalArgs) {
 		files: aiSuggestionReply?.files || [],
 		extension: { is_error_report: true },
 	}
+}
+
+/**
+ * char 顶层 OnError：生成错误报告并通过 ChatClient 发回来源频道。
+ * @param {Error} error 错误
+ * @param {{ username: string, source: string, groupId?: string, channelId?: string, charname?: string }} context 上下文
+ * @param {string} selfEntityHash 角色 acting entityHash
+ * @returns {Promise<boolean>} 是否已处理
+ */
+export async function handleCharTopLevelError(error, context, selfEntityHash) {
+	if (!(error instanceof Error)) {
+		error = new Error(`OnError 收到非 Error: ${String(error)}`)
+		Error.captureStackTrace(error, handleCharTopLevelError)
+		console.error('[Gentian OnError] 非 Error 传入, catch 点栈:', error.stack)
+	}
+	const errorStack = error.stack || String(error)
+	if (!errorStack) console.trace('Error has no stack:', error)
+	const errorMessageForRecord = `\`\`\`\n${errorStack}\n\`\`\`\n`
+
+	if (errorRecord[errorMessageForRecord]) return true
+
+	/** @type {FountChatReplyRequest_t} */
+	let originalArgs
+	if (context.groupId && context.charname) {
+		const { getChatRequest } = await import('../../../../../../src/public/parts/shells/chat/src/chat/session/chatRequest.mjs')
+		originalArgs = await getChatRequest(
+			context.groupId,
+			context.charname,
+			context.channelId || 'default',
+			{ replicaUsername: context.username },
+		)
+	}
+	else
+		originalArgs = {
+			username: context.username,
+			char_id: BotCharname,
+			Charname: BotCharname,
+			CharUid: 'char',
+			UserCharname: context.username,
+			UserUid: 'user',
+			chat_scoped_char_memory: {},
+			chat_log: [],
+		}
+
+	const report = await handleError(error, originalArgs)
+	if (context.groupId && context.channelId && report?.content) {
+		const { getChatClient } = await import('../../../../../../src/public/parts/shells/chat/src/api/client/index.mjs')
+		const client = await getChatClient(context.username, selfEntityHash)
+		const channel = await client.group(context.groupId).then(group => group.channel(context.channelId))
+		await channel.send({ content: report.content, files: report.files || [] })
+	}
+
+	console.error(`[Gentian OnError/${context.source}]`, error, context)
+	return true
 }

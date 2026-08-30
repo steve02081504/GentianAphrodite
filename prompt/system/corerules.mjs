@@ -2,6 +2,8 @@ import { is_dist } from '../../charbase.mjs'
 import { lewd_words, rude_words } from '../../scripts/dict.mjs'
 import { is_English, is_Korean, is_Russian, is_French, is_German, is_Spanish, is_Italian, is_Portuguese, is_Japanese } from '../../scripts/langdetect.mjs'
 import { match_keys } from '../../scripts/match.mjs'
+
+import { systemChatLogEntry } from './systemChatLogEntry.mjs'
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
@@ -85,11 +87,6 @@ export async function CoreRulesPrompt(args, logical_results) {
 
 	return {
 		text: [],
-		additional_chat_log: [{
-			name: 'system',
-			role: 'system',
-			content: result,
-			files: []
-		}]
+		additional_chat_log: [systemChatLogEntry(result)]
 	}
 }

@@ -5,5 +5,21 @@
 		"memory",
 		"vars"
 	],
-	"CI-file": "./.github/workflows/CI.mjs"
+	"CI-file": "./.github/workflows/CI.mjs",
+	"registries": {
+		"locales": [
+			{
+				"id": "locales",
+				"level": 0,
+				"path": "locales"
+			}
+		],
+		"achievements": [
+			{
+				"id": "achievements",
+				"level": 0,
+				"path": "achievements_registry.json"
+			}
+		]
+	}
 }

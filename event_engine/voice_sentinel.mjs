@@ -339,6 +339,7 @@ async function finishRecordingSession(now) {
 	const audioBuffer = Buffer.from(wav.toBuffer().buffer)
 	const logEntry = {
 		name: 'system',
+		uid: 'system',
 		role: 'system',
 		content: isMatch
 			? '检测到可能与主人的声音相似的声音，请求识别和处理。'

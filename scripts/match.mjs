@@ -12,6 +12,36 @@ import { is_PureChinese } from './langdetect.mjs'
 import { escapeRegExp, sleep } from './tools.mjs'
 
 const chT2S = OpenCC.Converter({ from: 'twp', to: 'cn' })
+
+/**
+ * 条目是否为本机用户说话（仅 uid；显示名可伪造，禁止回退）。
+ * @param {chatLogEntry_t} entry 日志行
+ * @param {chatReplyRequest_t} args 请求
+ * @returns {boolean} 是否用户
+ */
+export function isUserSpeaker(entry, args) {
+	return !!(args.UserUid && entry?.uid && entry.uid === args.UserUid)
+}
+
+/**
+ * 条目是否为当前角色说话（仅 uid；显示名可伪造，禁止回退）。
+ * @param {chatLogEntry_t} entry 日志行
+ * @param {chatReplyRequest_t} args 请求
+ * @returns {boolean} 是否角色
+ */
+export function isCharSpeaker(entry, args) {
+	return !!(args.CharUid && entry?.uid && entry.uid === args.CharUid)
+}
+
+/**
+ * 回复对象是否非主人（仅 uid；无 ReplyToUid 时视为未指定回复对象）。
+ * @param {chatReplyRequest_t} args 请求
+ * @returns {boolean} 是否非主人
+ */
+export function isReplyToNonMaster(args) {
+	return !!(args.ReplyToUid && args.UserUid && args.ReplyToUid !== args.UserUid)
+}
+
 /**
  * 将繁体中文内容转换为简体中文。
  * @param {string} content - 要转换的文本内容。
@@ -156,22 +186,22 @@ export function getScopedChatLog(args, from = 'any', depth = 4) {
 	// filter roles
 	switch (from) {
 		case 'user':
-			chat_log = chat_log.filter(x => x.name == args.UserCharname)
+			chat_log = chat_log.filter(x => isUserSpeaker(x, args))
 			break
 		case 'notuser':
-			chat_log = chat_log.filter(x => x.name != args.UserCharname)
+			chat_log = chat_log.filter(x => !isUserSpeaker(x, args))
 			break
 		case 'char':
-			chat_log = chat_log.filter(x => x.name == args.Charname)
+			chat_log = chat_log.filter(x => isCharSpeaker(x, args))
 			break
 		case 'notchar':
-			chat_log = chat_log.filter(x => x.name != args.Charname)
+			chat_log = chat_log.filter(x => !isCharSpeaker(x, args))
 			break
 		case 'both':
-			chat_log = chat_log.filter(x => x.name == args.UserCharname || x.name == args.Charname)
+			chat_log = chat_log.filter(x => isUserSpeaker(x, args) || isCharSpeaker(x, args))
 			break
 		case 'other':
-			chat_log = chat_log.filter(x => x.name != args.UserCharname && x.name != args.Charname)
+			chat_log = chat_log.filter(x => !isUserSpeaker(x, args) && !isCharSpeaker(x, args))
 			break
 	}
 	return chat_log

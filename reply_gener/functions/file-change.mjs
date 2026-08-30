@@ -4,7 +4,7 @@ import {
 	getChatI18n,
 	inferCodeLanguageFromPath,
 	renderMarkdownCodeBlock,
-} from '../../../../../../../src/public/parts/shells/chat/src/stream.mjs'
+} from '../../../../../../../src/public/parts/shells/chat/src/streaming/index.mjs'
 import { unlockAchievement } from '../../scripts/achievements.mjs'
 import { getFileObjFormPathOrUrl, resolvePath } from '../../scripts/fileobj.mjs'
 import { statisticDatas } from '../../scripts/statistics.mjs'

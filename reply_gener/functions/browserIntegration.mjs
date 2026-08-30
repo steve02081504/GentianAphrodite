@@ -361,6 +361,7 @@ export function BrowserJsCallback({ data, pageId, script }) {
 	statisticDatas.toolUsage.browserCallbacks = (statisticDatas.toolUsage.browserCallbacks || 0) + 1
 	const logEntry = {
 		name: 'system',
+		uid: 'system',
 		role: 'system',
 		content: `\
 你的浏览器JS脚本中的callback函数被调用了。
@@ -388,12 +389,13 @@ ${util.inspect(data, { depth: null })}
 			if (!result) return
 			result.logContextBefore.push(logEntry)
 			await channel.AddChatLogEntry({ name: '龙胆', ...result })
-			newCharReply(result.content, channel.extension?.platform || 'chat')
+			newCharReply(result.content, channel.extension?.chat?.bridge?.platform || 'chat')
 		}
 		catch (error) {
 			console.error('Error processing browser callback:', error)
 			await channel.AddChatLogEntry({
 				name: 'system',
+				uid: 'system',
 				role: 'system',
 				content: `处理浏览器回调时出错: ${error.stack}`,
 				files: [],
