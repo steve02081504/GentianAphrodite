@@ -371,6 +371,7 @@ async function finishRecordingSession(now) {
 				}
 			})
 			if (result) {
+				result.logContextBefore ??= []
 				result.logContextBefore.push(logEntry)
 				await RealityChannel.AddChatLogEntry({ name: '龙胆', ...result })
 			}
