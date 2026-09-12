@@ -93,7 +93,16 @@ export async function handleError(error, originalArgs) {
 	debugger
 	// 仅当收到非 Error 值（如 undefined）时停靠，避免正常 throw/catch 频繁打断调试
 	if (!(error instanceof Error)) {
-		error = new Error(`handleError 收到非 Error: ${String(error)}`)
+		const originalError = error
+		let errorInfo
+		try {
+			errorInfo = JSON.stringify(originalError)
+		} catch {
+			errorInfo = String(originalError)
+		}
+		error = Object.assign(new Error(`handleError 捕获到非 Error: ${errorInfo}`), { cause: originalError })
+		if (originalError?.skip_auto_fix) error.skip_auto_fix = originalError.skip_auto_fix
+		if (originalError?.skip_report) error.skip_report = originalError.skip_report
 		Error.captureStackTrace(error, handleError) // error.stack = 谁把非 Error 传进来的
 		console.error('[Gentian handleError] 非 Error 传入, catch 点栈:', error.stack)
 	}
@@ -147,7 +156,16 @@ export async function handleError(error, originalArgs) {
  */
 export async function handleCharTopLevelError(error, context, selfEntityHash) {
 	if (!(error instanceof Error)) {
-		error = new Error(`OnError 收到非 Error: ${String(error)}`)
+		const originalError = error
+		let errorInfo
+		try {
+			errorInfo = JSON.stringify(originalError)
+		} catch {
+			errorInfo = String(originalError)
+		}
+		error = Object.assign(new Error(`OnError 捕获到非 Error: ${errorInfo}`), { cause: originalError })
+		if (originalError?.skip_auto_fix) error.skip_auto_fix = originalError.skip_auto_fix
+		if (originalError?.skip_report) error.skip_report = originalError.skip_report
 		Error.captureStackTrace(error, handleCharTopLevelError)
 		console.error('[Gentian OnError] 非 Error 传入, catch 点栈:', error.stack)
 	}

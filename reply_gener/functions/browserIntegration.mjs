@@ -31,9 +31,8 @@ import { GetReply } from '../index.mjs'
  * @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t}
  */
 export async function browserIntegration(result, args) {
-	const { AddLongTimeLog, username } = args
+	const { AddLongTimeLog, MaskHandledCall, username } = args
 	let processed = false
-	const commands_called = []
 
 	/**
 	 * 处理浏览器集成命令执行期间发生的错误。
@@ -325,12 +324,13 @@ export async function browserIntegration(result, args) {
 		}
 	]
 
+	const content = result.content_for_handle
 	for (const processor of commandProcessors)
-		for (const match of result.content.matchAll(processor.regex)) {
+		for (const match of content.matchAll(processor.regex)) {
 			processed = true
+			MaskHandledCall?.(match[0])
 			unlockAchievement('use_browser_integration')
 			statisticDatas.toolUsage.browserOperations = (statisticDatas.toolUsage.browserOperations || 0) + 1
-			commands_called.push(match[0])
 			try {
 				await processor.handler(match)
 			}
@@ -338,14 +338,6 @@ export async function browserIntegration(result, args) {
 				handleError(err, processor.name)
 			}
 		}
-
-	if (commands_called.length)
-		AddLongTimeLog({
-			name: '龙胆',
-			role: 'char',
-			content: commands_called.join('\n'),
-			files: []
-		})
 
 	return processed
 }

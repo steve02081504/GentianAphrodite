@@ -10,16 +10,12 @@ import { fountdir } from '../../charbase.mjs'
 
 /** @type {ReplyHandler_t} */
 export function getToolInfo(reply, args) {
-	const { AddLongTimeLog } = args
-	const match_get_tool_info = reply.content.match(/<get-tool-info>(?<toolname>[^<]+)<\/get-tool-info>/)
+	const { AddLongTimeLog, MaskHandledCall } = args
+	const match_get_tool_info = reply.content_for_handle.match(/<get-tool-info>(?<toolname>[^<]+)<\/get-tool-info>/)
 	if (match_get_tool_info) try {
 		let { toolname } = match_get_tool_info.groups
 		toolname = toolname.trim()
-		AddLongTimeLog({
-			name: '龙胆',
-			role: 'char',
-			content: `<get-tool-info>${toolname}</get-tool-info>`,
-		})
+		MaskHandledCall?.(match_get_tool_info[0])
 		let info_prompt = ''
 		switch (toolname) {
 			case 'character-generator':

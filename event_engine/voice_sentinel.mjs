@@ -687,7 +687,12 @@ async function sentinelLoop() {
 				handleArmedState(frameData, now)
 				break
 			case 'RECORDING':
-				await handleRecordingState(frameData, now)
+				try {
+					await handleRecordingState(frameData, now)
+				} catch (err) {
+					console.error('❌ Unhandled error in RECORDING state:', err)
+					transitionToState('ARMED', now)
+				}
 				break
 		}
 	}

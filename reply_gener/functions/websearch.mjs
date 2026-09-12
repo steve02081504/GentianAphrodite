@@ -9,19 +9,14 @@ import { searchSource } from '../../SearchSource/index.mjs'
  * 处理来自 AI 的网络搜索请求。
  * @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t}
  */
-export async function websearch(result, { AddLongTimeLog }) {
+export async function websearch(result, { AddLongTimeLog, MaskHandledCall }) {
 	// Match <web-search>...</web-search>
-	const searchMatches = [...result.content.matchAll(/<web-search>(?<query>[^]*?)<\/web-search>/g)]
+	const content = result.content_for_handle
+	const searchMatches = [...content.matchAll(/<web-search>(?<query>[^]*?)<\/web-search>/g)]
 	const validMatches = searchMatches.filter(m => m.groups?.query?.trim())
 	if (!validMatches.length) return false
 
-	// 合并为一条角色消息，鼓励一次回复中多次搜索
-	AddLongTimeLog({
-		name: '龙胆',
-		role: 'char',
-		content: validMatches.map(m => m[0]).join('\n'),
-		files: []
-	})
+	for (const match of validMatches) MaskHandledCall?.(match[0])
 
 	let processed = false
 	for (const match of validMatches) try {

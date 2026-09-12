@@ -60,12 +60,13 @@ function parsePlan(text) {
  */
 export async function deepResearch(result, args) {
 	const { max_planning_cycles, thinking_interval, initial_plan_max_retries, summary_max_retries } = config.deep_research
-	const { AddLongTimeLog, prompt_struct } = args
+	const { AddLongTimeLog, MaskHandledCall, prompt_struct } = args
 
 	result.extension.execed_codes ??= {}
 
-	const questionMatch = result.content.match(/<deep-research>(?<question>[\S\s]*?)<\/deep-research>/)
+	const questionMatch = result.content_for_handle.match(/<deep-research>(?<question>[\S\s]*?)<\/deep-research>/)
 	if (!questionMatch?.groups?.question) return false
+	MaskHandledCall?.(questionMatch[0])
 	const question = questionMatch.groups.question.trim()
 	if (!question) {
 		console.warn('DeepResearch: Extracted question is empty.')
@@ -95,6 +96,8 @@ export async function deepResearch(result, args) {
 	let planningCycles = 0
 	const addThinkingLongTimeLog = getLongTimeLogAdder(null, thinking_prompt_struct) // Log adder specific to this thinking process
 	const startTime = Date.now()
+	// 内层思考步骤的当前工作副本；掩除只作用于它，不依赖被改写的原始 content
+	let currentStepOutput = null
 	const thinkingArgs = {
 		UserCharname: args.UserCharname,
 		UserUid: args.UserUid || 'user',
@@ -102,6 +105,15 @@ export async function deepResearch(result, args) {
 		username: args.username,
 		chat_log: thinking_prompt_struct.chat_log,
 		AddLongTimeLog: addThinkingLongTimeLog,
+		/**
+		 * 在内层步骤的 content_for_handle 工作副本上掩除已处理调用段。
+		 * @param {string} segment 已处理的调用段原文
+		 * @returns {void}
+		 */
+		MaskHandledCall: segment => {
+			if (!segment || !currentStepOutput) return
+			currentStepOutput.content_for_handle = (currentStepOutput.content_for_handle ?? '').replace(segment, '\n')
+		},
 		prompt_struct: thinking_prompt_struct,
 		chat_scoped_char_memory: args.chat_scoped_char_memory,
 		plugins: args.plugins,
@@ -119,12 +131,6 @@ export async function deepResearch(result, args) {
 		...args.extension.logical_results,
 		in_assist: true,
 	}
-
-	AddLongTimeLog({
-		content: `<deep-research>\n${question}\n</deep-research>\n`,
-		name: '龙胆', // Assuming '龙胆' is the character triggering this
-		role: 'char',
-	})
 
 	// --- Initial Plan Generation ---
 	try {
@@ -272,6 +278,7 @@ Step 2: <步骤2主题>
 					const requestResult = await OrderedAISourceCalling('deep-research', AI => AI.StructCall(thinking_prompt_struct))
 					const stepOutput = {
 						content: requestResult.content,
+						content_for_show: requestResult.content,
 						name: '龙胆',
 						uid: thinking_prompt_struct.CharUid,
 						role: 'char',
@@ -280,6 +287,9 @@ Step 2: <步骤2主题>
 						logContextAfter: [],
 						extension: {}
 					}
+					// 内层工具在独立工作副本上解析；掩除只改该副本，不改写原始生成
+					stepOutput.content_for_handle = stepOutput.content
+					currentStepOutput = stepOutput
 
 					let functionCalled = false
 					for (const replyHandler of [coderunner, websearch, webbrowse])
@@ -287,6 +297,8 @@ Step 2: <步骤2主题>
 							functionCalled = true
 							console.info(`Deep-research: Cycle ${planningCycles}, Step ${step.step} - Function triggered by handler: ${replyHandler.name}. Waiting for result...`)
 							// The replyHandler is expected to add the function call result to thinkingContext.chat_log
+							delete stepOutput.content_for_handle
+							currentStepOutput = null
 							await sleep(thinking_interval)
 							// Continue the inner loop to let the AI process the function result for the same step
 							continue regen_step
@@ -296,6 +308,8 @@ Step 2: <步骤2主题>
 						// Check if AI mistakenly generated a plan or step instead of executing the current one
 						if (stepOutput.content.trim().toLowerCase().startsWith('plan:') || /^\s*Step\s*\d+\s*[:：]/.test(stepOutput.content)) {
 							console.warn(`Deep-research: Cycle ${planningCycles}, Step ${step.step} - AI generated plan/step instead of executing. Output:\n${stepOutput.content}\nRegenerating...`)
+							delete stepOutput.content_for_handle
+							currentStepOutput = null
 							thinking_prompt_struct.chat_log.push(stepOutput) // Log the incorrect output
 							thinking_prompt_struct.chat_log.push({
 								content: '你错误地生成了计划或步骤编号，而不是执行当前步骤。请专注于执行当前步骤 (Step ' + step.step + ') 并输出其最终文本结果、工具调用或障碍说明。',
@@ -309,7 +323,10 @@ Step 2: <步骤2主题>
 
 						// Assume valid execution output (text result or obstacle description)
 						console.info(`Deep-research: Cycle ${planningCycles}, Step ${step.step} Result: ${stepOutput.content}`)
-						step.result = stepOutput.content // Store the final text result for this step
+						// inline 类工具只改人类展示层，报告用展示层以保留执行结果
+						step.result = stepOutput.content_for_show ?? stepOutput.content // Store the final text result for this step
+						delete stepOutput.content_for_handle
+						currentStepOutput = null
 						thinking_prompt_struct.chat_log.push(stepOutput) // Log the final step output
 						stepCompleted = true
 						await sleep(thinking_interval) // Small delay before next step or summary phase

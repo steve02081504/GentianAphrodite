@@ -7,18 +7,13 @@ import { MarkdownWebFetch } from '../../scripts/web.mjs'
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
-export async function webbrowse(result, { AddLongTimeLog, prompt_struct }) {
-	const matches = [...result.content.matchAll(/<web-browse>\s*<url>(?<url>.*?)<\/url>\s*<question>(?<question>[\S\s]*?)<\/question>\s*<\/web-browse>/g)]
+export async function webbrowse(result, { AddLongTimeLog, MaskHandledCall, prompt_struct }) {
+	const content = result.content_for_handle
+	const matches = [...content.matchAll(/<web-browse>\s*<url>(?<url>.*?)<\/url>\s*<question>(?<question>[\S\s]*?)<\/question>\s*<\/web-browse>/g)]
 	const validMatches = matches.filter(m => m?.groups?.url?.trim?.())
 	if (!validMatches.length) return false
 
-	// 合并为一条角色消息，鼓励一次回复中多次浏览
-	AddLongTimeLog({
-		name: '龙胆',
-		role: 'char',
-		content: validMatches.map(m => m[0]).join('\n'),
-		files: []
-	})
+	for (const match of validMatches) MaskHandledCall?.(match[0])
 
 	let processed = false
 	for (const match of validMatches) try {

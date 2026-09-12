@@ -4,6 +4,8 @@ import process from 'node:process'
 
 import { compareTwoStrings as string_similarity } from 'npm:string-similarity'
 
+import { runReplyHandlers } from 'fount/public/parts/shells/chat/src/reply/handlerPipeline.mjs'
+
 import {
 	findTriggerChatLogEntry,
 	hydrateBridgeNativeContext,
@@ -239,6 +241,15 @@ export async function baseGetReply(args) {
 	 * @returns {void}
 	 */
 	args.generation_options.replyPreviewUpdater = r => replyPreviewUpdater(args, r)
+	/** @type {(import('../../../../../../src/decl/PluginAPI.ts').ReplyHandler_t)[]} */
+	const replyHandlers = [
+		getToolInfo, CharGenerator, PersonaGenerator,
+		coderunner, LongTermMemoryHandler, ShortTermMemoryHandler,
+		deepResearch, websearch, webbrowse, rolesettingfilter, file_change, browserIntegration, IdleManagementHandler,
+		notifyHandler,
+		args.supported_functions.add_message ? timer : null,
+		...Object.values(args.plugins).map(plugin => plugin.interfaces.chat?.ReplyHandler)
+	].filter(Boolean)
 	regen: while (true) {
 		if (!is_dist && process.env.EdenOS) {
 			console.log('logical_results', logical_results)
@@ -286,25 +297,13 @@ export async function baseGetReply(args) {
 		result.content = result.content.replace(/\s*<-<(null|error)>->\s*$/, '')
 		if (args.supported_functions.add_message) addNotifyAbleChannel(args)
 		if (!result.content.trim() && !result.files?.length) return null
-		/** @type {(import('../../../../../../src/decl/PluginAPI.ts').ReplyHandler_t)[]} */
-		const replyHandlers = [
-			getToolInfo, CharGenerator, PersonaGenerator,
-			coderunner, LongTermMemoryHandler, ShortTermMemoryHandler,
-			deepResearch, websearch, webbrowse, rolesettingfilter, file_change, browserIntegration, IdleManagementHandler,
-			notifyHandler,
-			args.supported_functions.add_message ? timer : null,
-			...Object.values(args.plugins).map(plugin => plugin.interfaces.chat?.ReplyHandler)
-		].filter(Boolean)
-		let continue_regen = false
-		for (const replyHandler of replyHandlers)
-			if (await replyHandler(result, {
-				...args, AddLongTimeLog, prompt_struct, extension: {
-					...args.extension,
-					logical_results
-				}
-			}))
-				continue_regen = true
-		if (continue_regen) continue regen
+		if (await runReplyHandlers(result, {
+			...args, AddLongTimeLog, prompt_struct, extension: {
+				...args.extension,
+				logical_results
+			}
+		}, replyHandlers))
+			continue regen
 		break
 	}
 	if (last_entry?.role == 'user' && isUserSpeaker(last_entry, args)) {
@@ -376,7 +375,16 @@ export async function GetReply(args) {
 	catch (error) {
 		console.error(`[ReplyGener] Error in GetReply for chat "${args.chat_name}":`, error)
 		if (!(error instanceof Error)) {
-			error = Object.assign(new Error(`GetReply 捕获到非 Error: ${String(error)}`), { cause: error })
+			const originalError = error
+			let errorInfo
+			try {
+				errorInfo = JSON.stringify(originalError)
+			} catch {
+				errorInfo = String(originalError)
+			}
+			error = Object.assign(new Error(`GetReply 捕获到非 Error: ${errorInfo}`), { cause: originalError })
+			if (originalError?.skip_auto_fix) error.skip_auto_fix = originalError.skip_auto_fix
+			if (originalError?.skip_report) error.skip_report = originalError.skip_report
 			Error.captureStackTrace(error)
 		}
 		if (!error.skip_auto_fix) return handleError(error, args)

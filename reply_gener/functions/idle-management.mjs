@@ -6,28 +6,17 @@ import { parseDuration } from '../../scripts/tools.mjs'
 
 /** @type {import("../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
 export async function IdleManagementHandler(result, args) {
-	const { AddLongTimeLog } = args
+	const { AddLongTimeLog, MaskHandledCall } = args
 	let processed = false
-
-	const tool_calling_log = {
-		name: '龙胆',
-		role: 'char',
-		content: '',
-		files: []
-	}
-	let log_content_added = false
+	const content_for_handle = result.content_for_handle
 
 	// 1. Adjust Idle Weight
-	const adjustWeightMatches = [...result.content.matchAll(/<adjust-idle-weight>(?<content>[\S\s]*?)<\/adjust-idle-weight>/gis)]
+	const adjustWeightMatches = [...content_for_handle.matchAll(/<adjust-idle-weight>(?<content>[\S\s]*?)<\/adjust-idle-weight>/gis)]
 	for (const match of adjustWeightMatches)
 		if (match?.groups?.content) {
 			processed = true
+			MaskHandledCall?.(match[0])
 			const { content } = match.groups
-			const fullMatch = match[0]
-
-			tool_calling_log.content += fullMatch + '\n'
-			if (!log_content_added) AddLongTimeLog(tool_calling_log)
-			log_content_added = true
 
 			const categoryMatch = content.match(/<category>(.*?)<\/category>/is)
 			const weightMatch = content.match(/<weight>(.*?)<\/weight>/is)
@@ -53,16 +42,12 @@ export async function IdleManagementHandler(result, args) {
 		}
 
 	// 2. Postpone Idle Task
-	const postponeMatches = [...result.content.matchAll(/<postpone-idle>(?<time>.*?)<\/postpone-idle>/gis)]
+	const postponeMatches = [...content_for_handle.matchAll(/<postpone-idle>(?<time>.*?)<\/postpone-idle>/gis)]
 	for (const match of postponeMatches)
 		if (match?.groups?.time) {
 			processed = true
+			MaskHandledCall?.(match[0])
 			const timeStr = match.groups.time.trim()
-			const fullMatch = match[0]
-
-			tool_calling_log.content += fullMatch + '\n'
-			if (!log_content_added) AddLongTimeLog(tool_calling_log)
-			log_content_added = true
 
 			let systemLogContent = ''
 			try {
@@ -83,16 +68,12 @@ export async function IdleManagementHandler(result, args) {
 		}
 
 	// 3. Add Todo Task
-	const addTodoMatches = [...result.content.matchAll(/<add-todo>(?<content>[\S\s]*?)<\/add-todo>/gis)]
+	const addTodoMatches = [...content_for_handle.matchAll(/<add-todo>(?<content>[\S\s]*?)<\/add-todo>/gis)]
 	for (const match of addTodoMatches)
 		if (match?.groups?.content) {
 			processed = true
+			MaskHandledCall?.(match[0])
 			const { content } = match.groups
-			const fullMatch = match[0]
-
-			tool_calling_log.content += fullMatch + '\n'
-			if (!log_content_added) AddLongTimeLog(tool_calling_log)
-			log_content_added = true
 
 			const nameMatch = content.match(/<name>(.*?)<\/name>/is)
 			const taskContentMatch = content.match(/<content>([\S\s]*?)<\/content>/is)
@@ -134,16 +115,12 @@ export async function IdleManagementHandler(result, args) {
 		}
 
 	// 4. Delete Todo Task
-	const deleteTodoMatches = [...result.content.matchAll(/<delete-todo>(?<name>.*?)<\/delete-todo>/gis)]
+	const deleteTodoMatches = [...content_for_handle.matchAll(/<delete-todo>(?<name>.*?)<\/delete-todo>/gis)]
 	for (const match of deleteTodoMatches)
 		if (match?.groups?.name) {
 			processed = true
+			MaskHandledCall?.(match[0])
 			const name = match.groups.name.trim()
-			const fullMatch = match[0]
-
-			tool_calling_log.content += fullMatch + '\n'
-			if (!log_content_added) AddLongTimeLog(tool_calling_log)
-			log_content_added = true
 
 			deleteTodoTask(name)
 			const systemLogContent = `已删除待办任务 "${name}"。`
@@ -158,13 +135,10 @@ export async function IdleManagementHandler(result, args) {
 		}
 
 	// 5. List Todo Tasks
-	if (result.content.match(/<list-todos>\s*<\/list-todos>/)) {
+	const listMatch = content_for_handle.match(/<list-todos>\s*<\/list-todos>/)
+	if (listMatch) {
 		processed = true
-		const commandText = '<list-todos></list-todos>'
-
-		tool_calling_log.content += commandText + '\n'
-		if (!log_content_added) AddLongTimeLog(tool_calling_log)
-		log_content_added = true
+		MaskHandledCall?.(listMatch[0])
 
 		const todos = listTodoTasks()
 		const systemLogContent = `当前待办任务列表：\n${todos.length ? todos.map(t => `- ${t.name} (权重: ${t.weight})`).join('\n') : '无'}`
@@ -177,8 +151,6 @@ export async function IdleManagementHandler(result, args) {
 			files: []
 		})
 	}
-
-	tool_calling_log.content = tool_calling_log.content.trim()
 
 	return processed
 }

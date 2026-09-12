@@ -11,30 +11,19 @@ import { GetReply } from '../index.mjs'
 
 /** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
 export async function timer(result, args) {
-	const { AddLongTimeLog } = args
+	const { AddLongTimeLog, MaskHandledCall } = args
 	let processed = false
-
-	const tool_calling_log = {
-		name: '龙胆',
-		role: 'char',
-		content: '',
-		files: []
-	}
-	let log_content_added = false
+	const content_for_handle = result.content_for_handle
 
 	const timers = getTimers(args.username, 'chars/' + args.char_id)
 
-	const setTimerMatches = [...result.content.matchAll(/<set-timer>(?<content>[\S\s]*?)<\/set-timer>/gis)]
+	const setTimerMatches = [...content_for_handle.matchAll(/<set-timer>(?<content>[\S\s]*?)<\/set-timer>/gis)]
 	for (const setTimerMatch of setTimerMatches)
 		if (setTimerMatch?.groups?.content) {
 			statisticDatas.toolUsage.timersSet++
 			processed = true
+			MaskHandledCall?.(setTimerMatch[0])
 			const timerContent = setTimerMatch.groups.content
-			const fullMatch = setTimerMatch[0]
-
-			tool_calling_log.content += fullMatch + '\n'
-			if (!log_content_added) AddLongTimeLog(tool_calling_log)
-			log_content_added = true
 
 			let systemLogContent = ''
 			const itemRegex = /<item>([\S\s]*?)<\/item>/gis
@@ -132,13 +121,10 @@ export async function timer(result, args) {
 		}
 
 
-	if (result.content.match(/<list-timers>\s*<\/list-timers>/)) {
+	const listTimersMatch = content_for_handle.match(/<list-timers>\s*<\/list-timers>/)
+	if (listTimersMatch) {
 		processed = true
-		const commandText = '<list-timers></list-timers>'
-
-		tool_calling_log.content += commandText + '\n'
-		if (!log_content_added) AddLongTimeLog(tool_calling_log)
-		log_content_added = true
+		MaskHandledCall?.(listTimersMatch[0])
 		console.info('AI请求列出定时器')
 
 		AddLongTimeLog({
@@ -149,16 +135,13 @@ export async function timer(result, args) {
 		})
 	}
 
-	const removeTimerMatches = [...result.content.matchAll(/<remove-timer>(?<reasons>.*?)<\/remove-timer>/gis)]
+	const removeTimerMatches = [...content_for_handle.matchAll(/<remove-timer>(?<reasons>.*?)<\/remove-timer>/gis)]
 	for (const removeTimerMatch of removeTimerMatches)
 		if (removeTimerMatch?.groups?.reasons) {
 			processed = true
+			MaskHandledCall?.(removeTimerMatch[0])
 			const reasonsToRemove = removeTimerMatch.groups.reasons.trim().split('\n').map(e => e.trim())
-			const fullMatch = removeTimerMatch[0]
 
-			tool_calling_log.content += fullMatch + '\n'
-			if (!log_content_added) AddLongTimeLog(tool_calling_log)
-			log_content_added = true
 			console.info('AI请求删除定时器:', reasonsToRemove)
 
 			let systemLogContent = ''
@@ -187,8 +170,6 @@ export async function timer(result, args) {
 			})
 		}
 
-
-	tool_calling_log.content = tool_calling_log.content.trim()
 
 	return processed
 }

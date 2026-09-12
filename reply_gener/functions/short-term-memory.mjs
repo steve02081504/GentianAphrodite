@@ -11,19 +11,14 @@ import { parseRegexFromString } from '../../scripts/tools.mjs'
  * 处理 AI 删除短期记忆的命令。
  * @type {ReplyHandler_t}
  */
-export async function ShortTermMemoryHandler(result, { AddLongTimeLog }) {
+export async function ShortTermMemoryHandler(result, { AddLongTimeLog, MaskHandledCall }) {
 	// --- Handle <delete-short-term-memories> ---
-	const deleteMatches = [...result.content.matchAll(/<delete-short-term-memories>(?<keyword>[^\n]*?)<\/delete-short-term-memories>/gs)]
+	const content = result.content_for_handle
+	const deleteMatches = [...content.matchAll(/<delete-short-term-memories>(?<keyword>[^\n]*?)<\/delete-short-term-memories>/gs)]
 	const validMatches = deleteMatches.filter(m => m?.groups?.keyword)
 	if (!validMatches.length) return false
 
-	// 合并为一条角色消息，鼓励一次回复中多次删除
-	AddLongTimeLog({
-		name: '龙胆',
-		role: 'char',
-		content: validMatches.map(m => m[0]).join('\n'),
-		files: []
-	})
+	for (const deleteMatch of validMatches) MaskHandledCall?.(deleteMatch[0])
 
 	let processed = false
 	for (const deleteMatch of validMatches) try {

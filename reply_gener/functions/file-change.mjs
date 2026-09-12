@@ -16,24 +16,15 @@ import { escapeRegExp, parseRegexFromString } from '../../scripts/tools.mjs'
  * 处理来自 AI 的文件更改请求。
  * @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t}
  */
-export async function file_change(result, { AddLongTimeLog }) {
+export async function file_change(result, { AddLongTimeLog, MaskHandledCall }) {
 	let regen = false
-	const tool_calling_log = {
-		name: '龙胆',
-		role: 'char',
-		content: ''
-	}
-	const view_files_matches = [...result.content.matchAll(/<view-file>(?<paths>[^]*?)<\/view-file>/g)]
+	const content = result.content_for_handle
+	const view_files_matches = [...content.matchAll(/<view-file>(?<paths>[^]*?)<\/view-file>/g)]
 	if (view_files_matches.length) {
+		for (const match of view_files_matches) MaskHandledCall?.(match[0])
 		const paths = view_files_matches.flatMap(match => match.groups.paths.split('\n').map(p => p.trim()).filter(path => path))
 		if (paths.length) {
 			unlockAchievement('use_file_change')
-			const logContent = '<view-file>\n' + paths.join('\n') + '\n</view-file>\n'
-			if (!tool_calling_log.content) {
-				tool_calling_log.content += logContent
-				AddLongTimeLog(tool_calling_log) // Add log only once if it wasn't added before
-			}
-			else tool_calling_log.content += logContent // Append if already added
 
 			console.info('AI查看的文件：', paths)
 			const files = []
@@ -65,16 +56,11 @@ export async function file_change(result, { AddLongTimeLog }) {
 		regen = true
 	}
 
-	const replace_file_matches = [...result.content.matchAll(/<replace-file>(?<content>[^]*?)<\/replace-file>/g)]
+	const replace_file_matches = [...content.matchAll(/<replace-file>(?<content>[^]*?)<\/replace-file>/g)]
 	for (const replace_match of replace_file_matches) {
+		MaskHandledCall?.(replace_match[0])
 		const replace_file_content = replace_match.groups.content
 		unlockAchievement('use_file_change')
-		const logContent = '<replace-file>' + replace_file_content + '</replace-file>\n'
-		if (!tool_calling_log.content) {
-			tool_calling_log.content += logContent
-			AddLongTimeLog(tool_calling_log)
-		}
-		else tool_calling_log.content += logContent
 
 		const replace_files_data = [] // Structure to hold data compatible with old logic
 
@@ -202,16 +188,11 @@ export async function file_change(result, { AddLongTimeLog }) {
 		regen = true
 	}
 
-	const override_file_matches = [...result.content.matchAll(/<override-file\s+path="(?<path>[^"]+)">(?<content>[^]*?)<\/override-file>/g)]
+	const override_file_matches = [...content.matchAll(/<override-file\s+path="(?<path>[^"]+)">(?<content>[^]*?)<\/override-file>/g)]
 	for (const override_match of override_file_matches) {
+		MaskHandledCall?.(override_match[0])
 		unlockAchievement('use_file_change')
 		const { path, content } = override_match.groups
-		const logContent = `<override-file path="${path}">` + content + '</override-file>\n'
-		if (!tool_calling_log.content) {
-			tool_calling_log.content += logContent
-			AddLongTimeLog(tool_calling_log)
-		}
-		else tool_calling_log.content += logContent
 
 		console.info('AI写入的文件：', path, content)
 		try {

@@ -78,33 +78,30 @@ async function sendRealityNotification(message, purpose, danmakuOpts = {}) {
  * @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t}
  */
 export async function notifyHandler(result, args) {
-	const rawMatch = result.content.match(/<system-notify>(?<content>[\S\s]*?)<\/system-notify>/)
+	const { AddLongTimeLog, MaskHandledCall } = args
+	const content = result.content_for_handle
+	const rawMatch = content.match(/<system-notify>(?<content>[\S\s]*?)<\/system-notify>/)
 	if (rawMatch) {
-		const content = rawMatch?.groups?.content?.trim?.()
-		if (content) {
-			result.extension.system_notify = content
-			systemNotify(charname, content)
+		MaskHandledCall?.(rawMatch[0])
+		const notifyContent = rawMatch?.groups?.content?.trim?.()
+		if (notifyContent) {
+			result.extension.system_notify = notifyContent
+			systemNotify(charname, notifyContent)
 		}
 	}
 
-	const match = result.content.match(/<notify(\s+[^>]*)?>(?<content>[\S\s]*?)<\/notify>/)
+	const match = content.match(/<notify(\s+[^>]*)?>(?<content>[\S\s]*?)<\/notify>/)
 	if (match) {
-		const content = match?.groups?.content?.trim?.()
-		if (content) {
-			result.extension.notify = content
-			await sendRealityNotification(content, result.extension?.source_purpose, parseNotifyAttrs(match[1]))
+		MaskHandledCall?.(match[0])
+		const notifyContent = match?.groups?.content?.trim?.()
+		if (notifyContent) {
+			result.extension.notify = notifyContent
+			await sendRealityNotification(notifyContent, result.extension?.source_purpose, parseNotifyAttrs(match[1]))
 		}
 	}
 
 	if (args.extension?.is_reality_channel) return false
 	if (!(rawMatch || match)) return false
-
-	const { AddLongTimeLog } = args
-	AddLongTimeLog({
-		name: '龙胆',
-		role: 'char',
-		content: [rawMatch?.[0], match?.[0]].filter(Boolean).join('\n') + '\n'
-	})
 
 	const toolResponses = []
 	if (rawMatch)

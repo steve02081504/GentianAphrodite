@@ -26,21 +26,16 @@ import { createContextSnapshot } from '../../scripts/context.mjs'
  * @type {ReplyHandler_t}
  */
 export async function LongTermMemoryHandler(result, args) {
-	const { AddLongTimeLog } = args
+	const { AddLongTimeLog, MaskHandledCall } = args
 	let processed = false // Flag to indicate if any LTM command was handled
-	const tool_calling_log = {
-		name: '龙胆',
-		role: 'char',
-		content: '',
-		files: []
-	}
-	let log_content_added = false // Track if we added any content to the char log
+	const content_for_handle = result.content_for_handle
 
 	// --- Handle <add-long-term-memory> ---
 	// Match the outer tag, capturing all inner content
-	const addMatches = [...result.content.matchAll(/<add-long-term-memory>(?<content>.*?)<\/add-long-term-memory>/gs)]
+	const addMatches = [...content_for_handle.matchAll(/<add-long-term-memory>(?<content>.*?)<\/add-long-term-memory>/gs)]
 	for (const addMatch of addMatches)
 		if (addMatch?.groups?.content) {
+			MaskHandledCall?.(addMatch[0])
 			const content = addMatch.groups.content.trim()
 			// Match the inner tags based on the new structure
 			const triggerMatch = content.match(/<trigger>(?<trigger>.*?)<\/trigger>/s)
@@ -52,10 +47,6 @@ export async function LongTermMemoryHandler(result, args) {
 			const memoryName = nameMatch?.groups?.name?.trim()
 			const memoryPromptContent = promptContentMatch?.groups?.prompt?.trim() // Changed variable name for clarity
 
-			const logEntry = `<add-long-term-memory>${addMatch.groups.content}</add-long-term-memory>\n`
-			tool_calling_log.content += logEntry
-			if (!log_content_added) AddLongTimeLog(tool_calling_log)
-			log_content_added = true
 			// Updated log to include trigger
 			console.info('AI请求添加永久记忆:', { trigger: memoryTrigger, name: memoryName, prompt: memoryPromptContent })
 
@@ -105,20 +96,16 @@ export async function LongTermMemoryHandler(result, args) {
 
 
 	// --- Handle <update-long-term-memory> ---
-	const updateMatches = [...result.content.matchAll(/<update-long-term-memory>(?<content>.*?)<\/update-long-term-memory>/gs)]
+	const updateMatches = [...content_for_handle.matchAll(/<update-long-term-memory>(?<content>.*?)<\/update-long-term-memory>/gs)]
 	for (const updateMatch of updateMatches)
 		if (updateMatch?.groups?.content) {
+			MaskHandledCall?.(updateMatch[0])
 			const content = updateMatch.groups.content.trim()
 			const nameMatch = content.match(/<name>(?<name>.*?)<\/name>/s)
 			const triggerMatch = content.match(/<trigger>(?<trigger>.*?)<\/trigger>/s)
 			const promptContentMatch = content.match(/<prompt-content>(?<prompt>.*?)<\/prompt-content>/s)
 
 			const memoryName = nameMatch?.groups?.name?.trim()
-
-			const logEntry = `<update-long-term-memory>${updateMatch.groups.content}</update-long-term-memory>\n`
-			tool_calling_log.content += logEntry
-			if (!log_content_added) AddLongTimeLog(tool_calling_log)
-			log_content_added = true
 
 			if (memoryName) {
 				const memoryTrigger = triggerMatch?.groups?.trigger?.trim()
@@ -185,15 +172,12 @@ export async function LongTermMemoryHandler(result, args) {
 
 
 	// --- Handle <delete-long-term-memory> ---
-	const deleteMatches = [...result.content.matchAll(/<delete-long-term-memory>(?<name>.*?)<\/delete-long-term-memory>/gs)]
+	const deleteMatches = [...content_for_handle.matchAll(/<delete-long-term-memory>(?<name>.*?)<\/delete-long-term-memory>/gs)]
 	for (const deleteMatch of deleteMatches)
 		if (deleteMatch?.groups?.name) {
+			MaskHandledCall?.(deleteMatch[0])
 			const memoryName = deleteMatch.groups.name.trim()
 
-			const logEntry = `<delete-long-term-memory>${deleteMatch.groups.name}</delete-long-term-memory>\n`
-			tool_calling_log.content += logEntry
-			if (!log_content_added) AddLongTimeLog(tool_calling_log)
-			log_content_added = true
 			console.info('AI请求删除永久记忆:', memoryName)
 
 			if (memoryName)
@@ -231,11 +215,8 @@ export async function LongTermMemoryHandler(result, args) {
 
 
 	// --- Handle <list-long-term-memory> ---
-	if (result.content.includes('<list-long-term-memory></list-long-term-memory>')) {
-		const logEntry = '<list-long-term-memory></list-long-term-memory>\n'
-		tool_calling_log.content += logEntry
-		if (!log_content_added) AddLongTimeLog(tool_calling_log)
-		log_content_added = true
+	if (content_for_handle.includes('<list-long-term-memory></list-long-term-memory>')) {
+		MaskHandledCall?.('<list-long-term-memory></list-long-term-memory>')
 		console.info('AI请求列出永久记忆')
 
 		try {
@@ -267,15 +248,12 @@ export async function LongTermMemoryHandler(result, args) {
 	}
 
 	// --- Handle <view-long-term-memory-context> ---
-	const viewContextMatches = [...result.content.matchAll(/<view-long-term-memory-context>(?<name>.*?)<\/view-long-term-memory-context>/gs)]
+	const viewContextMatches = [...content_for_handle.matchAll(/<view-long-term-memory-context>(?<name>.*?)<\/view-long-term-memory-context>/gs)]
 	for (const viewContextMatch of viewContextMatches)
 		if (viewContextMatch?.groups?.name) {
+			MaskHandledCall?.(viewContextMatch[0])
 			const memoryName = viewContextMatch.groups.name.trim()
 
-			const logEntry = `<view-long-term-memory-context>${viewContextMatch.groups.name}</view-long-term-memory-context>\n`
-			tool_calling_log.content += logEntry
-			if (!log_content_added) AddLongTimeLog(tool_calling_log)
-			log_content_added = true
 			console.info('AI请求查看永久记忆上下文:', memoryName)
 
 			if (memoryName)
