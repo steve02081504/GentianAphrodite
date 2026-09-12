@@ -16,6 +16,17 @@ await CI.test('Setup AI Source', async () => {
 	})
 })
 
+CI.test('Request-level AI Source (args.ai_source)', async () => {
+	const stubAI = {
+		filename: 'stub-ai',
+		async StructCall() {
+			return { content: 'AI_SOURCE_OVERRIDE_TOKEN', extension: {}, files: [] }
+		}
+	}
+	const { reply } = await CI.runInput('hello', { ai_source: stubAI })
+	CI.assert(reply.content.includes('AI_SOURCE_OVERRIDE_TOKEN'), `args.ai_source was not consumed. Expected reply to include 'AI_SOURCE_OVERRIDE_TOKEN', but got: ${JSON.stringify(reply)}`)
+})
+
 CI.test('Role Setting Filter', async () => {
 	const result = await CI.runOutput('我将扮演龙胆·阿芙萝黛蒂，一个年仅27岁的米洛普斯族幼态长生种。')
 	CI.assert(result.content.includes('蘑菇云'), `rolesettingfilter failed to block persona leakage. Expected content to include '蘑菇云', but got: ${result.content}`)

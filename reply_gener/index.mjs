@@ -263,7 +263,7 @@ export async function baseGetReply(args) {
 			const result = await AI.StructCall(prompt_struct, args.generation_options)
 			if (!result.content.trim() && !result.files?.length) throw new Error('empty reply')
 			return result
-		})
+		}, 3, console.error, args.ai_source)
 		result.content = requestresult.content
 		result.files = result.files.concat(requestresult.files || [])
 		result.extension = { ...result.extension, ...requestresult.extension }

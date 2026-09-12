@@ -117,10 +117,13 @@ export let last_used_AIsource
  * @param {(source:AIsource_t) => Promise<any>} caller - 要对每个AI来源执行的异步函数。
  * @param {number} [trytimes=3] - 对每个AI来源的重试次数。
  * @param {(err: Error) => Promise<void>} [error_logger=console.error] - 用于记录错误的异步函数。
+ * @param {AIsource_t} [preferred_source] - 请求级指定源（如 code shell 经 `args.ai_source` 注入）：提供时**仅**使用该源，不再按名称顺序回落其他源。
  * @returns {Promise<any>} 返回 `caller` 函数成功执行后的结果。
  */
-export async function OrderedAISourceCalling(name, caller, trytimes = 3, error_logger = console.error) {
-	const sources = [...new Set([...GetAISourceCallingOrder(name).map(x => AIsources[x]), ...Object.values(AIsources)])].filter(x => x)
+export async function OrderedAISourceCalling(name, caller, trytimes = 3, error_logger = console.error, preferred_source) {
+	const sources = preferred_source
+		? [preferred_source]
+		: [...new Set([...GetAISourceCallingOrder(name).map(x => AIsources[x]), ...Object.values(AIsources)])].filter(x => x)
 	let lastErr = new Error('No AI source available')
 	for (const source of sources)
 		for (let i = 0; i < trytimes; i++) try {
