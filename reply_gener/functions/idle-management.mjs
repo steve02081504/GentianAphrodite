@@ -8,7 +8,7 @@ import { parseDuration } from '../../scripts/tools.mjs'
 export async function IdleManagementHandler(result, args) {
 	const { AddLongTimeLog, MaskHandledCall } = args
 	let processed = false
-	const content_for_handle = result.content_for_handle
+	const {content_for_handle} = result
 
 	// 1. Adjust Idle Weight
 	const adjustWeightMatches = [...content_for_handle.matchAll(/<adjust-idle-weight>(?<content>[\S\s]*?)<\/adjust-idle-weight>/gis)]

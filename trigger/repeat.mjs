@@ -28,7 +28,7 @@ import { extractMessageText, isGroupMuted } from './helpers.mjs'
 export async function tryRepeatReply({
 	event, message, memory, platform, selfHash, ownerNameKeywords = [],
 }) {
-	const groupId = event.group.groupId
+	const {groupId} = event.group
 	if (isGroupMuted(memory, groupId)) return false
 
 	const repeatCheckLog = (event.chatReplyRequest.chat_log || []).slice(-10)

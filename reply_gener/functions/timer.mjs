@@ -13,7 +13,7 @@ import { GetReply } from '../index.mjs'
 export async function timer(result, args) {
 	const { AddLongTimeLog, MaskHandledCall } = args
 	let processed = false
-	const content_for_handle = result.content_for_handle
+	const {content_for_handle} = result
 
 	const timers = getTimers(args.username, 'chars/' + args.char_id)
 

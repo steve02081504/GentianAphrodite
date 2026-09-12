@@ -27,7 +27,7 @@ export function extractMessageText(message) {
  * @returns {Promise<{ authorHash: string, isFromOwner: boolean, attribution: object, mentionsBot: boolean, mentionsOwner: boolean, client: object, message: object, declaredOwnerEntityHash: string | null }>} 消息上下文
  */
 export async function resolveMessageContext(event, selfHash) {
-	const username = event.chatReplyRequest.username
+	const {username} = event.chatReplyRequest
 	const client = await getChatClient(username, selfHash)
 	const message = await client.messageFrom(event)
 	const author = await message.author()

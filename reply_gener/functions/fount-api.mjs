@@ -1,5 +1,6 @@
 /**
- * fount API 相关，给代码执行中的js功能提供fountHostUrl和fountApiKey变量。
+ * fount API 相关，给代码执行中的js功能提供 fountHostUrl 与 fountApiKey 变量。
+ * 龙胆自持一份密钥（与 fount 的 fount-api 插件互不干涉，各走各的）。
  */
 
 import { generateApiKey } from '../../../../../../../src/server/auth/index.mjs'

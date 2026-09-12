@@ -60,6 +60,77 @@ CI.test('File Operations', async () => {
 		CI.assert(newContent.trim() === overrideContent, `<override-file> failed to write to the file. Expected: "${overrideContent}", but got: "${newContent.trim()}"`)
 	})
 
+	CI.test('<replace-file> replaceAll', async () => {
+		const testFilePath = path.join(CI.context.workSpace.path, 'replace_all_test.txt')
+		fs.writeFileSync(testFilePath, 'foo foo foo', 'utf-8')
+		const replaceXML = `\
+<replace-file>
+	<file path="${testFilePath}">
+		<replacement replaceAll="true">
+			<search>foo</search>
+			<replace>bar</replace>
+		</replacement>
+	</file>
+</replace-file>
+`
+		await CI.runOutput([replaceXML, 'Replaced all.'])
+		const newContent = fs.readFileSync(testFilePath, 'utf-8')
+		CI.assert(newContent === 'bar bar bar', `<replace-file replaceAll> failed. Expected 'bar bar bar', but got: '${newContent}'`)
+	})
+
+	CI.test('<replace-file> uniqueness guard', async () => {
+		const testFilePath = path.join(CI.context.workSpace.path, 'replace_guard_test.txt')
+		const original = 'dup\ndup\n'
+		fs.writeFileSync(testFilePath, original, 'utf-8')
+		const replaceXML = `\
+<replace-file>
+	<file path="${testFilePath}">
+		<replacement>
+			<search>dup</search>
+			<replace>x</replace>
+		</replacement>
+	</file>
+</replace-file>
+`
+		await CI.runOutput([replaceXML, 'Attempted.'])
+		const newContent = fs.readFileSync(testFilePath, 'utf-8')
+		CI.assert(newContent === original, `<replace-file> uniqueness guard failed: ambiguous match should be rejected, but file became '${newContent}'`)
+	})
+
+	CI.test('<override-file> force', async () => {
+		const testFilePath = path.join(CI.context.workSpace.path, 'override_force_test.txt')
+		fs.writeFileSync(testFilePath, 'original content here', 'utf-8')
+		await CI.runOutput([`<override-file path="${testFilePath}" force="true">totally different</override-file>`, 'Overridden with force.'])
+		const newContent = fs.readFileSync(testFilePath, 'utf-8')
+		CI.assert(newContent.trim() === 'totally different', `<override-file force> failed. Expected 'totally different', but got: '${newContent.trim()}'`)
+	})
+
+	CI.test('<view-file> pagination', async () => {
+		const testFilePath = path.join(CI.context.workSpace.path, 'view_page_test.txt')
+		fs.writeFileSync(testFilePath, 'line1\nline2\nline3\nline4\nline5', 'utf-8')
+		const result = await CI.runOutput([`<view-file offset="2" limit="2">${testFilePath}</view-file>`, 'Read a page.'])
+		const log = result.logContextBefore.find(entry => entry.role === 'tool' && entry.name === 'file-change')
+		CI.assert(log && log.content.includes('line2') && log.content.includes('line3'), `<view-file> pagination failed to include requested lines. Log: ${log?.content}`)
+		CI.assert(log && !log.content.includes('line5'), `<view-file> pagination leaked out-of-window content. Log: ${log?.content}`)
+	})
+
+	CI.test('<glob>', async () => {
+		const dir = path.join(CI.context.workSpace.path, 'glob_dir')
+		fs.mkdirSync(dir, { recursive: true })
+		fs.writeFileSync(path.join(dir, 'a_unique_glob.txt'), 'x', 'utf-8')
+		const result = await CI.runOutput([`<glob path="${dir}">**/*.txt</glob>`, 'Found files.'])
+		const log = result.logContextBefore.find(entry => entry.role === 'tool' && entry.name === 'file-change')
+		CI.assert(log && log.content.includes('a_unique_glob.txt'), `<glob> failed to find file. Log: ${log?.content}`)
+	})
+
+	CI.test('<grep>', async () => {
+		const testFilePath = path.join(CI.context.workSpace.path, 'grep_test.txt')
+		fs.writeFileSync(testFilePath, 'alpha\nCI_GREP_UNIQUE_TOKEN\nbeta', 'utf-8')
+		const result = await CI.runOutput([`<grep path="${CI.context.workSpace.path}" include="grep_test.txt">CI_GREP_UNIQUE_TOKEN</grep>`, 'Searched content.'])
+		const log = result.logContextBefore.find(entry => entry.role === 'tool' && entry.name === 'file-change')
+		CI.assert(log && log.content.includes('CI_GREP_UNIQUE_TOKEN'), `<grep> failed to find matching content. Log: ${log?.content}`)
+	})
+
 })
 CI.test('Code Runner', () => {
 	if (process.platform === 'win32') {

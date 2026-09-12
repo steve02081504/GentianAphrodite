@@ -2,7 +2,9 @@ import process from 'node:process'
 
 import { available } from 'npm:@steve02081504/exec'
 
+import { getConnectedSubfounts } from '../../../../../../../src/public/parts/shells/subfounts/src/api.mjs'
 import { chardir } from '../../charbase.mjs'
+import { SHELL_DEFAULT_TIMEOUT_MS, OUTPUT_GUARD_LIMIT } from '../../scripts/file-operations/shell_guard.mjs'
 import { match_keys } from '../../scripts/match.mjs'
 
 import { fountApiPrompt } from './fount-api.mjs'
@@ -21,7 +23,7 @@ export async function CodeRunnerPrompt(args, logical_results) {
 	const codePluginPrompts = (
 		await Promise.all([
 			fountApiPrompt(args, logical_results),
-			...Object.values(args.plugins)
+			...Object.values(args.plugins || {})
 				.map(plugin => plugin.interfaces?.code_execution?.GetJSCodePrompt?.(args))
 		])
 	).filter(Boolean).join('\n')
@@ -37,6 +39,7 @@ export async function CodeRunnerPrompt(args, logical_results) {
 		'创建', '打开', '桌面', '文档', '文件', '看看', '看下', '播放', '回收站', '摄像头', '计算机', '拍照', '录像', '打印', '读取', '电脑', '查看', '来个',
 		/来.{0,3}bgm/i, /放(首|个)歌/
 	], 'user') >= 2) {
+		const hasRemote = getConnectedSubfounts(args.username).length > 1
 		result += `\
 你可以运行NodeJS或${availableShells.join('、')}代码，通过返回以下格式来触发执行并获取结果：
 <run-js>code</run-js>
@@ -45,9 +48,7 @@ export async function CodeRunnerPrompt(args, logical_results) {
 <run-powershell>会调用windows powershell，而<run-pwsh>会调用安装的powershell core。` : `
 <run-powershell>会调用windows powershell，且<run-pwsh>是<run-powershell>的别名。` : ''
 }
-如：
-<run-js>(await import('npm:robotjs')).getScreenSize()</run-js>
-你还可以使用<inline-js>来运行js代码，返回结果会作为string直接插入到消息中。
+<inline-js>code</inline-js> 会执行js代码，返回结果会作为string直接插入到消息中。
 对于${defaultShell}，你也可以使用<inline-${defaultShell}>来达到同样的效果。
 如：[
 ${args.UserCharname}: 一字不差地输出10^308的数值。
@@ -80,21 +81,20 @@ return Array.from({ length: 201 }, (_, i) => toEnglishWord(i)).join(', ')
 \`\`\`
 这样可以嘛？
 ]
-在<run-js>和<run-${defaultShell}>代码时，你可以附加<wait-screen>timeout</wait-screen>来在代码执行后等待timeout秒，随后让你看到截图。
-这在执行对屏幕内容有影响的代码时非常有用。
-如：[
-${args.UserCharname}: 帮我播放shape of you。
-龙胆: ${available.powershell || available.pwsh ?
-				'\
-<run-pwsh>start $(ls ~/music | ? { $_.Name -match \'shape of you\' })</run-pwsh>' :
-				available.bash ?
-					'\
-<run-bash>ls ~/music | grep \'shape of you\' | head -n 1 | xargs open</run-bash>' :
-					available.sh ?
-						'\
-<run-sh>ls ~/music | grep \'shape of you\' | head -n 1 | xargs open</run-sh>' : ''}
-<wait-screen>3</wait-screen>
-]
+运行限制（所有 <run-*> 标签均支持）：
+- 默认 ${Math.round(SHELL_DEFAULT_TIMEOUT_MS / 60000)} 分钟超时；超时会尽力终止（shell 杀进程树；js 在进程内无法强杀，会如实告知你"实际仍在运行"）。
+- expect="时长" 为预期时长，tolerance="时长" 为额外容错，有效超时 = expect + tolerance；只给 tolerance 时基于默认值累加。时长支持 30s / 5m / 1h 或纯秒数，如 <run-${defaultShell} expect="5m" tolerance="1m">。
+- wait="forever" 强制干等、不设超时；请仅在确实需要长时间挂起时使用。
+- 正常结束会在结果里标注耗时，便于你预估后续命令。
+- 单个输出过大时只保留开头与结尾，完整内容会写入临时文件并在结果中给出路径；你可以用 <view-file> 分页查看，或用 <grep> 搜索匹配行。超过约 ${Math.round(OUTPUT_GUARD_LIMIT / 1000)}KB 的输出请优先用 <run-*> 而不是 <inline-*>（内联结果会直接插入消息）。
+${hasRemote ? `\
+- 所有标签都支持可选属性 machine="机器id" 与 workdir="目录" 来单次指定目标机器和工作目录，如 <run-${defaultShell} machine="2" workdir="D:\\proj">。
+- 需要在其他机器上执行时，先用 <list-machines> 查询目标id。
+- 远程机器上的js代码没有workspace/chat_log/callback等本地上下文，需要这些能力时请在本机执行。
+` : `\
+- 用户对接其他 subfount 后，你也可以在其他机器上运行代码。
+`}\
+- 在<run-js>和<run-${defaultShell}>代码时，你可以附加<wait-screen>timeout</wait-screen>来在代码执行后等待timeout秒，随后让你看到截图，这在执行对屏幕内容有影响的代码时非常有用。
 - 在解决简单问题时使用<inline-js>，并使用大数类型。
 - 在解决复杂数学相关问题时使用<run-js>。
 - 在操作电脑、查看文件、更改设置、播放音乐时使用<run-${defaultShell}>。
@@ -134,7 +134,7 @@ const zip_buffer = chat_log.findLast(entry => entry.files?.length).files[0].buff
 // ...
 </run-js>
 ]
-${args.supported_functions.add_message ? `\
+${args.supported_functions?.add_message ? `\
 - 对于会需要很长时间的任务，你可以不用await，而是使用\`callback\`函数来在异步完成后反馈内容。
   * 格式：callback(reason: string, promise: Promise)
   * 例子：<run-js>callback('unzip result', super_slow_async_function())</run-js>
@@ -174,7 +174,7 @@ ${args.UserCharname}: 帮我用摄像头看看家里。
 		console.error('Failed to capture image')
 </run-js>
 ]
-${args.supported_functions.files ? `\
+${args.supported_functions?.files ? `\
 - 你可以通过在js中使用\`add_files\`函数来查看并发送文件，其和上述view_files函数的格式一样。
   * 例子：[
 ${args.UserCharname}: 发我屏幕截图看看？
@@ -207,7 +207,7 @@ ${codePluginPrompts}
 系统输出不会显示在回复中，需要你总结。
 鼓励在回答输出较多时用<inline-js>以避免大段复述。
 **只是解释说明或举例时使用普通代码块（如\`\`\`js）而不是执行代码。**
-需要注意的是run-js执行的是后端代码而不是前端代码，若需要执行前端代码请使用浏览器相关功能${args.supported_functions.unsafe_html ? '或直接输出script标签' : ''}。
+需要注意的是run-js执行的是后端代码而不是前端代码，若需要执行前端代码请使用浏览器相关功能${args.supported_functions?.unsafe_html ? '或直接输出script标签' : ''}。
 
 你的文件的地址是：${chardir}
 `

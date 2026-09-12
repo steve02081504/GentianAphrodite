@@ -13,15 +13,15 @@
 
 ## 常用标志
 
-| 键 | 类型 | 用途 |
-|---|---|---|
-| `is_direct_message` | boolean | 是否私信 |
-| `mentions_bot` | boolean | 是否提及机器人 |
-| `content_parts` | array | 分段内容（编辑历史 / 多段重建） |
-| `trigger_message_id` | string | 触发消息 ID |
+| 键                   | 类型    | 用途                                                       |
+| -------------------- | ------- | ---------------------------------------------------------- |
+| `is_direct_message`  | boolean | 是否私信                                                   |
+| `mentions_bot`       | boolean | 是否提及机器人                                             |
+| `content_parts`      | array   | 分段内容（编辑历史 / 多段重建）                            |
+| `trigger_message_id` | string  | 触发消息 ID                                                |
 | `is_reality_channel` | boolean | Reality Channel 后台流量（`event_engine` / `reply_gener`） |
-| `from_timer` | boolean | 计时器发起的请求；`prompt/system/specialreplay.mjs` 读取 |
-| `enable_prompts` | object | 强制激活 `prompt/functions/` 模块，绕过常规 `match_keys` |
+| `from_timer`         | boolean | 计时器发起的请求；`prompt/system/specialreplay.mjs` 读取   |
+| `enable_prompts`     | object  | 强制激活 `prompt/functions/` 模块，绕过常规 `match_keys`   |
 
 ```javascript
 // 强制激活计算与时间/节日
@@ -35,11 +35,11 @@
 
 ## 功能注入字段
 
-| 键 | 类型 | 来源 |
-|---|---|---|
-| `decodedQRCodes` | array | `qrcodeParser.mjs` |
-| `processedURLs` | boolean | `webbrowse.mjs` |
-| `SimplifiedContents` | array | `short-term-memory.mjs` |
-| `execed_codes` | object | `coderunner.mjs` |
-| `logical_results` | object | `deep-research.mjs` |
-| `recommend_command` | string | `interfaces/shellassist/recommend_command.mjs` |
+| 键                   | 类型    | 来源                                           |
+| -------------------- | ------- | ---------------------------------------------- |
+| `decodedQRCodes`     | array   | `qrcodeParser.mjs`                             |
+| `processedURLs`      | boolean | `webbrowse.mjs`                                |
+| `SimplifiedContents` | array   | `short-term-memory.mjs`                        |
+| `execed_codes`       | object  | `coderunner.mjs`                               |
+| `logical_results`    | object  | `deep-research.mjs`                            |
+| `recommend_command`  | string  | `interfaces/shellassist/recommend_command.mjs` |

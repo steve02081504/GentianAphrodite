@@ -28,7 +28,7 @@ import { createContextSnapshot } from '../../scripts/context.mjs'
 export async function LongTermMemoryHandler(result, args) {
 	const { AddLongTimeLog, MaskHandledCall } = args
 	let processed = false // Flag to indicate if any LTM command was handled
-	const content_for_handle = result.content_for_handle
+	const {content_for_handle} = result
 
 	// --- Handle <add-long-term-memory> ---
 	// Match the outer tag, capturing all inner content

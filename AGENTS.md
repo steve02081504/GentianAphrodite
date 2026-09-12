@@ -30,14 +30,14 @@
 
 ### 请求入口
 
-| 入口 | 经 `OnMessage` | 说明 |
-|------|----------------|------|
-| Telegram / Discord bridge | 是 | 壳层 DTO → `runTriggerPipeline` → `trigger/onMessage.mjs` → 意愿 true 时 `GetReply` |
-| 主聊天界面 (`interfaces.chat`) | 是 | Hub 原生群同上；主人 = 声明 `ownerEntityHash` + 可信归因 |
-| Shell 辅助 | 否 | 自建 `chat_log` / `extension`，直接 `GetReply` |
-| `event_engine` | 否 | 直接 `GetReply`；常靠 `extension.enable_prompts` 驱动 |
-| 计时器回调 (`TimerCallback`) | 否 | 如 `reply_gener/functions/timer.mjs` |
-| browserIntegration | 否 | 回调进 `reply_gener` |
+| 入口                           | 经 `OnMessage` | 说明                                                                                |
+| ------------------------------ | -------------- | ----------------------------------------------------------------------------------- |
+| Telegram / Discord bridge      | 是             | 壳层 DTO → `runTriggerPipeline` → `trigger/onMessage.mjs` → 意愿 true 时 `GetReply` |
+| 主聊天界面 (`interfaces.chat`) | 是             | Hub 原生群同上；主人 = 声明 `ownerEntityHash` + 可信归因                            |
+| Shell 辅助                     | 否             | 自建 `chat_log` / `extension`，直接 `GetReply`                                      |
+| `event_engine`                 | 否             | 直接 `GetReply`；常靠 `extension.enable_prompts` 驱动                               |
+| 计时器回调 (`TimerCallback`)   | 否             | 如 `reply_gener/functions/timer.mjs`                                                |
+| browserIntegration             | 否             | 回调进 `reply_gener`                                                                |
 
 **核心栈**：`prompt` + `reply_gener` + `trigger`/`OnMessage`。平台连接与消息转换归 fount chat shell bridge。
 
@@ -45,11 +45,11 @@
 
 ## 2. 如何扩展能力
 
-| 类型 | 落点 | 做法 |
-|------|------|------|
-| **AI 内化**（人格 / 知识 / NSFW / 超能力） | `prompt/role_settings/`、`prompt/system/` | 只改 Prompt |
-| **Prompt 特化**（如 `poem`、`rude`、语法检查） | `prompt/functions/` | 新模块：场景、激活条件、行为引导 |
-| **自动处理**（如 `autocalc`、二维码、截图） | `prompt/build.mjs` 或预处理器 | 检测 → 代码执行 → 注入 `reply_request.extension` |
+| 类型                                                        | 落点                                           | 做法                                                   |
+| ----------------------------------------------------------- | ---------------------------------------------- | ------------------------------------------------------ |
+| **AI 内化**（人格 / 知识 / NSFW / 超能力）                  | `prompt/role_settings/`、`prompt/system/`      | 只改 Prompt                                            |
+| **Prompt 特化**（如 `poem`、`rude`、语法检查）              | `prompt/functions/`                            | 新模块：场景、激活条件、行为引导                       |
+| **自动处理**（如 `autocalc`、二维码、截图）                 | `prompt/build.mjs` 或预处理器                  | 检测 → 代码执行 → 注入 `reply_request.extension`       |
 | **Agent 自主工具**（如 websearch、coderunner、file-change） | `prompt/functions/` + `reply_gener/functions/` | 声明 API → 实现 → 在 `.github/workflows/CI.mjs` 加用例 |
 
 ---

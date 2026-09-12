@@ -187,7 +187,7 @@ export async function shouldTriggerReply({
 	event, memory, isFromOwner, mentionsBot, mentionsOwner, selfHash, operatorHash,
 	content, ownerNameKeywords = [],
 }) {
-	const groupId = event.group.groupId
+	const {groupId} = event.group
 	const channelId = event.channel?.channelId || 'default'
 	const isDm = event.group.kind === 'dm'
 	const chatLog = event.chatReplyRequest.chat_log || []
