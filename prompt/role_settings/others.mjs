@@ -9,7 +9,7 @@ import { match_keys } from '../../scripts/match.mjs'
  * @param {logical_results_t} logical_results 逻辑结果
  * @returns {Promise<single_part_prompt_t>} 其他细节Prompt
  */
-export async function OtherDetailPrompt(args, logical_results) {
+export async function OthersPrompt(args, logical_results) {
 	let result = ''
 
 	if (await match_keys(args, ['死', '离', '逝'], 'any', 8) &&

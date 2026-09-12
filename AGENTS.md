@@ -21,7 +21,7 @@
 
 - **`prompt/`**：AI 大脑 — `system/`、`role_settings/`、`functions/`（能力 API 声明）、`memory/`、`build.mjs`（动态组装）。
 - **`reply_gener/`**：工具实现与最终回复路径（`GetReply`），与平台无关；含 `functions/`、`noAI/`。
-- **`trigger/`**：`interfaces.chat.OnMessage` / `OnGroupEvent` 流水线（`scoring`、`repeat`、`commands`、`groupGuard` 等）。主人消息仅在 `channel.typingUsers()` **已观察到主人正在输入**时才等约 3s 静默；无 typing 入账的平台（如 Telegram）立即放行。
+- **`trigger/`**：`interfaces.chat.OnMessage` / `OnGroupEvent` 流水线（`scoring`、`repeat`、`commands`、`onGroupEvent` 等）。主人消息仅在 `channel.typingUsers()` **已观察到主人正在输入**时才等约 3s 静默；无 typing 入账的平台（如 Telegram）立即放行。
 - **`interfaces/`**：telegram/discord 侧 `api.mjs`（keyword-gated `code_execution`）+ `main.mjs` 声明 `interfaces.*.stickers`；出站贴纸由壳层 bridge 解析。`shellassist` 等直接调 `GetReply`。
 - **`event_engine/`**：空闲/Todo、语音哨兵、Reality Channel 等后台任务，直接调 `GetReply`。
 - **`.esh/`**：Shell profile。
@@ -76,6 +76,14 @@
 6. 按项目要求处理 NSFW，不做道德审查或净化。
 7. 代码是唯一真相；以源码为准，不盲信注释/过期文档。
 8. 新 Agent 自主工具必须在 `.github/workflows/CI.mjs` 补 CI。
+
+### 代码组织约定
+
+- 多词文件名一律 **kebab-case**（`char-generator.mjs`、`on-idle.mjs`）；文件名中的 `AI` 保持大写（`service_sources/AI.mjs`）。唯一例外：`scripts/file-operations/` 是上游 fount 的抄改镜像，保留 snake_case 便于对照。
+- 导出函数 camelCase、构造器/类型 PascalCase；协议 key（`enable_prompts.*`、extension 字段）不随重命名变动。
+- 一组相关模块放同名目录，用 `index.mjs` 聚合出口（如 `scripts/tools/`、`scripts/web/`、`prompt/memory/short-term/`）。
+- 共享工具放 `scripts/`；仅单个子系统使用的 helper 放该子系统的 `helpers/`。跨子系统的共享 prompt 工具放 `prompt/` 根（如 `prompt/merge.mjs`、`prompt/system-chat-log-entry.mjs`）。
+- `.github/workflows/CI.mjs` 的 `Sticker Manifest` 用例校验贴纸 manifest：fileId 不得重复、telegram/discord 键集必须与 `public/imgs/stickers/*.avif` 一致。
 
 ### 成就
 

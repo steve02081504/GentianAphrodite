@@ -9,7 +9,7 @@ import { match_keys } from '../../scripts/match.mjs'
  * @param {logical_results_t} logical_results - 逻辑结果。
  * @returns {Promise<string>} js代码上下文，未触发时返回空字符串。
  */
-export async function fountApiPrompt(args, logical_results) {
+export async function FountApiPrompt(args, logical_results) {
 	let result = ''
 	if (await match_keys(args, ['fount', /[用走]api/], 'any') || (
 		(

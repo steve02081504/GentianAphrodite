@@ -6,6 +6,7 @@ import { async_eval } from 'npm:@steve02081504/async-eval'
 import { loadJsonFileIfExists, saveJsonFile } from '../../../../../../../src/scripts/json_loader.mjs'
 import { chardir } from '../../charbase.mjs'
 import { match_keys, match_keys_all } from '../../scripts/match.mjs'
+import { systemChatLogEntry } from '../system-chat-log-entry.mjs'
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
@@ -164,11 +165,7 @@ ${[activated_memories_text, random_memories_text].filter(Boolean).join('\n')}
 			important: 0,
 			content: result
 		} : undefined].filter(Boolean),
-		additional_chat_log: enable_memory_prompt ? [{
-			role: 'system',
-			name: 'system',
-			uid: 'system',
-			content: `\
+		additional_chat_log: enable_memory_prompt ? [systemChatLogEntry(`\
 你可以通过输出以下格式来追加永久记忆：
 <add-long-term-memory>
 <trigger>触发逻辑</trigger>
@@ -225,8 +222,7 @@ trigger的关键词应容易触发并涵盖大部分情况，鼓励使用或\`||
 鼓励你对聊天记录中有关主人的事情追加和维护永久记忆，不要记录已经在prompt中的内容。
 鼓励你及时修正错误/过时/劣质/不符合角色设定的永久记忆。
 严禁使用脚本操作记忆的存档文件。
-`
-		}] : []
+`)] : []
 	}
 }
 

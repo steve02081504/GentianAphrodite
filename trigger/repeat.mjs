@@ -2,15 +2,14 @@ import {
 	fetchFilesForMessages,
 	isBotCommand,
 	rowAuthorHash,
-	rowIsFromChar,
-	rowIsFromSelf,
 	rowTextContent,
+	rowIsFromSelf,
 	summaryFilesHex,
-} from '../reply_gener/utils.mjs'
+} from '../scripts/chat-log.mjs'
 import { rude_words } from '../scripts/dict.mjs'
 import { base_match_keys } from '../scripts/match.mjs'
 import { newCharReply, newUserMessage } from '../scripts/statistics.mjs'
-import { findMostFrequentElement } from '../scripts/tools.mjs'
+import { findMostFrequentElement } from '../scripts/tools/index.mjs'
 
 import { GentianWords, RepetitionTriggerCount, RepeatBlacklist } from './constants.mjs'
 import { extractMessageText, isGroupMuted } from './helpers.mjs'
@@ -88,20 +87,4 @@ export async function tryRepeatReply({
 	newUserMessage(extractMessageText(event.message), platform)
 	newCharReply(refinedContent, platform)
 	return true
-}
-
-/**
- * @param {object} params 参数
- * @param {object} params.event OnMessage 事件
- * @param {string} params.selfHash 自身 hash
- * @param {string} params.operatorHash 主人 hash
- * @returns {boolean} 近期是否只有主人与 bot 在互动
- */
-export function ownerBotOnlyInteraction({ event, selfHash, operatorHash }) {
-	const log = event.chatReplyRequest.chat_log || []
-	if (log.length < 2) return false
-	return log.slice(-7).every(row => {
-		const author = rowAuthorHash(row)
-		return author === operatorHash || author === selfHash || rowIsFromChar(row)
-	})
 }

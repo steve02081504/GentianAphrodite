@@ -15,36 +15,37 @@ import {
 	defineInlineToolUses,
 	defineToolUseBlocks,
 } from '../../../../../../src/public/parts/shells/chat/src/streaming/index.mjs'
-import { noAISourceAvailable, OrderedAISourceCalling } from '../AISource/index.mjs'
 import { chardir, is_dist } from '../charbase.mjs'
 import { plugins } from '../config/index.mjs'
-import { get_discord_api_plugin } from '../interfaces/discord/api.mjs'
-import { get_telegram_api_plugin } from '../interfaces/telegram/api.mjs'
+import { getDiscordApiPlugin } from '../interfaces/discord/api.mjs'
+import { getTelegramApiPlugin } from '../interfaces/telegram/api.mjs'
 import { buildLogicalResults } from '../prompt/logical_results/index.mjs'
-import { saveShortTermMemoryAfterReply } from '../prompt/memory/short-term-memory.mjs'
+import { saveShortTermMemoryAfterReply } from '../prompt/memory/short-term/index.mjs'
 import { unlockAchievement } from '../scripts/achievements.mjs'
+import { mergeChatLogEntries } from '../scripts/chat-log.mjs'
 import { match_keys, isUserSpeaker } from '../scripts/match.mjs'
 import { addNotifyAbleChannel } from '../scripts/notify.mjs'
 import { newCharReply, newUserMessage, saveStatisticDatas, statisticDatas } from '../scripts/statistics.mjs'
+import { noAISourceAvailable, OrderedAISourceCalling } from '../service_sources/AI.mjs'
 import { MergeMessagePeriodMs } from '../trigger/constants.mjs'
 
 import { handleError } from './error.mjs'
-import { browserIntegration } from './functions/browserIntegration.mjs'
-import { CharGenerator, PersonaGenerator } from './functions/charGenerator.mjs'
-import { coderunner, GetCoderunnerPreviewUpdater } from './functions/coderunner.mjs'
+import { browserIntegration } from './functions/browser-integration.mjs'
+import { CharGenerator, PersonaGenerator } from './functions/char-generator.mjs'
+import { coderunner, GetCoderunnerPreviewUpdater } from './functions/code-runner.mjs'
 import { deepResearch } from './functions/deep-research.mjs'
 import { file_change, fileOperationToolUseBlocks } from './functions/file-change.mjs'
-import { getToolInfo } from './functions/getToolInfo.mjs'
+import { getToolInfo } from './functions/get-tool-info.mjs'
 import { IdleManagementHandler } from './functions/idle-management.mjs'
 import { LongTermMemoryHandler } from './functions/long-term-memory.mjs'
 import { notifyHandler } from './functions/notify.mjs'
-import { rolesettingfilter } from './functions/rolesettingfilter.mjs'
+import { rolesettingfilter } from './functions/role-setting-filter.mjs'
 import { ShortTermMemoryHandler } from './functions/short-term-memory.mjs'
 import { timer } from './functions/timer.mjs'
-import { webbrowse } from './functions/webbrowse.mjs'
-import { websearch } from './functions/websearch.mjs'
+import { webbrowse } from './functions/web-browse.mjs'
+import { websearch } from './functions/web-search.mjs'
 import { noAIreply } from './noAI/index.mjs'
-import { mergeChatLogEntries } from './utils.mjs'
+
 
 /** @typedef {import("../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
@@ -128,9 +129,9 @@ export async function baseGetReply(args) {
 
 	const platformPlugins = {}
 	if (bridgePlatform === 'telegram')
-		platformPlugins.telegram_api = get_telegram_api_plugin(nativeContext)
+		platformPlugins.telegram_api = getTelegramApiPlugin(nativeContext)
 	else if (bridgePlatform === 'discord')
-		platformPlugins.discord_api = get_discord_api_plugin(nativeContext)
+		platformPlugins.discord_api = getDiscordApiPlugin(nativeContext)
 
 	args.plugins = Object.assign({}, plugins, platformPlugins, args.plugins)
 	const prompt_struct = Object.assign(await buildPromptStruct(args), {
@@ -179,7 +180,7 @@ export async function baseGetReply(args) {
 			// File operations (file-change.mjs)
 			...fileOperationToolUseBlocks,
 
-			// Memory management (long-term-memory.mjs & short-term-memory.mjs)
+			// Memory management (long-term-memory.mjs & short-term/)
 			{ start: '<add-long-term-memory>', end: '</add-long-term-memory>' },
 			{ start: '<update-long-term-memory>', end: '</update-long-term-memory>' },
 			{ start: '<delete-long-term-memory>', end: '</delete-long-term-memory>' },
@@ -187,7 +188,7 @@ export async function baseGetReply(args) {
 			{ start: '<view-long-term-memory-context>', end: '</view-long-term-memory-context>' },
 			{ start: '<delete-short-term-memories>', end: '</delete-short-term-memories>' },
 
-			// Web browsing (websearch.mjs & webbrowse.mjs)
+			// Web browsing (web-search.mjs & web-browse.mjs)
 			{ start: '<web-search>', end: '</web-search>' },
 			{ start: '<web-browse>', end: '</web-browse>' },
 
@@ -199,7 +200,7 @@ export async function baseGetReply(args) {
 			{ start: '<list-timers>', end: '</list-timers>' },
 			{ start: '<remove-timer>', end: '</remove-timer>' },
 
-			// Browser integration (browserIntegration.mjs)
+			// Browser integration (browser-integration.mjs)
 			{ start: '<browser-get-connected-pages>', end: '</browser-get-connected-pages>' },
 			{ start: '<browser-get-focused-page-info>', end: '</browser-get-focused-page-info>' },
 			{ start: '<browser-get-browse-history>', end: '</browser-get-browse-history>' },

@@ -1,8 +1,7 @@
 import fs from 'node:fs'
 
 import { chardir } from '../../charbase.mjs'
-
-import { systemChatLogEntry } from './systemChatLogEntry.mjs'
+import { systemChatLogEntry } from '../system-chat-log-entry.mjs'
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */

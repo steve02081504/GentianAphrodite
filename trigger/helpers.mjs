@@ -5,9 +5,9 @@ import { resolveOperatorEntityHash } from '../../../../../../src/public/parts/sh
 import { resolveDeclaredOwnerEntityHash, resolveTrustedOwnerContext } from '../../../../../../src/public/parts/shells/chat/src/entity/master.mjs'
 import { getUserByUsername } from '../../../../../../src/server/auth/index.mjs'
 import { loadAnyPreferredDefaultPart } from '../../../../../../src/server/parts_loader.mjs'
-import { rowIsFromSelf } from '../reply_gener/utils.mjs'
+import { rowAuthorHash, rowIsFromChar, rowIsFromSelf } from '../scripts/chat-log.mjs'
 import { base_match_keys, base_match_keys_count } from '../scripts/match.mjs'
-import { sleep } from '../scripts/tools.mjs'
+import { sleep } from '../scripts/tools/index.mjs'
 
 import { GentianWords, MuteDurationMs } from './constants.mjs'
 
@@ -199,10 +199,27 @@ export function lastBotMessageTimestamp(chatLog, selfHash) {
 /**
  * @param {object[]} chatLog 聊天记录
  * @param {string} selfHash 自身 hash
- * @returns {number} 自上次 bot 发言后的消息条数
+ * @returns {number} 距上次 bot 发言以后的消息数量
  */
 export function messagesSinceLastBotReply(chatLog, selfHash) {
 	const log = chatLog || []
 	const lastBotIndex = log.findLastIndex(entry => rowIsFromSelf(entry, selfHash))
 	return lastBotIndex === -1 ? log.length : log.slice(lastBotIndex + 1).length
 }
+
+/**
+ * @param {object} params 参数
+ * @param {object} params.event OnMessage 事件
+ * @param {string} params.selfHash 自身 hash
+ * @param {string} params.operatorHash 主人 hash
+ * @returns {boolean} 近期是否只有主人与 bot 在互动
+ */
+export function ownerBotOnlyInteraction({ event, selfHash, operatorHash }) {
+	const log = event.chatReplyRequest.chat_log || []
+	if (log.length < 2) return false
+	return log.slice(-7).every(row => {
+		const author = rowAuthorHash(row)
+		return author === operatorHash || author === selfHash || rowIsFromChar(row)
+	})
+}
+

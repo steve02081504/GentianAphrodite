@@ -1,21 +1,21 @@
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
-import { OrderedAISourceCalling } from '../../AISource/index.mjs'
 import { config } from '../../config/index.mjs'
-import { mergePrompt } from '../../prompt/build.mjs'
-import { CodeRunnerPrompt } from '../../prompt/functions/coderunner.mjs'
+import { CodeRunnerPrompt } from '../../prompt/functions/code-runner.mjs'
 import { DeepResearchMainPrompt } from '../../prompt/functions/deep-research.mjs'
-import { WebBrowsePrompt } from '../../prompt/functions/webbrowse.mjs'
-import { WebSearchPrompt } from '../../prompt/functions/websearch.mjs'
+import { WebBrowsePrompt } from '../../prompt/functions/web-browse.mjs'
+import { WebSearchPrompt } from '../../prompt/functions/web-search.mjs'
+import { mergePrompt } from '../../prompt/merge.mjs'
 import { unlockAchievement } from '../../scripts/achievements.mjs'
 import { statisticDatas } from '../../scripts/statistics.mjs'
-import { sleep } from '../../scripts/tools.mjs'
+import { sleep } from '../../scripts/tools/index.mjs'
+import { OrderedAISourceCalling } from '../../service_sources/AI.mjs'
 import { getLongTimeLogAdder } from '../index.mjs'
 
-import { coderunner } from './coderunner.mjs'
-import { webbrowse } from './webbrowse.mjs'
-import { websearch } from './websearch.mjs'
+import { coderunner } from './code-runner.mjs'
+import { webbrowse } from './web-browse.mjs'
+import { websearch } from './web-search.mjs'
 
 /**
  * 将计划文本解析为结构化的计划数组，验证较为宽松。

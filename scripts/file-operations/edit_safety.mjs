@@ -3,7 +3,7 @@
  * EOL/BOM 保真、匹配计数与唯一性约束、模糊兜底、相似度与行级 diff。
  * 纯函数、无 I/O、目标机器无关。
  */
-import { escapeRegExp, parseRegexFromString } from '../tools.mjs'
+import { escapeRegExp, parseRegexFromString } from '../tools/index.mjs'
 
 const MAX_MATCHES = 1000
 const FUZZY_MAX_SPAN_FACTOR = 4

@@ -1,6 +1,6 @@
 import { Buffer } from 'node:buffer'
 
-import { chineseToNumber } from '../../scripts/chineseToNumber.mjs'
+import { chineseToNumber } from '../../scripts/chinese-to-number.mjs'
 import { getScopedChatLog } from '../../scripts/match.mjs'
 
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */

@@ -1,4 +1,4 @@
-import { RealityChannel } from '../../event_engine/index.mjs'
+import { RealityChannel } from '../../event_engine/reality-channel.mjs'
 import { createContextSnapshot } from '../../scripts/context.mjs'
 
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */

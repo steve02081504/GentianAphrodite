@@ -4,7 +4,7 @@ import { username, GentianAphrodite } from '../../charbase.mjs'
 import { GetReply } from '../../reply_gener/index.mjs'
 import { newCharReply, newUserMessage } from '../../scripts/statistics.mjs'
 
-import { recommend_command_plugin } from './recommend_command.mjs'
+import { recommendCommandPlugin } from './recommend-command.mjs'
 import { GetShellWorld } from './world.mjs'
 /** @typedef {import('../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatLogEntry_t} chatLogEntry_t */
 
@@ -106,7 +106,7 @@ ${args.screen}
 		char: GentianAphrodite,
 		other_chars: [],
 		plugins: {
-			recommend_command: recommend_command_plugin
+			recommend_command: recommendCommandPlugin
 		},
 		chat_scoped_char_memory: args.chat_scoped_char_memory,
 		chat_log,

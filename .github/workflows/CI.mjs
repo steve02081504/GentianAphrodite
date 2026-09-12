@@ -427,3 +427,30 @@ CI.test('Special Reply Markers', () => {
 		CI.assert(result.content === 'Some content here', `Reply ending with <-<error>-> should be stripped, but got: ${JSON.stringify(result)}`)
 	})
 })
+
+CI.test('Sticker Manifest', () => {
+	const stickerDir = path.join(import.meta.dirname, '..', '..', 'public', 'imgs', 'stickers')
+	const assetNames = fs.readdirSync(stickerDir)
+		.filter(name => name.endsWith('.avif'))
+		.map(name => name.slice(0, -'.avif'.length))
+		.sort()
+
+	const telegramStickers = CI.char.interfaces.telegram.stickers
+	/**
+	 *
+	 * @param {string[]} keys 键集合
+	 * @returns {string[]} 排序后的键
+	 */
+	const sortedKeys = keys => [...keys].sort()
+	const fileIds = Object.values(telegramStickers).map(sticker => sticker.fileId)
+	const duplicateFileIds = [...new Set(fileIds.filter((fileId, index) => fileIds.indexOf(fileId) !== index))]
+	CI.assert(duplicateFileIds.length === 0, `Telegram 贴纸 fileId 重复：${duplicateFileIds.join(', ')}`)
+	CI.assert(
+		JSON.stringify(sortedKeys(Object.keys(telegramStickers))) === JSON.stringify(assetNames),
+		`Telegram 贴纸键与 public/imgs/stickers 资源不一致。仅 manifest 有：${Object.keys(telegramStickers).filter(key => !assetNames.includes(key)).join(', ')}；仅资源有：${assetNames.filter(name => !(name in telegramStickers)).join(', ')}`
+	)
+	CI.assert(
+		JSON.stringify(sortedKeys(Object.keys(CI.char.interfaces.discord.stickers))) === JSON.stringify(assetNames),
+		`Discord 贴纸键与 public/imgs/stickers 资源不一致。仅资源有：${assetNames.filter(name => !(name in CI.char.interfaces.discord.stickers)).join(', ')}`
+	)
+})

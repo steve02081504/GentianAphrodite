@@ -8,7 +8,7 @@ import { match_keys } from '../../scripts/match.mjs'
  * @param {logical_results_t} logical_results - 逻辑结果。
  * @returns {Promise<object>} - 包含 Prompt 文本的对象。
  */
-export async function ps12exePrompt(args, logical_results) {
+export async function Ps12exePrompt(args, logical_results) {
 	let result = ''
 
 	if (await match_keys(args, ['exe', '可执行文件'], 'any', 2) &&

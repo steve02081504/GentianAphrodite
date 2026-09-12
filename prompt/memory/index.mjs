@@ -1,8 +1,8 @@
-import { mergePrompt } from '../build.mjs'
+import { mergePrompt } from '../merge.mjs'
 
 import { loadLongTermMemoryFromDisk, LongTermMemoryPrompt, saveLongTermMemory } from './long-term-memory.mjs'
 import { RealityChannelHistoryPrompt } from './reality-channel-history.mjs'
-import { loadShortTermMemoryFromDisk, saveShortTermMemory, ShortTermMemoryPrompt } from './short-term-memory.mjs'
+import { loadShortTermMemoryFromDisk, saveShortTermMemory, ShortTermMemoryPrompt } from './short-term/index.mjs'
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */

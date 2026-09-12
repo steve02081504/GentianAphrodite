@@ -1,4 +1,4 @@
-import { isBotCommand } from '../reply_gener/utils.mjs'
+import { isBotCommand } from '../scripts/chat-log.mjs'
 import { rude_words } from '../scripts/dict.mjs'
 import { base_match_keys } from '../scripts/match.mjs'
 
@@ -15,8 +15,8 @@ import {
 	lastBotMessageTimestamp,
 	messagesSinceLastBotReply,
 	muteGroup,
+	ownerBotOnlyInteraction,
 } from './helpers.mjs'
-import { ownerBotOnlyInteraction } from './repeat.mjs'
 
 /**
  * @param {string} content 消息内容

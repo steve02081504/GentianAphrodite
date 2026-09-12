@@ -6,7 +6,7 @@ import { charname } from '../../charbase.mjs'
 import { flatChatLog } from '../../scripts/match.mjs'
 import { UseNotifyAbleChannel } from '../../scripts/notify.mjs'
 import { newCharReply, statisticDatas } from '../../scripts/statistics.mjs'
-import { parseDuration } from '../../scripts/tools.mjs'
+import { parseDuration } from '../../scripts/tools/index.mjs'
 import { GetReply } from '../index.mjs'
 
 /** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */

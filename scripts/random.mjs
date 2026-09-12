@@ -1,4 +1,4 @@
-import { shuffleArray } from './tools.mjs'
+import { shuffleArray } from './tools/index.mjs'
 
 /**
  * 从给定的参数中随机选择一个并返回。

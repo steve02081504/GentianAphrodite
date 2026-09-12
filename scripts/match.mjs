@@ -4,12 +4,12 @@ import { francAll } from 'npm:franc'
 import * as OpenCC from 'npm:opencc-js'
 
 import { charname } from '../charbase.mjs'
-import { translateSource } from '../TranslateSource/index.mjs'
+import { translateSource } from '../service_sources/translate.mjs'
 
 import { remove_kaomoji } from './dict.mjs'
-import { normalizeFancyText } from './fancytext.mjs'
-import { is_PureChinese } from './langdetect.mjs'
-import { escapeRegExp, sleep } from './tools.mjs'
+import { normalizeFancyText } from './fancy-text.mjs'
+import { is_PureChinese } from './lang-detect.mjs'
+import { escapeRegExp, sleep } from './tools/index.mjs'
 
 const chT2S = OpenCC.Converter({ from: 'twp', to: 'cn' })
 

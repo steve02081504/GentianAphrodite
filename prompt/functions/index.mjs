@@ -1,33 +1,33 @@
-import { mergePrompt } from '../build.mjs'
+import { mergePrompt } from '../merge.mjs'
 
-import { AutoCalcPrompt } from './autocalc.mjs'
-import { BrowserIntegrationPrompt } from './browserIntegration.mjs'
+import { AutoCalcPrompt } from './auto-calc.mjs'
+import { BrowserIntegrationPrompt } from './browser-integration.mjs'
 import { CameraPrompt } from './camera.mjs'
-import { CharGeneratorPrompt } from './charGenerator.mjs'
-import { ChineseGrammarCorrectionPrompt } from './ChineseGrammarCorrection.mjs'
-import { CodeRunnerPrompt } from './coderunner.mjs'
-import { CorpusGeneratorPrompt } from './corpusGenerator.mjs'
+import { CharGeneratorPrompt } from './char-generator.mjs'
+import { ChineseGrammarCorrectionPrompt } from './chinese-grammar-correction.mjs'
+import { CodeRunnerPrompt } from './code-runner.mjs'
+import { CorpusGeneratorPrompt } from './corpus-generator.mjs'
 import { DeepResearchPrompt } from './deep-research.mjs'
 import { DicePrompt } from './dice.mjs'
 import { FileChangePrompt } from './file-change.mjs'
-import { HostInfoPrompt } from './hostinfo.mjs'
+import { HostInfoPrompt } from './host-info.mjs'
 import { IdleManagementPrompt } from './idle-management.mjs'
-import { infoPrompt } from './info.mjs'
+import { InfoPrompt } from './info.mjs'
 import { KanjiPrompt } from './kanji.mjs'
 import { NotifyPrompt } from './notify.mjs'
 import { NumberAlchemistPrompt } from './number-alchemist.mjs'
 import { PoemPrompt } from './poem.mjs'
 import { PromptReviewerPrompt } from './prompt-reviewer.mjs'
-import { PromptWriterPrompt } from './promptWriter.mjs'
-import { qrcodeParserPrompt } from './qrcodeParser.mjs'
+import { PromptWriterPrompt } from './prompt-writer.mjs'
+import { QrcodeParserPrompt } from './qrcode-parser.mjs'
 import { RockPaperScissorsPrompt } from './rock-paper-scissors.mjs'
 import { RudePrompt } from './rude.mjs'
 import { ScreenshotPrompt } from './screenshot.mjs'
-import { StatisticDatasPrompt } from './statistic_datas.mjs'
+import { StatisticDatasPrompt } from './statistic-datas.mjs'
 import { TaroPrompt } from './taro.mjs'
 import { TimerPrompt } from './timer.mjs'
-import { WebBrowsePrompt } from './webbrowse.mjs'
-import { WebSearchPrompt } from './websearch.mjs'
+import { WebBrowsePrompt } from './web-browse.mjs'
+import { WebSearchPrompt } from './web-search.mjs'
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
@@ -66,7 +66,7 @@ export async function FunctionPrompt(args, logical_results) {
 	result.push(CorpusGeneratorPrompt(args, logical_results))
 	result.push(ChineseGrammarCorrectionPrompt(args, logical_results))
 	result.push(PromptWriterPrompt(args, logical_results))
-	result.push(qrcodeParserPrompt(args, logical_results))
-	result.push(infoPrompt(args, logical_results))
+	result.push(QrcodeParserPrompt(args, logical_results))
+	result.push(InfoPrompt(args, logical_results))
 	return mergePrompt(...result)
 }

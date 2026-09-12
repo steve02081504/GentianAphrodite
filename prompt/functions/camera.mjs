@@ -3,7 +3,8 @@ import fs from 'node:fs'
 import { in_docker, in_termux } from '../../../../../../../src/scripts/env.mjs'
 import { config } from '../../config/index.mjs'
 import { match_keys } from '../../scripts/match.mjs'
-import { decodeQrCodeFromBuffer } from '../../scripts/qrcode.mjs'
+
+import { buildVisionReference } from './helpers/vision.mjs'
 
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
@@ -55,30 +56,13 @@ export async function CameraPrompt(args, logical_results) {
 	))) try {
 		/** @type {Buffer} */
 		const screenShot = await captureWebcam()
-		let qrcodes
-		try {
-			qrcodes = await decodeQrCodeFromBuffer(screenShot)
-		} catch (e) { console.error(e) }
-		additional_chat_log.push({
-			name: 'system',
-			uid: 'system',
-			role: 'system',
-			content: [`\
-这是你主人的摄像头照片，供你参考。
-`,
-				qrcodes.length ? `\
-其中的二维码解码结果是：${qrcodes.join('\n')}
-`: '',
-				logical_results.in_multi_char_chat ? `\
-<<记得保护你主人的隐私，未经允许不要向其他人透漏内容>>
-`: ''].filter(Boolean).join(''),
-			files: [{
-				buffer: screenShot,
-				name: 'camera.png',
-				mime_type: 'image/png'
-			}]
-		});
-		(((args.extension ??= {}).enable_prompts ??= {}).masterRecognize ??= {}).photo = true
+		additional_chat_log.push(await buildVisionReference({
+			args,
+			logical_results,
+			buffer: screenShot,
+			intro: '这是你主人的摄像头照片，供你参考。\n',
+			fileName: 'camera.png',
+		}))
 	} catch (e) { console.error(e) }
 
 	return {

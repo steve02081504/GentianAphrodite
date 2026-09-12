@@ -1,13 +1,13 @@
-import { mergePrompt } from '../build.mjs'
+import { mergePrompt } from '../merge.mjs'
 
-import { CoreRulesPrompt } from './corerules.mjs'
+import { CoreRulesPrompt } from './core-rules.mjs'
 import { MasterRecognizePrompt } from './master-recognize.mjs'
-import { OptionsPrompt } from './Options.mjs'
+import { OptionsPrompt } from './options.mjs'
 import { PromptReviewerPrompt } from './prompt-reviewer.mjs'
 import { SoberPrompt } from './sober.mjs'
 import { SOSPrompt } from './sos.mjs'
-import { SpecialReplayPrompt } from './specialreplay.mjs'
-import { StatusBarPrompt } from './StatusBar.mjs'
+import { SpecialReplayPrompt } from './special-replay.mjs'
+import { StatusBarPrompt } from './status-bar.mjs'
 import { StickersPrompt } from './stickers.mjs'
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */

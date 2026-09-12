@@ -10,7 +10,7 @@ import { NdiffResults, PickRandomN, random, repeatRandomTimes } from '../../scri
  * @param {logical_results_t} logical_results 逻辑结果
  * @returns {Promise<single_part_prompt_t>} 语料组成的Prompt
  */
-export async function corpusPrompt(args, logical_results) {
+export async function CorpusPrompt(args, logical_results) {
 	let result = '<Example>\n'
 	if (!logical_results.in_hypnosis) {
 		if (logical_results.in_multi_char_chat)

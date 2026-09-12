@@ -1,17 +1,17 @@
-import { mergePrompt } from '../build.mjs'
+import { mergePrompt } from '../merge.mjs'
 
 import { AbilityPrompt } from './ability.mjs'
 import { BackgroundPrompt } from './background.mjs'
-import { BasedefPrompt } from './base_defs.mjs'
-import { BodyDataPrompt } from './bodydata.mjs'
+import { BaseDefsPrompt } from './base-defs.mjs'
+import { BodyDataPrompt } from './body-data.mjs'
 import { CombatPrompt } from './combat.mjs'
-import { corpusPrompt } from './corpus.mjs'
+import { CorpusPrompt } from './corpus.mjs'
 import { ItemsPrompt } from './items.mjs'
 import { KnowledgePrompt } from './knowledge.mjs'
 import { LikesPrompt } from './likes.mjs'
 import { HypnosisExitPrompt, HypnosisModePrompt } from './modes/hypnosis.mjs'
 import { NormalModePrompt } from './modes/normal.mjs'
-import { OtherDetailPrompt } from './others.mjs'
+import { OthersPrompt } from './others.mjs'
 import { SexPrompt } from './sex.mjs'
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
@@ -25,8 +25,8 @@ import { SexPrompt } from './sex.mjs'
  */
 export async function RoleSettingsPrompt(args, logical_results) {
 	const result = []
-	result.push(corpusPrompt(args, logical_results))
-	result.push(BasedefPrompt(args, logical_results))
+	result.push(CorpusPrompt(args, logical_results))
+	result.push(BaseDefsPrompt(args, logical_results))
 	if (!logical_results.in_hypnosis || logical_results.hypnosis_exit)
 		result.push(NormalModePrompt(args, logical_results))
 	else
@@ -47,7 +47,7 @@ export async function RoleSettingsPrompt(args, logical_results) {
 		result.push(BodyDataPrompt(args, logical_results))
 	}
 
-	result.push(OtherDetailPrompt(args, logical_results))
+	result.push(OthersPrompt(args, logical_results))
 	result.push(KnowledgePrompt(args, logical_results))
 	result.push(BackgroundPrompt(args, logical_results))
 

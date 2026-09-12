@@ -2,13 +2,13 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import { loadPart } from '../../../../../../src/server/parts_loader.mjs'
-import { getAISourceData, setAISourceData } from '../AISource/index.mjs'
 import { chardir, charname, username } from '../charbase.mjs'
-import { resetIdleTimer } from '../event_engine/on_idle.mjs'
-import { checkVoiceSentinel, stopVoiceSentinel } from '../event_engine/voice_sentinel.mjs'
-import { mergeTree } from '../scripts/tools.mjs'
-import { getSearchSourceData, setSearchSourceData } from '../SearchSource/index.mjs'
-import { getTranslateSourceData, setTranslateSourceData } from '../TranslateSource/index.mjs'
+import { resetIdleTimer } from '../event_engine/on-idle.mjs'
+import { checkVoiceSentinel, stopVoiceSentinel } from '../event_engine/voice-sentinel.mjs'
+import { mergeTree } from '../scripts/tools/index.mjs'
+import { getAISourceData, setAISourceData } from '../service_sources/AI.mjs'
+import { getSearchSourceData, setSearchSourceData } from '../service_sources/search.mjs'
+import { getTranslateSourceData, setTranslateSourceData } from '../service_sources/translate.mjs'
 
 /**
  * 获取配置界面的显示内容。
@@ -71,6 +71,7 @@ export function GetData() {
  */
 export async function SetData(data) {
 	await setAISourceData(data.AIsources || getAISourceData())
+	checkVoiceSentinel()
 	await setSearchSourceData(data.searchSource || getSearchSourceData())
 	await setTranslateSourceData(data.translateSource || getTranslateSourceData())
 	if (data.plugins) plugins = Object.fromEntries(await Promise.all(data.plugins.map(async x => [x, await loadPart(username, 'plugins/' + x)])))

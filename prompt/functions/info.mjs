@@ -1,7 +1,8 @@
 import { getPartInfo } from '../../../../../../../src/scripts/locale.mjs'
-import { AIsources, last_used_AIsource } from '../../AISource/index.mjs'
 import { isUserSpeaker, match_keys } from '../../scripts/match.mjs'
-import { timeToStr, timeToTimeStr } from '../../scripts/tools.mjs'
+import { timeToStr, timeToTimeStr } from '../../scripts/tools/index.mjs'
+import { AIsources, last_used_AIsource } from '../../service_sources/AI.mjs'
+import { systemChatLogEntry } from '../system-chat-log-entry.mjs'
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
@@ -11,7 +12,7 @@ import { timeToStr, timeToTimeStr } from '../../scripts/tools.mjs'
  * @param {logical_results_t} logical_results - 逻辑结果。
  * @returns {Promise<object>} - 包含 Prompt 文本和附加聊天日志的对象。
  */
-export async function infoPrompt(args, logical_results) {
+export async function InfoPrompt(args, logical_results) {
 	let result = ''
 
 	if (args.extension?.enable_prompts?.info?.time || await match_keys(args, [
@@ -111,12 +112,6 @@ ${Object.entries(modelMap).map(([key, value]) => `\`${key}\`: ${value.join(', ')
 
 	return {
 		text: [],
-		additional_chat_log: [{
-			name: 'system',
-			uid: 'system',
-			role: 'system',
-			content: result,
-			files: []
-		}]
+		additional_chat_log: [systemChatLogEntry(result)]
 	}
 }

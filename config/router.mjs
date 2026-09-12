@@ -6,7 +6,7 @@ import mimetype from 'npm:mime-types'
 import wavefile from 'npm:wavefile'
 
 import { chardir, charurl } from '../charbase.mjs'
-import { checkVoiceSentinel } from '../event_engine/voice_sentinel.mjs'
+import { checkVoiceSentinel } from '../event_engine/voice-sentinel.mjs'
 import { unlockAchievement } from '../scripts/achievements.mjs'
 
 /**

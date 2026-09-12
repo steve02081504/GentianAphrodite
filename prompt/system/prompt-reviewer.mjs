@@ -2,6 +2,9 @@
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").single_part_prompt_t} single_part_prompt_t */
 /** @typedef {import("../logical_results/index.mjs").logical_results_t} logical_results_t */
 
+import { systemChatLogEntry } from '../system-chat-log-entry.mjs'
+
+
 /**
  * Prompt评测用提示函数
  * @param {chatReplyRequest_t} args 用户输入参数
@@ -18,12 +21,6 @@ export async function PromptReviewerPrompt(args, logical_results) {
 
 	return {
 		text: [],
-		additional_chat_log: [{
-			name: 'system',
-			uid: 'system',
-			role: 'system',
-			content: result,
-			files: []
-		}]
+		additional_chat_log: [systemChatLogEntry(result)]
 	}
 }

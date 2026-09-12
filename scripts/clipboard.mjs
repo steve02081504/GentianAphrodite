@@ -6,7 +6,7 @@ import clipboardListener from 'npm:clipboard-event'
 import clipboard from 'npm:clipboardy'
 import { copyImg } from 'npm:img-clipboard'
 
-import { toFileObj } from './fileobj.mjs'
+import { toFileObj } from './file-obj.mjs'
 
 
 const state = {

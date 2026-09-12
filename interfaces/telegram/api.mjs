@@ -8,7 +8,7 @@ import { match_keys } from '../../scripts/match.mjs'
  * @param {object | null | undefined} nativeContext hydrateBridgeNativeContext 结果
  * @returns {import('../../../../../../../src/decl/pluginAPI.ts').pluginAPI_t} Telegram API 插件
  */
-export const get_telegram_api_plugin = nativeContext => ({
+export const getTelegramApiPlugin = nativeContext => ({
 	info: {
 		'zh-CN': {
 			name: 'Telegram 插件',

@@ -8,7 +8,7 @@ import { match_keys } from '../../scripts/match.mjs'
  * @param {object | null | undefined} nativeContext hydrateBridgeNativeContext 结果
  * @returns {import('../../../../../../../src/decl/pluginAPI.ts').pluginAPI_t} Discord API 插件
  */
-export const get_discord_api_plugin = nativeContext => ({
+export const getDiscordApiPlugin = nativeContext => ({
 	info: {
 		'zh-CN': {
 			name: 'discord插件',

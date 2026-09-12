@@ -39,7 +39,7 @@
 | -------------------- | ------- | ---------------------------------------------- |
 | `decodedQRCodes`     | array   | `qrcodeParser.mjs`                             |
 | `processedURLs`      | boolean | `webbrowse.mjs`                                |
-| `SimplifiedContents` | array   | `short-term-memory.mjs`                        |
+| `SimplifiedContents` | array   | `prompt/memory/short-term/`                    |
 | `execed_codes`       | object  | `coderunner.mjs`                               |
 | `logical_results`    | object  | `deep-research.mjs`                            |
 | `recommend_command`  | string  | `interfaces/shellassist/recommend_command.mjs` |
