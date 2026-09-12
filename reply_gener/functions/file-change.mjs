@@ -80,14 +80,16 @@ export async function file_change(result, args) {
 
 	/**
 	 * 追加文件工具结果日志：agent 层存执行结果，人类展示层存「调用卡片 + 结果」。
+	 * `name` 采用与 fount 一致的 `file-operations.<op>` 点分命名，供宿主 UI（如 code shell）
+	 * 按工具本地化显示（`code.tool.readFile` / `writeFile` / `findFiles` …）。
 	 * @param {string} call - 工具调用文本。
 	 * @param {string} resultText - agent 层执行结果。
-	 * @param {object[]} [files] - 结果附件。
+	 * @param {{name?: string, files?: object[]}} [options] - 工具名（区分读写/搜索）与结果附件。
 	 * @returns {void}
 	 */
-	function addFileToolLog(call, resultText, files = []) {
+	function addFileToolLog(call, resultText, { name = 'file-operations', files = [] } = {}) {
 		AddLongTimeLog({
-			name: 'file-change',
+			name,
 			role: 'tool',
 			content: resultText,
 			content_for_show: renderMarkdownCodeBlock(call.trim()) + '\n\n' + resultText,
@@ -112,7 +114,7 @@ export async function file_change(result, args) {
 			if (attrs.path) workdir.path = attrs.path
 			args.chat_scoped_char_memory ??= {}
 			args.chat_scoped_char_memory.workdir = { ...workdir }
-			addFileToolLog(set_match[0], `默认工作目录已更新为机器 ${workdir.machine}${workdir.path ? ` 的 ${workdir.path}` : ''}。`)
+			addFileToolLog(set_match[0], `默认工作目录已更新为机器 ${workdir.machine}${workdir.path ? ` 的 ${workdir.path}` : ''}。`, { name: 'file-operations.set-workdir' })
 		}
 		unlockAchievement('use_file_change')
 		statisticDatas.toolUsage.fileOperations++
@@ -124,7 +126,7 @@ export async function file_change(result, args) {
 		for (const list_match of list_machines_matches) MaskHandledCall?.(list_match[0])
 		const machines = await listMachines(args.username)
 		const content = '可用机器列表：\n' + renderMarkdownCodeBlock(JSON.stringify(machines, null, 2), { lang: 'json' })
-		addFileToolLog(list_machines_matches.map(match => match[0]).join('\n'), content)
+		addFileToolLog(list_machines_matches.map(match => match[0]).join('\n'), content, { name: 'file-operations.list-machines' })
 		unlockAchievement('use_file_change')
 		statisticDatas.toolUsage.fileOperations++
 		regen = true
@@ -175,7 +177,7 @@ export async function file_change(result, args) {
 					file_content += `读取文件失败：${path}\n${renderMarkdownCodeBlock(err.stack || String(err))}\n`
 				}
 
-			addFileToolLog(view_match[0], file_content, files)
+			addFileToolLog(view_match[0], file_content, { name: 'file-operations.view-file', files })
 		}
 		unlockAchievement('use_file_change')
 		statisticDatas.toolUsage.fileOperations++
@@ -210,7 +212,7 @@ export async function file_change(result, args) {
 			catch (err) {
 				system_content = `文件搜索失败：\n${renderMarkdownCodeBlock(err.stack || String(err))}\n`
 			}
-			addFileToolLog(glob_match[0], system_content)
+			addFileToolLog(glob_match[0], system_content, { name: 'file-operations.glob' })
 		}
 		unlockAchievement('use_file_change')
 		statisticDatas.toolUsage.fileOperations++
@@ -262,7 +264,7 @@ export async function file_change(result, args) {
 			catch (err) {
 				system_content = `内容搜索失败：\n${renderMarkdownCodeBlock(err.stack || String(err))}\n`
 			}
-			addFileToolLog(grep_match[0], system_content)
+			addFileToolLog(grep_match[0], system_content, { name: 'file-operations.grep' })
 		}
 		unlockAchievement('use_file_change')
 		statisticDatas.toolUsage.fileOperations++
@@ -322,7 +324,7 @@ export async function file_change(result, args) {
 		}
 		catch (err) {
 			console.error('Error parsing replace-file content with regex:', err)
-			addFileToolLog(logContent, `解析replace-file失败：\n${renderMarkdownCodeBlock(err.stack || String(err))}\n原始数据:\n<replace-file>${replace_file_content}</replace-file>`)
+			addFileToolLog(logContent, `解析replace-file失败：\n${renderMarkdownCodeBlock(err.stack || String(err))}\n原始数据:\n<replace-file>${replace_file_content}</replace-file>`, { name: 'file-operations.replace-file' })
 			continue // Continue to next match instead of stopping
 		}
 
@@ -339,7 +341,7 @@ export async function file_change(result, args) {
 				originalContent = await executor.readTextFile(path)
 			}
 			catch (err) {
-				addFileToolLog(logContent, `读取文件失败：${path}\n${renderMarkdownCodeBlock(err.stack || String(err))}\n`)
+				addFileToolLog(logContent, `读取文件失败：${path}\n${renderMarkdownCodeBlock(err.stack || String(err))}\n`, { name: 'file-operations.replace-file' })
 				continue
 			}
 
@@ -403,7 +405,7 @@ export async function file_change(result, args) {
 			// If content didn't change AND no errors, explicitly state that
 			else if (!failed_replaces.length) system_content += '所有替换规则均未匹配到内容或未导致文件变化。'
 
-			addFileToolLog(logContent, system_content)
+			addFileToolLog(logContent, system_content, { name: 'file-operations.replace-file' })
 		}
 		unlockAchievement('use_file_change')
 		statisticDatas.toolUsage.fileOperations++
@@ -430,17 +432,17 @@ export async function file_change(result, args) {
 				const similarity = similarityRatio(toLf(stripBom(existing)), toLf(newText))
 				const isEmpty = !newText.trim()
 				if (!force && (isEmpty || similarity < 0.3)) {
-					addFileToolLog(logContent, `覆写 ${path} 被拒绝：新内容与原文相似度仅 ${(similarity * 100).toFixed(1)}%${isEmpty ? '，且新内容为空' : ''}。\n如确认要整体重写，请为 <override-file> 添加 force="true"；否则请改用 <replace-file> 做局部修改。`)
+					addFileToolLog(logContent, `覆写 ${path} 被拒绝：新内容与原文相似度仅 ${(similarity * 100).toFixed(1)}%${isEmpty ? '，且新内容为空' : ''}。\n如确认要整体重写，请为 <override-file> 添加 force="true"；否则请改用 <replace-file> 做局部修改。`, { name: 'file-operations.override-file' })
 					regen = true
 					continue
 				}
 				await executor.writeTextFile(path, restoreBom(applyEol(toLf(newText), style.eol), style.bom))
 			}
 			else await executor.writeTextFile(path, newText)
-			addFileToolLog(logContent, `文件 ${path} 已写入`)
+			addFileToolLog(logContent, `文件 ${path} 已写入`, { name: 'file-operations.override-file' })
 		}
 		catch (err) {
-			addFileToolLog(logContent, `写入文件失败：${path}\n${renderMarkdownCodeBlock(err.stack || String(err))}\n`)
+			addFileToolLog(logContent, `写入文件失败：${path}\n${renderMarkdownCodeBlock(err.stack || String(err))}\n`, { name: 'file-operations.override-file' })
 		}
 		unlockAchievement('use_file_change')
 		statisticDatas.toolUsage.fileOperations++

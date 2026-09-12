@@ -81,6 +81,7 @@
 
 - 多词文件名一律 **kebab-case**（`char-generator.mjs`、`on-idle.mjs`）；文件名中的 `AI` 保持大写（`service_sources/AI.mjs`）。唯一例外：`scripts/file-operations/` 是上游 fount 的抄改镜像，保留 snake_case 便于对照。
 - 导出函数 camelCase、构造器/类型 PascalCase；协议 key（`enable_prompts.*`、extension 字段）不随重命名变动。
+- 工具日志的 `name` 用点分命名并与 fount 的本地化表对齐（`file-operations.view-file/glob/grep/replace-file/override-file/set-workdir/list-machines/preload`、`code-execution.view_files/add_files/callback/run-<lang>/inline-<lang>`），宿主 UI（如 code shell）才能按工具显示本地化标签；不要用单一插件名（旧的 `coderunner` / `file-change` 已弃用）。
 - 一组相关模块放同名目录，用 `index.mjs` 聚合出口（如 `scripts/tools/`、`scripts/web/`、`prompt/memory/short-term/`）。
 - 共享工具放 `scripts/`；仅单个子系统使用的 helper 放该子系统的 `helpers/`。跨子系统的共享 prompt 工具放 `prompt/` 根（如 `prompt/merge.mjs`、`prompt/system-chat-log-entry.mjs`）。
 - `.github/workflows/CI.mjs` 的 `Sticker Manifest` 用例校验贴纸 manifest：fileId 不得重复、telegram/discord 键集必须与 `public/imgs/stickers/*.avif` 一致。

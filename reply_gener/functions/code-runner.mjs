@@ -60,7 +60,7 @@ async function callback_handler(args, reason, code, result) {
 	let logger = args.AddChatLogEntry
 	const feedback = {
 		role: 'tool',
-		name: 'coderunner.callback',
+		name: 'code-execution.callback',
 		uid: 'system',
 		content: `\
 你的js代码中的callback函数被调用了
@@ -172,7 +172,7 @@ export async function coderunner(result, args) {
 			if (!view_files_flag)
 				AddLongTimeLog(view_files_flag = {
 					role: 'tool',
-					name: 'coderunner.view_files',
+					name: 'code-execution.view_files',
 					content: '你需要查看的文件在此。',
 					files: view_files
 				})
@@ -195,7 +195,7 @@ export async function coderunner(result, args) {
 				if (!sent_files)
 					AddLongTimeLog(sent_files = {
 						role: 'tool',
-						name: 'coderunner.add_files',
+						name: 'code-execution.add_files',
 						content: '文件已发送，内容见附件。',
 						files: result.files
 					})
@@ -268,12 +268,12 @@ export async function coderunner(result, args) {
 		if (step.type === 'wait-screen') {
 			// 无前置 run 的独立等待：单独记录，避免丢失
 			const screenshot = await waitAndCapture(step.timeout)
-			AddLongTimeLog({ name: 'coderunner', role: 'tool', content: '已等待并截屏。', files: [screenshot] })
+			AddLongTimeLog({ name: 'code-execution.wait-screen', role: 'tool', content: '已等待并截屏。', files: [screenshot] })
 			continue
 		}
 		unlockAchievement('use_coderunner')
 		statisticDatas.toolUsage.codeRuns++
-		const toolEntry = { name: 'coderunner', role: 'tool', content: '', files: [] }
+		const toolEntry = { name: `code-execution.run-${step.runType}`, role: 'tool', content: '', files: [] }
 		const attrs = parseTagAttrs(step.attrs)
 		const target = resolveTarget(args, attrs)
 		const remote = Boolean(target.remote)
@@ -381,7 +381,7 @@ export async function coderunner(result, args) {
 			let i = 0
 			result.content_for_show = result.content_for_show.replace(inline_js_regex, () => replacements[i++])
 			AddLongTimeLog({
-				name: 'coderunner',
+				name: 'code-execution.inline-js',
 				role: 'tool',
 				content: '内联js代码执行和替换完毕\n',
 				content_for_show: buildInlineToolCard(inlineMatches.map((m, index) => ({ code: m.groups.code, result: replacements[index] })), 'js'),
@@ -392,7 +392,7 @@ export async function coderunner(result, args) {
 		catch (error) {
 			console.error('内联js代码执行失败：', error)
 			AddLongTimeLog({
-				name: 'coderunner',
+				name: 'code-execution.inline-js',
 				role: 'tool',
 				content: '内联js代码执行失败：\n' + error.stack,
 				files: []
@@ -454,7 +454,7 @@ export async function coderunner(result, args) {
 				let i = 0
 				result.content_for_show = result.content_for_show.replace(runner_regex_g, () => replacements[i++])
 				AddLongTimeLog({
-					name: 'coderunner',
+					name: `code-execution.inline-${shell_name}`,
 					role: 'tool',
 					content: `内联${shell_name}代码执行和替换完毕\n`,
 					content_for_show: buildInlineToolCard(inlineMatches.map((m, index) => ({ code: m.groups.code, result: replacements[index] })), shell_name),
@@ -465,7 +465,7 @@ export async function coderunner(result, args) {
 			catch (error) {
 				console.error(`内联${shell_name}代码执行失败：`, error)
 				AddLongTimeLog({
-					name: 'coderunner',
+					name: `code-execution.inline-${shell_name}`,
 					role: 'tool',
 					content: `内联${shell_name}代码执行失败：\n` + error.stack,
 					files: []
