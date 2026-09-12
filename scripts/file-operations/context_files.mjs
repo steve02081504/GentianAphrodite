@@ -1,5 +1,5 @@
 /**
- * 读取文件时的上下文收集（龙胆内置版，抄改自 fount `plugins/file-operations/src/context_files.mjs`，维持两份代码）。
+ * 读取文件时的上下文收集。
  * 沿目录向上查找 AGENTS.md 与 `.agents/docs/*.md`（yaml 头 glob 触发），配合 `target.mjs` 的执行器实现本机/远程一致。
  */
 import { inferCodeLanguageFromPath, renderMarkdownCodeBlock } from '../../../../../../../src/public/parts/shells/chat/src/streaming/index.mjs'

@@ -1,5 +1,5 @@
 /**
- * shell / JS 执行护栏（龙胆内置版，抄改自 fount `src/scripts/shell_guard.mjs`，维持两份代码）。
+ * shell / JS 执行护栏。
  * - 超时：shell 到点杀进程树；JS 因在进程内无法强杀，只能 race 后如实告知仍在运行。
  * - 大输出：只保留开头 + 结尾，完整内容落盘到系统临时目录并返回路径。
  * 供 code-execution（coderunner）与 file-operations 共用。

@@ -1,5 +1,5 @@
 /**
- * 文件写操作防呆（龙胆内置版，抄改自 fount `plugins/file-operations/src/edit_safety.mjs`，维持两份代码）。
+ * 文件写操作防呆。
  * EOL/BOM 保真、匹配计数与唯一性约束、模糊兜底、相似度与行级 diff。
  * 纯函数、无 I/O、目标机器无关。
  */

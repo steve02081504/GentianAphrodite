@@ -1,5 +1,5 @@
 /**
- * 目标机器/工作目录解析与统一执行器（龙胆内置版，抄改自 fount `plugins/file-operations/src/target.mjs`，维持两份代码）。
+ * 目标机器/工作目录解析与统一执行器。
  * - 显式指定 `machine`/`workdir`（标签属性或调用参数）优先，缺省读 `args.workdir`（`chatReplyRequest_t` 请求级默认）。
  * - 本机（machine 0 / 未指定）直接走 `node:fs` + `@steve02081504/exec`；远程机器走 subfounts 执行器。
  * @typedef {import('../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReplyRequest_t} chatReplyRequest_t

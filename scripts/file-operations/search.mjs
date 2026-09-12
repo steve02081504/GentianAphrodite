@@ -1,5 +1,5 @@
 /**
- * 基于 ripgrep 的文件搜索（龙胆内置版，抄改自 fount `plugins/file-operations/src/search.mjs`，维持两份代码）。
+ * 基于 ripgrep 的文件搜索。
  * 使用 `npm:ripgrep`（ripgrep 的 WASM 构建，跨平台且无需原生二进制）。
  * 导出的 `runRipgrep` 自包含、只依赖入参，可经 `targetExecutor.execJs` 在本地或远程机器上执行。
  *

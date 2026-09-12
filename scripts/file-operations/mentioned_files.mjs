@@ -1,5 +1,5 @@
 /**
- * 聊天提及文件预读取（龙胆内置版，抄改自 fount `plugins/file-operations/src/mentioned_files.mjs`，维持两份代码）。
+ * 聊天提及文件预读取。
  * 从文本中提取路径候选，经目标执行器按当前工作目录解析并读取。
  */
 import { DEFAULT_READ_MAX_CHARS, DEFAULT_READ_MAX_LINE_CHARS, isProbablyTextBuffer, windowText } from './read_window.mjs'
