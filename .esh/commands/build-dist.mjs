@@ -6,7 +6,7 @@ import { rollup } from 'npm:rollup'
 import obfuscator from 'npm:rollup-plugin-obfuscator'
 import { visualizer } from 'npm:rollup-plugin-visualizer'
 
-import { nicerWriteFileSync } from '../../scripts/tools.mjs'
+import { nicerWriteFileSync } from '../../scripts/tools/index.mjs'
 
 // 创建dist目录
 fs.mkdirSync('dist', { recursive: true })
