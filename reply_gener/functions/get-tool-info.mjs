@@ -6,16 +6,20 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
+import { defineReplyHandler } from '../../../../../../../src/public/parts/shells/chat/src/reply/defineReplyHandler.mjs'
 import { fountdir } from '../../charbase.mjs'
 
-/** @type {ReplyHandler_t} */
-export function getToolInfo(reply, args) {
-	const { AddLongTimeLog, MaskHandledCall } = args
-	const match_get_tool_info = reply.content_for_handle.match(/<get-tool-info>(?<toolname>[^<]+)<\/get-tool-info>/)
-	if (match_get_tool_info) try {
-		let { toolname } = match_get_tool_info.groups
-		toolname = toolname.trim()
-		MaskHandledCall?.(match_get_tool_info[0])
+/**
+ * 处理 `<get-tool-info>`：返回对应工具的用法说明。
+ * @param {object} reply 回复对象
+ * @param {object} args 请求上下文
+ * @param {object} call 调用
+ * @returns {Promise<object>} 结果
+ */
+async function getToolInfoHandle(reply, args, call) {
+	const { AddLongTimeLog } = args
+	try {
+		const toolname = call.inner.trim()
 		let info_prompt = ''
 		switch (toolname) {
 			case 'character-generator':
@@ -452,8 +456,14 @@ export default {
 			content: info_prompt,
 		})
 
-		return true
+		return { regen: true }
 	} catch (error) { console.error(error) }
 
-	return false
+	return {}
 }
+
+/** @type {ReplyHandler_t} */
+export const getToolInfo = defineReplyHandler({
+	tag: 'get-tool-info',
+	handle: getToolInfoHandle,
+})

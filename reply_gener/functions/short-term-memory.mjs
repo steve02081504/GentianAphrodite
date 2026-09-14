@@ -1,3 +1,4 @@
+import { defineReplyHandler } from '../../../../../../../src/public/parts/shells/chat/src/reply/defineReplyHandler.mjs'
 import { deleteShortTermMemory, getShortTermMemoryNum } from '../../prompt/memory/short-term/index.mjs'
 import { parseRegexFromString } from '../../scripts/tools/index.mjs'
 
@@ -9,30 +10,28 @@ import { parseRegexFromString } from '../../scripts/tools/index.mjs'
 
 /**
  * 处理 AI 删除短期记忆的命令。
- * @type {ReplyHandler_t}
+ * @param {object} reply 回复对象
+ * @param {object} args 请求上下文
+ * @param {Function} args.AddLongTimeLog 追加工具结果日志
+ * @param {object} call 调用
+ * @returns {Promise<object>} 结果
  */
-export async function ShortTermMemoryHandler(result, { AddLongTimeLog, MaskHandledCall }) {
-	// --- Handle <delete-short-term-memories> ---
-	const content = result.content_for_handle
-	const deleteMatches = [...content.matchAll(/<delete-short-term-memories>(?<keyword>[^\n]*?)<\/delete-short-term-memories>/gs)]
-	const validMatches = deleteMatches.filter(m => m?.groups?.keyword)
-	if (!validMatches.length) return false
+async function shortTermMemoryHandle(reply, args, call) {
+	const AddLongTimeLog = args.AddLongTimeLog
+	const keyword = call.inner.trim()
+	if (!keyword) return {}
 
-	for (const deleteMatch of validMatches) MaskHandledCall?.(deleteMatch[0])
-
-	let processed = false
-	for (const deleteMatch of validMatches) try {
-		const keyword = parseRegexFromString(deleteMatch.groups.keyword.trim())
-		console.info('AI请求删除短期记忆:', { keyword })
+	try {
+		const parsedKeyword = parseRegexFromString(keyword)
+		console.info('AI请求删除短期记忆:', { keyword: parsedKeyword })
 		const all = getShortTermMemoryNum()
-		const num = deleteShortTermMemory(keyword)
+		const num = deleteShortTermMemory(parsedKeyword)
 		AddLongTimeLog({
 			name: 'short-term-memory',
 			role: 'tool',
-			content: `短期记忆删除成功，删除了${num}条有关${keyword}的短期记忆，占比${num}/${all}=${(num / all * 100).toFixed(2)}%`,
+			content: `短期记忆删除成功，删除了${num}条有关${parsedKeyword}的短期记忆，占比${num}/${all}=${(num / all * 100).toFixed(2)}%`,
 			files: []
 		})
-		processed = true
 	} catch (e) {
 		AddLongTimeLog({
 			name: 'short-term-memory',
@@ -40,7 +39,15 @@ export async function ShortTermMemoryHandler(result, { AddLongTimeLog, MaskHandl
 			content: `短期记忆删除失败，错误信息：${e.stack}`,
 			files: []
 		})
-		processed = true
 	}
-	return processed
+	return { regen: true }
 }
+
+/**
+ * 处理 AI 删除短期记忆的命令。
+ * @type {ReplyHandler_t}
+ */
+export const ShortTermMemoryHandler = defineReplyHandler({
+	tag: 'delete-short-term-memories',
+	handle: shortTermMemoryHandle,
+})

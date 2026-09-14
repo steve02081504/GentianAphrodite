@@ -12,6 +12,7 @@ AI可以在返回内容中使用特定格式来创建永久记忆，其返回内
 AI被允许使用特殊返回格式进行永久记忆的删除或更新。
 */
 
+import { defineReplyHandler, defineReplyHandlers } from '../../../../../../../src/public/parts/shells/chat/src/reply/defineReplyHandler.mjs'
 import { addLongTermMemory, deleteLongTermMemory, listLongTermMemory, updateLongTermMemory, testLongTermMemoryTrigger, getLongTermMemoryByName, formatLongTermMemoryContext } from '../../prompt/memory/long-term-memory.mjs'
 import { createContextSnapshot } from '../../scripts/context.mjs'
 
@@ -21,277 +22,278 @@ import { createContextSnapshot } from '../../scripts/context.mjs'
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 
 /**
- * 处理 AI 用于管理长期记忆（添加、删除、列出）的命令。
- * 已更新以支持包含 <trigger> 和 <prompt-content> 的新 <add-long-term-memory> 格式。
- * @type {ReplyHandler_t}
+ * 处理 `<add-long-term-memory>`：新增一条永久记忆。
+ * @param {object} reply 回复对象
+ * @param {object} args 请求上下文
+ * @param {object} call 调用
+ * @returns {Promise<object>} 结果
  */
-export async function LongTermMemoryHandler(result, args) {
-	const { AddLongTimeLog, MaskHandledCall } = args
-	let processed = false // Flag to indicate if any LTM command was handled
-	const {content_for_handle} = result
+async function addLongTermMemoryHandle(reply, args, call) {
+	const AddLongTimeLog = args.AddLongTimeLog
+	const content = call.inner.trim()
+	const triggerMatch = content.match(/<trigger>(?<trigger>.*?)<\/trigger>/s)
+	const nameMatch = content.match(/<name>(?<name>.*?)<\/name>/s)
+	const promptContentMatch = content.match(/<prompt-content>(?<prompt>.*?)<\/prompt-content>/s)
 
-	// --- Handle <add-long-term-memory> ---
-	// Match the outer tag, capturing all inner content
-	const addMatches = [...content_for_handle.matchAll(/<add-long-term-memory>(?<content>.*?)<\/add-long-term-memory>/gs)]
-	for (const addMatch of addMatches)
-		if (addMatch?.groups?.content) {
-			MaskHandledCall?.(addMatch[0])
-			const content = addMatch.groups.content.trim()
-			// Match the inner tags based on the new structure
-			const triggerMatch = content.match(/<trigger>(?<trigger>.*?)<\/trigger>/s)
-			const nameMatch = content.match(/<name>(?<name>.*?)<\/name>/s)
-			const promptContentMatch = content.match(/<prompt-content>(?<prompt>.*?)<\/prompt-content>/s) // Changed from <memory-prompt>
+	const memoryTrigger = triggerMatch?.groups?.trigger?.trim()
+	const memoryName = nameMatch?.groups?.name?.trim()
+	const memoryPromptContent = promptContentMatch?.groups?.prompt?.trim()
 
-			// Extract the values, trimming whitespace
-			const memoryTrigger = triggerMatch?.groups?.trigger?.trim()
-			const memoryName = nameMatch?.groups?.name?.trim()
-			const memoryPromptContent = promptContentMatch?.groups?.prompt?.trim() // Changed variable name for clarity
+	console.info('AI请求添加永久记忆:', { trigger: memoryTrigger, name: memoryName, prompt: memoryPromptContent })
 
-			// Updated log to include trigger
-			console.info('AI请求添加永久记忆:', { trigger: memoryTrigger, name: memoryName, prompt: memoryPromptContent })
-
-			// Validate that all required fields were found
-			if (memoryTrigger && memoryName && memoryPromptContent)
-				try {
-					const contextSnapshot = createContextSnapshot(args.chat_log, 4)
-					// Create the memory object using the extracted values
-					const newMemory = {
-						trigger: memoryTrigger, // Store the trigger string
-						name: memoryName,
-						prompt: memoryPromptContent, // Use the correct prompt content
-						createdAt: new Date(),
-						createdContext: contextSnapshot
-					}
-					await testLongTermMemoryTrigger(newMemory, args, args.extension.logical_results, args.prompt_struct, 0) // Test the trigger for errors
-					addLongTermMemory(newMemory) // Use the helper function
-					AddLongTimeLog({
-						name: 'long-term-memory',
-						role: 'tool',
-						content: `已成功添加永久记忆："${memoryName}"`,
-						files: []
-					})
-					processed = true
-				}
-				catch (err) {
-					console.error(`Error adding long-term memory "${memoryName}":`, err)
-					AddLongTimeLog({
-						name: 'long-term-memory',
-						role: 'tool',
-						content: `添加永久记忆 "${memoryName}" 时出错：\n${err.message || err}`,
-						files: []
-					})
-					processed = true // Still processed, even if failed
-				}
-			else {
-				// Updated error message to reflect the required tags
-				AddLongTimeLog({
-					name: 'long-term-memory',
-					role: 'tool',
-					content: `添加永久记忆失败：缺少 <trigger>, <name>, 或 <prompt-content> 标签。\n收到的内容:\n${content}`,
-					files: []
-				})
-				processed = true // Processed the tag, but it was invalid
-			}
-		}
-
-
-	// --- Handle <update-long-term-memory> ---
-	const updateMatches = [...content_for_handle.matchAll(/<update-long-term-memory>(?<content>.*?)<\/update-long-term-memory>/gs)]
-	for (const updateMatch of updateMatches)
-		if (updateMatch?.groups?.content) {
-			MaskHandledCall?.(updateMatch[0])
-			const content = updateMatch.groups.content.trim()
-			const nameMatch = content.match(/<name>(?<name>.*?)<\/name>/s)
-			const triggerMatch = content.match(/<trigger>(?<trigger>.*?)<\/trigger>/s)
-			const promptContentMatch = content.match(/<prompt-content>(?<prompt>.*?)<\/prompt-content>/s)
-
-			const memoryName = nameMatch?.groups?.name?.trim()
-
-			if (memoryName) {
-				const memoryTrigger = triggerMatch?.groups?.trigger?.trim()
-				const memoryPromptContent = promptContentMatch?.groups?.prompt?.trim()
-
-				if (memoryTrigger || memoryPromptContent)
-					try {
-						const logPayload = { name: memoryName }
-						if (memoryTrigger) logPayload.trigger = memoryTrigger
-						if (memoryPromptContent) logPayload.prompt = memoryPromptContent
-						console.info('AI请求更新永久记忆:', logPayload)
-
-						// Test trigger if it's being updated
-						if (memoryTrigger)
-							await testLongTermMemoryTrigger({ trigger: memoryTrigger, name: memoryName, prompt: '' }, args, args.extension.logical_results, args.prompt_struct, 0)
-
-						const contextSnapshot = createContextSnapshot(args.chat_log, 4)
-						updateLongTermMemory({
-							name: memoryName,
-							trigger: memoryTrigger,
-							prompt: memoryPromptContent,
-							updatedAt: new Date(),
-							updatedContext: contextSnapshot
-						})
-
-						AddLongTimeLog({
-							name: 'long-term-memory',
-							role: 'tool',
-							content: `已成功更新永久记忆："${memoryName}"`,
-							files: []
-						})
-						processed = true
-					}
-					catch (err) {
-						console.error(`Error updating long-term memory "${memoryName}":`, err)
-						AddLongTimeLog({
-							name: 'long-term-memory',
-							role: 'tool',
-							content: `更新永久记忆 "${memoryName}" 时出错：\n${err.message || err}`,
-							files: []
-						})
-						processed = true // Still processed, even if failed
-					}
-				else {
-					AddLongTimeLog({
-						name: 'long-term-memory',
-						role: 'tool',
-						content: `更新永久记忆失败：必须提供 <trigger> 或 <prompt-content> 标签中的至少一个。\n收到的内容:\n${content}`,
-						files: []
-					})
-					processed = true // Processed the tag, but it was invalid
-				}
-			}
-			else {
-				AddLongTimeLog({
-					name: 'long-term-memory',
-					role: 'tool',
-					content: `更新永久记忆失败：缺少 <name> 标签。\n收到的内容:\n${content}`,
-					files: []
-				})
-				processed = true // Processed the tag, but it was invalid
-			}
-		}
-
-
-	// --- Handle <delete-long-term-memory> ---
-	const deleteMatches = [...content_for_handle.matchAll(/<delete-long-term-memory>(?<name>.*?)<\/delete-long-term-memory>/gs)]
-	for (const deleteMatch of deleteMatches)
-		if (deleteMatch?.groups?.name) {
-			MaskHandledCall?.(deleteMatch[0])
-			const memoryName = deleteMatch.groups.name.trim()
-
-			console.info('AI请求删除永久记忆:', memoryName)
-
-			if (memoryName)
-				try {
-					deleteLongTermMemory(memoryName)
-					AddLongTimeLog({
-						name: 'long-term-memory',
-						role: 'tool',
-						content: `已成功删除永久记忆："${memoryName}"`,
-						files: []
-					})
-
-					processed = true
-				}
-				catch (err) {
-					console.error(`Error deleting long-term memory "${memoryName}":`, err)
-					AddLongTimeLog({
-						name: 'long-term-memory',
-						role: 'tool',
-						content: `删除永久记忆 "${memoryName}" 时出错：\n${err.message || err}`,
-						files: []
-					})
-					processed = true // Still processed, even if failed
-				}
-			else {
-				AddLongTimeLog({
-					name: 'long-term-memory',
-					role: 'tool',
-					content: '删除永久记忆失败：<delete-long-term-memory> 标签内容为空。',
-					files: []
-				})
-				processed = true // Processed the tag, but it was invalid
-			}
-		}
-
-
-	// --- Handle <list-long-term-memory> ---
-	if (content_for_handle.includes('<list-long-term-memory></list-long-term-memory>')) {
-		MaskHandledCall?.('<list-long-term-memory></list-long-term-memory>')
-		console.info('AI请求列出永久记忆')
-
+	if (memoryTrigger && memoryName && memoryPromptContent)
 		try {
-			const memoryNames = listLongTermMemory() // Use the helper function
-			let listContent = '当前的永久记忆列表：\n'
-			if (memoryNames.length)
-				listContent += memoryNames.map(name => `- ${name}`).join('\n')
-			else
-				listContent += '(无)'
-
+			const contextSnapshot = createContextSnapshot(args.chat_log, 4)
+			const newMemory = {
+				trigger: memoryTrigger,
+				name: memoryName,
+				prompt: memoryPromptContent,
+				createdAt: new Date(),
+				createdContext: contextSnapshot
+			}
+			await testLongTermMemoryTrigger(newMemory, args, args.extension.logical_results, args.prompt_struct, 0)
+			addLongTermMemory(newMemory)
 			AddLongTimeLog({
 				name: 'long-term-memory',
 				role: 'tool',
-				content: listContent,
+				content: `已成功添加永久记忆："${memoryName}"`,
 				files: []
 			})
-			processed = true
 		}
 		catch (err) {
-			console.error('Error listing long-term memories:', err)
+			console.error(`Error adding long-term memory "${memoryName}":`, err)
 			AddLongTimeLog({
 				name: 'long-term-memory',
 				role: 'tool',
-				content: `列出永久记忆时出错：\n${err.message || err}`,
+				content: `添加永久记忆 "${memoryName}" 时出错：\n${err.message || err}`,
 				files: []
 			})
-			processed = true // Still processed, even if failed
 		}
-	}
+	else
+		AddLongTimeLog({
+			name: 'long-term-memory',
+			role: 'tool',
+			content: `添加永久记忆失败：缺少 <trigger>, <name>, 或 <prompt-content> 标签。\n收到的内容:\n${content}`,
+			files: []
+		})
 
-	// --- Handle <view-long-term-memory-context> ---
-	const viewContextMatches = [...content_for_handle.matchAll(/<view-long-term-memory-context>(?<name>.*?)<\/view-long-term-memory-context>/gs)]
-	for (const viewContextMatch of viewContextMatches)
-		if (viewContextMatch?.groups?.name) {
-			MaskHandledCall?.(viewContextMatch[0])
-			const memoryName = viewContextMatch.groups.name.trim()
+	return { regen: true }
+}
 
-			console.info('AI请求查看永久记忆上下文:', memoryName)
+/**
+ * 处理 `<update-long-term-memory>`：更新一条永久记忆。
+ * @param {object} reply 回复对象
+ * @param {object} args 请求上下文
+ * @param {object} call 调用
+ * @returns {Promise<object>} 结果
+ */
+async function updateLongTermMemoryHandle(reply, args, call) {
+	const AddLongTimeLog = args.AddLongTimeLog
+	const content = call.inner.trim()
+	const nameMatch = content.match(/<name>(?<name>.*?)<\/name>/s)
+	const triggerMatch = content.match(/<trigger>(?<trigger>.*?)<\/trigger>/s)
+	const promptContentMatch = content.match(/<prompt-content>(?<prompt>.*?)<\/prompt-content>/s)
 
-			if (memoryName)
-				try {
-					const memory = getLongTermMemoryByName(memoryName)
-					const formattedContext = formatLongTermMemoryContext(memory)
+	const memoryName = nameMatch?.groups?.name?.trim()
 
-					AddLongTimeLog({
-						name: 'long-term-memory',
-						role: 'tool',
-						content: formattedContext,
-						files: []
-					})
-					processed = true
-				}
-				catch (err) {
-					console.error(`Error viewing context for long-term memory "${memoryName}":`, err)
-					AddLongTimeLog({
-						name: 'long-term-memory',
-						role: 'tool',
-						content: `查看永久记忆 "${memoryName}" 的上下文时出错：\n${err.message || err}`,
-						files: []
-					})
-					processed = true // Still processed, even if failed
-				}
-			else {
+	if (memoryName) {
+		const memoryTrigger = triggerMatch?.groups?.trigger?.trim()
+		const memoryPromptContent = promptContentMatch?.groups?.prompt?.trim()
+
+		if (memoryTrigger || memoryPromptContent)
+			try {
+				const logPayload = { name: memoryName }
+				if (memoryTrigger) logPayload.trigger = memoryTrigger
+				if (memoryPromptContent) logPayload.prompt = memoryPromptContent
+				console.info('AI请求更新永久记忆:', logPayload)
+
+				if (memoryTrigger)
+					await testLongTermMemoryTrigger({ trigger: memoryTrigger, name: memoryName, prompt: '' }, args, args.extension.logical_results, args.prompt_struct, 0)
+
+				const contextSnapshot = createContextSnapshot(args.chat_log, 4)
+				updateLongTermMemory({
+					name: memoryName,
+					trigger: memoryTrigger,
+					prompt: memoryPromptContent,
+					updatedAt: new Date(),
+					updatedContext: contextSnapshot
+				})
+
 				AddLongTimeLog({
 					name: 'long-term-memory',
 					role: 'tool',
-					content: '查看永久记忆上下文失败：<view-long-term-memory-context> 标签内容为空。',
+					content: `已成功更新永久记忆："${memoryName}"`,
 					files: []
 				})
-				processed = true // Processed the tag, but it was invalid
 			}
-		}
+			catch (err) {
+				console.error(`Error updating long-term memory "${memoryName}":`, err)
+				AddLongTimeLog({
+					name: 'long-term-memory',
+					role: 'tool',
+					content: `更新永久记忆 "${memoryName}" 时出错：\n${err.message || err}`,
+					files: []
+				})
+			}
+		else
+			AddLongTimeLog({
+				name: 'long-term-memory',
+				role: 'tool',
+				content: `更新永久记忆失败：必须提供 <trigger> 或 <prompt-content> 标签中的至少一个。\n收到的内容:\n${content}`,
+				files: []
+			})
+	}
+	else
+		AddLongTimeLog({
+			name: 'long-term-memory',
+			role: 'tool',
+			content: `更新永久记忆失败：缺少 <name> 标签。\n收到的内容:\n${content}`,
+			files: []
+		})
 
-
-
-	// Return true if any LTM command was found and processed
-	return processed
+	return { regen: true }
 }
+
+/**
+ * 处理 `<delete-long-term-memory>`：删除指定永久记忆。
+ * @param {object} reply 回复对象
+ * @param {object} args 请求上下文
+ * @param {Function} args.AddLongTimeLog 追加工具结果日志
+ * @param {object} call 调用
+ * @returns {Promise<object>} 结果
+ */
+async function deleteLongTermMemoryHandle(reply, args, call) {
+	const AddLongTimeLog = args.AddLongTimeLog
+	const memoryName = call.inner.trim()
+
+	console.info('AI请求删除永久记忆:', memoryName)
+
+	if (memoryName)
+		try {
+			deleteLongTermMemory(memoryName)
+			AddLongTimeLog({
+				name: 'long-term-memory',
+				role: 'tool',
+				content: `已成功删除永久记忆："${memoryName}"`,
+				files: []
+			})
+		}
+		catch (err) {
+			console.error(`Error deleting long-term memory "${memoryName}":`, err)
+			AddLongTimeLog({
+				name: 'long-term-memory',
+				role: 'tool',
+				content: `删除永久记忆 "${memoryName}" 时出错：\n${err.message || err}`,
+				files: []
+			})
+		}
+	else
+		AddLongTimeLog({
+			name: 'long-term-memory',
+			role: 'tool',
+			content: '删除永久记忆失败：<delete-long-term-memory> 标签内容为空。',
+			files: []
+		})
+
+	return { regen: true }
+}
+
+/**
+ * 处理 `<list-long-term-memory>`：列出全部永久记忆。
+ * @param {object} reply 回复对象
+ * @param {object} args 请求上下文
+ * @param {Function} args.AddLongTimeLog 追加工具结果日志
+ * @returns {Promise<object>} 结果
+ */
+async function listLongTermMemoryHandle(reply, args) {
+	const AddLongTimeLog = args.AddLongTimeLog
+	console.info('AI请求列出永久记忆')
+
+	try {
+		const memoryNames = listLongTermMemory()
+		let listContent = '当前的永久记忆列表：\n'
+		if (memoryNames.length)
+			listContent += memoryNames.map(name => `- ${name}`).join('\n')
+		else
+			listContent += '(无)'
+
+		AddLongTimeLog({
+			name: 'long-term-memory',
+			role: 'tool',
+			content: listContent,
+			files: []
+		})
+	}
+	catch (err) {
+		console.error('Error listing long-term memories:', err)
+		AddLongTimeLog({
+			name: 'long-term-memory',
+			role: 'tool',
+			content: `列出永久记忆时出错：\n${err.message || err}`,
+			files: []
+		})
+	}
+
+	return { regen: true }
+}
+
+/**
+ * 处理 `<view-long-term-memory-context>`：查看指定永久记忆的创建/更新上下文。
+ * @param {object} reply 回复对象
+ * @param {object} args 请求上下文
+ * @param {Function} args.AddLongTimeLog 追加工具结果日志
+ * @param {object} call 调用
+ * @returns {Promise<object>} 结果
+ */
+async function viewLongTermMemoryContextHandle(reply, args, call) {
+	const AddLongTimeLog = args.AddLongTimeLog
+	const memoryName = call.inner.trim()
+
+	console.info('AI请求查看永久记忆上下文:', memoryName)
+
+	if (memoryName)
+		try {
+			const memory = getLongTermMemoryByName(memoryName)
+			const formattedContext = formatLongTermMemoryContext(memory)
+
+			AddLongTimeLog({
+				name: 'long-term-memory',
+				role: 'tool',
+				content: formattedContext,
+				files: []
+			})
+		}
+		catch (err) {
+			console.error(`Error viewing context for long-term memory "${memoryName}":`, err)
+			AddLongTimeLog({
+				name: 'long-term-memory',
+				role: 'tool',
+				content: `查看永久记忆 "${memoryName}" 的上下文时出错：\n${err.message || err}`,
+				files: []
+			})
+		}
+	else
+		AddLongTimeLog({
+			name: 'long-term-memory',
+			role: 'tool',
+			content: '查看永久记忆上下文失败：<view-long-term-memory-context> 标签内容为空。',
+			files: []
+		})
+
+	return { regen: true }
+}
+
+/**
+ * 处理 AI 用于管理长期记忆（添加、删除、列出）的命令。
+ * @type {ReplyHandler_t[]}
+ */
+export const longTermMemoryHandlers = [
+	defineReplyHandler({ tag: 'add-long-term-memory', handle: addLongTermMemoryHandle }),
+	defineReplyHandler({ tag: 'update-long-term-memory', handle: updateLongTermMemoryHandle }),
+	defineReplyHandler({ tag: 'delete-long-term-memory', handle: deleteLongTermMemoryHandle }),
+	defineReplyHandler({ tag: 'list-long-term-memory', handle: listLongTermMemoryHandle }),
+	defineReplyHandler({ tag: 'view-long-term-memory-context', handle: viewLongTermMemoryContextHandle }),
+]
+
+/** @type {ReplyHandler_t} */
+export const LongTermMemoryHandler = defineReplyHandlers(longTermMemoryHandlers)

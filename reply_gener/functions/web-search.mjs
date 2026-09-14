@@ -1,3 +1,4 @@
+import { defineReplyHandler } from '../../../../../../../src/public/parts/shells/chat/src/reply/defineReplyHandler.mjs'
 import { unlockAchievement } from '../../scripts/achievements.mjs'
 import { statisticDatas } from '../../scripts/statistics.mjs'
 import { tryFewTimes } from '../../scripts/try-few-times.mjs'
@@ -6,50 +7,45 @@ import { searchSource } from '../../service_sources/search.mjs'
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
 /**
- * 处理来自 AI 的网络搜索请求。
- * @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t}
+ * 处理 `<web-search>`：按行拆分为多个关键词依次搜索。
+ * @param {object} reply 回复对象
+ * @param {object} args 请求上下文
+ * @param {Function} args.AddLongTimeLog 追加工具结果日志
+ * @param {object} call 调用
+ * @returns {Promise<object>} 结果
  */
-export async function websearch(result, { AddLongTimeLog, MaskHandledCall }) {
-	// Match <web-search>...</web-search>
-	const content = result.content_for_handle
-	const searchMatches = [...content.matchAll(/<web-search>(?<query>[^]*?)<\/web-search>/g)]
-	const validMatches = searchMatches.filter(m => m.groups?.query?.trim())
-	if (!validMatches.length) return false
+async function webSearchHandle(reply, args, call) {
+	const AddLongTimeLog = args.AddLongTimeLog
+	const searchQueryContent = call.inner.trim()
+	if (!searchQueryContent) return {}
 
-	for (const match of validMatches) MaskHandledCall?.(match[0])
+	unlockAchievement('use_websearch')
+	statisticDatas.toolUsage.webSearches++
+	console.info('AI 搜索关键词：', searchQueryContent)
+	const searchQueries = searchQueryContent.split('\n').map(q => q.trim()).filter(query => query)
 
-	let processed = false
-	for (const match of validMatches) try {
-		const searchQueryContent = match.groups.query.trim()
-		unlockAchievement('use_websearch')
-		statisticDatas.toolUsage.webSearches++
-		console.info('AI 搜索关键词：', searchQueryContent)
-		// Split queries by newline, filter out empty lines
-		const searchQueries = searchQueryContent.split('\n').map(q => q.trim()).filter(query => query)
+	if (!searchQueries.length) {
+		console.warn('<web-search> content resulted in no valid queries after splitting and filtering.')
+		AddLongTimeLog({
+			name: 'web-search',
+			role: 'tool',
+			content: '搜索指令 <web-search> 内未找到有效的搜索关键词。',
+			files: []
+		})
+		return { regen: true }
+	}
 
-		if (!searchQueries.length) {
-			console.warn('<web-search> content resulted in no valid queries after splitting and filtering.')
-			AddLongTimeLog({
-				name: 'web-search',
-				role: 'tool',
-				content: '搜索指令 <web-search> 内未找到有效的搜索关键词。',
-				files: []
-			})
-			processed = true
-			continue
-		}
+	if (!searchSource) {
+		AddLongTimeLog({
+			name: 'web-search',
+			role: 'tool',
+			content: '搜索功能当前不可用：未找到可用的搜索源。请告知用户需要在配置中设置搜索源后才能使用此功能。',
+			files: []
+		})
+		return { regen: true }
+	}
 
-		if (!searchSource) {
-			AddLongTimeLog({
-				name: 'web-search',
-				role: 'tool',
-				content: '搜索功能当前不可用：未找到可用的搜索源。请告知用户需要在配置中设置搜索源后才能使用此功能。',
-				files: []
-			})
-			processed = true
-			continue
-		}
-
+	try {
 		for (const searchQueryItem of searchQueries) {
 			console.info(`执行搜索: ${searchQueryItem}`)
 			const searchResults = await tryFewTimes(() => searchSource.Search(searchQueryItem, { limit: 5 }))
@@ -77,8 +73,6 @@ export async function websearch(result, { AddLongTimeLog, MaskHandledCall }) {
 				files: []
 			})
 		}
-
-		processed = true // Indicate the search command was processed
 	} catch (err) {
 		console.error('web search failed:', err)
 		AddLongTimeLog({
@@ -87,7 +81,15 @@ export async function websearch(result, { AddLongTimeLog, MaskHandledCall }) {
 			content: '搜索时出现错误：\n' + (err.stack || err.message || err),
 			files: []
 		})
-		processed = true // Indicate the command was attempted but failed
 	}
-	return processed
+	return { regen: true }
 }
+
+/**
+ * 处理来自 AI 的网络搜索请求。
+ * @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t}
+ */
+export const websearch = defineReplyHandler({
+	tag: 'web-search',
+	handle: webSearchHandle,
+})

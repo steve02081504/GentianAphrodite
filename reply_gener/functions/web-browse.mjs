@@ -1,3 +1,4 @@
+import { defineReplyHandler } from '../../../../../../../src/public/parts/shells/chat/src/reply/defineReplyHandler.mjs'
 import { DeepResearchMainPrompt } from '../../prompt/functions/deep-research.mjs'
 import { unlockAchievement } from '../../scripts/achievements.mjs'
 import { statisticDatas } from '../../scripts/statistics.mjs'
@@ -6,21 +7,27 @@ import { OrderedAISourceCalling } from '../../service_sources/AI.mjs'
 /** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatLogEntry_t} chatLogEntry_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 
-/** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
-export async function webbrowse(result, { AddLongTimeLog, MaskHandledCall, prompt_struct }) {
-	const content = result.content_for_handle
-	const matches = [...content.matchAll(/<web-browse>\s*<url>(?<url>.*?)<\/url>\s*<question>(?<question>[\S\s]*?)<\/question>\s*<\/web-browse>/g)]
-	const validMatches = matches.filter(m => m?.groups?.url?.trim?.())
-	if (!validMatches.length) return false
+/**
+ * 处理 `<web-browse>`：抓取网页并让 AI 回答针对网页的问题。
+ * @param {object} reply 回复对象
+ * @param {object} args 请求上下文
+ * @param {Function} args.AddLongTimeLog 追加工具结果日志
+ * @param {object} args.prompt_struct 提示词结构体
+ * @param {object} call 调用
+ * @returns {Promise<object>} 结果
+ */
+async function webBrowseHandle(reply, args, call) {
+	const AddLongTimeLog = args.AddLongTimeLog
+	const prompt_struct = args.prompt_struct
+	const urlMatch = call.inner.match(/<url>(?<url>[\S\s]*?)<\/url>/)
+	const questionMatch = call.inner.match(/<question>(?<question>[\S\s]*?)<\/question>/)
+	const url = urlMatch?.groups?.url?.trim()
+	if (!url || !questionMatch) return {}
+	const question = questionMatch.groups.question.trim()
 
-	for (const match of validMatches) MaskHandledCall?.(match[0])
-
-	let processed = false
-	for (const match of validMatches) try {
+	try {
 		unlockAchievement('use_webbrowse')
 		statisticDatas.toolUsage.webBrowses++
-		const url = match.groups.url.trim()
-		const question = match.groups.question.trim()
 		const markdown = await MarkdownWebFetch(url)
 
 		console.info('AI浏览网页：', url)
@@ -64,7 +71,6 @@ ${question}
 			name: 'web-browse',
 			role: 'tool'
 		})
-		processed = true
 	} catch (err) {
 		AddLongTimeLog({
 			name: 'web-browse',
@@ -72,7 +78,12 @@ ${question}
 			content: '访问网页时出现错误：\n' + err,
 			files: []
 		})
-		processed = true
 	}
-	return processed
+	return { regen: true }
 }
+
+/** @type {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
+export const webbrowse = defineReplyHandler({
+	tag: 'web-browse',
+	handle: webBrowseHandle,
+})

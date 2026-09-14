@@ -6,13 +6,21 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-/** @type {ReplyHandler_t} */
-export function CharGenerator(reply, { AddLongTimeLog, MaskHandledCall }) {
-	const match_generator_tool = reply.content_for_handle.match(/<generate-char\s+name="(?<charname>[^"]+)">\s*(?<code>[^]*?)\s*<\/generate-char>/)
-	if (match_generator_tool) try {
-		let { charname, code } = match_generator_tool.groups
-		charname = charname.trim()
-		MaskHandledCall?.(match_generator_tool[0])
+import { defineReplyHandler } from '../../../../../../../src/public/parts/shells/chat/src/reply/defineReplyHandler.mjs'
+
+/**
+ * 处理 `<generate-char>`：将内层代码写成新的单文件角色。
+ * @param {object} reply 回复对象
+ * @param {object} args 请求上下文
+ * @param {Function} args.AddLongTimeLog 追加工具结果日志
+ * @param {object} call 调用
+ * @returns {Promise<object>} 结果
+ */
+async function charGeneratorHandle(reply, args, call) {
+	const AddLongTimeLog = args.AddLongTimeLog
+	const charname = call.params.name.trim()
+	const code = call.inner.trim()
+	try {
 		const dir = path.join(import.meta.dirname, '../../../', charname)
 		const file = path.join(dir, 'main.mjs')
 		if (fs.existsSync(file))
@@ -34,7 +42,7 @@ export function CharGenerator(reply, { AddLongTimeLog, MaskHandledCall }) {
 `,
 		})
 
-		return true
+		return { regen: true }
 	}
 	catch (e) {
 		AddLongTimeLog({
@@ -42,19 +50,23 @@ export function CharGenerator(reply, { AddLongTimeLog, MaskHandledCall }) {
 			role: 'tool',
 			content: `生成失败！\n原因：${e.stack}`,
 		})
-		return true
+		return { regen: true }
 	}
-
-	return false
 }
 
-/** @type {ReplyHandler_t} */
-export function PersonaGenerator(reply, { AddLongTimeLog, MaskHandledCall }) {
-	const match_generator_tool = reply.content_for_handle.match(/<generate-persona\s+name="(?<charname>[^"]+)">\s*(?<code>[^]*?)\s*<\/generate-persona>/)
-	if (match_generator_tool) try {
-		let { charname, code } = match_generator_tool.groups
-		charname = charname.trim()
-		MaskHandledCall?.(match_generator_tool[0])
+/**
+ * 处理 `<generate-persona>`：将内层代码写成新的单文件用户人设。
+ * @param {object} reply 回复对象
+ * @param {object} args 请求上下文
+ * @param {Function} args.AddLongTimeLog 追加工具结果日志
+ * @param {object} call 调用
+ * @returns {Promise<object>} 结果
+ */
+async function personaGeneratorHandle(reply, args, call) {
+	const AddLongTimeLog = args.AddLongTimeLog
+	const charname = call.params.name.trim()
+	const code = call.inner.trim()
+	try {
 		const dir = path.join(import.meta.dirname, '../../../', '..', 'personas', charname)
 		const file = path.join(dir, 'main.mjs')
 		if (fs.existsSync(file))
@@ -75,7 +87,7 @@ export function PersonaGenerator(reply, { AddLongTimeLog, MaskHandledCall }) {
 `,
 		})
 
-		return true
+		return { regen: true }
 	}
 	catch (e) {
 		AddLongTimeLog({
@@ -83,8 +95,20 @@ export function PersonaGenerator(reply, { AddLongTimeLog, MaskHandledCall }) {
 			role: 'tool',
 			content: `生成失败！\n原因：${e.stack}`,
 		})
-		return true
+		return { regen: true }
 	}
-
-	return false
 }
+
+/** @type {ReplyHandler_t} */
+export const CharGenerator = defineReplyHandler({
+	tag: 'generate-char',
+	params: { name: 'string' },
+	handle: charGeneratorHandle,
+})
+
+/** @type {ReplyHandler_t} */
+export const PersonaGenerator = defineReplyHandler({
+	tag: 'generate-persona',
+	params: { name: 'string' },
+	handle: personaGeneratorHandle,
+})

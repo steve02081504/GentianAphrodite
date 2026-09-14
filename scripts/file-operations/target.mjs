@@ -13,6 +13,8 @@ import process from 'node:process'
 import { async_eval } from 'npm:@steve02081504/async-eval'
 import { available, shell_exec_map } from 'npm:@steve02081504/exec'
 
+import { parseAttrs } from '../../../../../../../src/public/parts/shells/chat/src/tags/index.mjs'
+
 import { execShellWithTimeout, KILL_GRACE_MS, SHELL_DEFAULT_TIMEOUT_MS } from './shell_guard.mjs'
 
 /**
@@ -474,18 +476,6 @@ export function createTargetExecutor(username, target) {
 }
 
 /**
- * 解析标签属性串（machine / workdir / path 等 `k="v"` 形式）。
- * @param {string} [attrs] - 属性串。
- * @returns {Record<string, string>} 属性表。
- */
-export function parseTagAttrs(attrs) {
-	const result = {}
-	for (const m of (attrs || '').matchAll(/([A-Z_a-z][\w-]*)\s*=\s*"([^"]*)"/g))
-		result[m[1]] = m[2]
-	return result
-}
-
-/**
  * 创建基于 GetReply 请求的标签属性 → 执行器解析器（同一目标复用执行器实例）。
  * @param {chatReplyRequest_t} args - GetReply 请求（读 `args.workdir` 默认值与 `args.username`）。
  * @returns {(attrs?: string|Record<string, string>) => targetExecutor_t} 执行器获取函数。
@@ -499,7 +489,7 @@ export function createArgsExecutorResolver(args) {
 	 * @returns {targetExecutor_t} 执行器。
 	 */
 	return attrs => {
-		const explicit = typeof attrs === 'string' ? parseTagAttrs(attrs) : attrs || {}
+		const explicit = typeof attrs === 'string' ? parseAttrs(attrs) : attrs || {}
 		const target = resolveTarget(args, explicit)
 		const key = target.machine + '|' + (target.workdir || '')
 		if (!executors.has(key))

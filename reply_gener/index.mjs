@@ -11,10 +11,8 @@ import {
 	hydrateBridgeNativeContext,
 } from '../../../../../../src/public/parts/shells/chat/src/chat/lib/codeBridgeContext.mjs'
 import { buildPromptStruct } from '../../../../../../src/public/parts/shells/chat/src/prompt_struct/index.mjs'
-import {
-	defineInlineToolUses,
-	defineToolUseBlocks,
-} from '../../../../../../src/public/parts/shells/chat/src/streaming/index.mjs'
+import { defineReplyHandler } from '../../../../../../src/public/parts/shells/chat/src/reply/defineReplyHandler.mjs'
+import { defineReplyPreviews } from '../../../../../../src/public/parts/shells/chat/src/streaming/index.mjs'
 import { chardir, is_dist } from '../charbase.mjs'
 import { plugins } from '../config/index.mjs'
 import { getDiscordApiPlugin } from '../interfaces/discord/api.mjs'
@@ -32,9 +30,9 @@ import { MergeMessagePeriodMs } from '../trigger/constants.mjs'
 import { handleError } from './error.mjs'
 import { browserIntegration } from './functions/browser-integration.mjs'
 import { CharGenerator, PersonaGenerator } from './functions/char-generator.mjs'
-import { coderunner, GetCoderunnerPreviewUpdater } from './functions/code-runner.mjs'
+import { coderunnerHandlers } from './functions/code-runner.mjs'
 import { deepResearch } from './functions/deep-research.mjs'
-import { file_change, fileOperationToolUseBlocks } from './functions/file-change.mjs'
+import { file_change } from './functions/file-change.mjs'
 import { getToolInfo } from './functions/get-tool-info.mjs'
 import { IdleManagementHandler } from './functions/idle-management.mjs'
 import { LongTermMemoryHandler } from './functions/long-term-memory.mjs'
@@ -98,6 +96,29 @@ export function getLongTimeLogAdder(result, prompt_struct, max_forever_looping_n
 	}
 	return AddLongTimeLog
 }
+
+/**
+ * `<gentian-sticker>`：贴纸调用仅作占位，附件由回复收尾统一附加。
+ * @returns {Promise<object>} 空结果
+ */
+async function gentianStickerHandle() {
+	return {}
+}
+
+/**
+ * 贴纸调用的展示层渲染：完全隐藏标签。
+ * @returns {string} 空串
+ */
+function renderGentianSticker() {
+	return ''
+}
+
+/** @type {import("../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} */
+const gentianStickerHandler = defineReplyHandler({
+	tag: 'gentian-sticker',
+	display: renderGentianSticker,
+	handle: gentianStickerHandle,
+})
 
 /**
  * 主回复生成函数的基础实现，无自动错误处理。
@@ -170,69 +191,28 @@ export async function baseGetReply(args) {
 	// 构建更新预览管线
 	args.generation_options ??= {}
 	const oriReplyPreviewUpdater = args.generation_options?.replyPreviewUpdater
+	/** @type {(import('../../../../../../src/decl/PluginAPI.ts').ReplyHandler_t)[]} */
+	const ownReplyHandlers = [
+		getToolInfo, CharGenerator, PersonaGenerator,
+		...coderunnerHandlers,
+		LongTermMemoryHandler, ShortTermMemoryHandler,
+		deepResearch, websearch, webbrowse, rolesettingfilter, file_change, browserIntegration, IdleManagementHandler,
+		notifyHandler,
+		gentianStickerHandler,
+		args.supported_functions.add_message ? timer : null,
+	].filter(Boolean)
+	/** @type {(import('../../../../../../src/decl/PluginAPI.ts').ReplyHandler_t)[]} */
+	const replyHandlers = [
+		...ownReplyHandlers,
+		...Object.values(args.plugins).map(plugin => plugin.interfaces.chat?.ReplyHandler)
+	].filter(Boolean)
 	/**
 	 * 聊天回复预览更新管道。
 	 * @type {import('../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').CharReplyPreviewUpdater_t}
 	 */
 	let replyPreviewUpdater = (args, r) => oriReplyPreviewUpdater?.(r)
 	for (const GetReplyPreviewUpdater of [
-		defineToolUseBlocks([
-			// File operations (file-change.mjs)
-			...fileOperationToolUseBlocks,
-
-			// Memory management (long-term-memory.mjs & short-term/)
-			{ start: '<add-long-term-memory>', end: '</add-long-term-memory>' },
-			{ start: '<update-long-term-memory>', end: '</update-long-term-memory>' },
-			{ start: '<delete-long-term-memory>', end: '</delete-long-term-memory>' },
-			{ start: '<list-long-term-memory>', end: '</list-long-term-memory>' },
-			{ start: '<view-long-term-memory-context>', end: '</view-long-term-memory-context>' },
-			{ start: '<delete-short-term-memories>', end: '</delete-short-term-memories>' },
-
-			// Web browsing (web-search.mjs & web-browse.mjs)
-			{ start: '<web-search>', end: '</web-search>' },
-			{ start: '<web-browse>', end: '</web-browse>' },
-
-			// Deep research (deep-research.mjs)
-			{ start: '<deep-research>', end: '</deep-research>' },
-
-			// Timer functions (timer.mjs)
-			{ start: '<set-timer>', end: '</set-timer>' },
-			{ start: '<list-timers>', end: '</list-timers>' },
-			{ start: '<remove-timer>', end: '</remove-timer>' },
-
-			// Browser integration (browser-integration.mjs)
-			{ start: '<browser-get-connected-pages>', end: '</browser-get-connected-pages>' },
-			{ start: '<browser-get-focused-page-info>', end: '</browser-get-focused-page-info>' },
-			{ start: '<browser-get-browse-history>', end: '</browser-get-browse-history>' },
-			{ start: '<browser-get-page-html>', end: '</browser-get-page-html>' },
-			{ start: '<browser-get-visible-html>', end: '</browser-get-visible-html>' },
-			{ start: '<browser-send-danmaku-to-page>', end: '</browser-send-danmaku-to-page>' },
-			{ start: '<browser-run-js-on-page>', end: '</browser-run-js-on-page>' },
-			{ start: '<browser-add-autorun-script>', end: '</browser-add-autorun-script>' },
-			{ start: '<browser-update-autorun-script>', end: '</browser-update-autorun-script>' },
-			{ start: '<browser-remove-autorun-script>', end: '</browser-remove-autorun-script>' },
-			{ start: '<browser-list-autorun-scripts>', end: '</browser-list-autorun-scripts>' },
-
-			// Notify (notify & system-notify)
-			{ start: '<notify>', end: '</notify>' },
-			{ start: '<system-notify>', end: '</system-notify>' },
-
-			// Idle Management
-			{ start: '<adjust-idle-weight>', end: '</adjust-idle-weight>' },
-			{ start: '<postpone-idle>', end: '</postpone-idle>' },
-			{ start: '<add-todo>', end: '</add-todo>' },
-			{ start: '<delete-todo>', end: '</delete-todo>' },
-			{ start: '<list-todos>', end: '</list-todos>' },
-
-			// Character Generator
-			{ start: '<get-tool-info>', end: '</get-tool-info>' },
-			{ start: /<generate-char[^>]*>/, end: '</generate-char>' },
-			{ start: /<generate-persona[^>]*>/, end: '</generate-persona>' },
-		]),
-		defineInlineToolUses([
-			['gentian-sticker', '<gentian-sticker>', '</gentian-sticker>', () => ''],
-		]),
-		GetCoderunnerPreviewUpdater(),
+		defineReplyPreviews(ownReplyHandlers),
 		...Object.values(args.plugins).map(plugin => plugin.interfaces?.chat?.GetReplyPreviewUpdater)
 	].filter(Boolean))
 		replyPreviewUpdater = GetReplyPreviewUpdater(replyPreviewUpdater)
@@ -242,15 +222,6 @@ export async function baseGetReply(args) {
 	 * @returns {void}
 	 */
 	args.generation_options.replyPreviewUpdater = r => replyPreviewUpdater(args, r)
-	/** @type {(import('../../../../../../src/decl/PluginAPI.ts').ReplyHandler_t)[]} */
-	const replyHandlers = [
-		getToolInfo, CharGenerator, PersonaGenerator,
-		coderunner, LongTermMemoryHandler, ShortTermMemoryHandler,
-		deepResearch, websearch, webbrowse, rolesettingfilter, file_change, browserIntegration, IdleManagementHandler,
-		notifyHandler,
-		args.supported_functions.add_message ? timer : null,
-		...Object.values(args.plugins).map(plugin => plugin.interfaces.chat?.ReplyHandler)
-	].filter(Boolean)
 	regen: while (true) {
 		if (!is_dist && process.env.EdenOS) {
 			console.log('logical_results', logical_results)
@@ -375,6 +346,7 @@ export async function GetReply(args) {
 	}
 	catch (error) {
 		console.error(`[ReplyGener] Error in GetReply for chat "${args.chat_name}":`, error)
+		let replyError = error
 		if (!(error instanceof Error)) {
 			const originalError = error
 			let errorInfo
@@ -383,12 +355,12 @@ export async function GetReply(args) {
 			} catch {
 				errorInfo = String(originalError)
 			}
-			error = Object.assign(new Error(`GetReply 捕获到非 Error: ${errorInfo}`), { cause: originalError })
-			if (originalError?.skip_auto_fix) error.skip_auto_fix = originalError.skip_auto_fix
-			if (originalError?.skip_report) error.skip_report = originalError.skip_report
-			Error.captureStackTrace(error)
+			replyError = Object.assign(new Error(`GetReply 捕获到非 Error: ${errorInfo}`), { cause: originalError })
+			if (originalError?.skip_auto_fix) replyError.skip_auto_fix = originalError.skip_auto_fix
+			if (originalError?.skip_report) replyError.skip_report = originalError.skip_report
+			Error.captureStackTrace(replyError)
 		}
-		if (!error.skip_auto_fix) return handleError(error, args)
-		else throw error
+		if (!replyError.skip_auto_fix) return handleError(replyError, args)
+		else throw replyError
 	}
 }
