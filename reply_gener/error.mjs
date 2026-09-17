@@ -132,16 +132,28 @@ export async function handleError(error, originalArgs) {
 			aiSuggestionReply = { content: '```\n' + anotherErrorStack + '\n```\n' + noIdeaText }
 	}
 
-	let fullReplyContent = errorMessageForRecord + '\n' + (aiSuggestionReply?.content || '')
+	/**
+	 * 脱敏错误文本：随机化内网 IP、折叠本机路径。
+	 * @param {string} text 原始文本
+	 * @returns {string} 脱敏后文本
+	 */
+	const sanitizeErrorText = text => {
+		const randomIPDict = {}
+		return text.replace(/(?:\d{1,3}\.){3}\d{1,3}/g, ip => randomIPDict[ip] ??= Array(4).fill(0).map(() => Math.floor(Math.random() * 255)).join('.'))
+			.replaceAll(fountdir, 'fount')
+			.replaceAll(os.homedir(), '~')
+			.replaceAll(process.env.MSYS_ROOT_PATH, '/')
+	}
 
-	const randomIPDict = {}
-	fullReplyContent = fullReplyContent.replace(/(?:\d{1,3}\.){3}\d{1,3}/g, ip => randomIPDict[ip] ??= Array(4).fill(0).map(() => Math.floor(Math.random() * 255)).join('.'))
-		.replaceAll(fountdir, 'fount')
-		.replaceAll(os.homedir(), '~')
-		.replaceAll(process.env.MSYS_ROOT_PATH, '/')
+	// content 保留角色原始生成（含 handler 标签，供记忆/诊断）；
+	// content_for_show 用 rph 处理后的展示层，否则展示回退到 content 会把贴纸等标签原文发出去。
+	const fullReplyContent = sanitizeErrorText(errorMessageForRecord + '\n' + (aiSuggestionReply?.content || ''))
+	const fullReplyContentForShow = sanitizeErrorText(errorMessageForRecord + '\n' +
+		(aiSuggestionReply?.content_for_show ?? aiSuggestionReply?.content ?? ''))
 
 	return {
 		content: fullReplyContent,
+		content_for_show: fullReplyContentForShow,
 		files: aiSuggestionReply?.files || [],
 		extension: { is_error_report: true },
 	}
@@ -203,7 +215,11 @@ export async function handleCharTopLevelError(error, context, selfEntityHash) {
 		const { getChatClient } = await import('../../../../../../src/public/parts/shells/chat/src/api/client/index.mjs')
 		const client = await getChatClient(context.username, selfEntityHash)
 		const channel = await client.group(context.groupId).then(group => group.channel(context.channelId))
-		await channel.send({ content: report.content, files: report.files || [] })
+		await channel.send({
+			content: report.content,
+			content_for_show: report.content_for_show,
+			files: report.files || [],
+		})
 	}
 
 	console.error(`[Gentian OnError/${context.source}]`, error, context)

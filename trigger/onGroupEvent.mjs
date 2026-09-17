@@ -37,7 +37,7 @@ async function checkOwnerPresence(group) {
 /**
  * @param {object} event OnGroupEvent 事件
  * @param {object[]} channelHistoryForAI 频道历史
- * @returns {Promise<string>} 退群骂人文本
+ * @returns {Promise<{ content: string, content_for_show?: string, files?: object[] }>} 退群骂人回复（含展示层）
  */
 async function generateInsult(event, channelHistoryForAI) {
 	const groupNameForAI = event.group.name || `Group ${event.group.groupId}`
@@ -104,12 +104,17 @@ async function generateInsult(event, channelHistoryForAI) {
 
 	try {
 		const aiInsultReply = await GentianAphrodite.interfaces.chat.GetReply(insultRequest)
-		if (aiInsultReply?.content) return aiInsultReply.content
+		if (aiInsultReply?.content)
+			return {
+				content: aiInsultReply.content,
+				content_for_show: aiInsultReply.content_for_show,
+				files: aiInsultReply.files || [],
+			}
 	}
 	catch (error) {
 		console.error(`[Gentian onGroupEvent] insult generation failed for ${event.group.groupId}:`, error)
 	}
-	return isInHypnosis ? '…' : '？'
+	return { content: isInHypnosis ? '…' : '？' }
 }
 
 /**
@@ -162,9 +167,9 @@ async function sendInsultAndLeaveGroup(client, event) {
 	}
 	catch { /* history optional */ }
 
-	const insultMessageContent = await generateInsult(event, channelHistoryForAI)
-	if (insultMessageContent)
-		await channel.send({ content: insultMessageContent })
+	const insultReply = await generateInsult(event, channelHistoryForAI)
+	if (insultReply?.content)
+		await channel.send(insultReply)
 }
 
 /**

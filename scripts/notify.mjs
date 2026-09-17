@@ -44,7 +44,7 @@ function initBaseNotifyChannel() {
 		 * @param {any} entry - 聊天日志条目。
 		 * @returns {void}
 		 */
-		AddChatLogEntry: entry => fount_notify(charname, entry.content),
+		AddChatLogEntry: entry => fount_notify(charname, entry.content_for_show ?? entry.content),
 		other_chars: {},
 		plugins: {},
 		/**

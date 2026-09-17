@@ -120,6 +120,7 @@ ${args.screen}
 		name: '龙胆',
 		recommend_command: AIsuggestion?.recommend_command,
 		content: AIsuggestion?.content,
+		content_for_show: AIsuggestion?.content_for_show,
 		chat_scoped_char_memory: args.chat_scoped_char_memory,
 		shellhistory: args.shellhistory,
 		extension: AIsuggestion?.extension,
