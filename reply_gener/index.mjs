@@ -5,6 +5,7 @@ import process from 'node:process'
 import { compareTwoStrings as string_similarity } from 'npm:string-similarity'
 
 import { runReplyHandlers } from 'fount/public/parts/shells/chat/src/reply/handlerPipeline.mjs'
+import { formatGenerationError } from 'fount/scripts/error_format.mjs'
 
 import {
 	findTriggerChatLogEntry,
@@ -349,12 +350,7 @@ export async function GetReply(args) {
 		let replyError = error
 		if (!(error instanceof Error)) {
 			const originalError = error
-			let errorInfo
-			try {
-				errorInfo = JSON.stringify(originalError)
-			} catch {
-				errorInfo = String(originalError)
-			}
+			const errorInfo = formatGenerationError(originalError)
 			replyError = Object.assign(new Error(`GetReply 捕获到非 Error: ${errorInfo}`), { cause: originalError })
 			if (originalError?.skip_auto_fix) replyError.skip_auto_fix = originalError.skip_auto_fix
 			if (originalError?.skip_report) replyError.skip_report = originalError.skip_report

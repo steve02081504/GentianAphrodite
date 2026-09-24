@@ -1,6 +1,7 @@
 import os from 'node:os'
 import { setTimeout } from 'node:timers'
 
+import { formatGenerationError } from '../../../../../../src/scripts/error_format.mjs'
 import { reloadPart } from '../../../../../../src/server/parts_loader.mjs'
 import { is_dist, charname as BotCharname, username as FountUsername, fountdir } from '../charbase.mjs'
 
@@ -94,19 +95,14 @@ export async function handleError(error, originalArgs) {
 	// 仅当收到非 Error 值（如 undefined）时停靠，避免正常 throw/catch 频繁打断调试
 	if (!(error instanceof Error)) {
 		const originalError = error
-		let errorInfo
-		try {
-			errorInfo = JSON.stringify(originalError)
-		} catch {
-			errorInfo = String(originalError)
-		}
+		const errorInfo = formatGenerationError(originalError)
 		error = Object.assign(new Error(`handleError 捕获到非 Error: ${errorInfo}`), { cause: originalError })
 		if (originalError?.skip_auto_fix) error.skip_auto_fix = originalError.skip_auto_fix
 		if (originalError?.skip_report) error.skip_report = originalError.skip_report
 		Error.captureStackTrace(error, handleError) // error.stack = 谁把非 Error 传进来的
 		console.error('[Gentian handleError] 非 Error 传入, catch 点栈:', error.stack)
 	}
-	const errorStack = error.stack || String(error)
+	const errorStack = formatGenerationError(error)
 	if (!errorStack) console.trace('Error has no stack:', error)
 	const errorMessageForRecord = `\`\`\`\n${errorStack}\n\`\`\`\n`
 
@@ -169,19 +165,14 @@ export async function handleError(error, originalArgs) {
 export async function handleCharTopLevelError(error, context, selfEntityHash) {
 	if (!(error instanceof Error)) {
 		const originalError = error
-		let errorInfo
-		try {
-			errorInfo = JSON.stringify(originalError)
-		} catch {
-			errorInfo = String(originalError)
-		}
+		const errorInfo = formatGenerationError(originalError)
 		error = Object.assign(new Error(`OnError 捕获到非 Error: ${errorInfo}`), { cause: originalError })
 		if (originalError?.skip_auto_fix) error.skip_auto_fix = originalError.skip_auto_fix
 		if (originalError?.skip_report) error.skip_report = originalError.skip_report
 		Error.captureStackTrace(error, handleCharTopLevelError)
 		console.error('[Gentian OnError] 非 Error 传入, catch 点栈:', error.stack)
 	}
-	const errorStack = error.stack || String(error)
+	const errorStack = formatGenerationError(error)
 	if (!errorStack) console.trace('Error has no stack:', error)
 	const errorMessageForRecord = `\`\`\`\n${errorStack}\n\`\`\`\n`
 
