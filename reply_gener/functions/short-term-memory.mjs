@@ -2,7 +2,7 @@ import { defineReplyHandler } from '../../../../../../../src/public/parts/shells
 import { deleteShortTermMemory, getShortTermMemoryNum } from '../../prompt/memory/short-term/index.mjs'
 import { parseRegexFromString } from '../../scripts/tools/index.mjs'
 
-/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatReplyRequest_t} chatReplyRequest_t */
+/** @typedef {import("../../../../../../../src/public/parts/shells/chat/decl/chatLog.ts").chatReplyRequest_t} chatReplyRequest_t */
 /** @typedef {import("../../prompt/logical_results/index.mjs").logical_results_t} logical_results_t */
 /** @typedef {import("../../../../../../../src/decl/prompt_struct.ts").prompt_struct_t} prompt_struct_t */
 /** @typedef {import("../../../../../../../src/decl/PluginAPI.ts").ReplyHandler_t} ReplyHandler_t */

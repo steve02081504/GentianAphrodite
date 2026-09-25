@@ -3,6 +3,7 @@
 
 import { defineReplyHandler } from '../../../../../../../src/public/parts/shells/chat/src/reply/defineReplyHandler.mjs'
 import { runReplyHandlers } from '../../../../../../../src/public/parts/shells/chat/src/reply/handlerPipeline.mjs'
+import { injectRoundEntries } from '../../../../../../../src/public/parts/shells/chat/src/reply/roundContext.mjs'
 import { config } from '../../config/index.mjs'
 import { CodeRunnerPrompt } from '../../prompt/functions/code-runner.mjs'
 import { DeepResearchMainPrompt } from '../../prompt/functions/deep-research.mjs'
@@ -282,6 +283,7 @@ Step 2: <步骤2主题>
 					const functionCalled = await runReplyHandlers(stepOutput, thinkingArgs, stepReplyHandlers)
 					if (functionCalled) {
 						console.info(`Deep-research: Cycle ${planningCycles}, Step ${step.step} - Function triggered by handlers. Waiting for result...`)
+						await injectRoundEntries(thinkingArgs, thinking_prompt_struct)
 						await sleep(thinking_interval)
 						// Continue the inner loop to let the AI process the function result for the same step
 						continue regen_step
@@ -517,4 +519,3 @@ export const deepResearch = defineReplyHandler({
 	tag: 'deep-research',
 	handle: deepResearchHandle,
 })
-

@@ -5,6 +5,7 @@ import process from 'node:process'
 import { compareTwoStrings as string_similarity } from 'npm:string-similarity'
 
 import { runReplyHandlers } from 'fount/public/parts/shells/chat/src/reply/handlerPipeline.mjs'
+import { injectRoundEntries } from 'fount/public/parts/shells/chat/src/reply/roundContext.mjs'
 import { formatGenerationError } from 'fount/scripts/error_format.mjs'
 
 import {
@@ -275,8 +276,11 @@ export async function baseGetReply(args) {
 				...args.extension,
 				logical_results
 			}
-		}, replyHandlers))
+		}, replyHandlers)) {
+			await injectRoundEntries(args, prompt_struct)
+			if (!await args.generation_options.finishRound?.()) break
 			continue regen
+		}
 		break
 	}
 	if (last_entry?.role == 'user' && isUserSpeaker(last_entry, args)) {

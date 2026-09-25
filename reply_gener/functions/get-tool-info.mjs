@@ -40,6 +40,7 @@ fount角色以mjs文件语法所书写，其可以自由导入任何npm或jsr包
 
 import { loadPart, loadAnyPreferredDefaultPart } from '../../../../../src/server/parts_loader.mjs'
 import { buildPromptStruct } from '../../../../../src/public/parts/shells/chat/src/prompt_struct/index.mjs'
+import { injectRoundEntries } from '../../../../../src/public/parts/shells/chat/src/reply/roundContext.mjs'
 
 /**
  * AI源的实例
@@ -183,7 +184,11 @@ export default {
 					].filter(Boolean))
 						if (await replyHandler(result, { ...args, prompt_struct, AddLongTimeLog }))
 							continue_regen = true
-					if (continue_regen) continue regen
+					if (continue_regen) {
+						await injectRoundEntries(args, prompt_struct)
+						if (!await args.generation_options.finishRound?.()) break
+						continue regen
+					}
 					break
 				}
 				// 返回构建好的回复
@@ -298,7 +303,11 @@ function CharGenerator(reply, { AddLongTimeLog }) {
 					].filter(Boolean))
 						if (await replyHandler(result, { ...args, prompt_struct, AddLongTimeLog }))
 							continue_regen = true
-					if (continue_regen) continue regen
+					if (continue_regen) {
+						await injectRoundEntries(args, prompt_struct)
+						if (!await args.generation_options.finishRound?.()) break
+						continue regen
+					}
 					break
 				}
 				// 返回构建好的回复
