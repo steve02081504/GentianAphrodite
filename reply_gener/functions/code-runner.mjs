@@ -68,7 +68,7 @@ function buildInlineToolCard(items, lang) {
  * @param {any} result - 回调的结果。
  */
 async function callback_handler(args, reason, code, result) {
-	let logger = args.AddChatLogEntry
+	let logger = args.AppendChatLogEntry
 	const feedback = {
 		role: 'tool',
 		name: 'code-execution.callback',
@@ -87,9 +87,8 @@ ${code}
 	}
 	try {
 		const new_req = await args.Update()
-		logger = new_req.AddChatLogEntry
+		logger = new_req.AppendChatLogEntry
 		new_req.chat_log = [...new_req.chat_log, feedback]
-		new_req.extension.from_callback = true
 		const reply = await GetReply(new_req)
 		if (!reply) return
 		reply.logContextBefore.push(feedback)

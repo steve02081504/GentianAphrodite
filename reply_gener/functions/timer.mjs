@@ -241,7 +241,7 @@ ${chat_log_snip}
 		})
 		if (!result) return
 		result.logContextBefore.push(logEntry)
-		await channel.AddChatLogEntry({ name: '龙胆', ...result })
+		await channel.AppendChatLogEntry({ name: '龙胆', ...result })
 		newCharReply(result.content, platform || 'chat')
 	})
 }

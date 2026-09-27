@@ -283,7 +283,7 @@ Step 2: <步骤2主题>
 					const functionCalled = await runReplyHandlers(stepOutput, thinkingArgs, stepReplyHandlers)
 					if (functionCalled) {
 						console.info(`Deep-research: Cycle ${planningCycles}, Step ${step.step} - Function triggered by handlers. Waiting for result...`)
-						await injectRoundEntries(thinkingArgs, thinking_prompt_struct)
+						await injectRoundEntries(thinkingArgs, thinking_prompt_struct, { consumeWakes: false })
 						await sleep(thinking_interval)
 						// Continue the inner loop to let the AI process the function result for the same step
 						continue regen_step

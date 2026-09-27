@@ -373,7 +373,7 @@ async function finishRecordingSession(now) {
 			if (result) {
 				result.logContextBefore ??= []
 				result.logContextBefore.push(logEntry)
-				await RealityChannel.AddChatLogEntry({ name: '龙胆', ...result })
+				await RealityChannel.AppendChatLogEntry({ name: '龙胆', ...result })
 			}
 		}
 		catch (err) {
@@ -382,7 +382,7 @@ async function finishRecordingSession(now) {
 	}
 	else {
 		console.log('🎤 Voice not matched. Only recorded.')
-		await RealityChannel.AddChatLogEntry(logEntry)
+		await RealityChannel.AppendChatLogEntry(logEntry)
 	}
 
 	transitionToState('ARMED', now)

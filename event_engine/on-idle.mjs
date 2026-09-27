@@ -377,7 +377,7 @@ ${selectedTask.get_content()}
 	}
 	if (!result || result?.extension?.is_error_report) return
 	result.logContextBefore.push(logEntry)
-	await RealityChannel.AddChatLogEntry({ name: '龙胆', ...result })
+	await RealityChannel.AppendChatLogEntry({ name: '龙胆', ...result })
 }
 
 const defaultIdleIntervalMs = 15 * 60 * 1000 // 15 minutes

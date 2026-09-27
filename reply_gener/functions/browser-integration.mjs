@@ -390,12 +390,12 @@ ${util.inspect(data, { depth: null })}
 			})
 			if (!result) return
 			result.logContextBefore.push(logEntry)
-			await channel.AddChatLogEntry({ name: '龙胆', ...result })
+			await channel.AppendChatLogEntry({ name: '龙胆', ...result })
 			newCharReply(result.content, channel.extension?.chat?.bridge?.platform || 'chat')
 		}
 		catch (error) {
 			console.error('Error processing browser callback:', error)
-			await channel.AddChatLogEntry({
+			await channel.AppendChatLogEntry({
 				name: 'system',
 				uid: 'system',
 				role: 'system',

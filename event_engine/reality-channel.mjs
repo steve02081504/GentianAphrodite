@@ -105,7 +105,7 @@ export function initRealityChannel() {
 		 * 向“真实世界”频道的聊天日志中添加一个条目。
 		 * @param {object} entry - 要添加的聊天日志条目。
 		 */
-		AddChatLogEntry: entry => {
+		AppendChatLogEntry: entry => {
 			console.dir(entry, { depth: null })
 			RealityChannel.chat_log.push(entry)
 		},
