@@ -92,6 +92,9 @@ export function GetAISourceCallingOrder(name) {
 			// 在回复他人时，我们以最低消耗模型的顺序来回落，以最大程度减少不必要的算力损耗
 			// 由于logic模型的低智商可能引起不安全操作，因此我们将其放在靠后的位置
 			return ['from-other', 'nsfw', 'web-browse', 'deep-research', 'sfw', 'logic', 'expert']
+		default:
+			console.warn('Unknown AI task name:', name, '. Using default calling order.')
+			return ['sfw', 'expert', 'deep-research', 'web-browse', 'nsfw', 'logic', 'from-other']
 	}
 }
 
@@ -132,6 +135,8 @@ export async function OrderedAISourceCalling(name, caller, trytimes = 3, error_l
 		}
 		catch (err) {
 			if (err.name === 'AbortError') throw err // manually aborted
+			const sourceInfo = await getPartInfo(source)
+			err.message += ` (AI source: ${sourceInfo?.name || source?.filename || 'unknown'})`
 			await error_logger(lastErr = err)
 		}
 

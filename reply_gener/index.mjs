@@ -4,7 +4,7 @@ import process from 'node:process'
 
 import { compareTwoStrings as string_similarity } from 'npm:string-similarity'
 
-import { runReplyHandlers } from 'fount/public/parts/shells/chat/src/reply/handlerPipeline.mjs'
+import { runBeforeReplyHooks, runReplyHandlers } from 'fount/public/parts/shells/chat/src/reply/handlerPipeline.mjs'
 import { injectRoundEntries } from 'fount/public/parts/shells/chat/src/reply/roundContext.mjs'
 import { formatGenerationError } from 'fount/scripts/error_format.mjs'
 
@@ -164,6 +164,7 @@ export async function baseGetReply(args) {
 	})
 	const logical_results = await buildLogicalResults(args, prompt_struct, 0)
 	const AddLongTimeLog = getLongTimeLogAdder(result, prompt_struct)
+	await runBeforeReplyHooks({ ...args, prompt_struct, AddLongTimeLog })
 	const last_entry = args.chat_log.slice(-1)[0]
 	if (last_entry?.role == 'user' && isUserSpeaker(last_entry, args)) {
 		newUserMessage(last_entry.content, args.extension?.chat?.bridge?.platform || 'chat')
@@ -234,7 +235,7 @@ export async function baseGetReply(args) {
 			: 'from-other')
 		const requestresult = await OrderedAISourceCalling(AItype, async AI => {
 			const result = await AI.StructCall(prompt_struct, args.generation_options)
-			if (!result.content.trim() && !result.files?.length) throw new Error('empty reply')
+			if (!result.content?.trim() && !result.files?.length) throw new Error('empty reply')
 			return result
 		}, 3, console.error, args.ai_source)
 		result.content = requestresult.content
