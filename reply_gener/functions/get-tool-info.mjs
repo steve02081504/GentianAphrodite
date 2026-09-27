@@ -157,7 +157,7 @@ export default {
 						: 'system'
 					entry.charVisibility = [args.char_id]
 					result?.logContextBefore?.push?.(entry)
-					prompt_struct.char_prompt.additional_chat_log.push(entry)
+					prompt_struct.chat_log.push(entry)
 				}
 				// 构建更新预览管线
 				args.generation_options ??= {}
@@ -275,7 +275,7 @@ function CharGenerator(reply, { AddLongTimeLog }) {
 						: 'system'
 					entry.charVisibility = [args.char_id]
 					result?.logContextBefore?.push?.(entry)
-					prompt_struct.char_prompt.additional_chat_log.push(entry)
+					prompt_struct.chat_log.push(entry)
 				}
 				// 构建更新预览管线
 				args.generation_options ??= {}

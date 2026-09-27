@@ -75,7 +75,7 @@ export function getLongTimeLogAdder(result, prompt_struct, max_forever_looping_n
 			: 'system'
 		entry.charVisibility = [prompt_struct.char_id]
 		result?.logContextBefore?.push?.(entry)
-		prompt_struct.char_prompt.additional_chat_log.push(entry)
+		prompt_struct.chat_log.push(entry)
 		if (entry.role === 'char') {
 			sim_check_before.forEach(item_before => {
 				if (string_similarity(entry.content, item_before) > similarity_threshold)
