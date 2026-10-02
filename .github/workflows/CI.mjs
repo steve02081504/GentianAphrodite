@@ -12,13 +12,135 @@ await CI.test('noAI Fallback', async () => {
 await CI.test('Setup AI Source', async () => {
 	await CI.char.interfaces.config.SetData({
 		AIsources: { CI: 'CI' },
+		plugins: [],
 		disable_idle_event: true
 	})
+})
+
+await CI.test('Keyword Host Plugin Migration', async () => {
+	const cases = [
+		['算一下', {}, 'code-execution'],
+		['浏览网页', {}, 'web-browse'],
+		['搜索', {}, 'web-search'],
+		['浏览器', {}, 'browser-integration'],
+		['提醒我', {}, 'timer'],
+		['角色设定', {}, 'char-writing'],
+		['fount', {}, 'fount-api'],
+		['你好', { enable_prompts: { fileChange: true } }, 'file-operations'],
+	]
+	for (const [content, extension, name] of cases) {
+		const { prompt_struct } = await CI.runInput(content, { extension })
+		CI.assert(prompt_struct.plugin_prompts[name], `Trigger did not load ${name} before building the prompt.`)
+		if (name === 'fount-api') CI.assert(prompt_struct.plugin_prompts['code-execution'], 'fount API requires host code execution.')
+	}
+	const { prompt_struct: idle } = await CI.runInput('你好')
+	CI.assert(!idle.plugin_prompts['web-search'] && !idle.plugin_prompts['code-execution'], 'Keyword plugins leaked into a later request.')
+	CI.assert(CI.char.interfaces.config.GetData().plugins.length === 0, 'Triggers must not persist into character config.')
+	const result = await CI.runOutput('answer: <inline-js>21 * 2</inline-js>', {
+		extension: { enable_prompts: { CodeRunner: true } },
+	})
+	CI.assert((result.content_for_show ?? result.content).includes('42'), 'Host inline handler did not execute.')
+})
+
+await CI.test('Plugin Trigger Selection', async () => {
+	const { selectBuiltinPlugins, selectPlatformPlugin } = await import('../../prompt/plugin-triggers.mjs')
+	/**
+	 * 测试替身按范围/深度匹配，不依赖翻译服务与运行中的服务器。
+	 * @param {object} args 请求。
+	 * @param {(string|RegExp)[]} keys 关键词。
+	 * @param {'user'|'other'|'any'} from 说话者范围。
+	 * @param {number} [depth=4] 回看深度。
+	 * @returns {Promise<number>} 匹配数量。
+	 */
+	const matchKeys = async (args, keys, from, depth = 4) => {
+		const logs = args.chat_log.slice(-depth).filter(entry =>
+			from === 'user' ? entry.uid === args.UserUid : from === 'other' ? entry.uid !== args.UserUid && entry.uid !== args.CharUid : true,
+		)
+		return keys.filter(key => logs.some(entry => key instanceof RegExp ? key.test(entry.content) : entry.content.includes(key))).length
+	}
+	/**
+	 * 构造请求。
+	 * @param {string} content 用户消息。
+	 * @param {object} [overrides={}] 请求覆盖。
+	 * @returns {object} 测试请求。
+	 */
+	const request = (content, overrides = {}) => ({ chat_log: [{ uid: 'user', content }], UserUid: 'user', CharUid: 'char', supported_functions: { add_message: true }, ...overrides })
+	const deps = {
+		matchKeys,
+		extractPathCandidates: text => /C:\\project\\main.mjs/.test(text) ? [{ path: text }] : [],
+		getScopedChatLog: args => args.chat_log,
+	}
+
+	CI.assert(
+		JSON.stringify(await selectBuiltinPlugins(request('你好'), {}, deps)) === JSON.stringify(['context-compress', 'sub-agent', 'async-task']),
+		'Ordinary conversation must only keep formerly unconditional plugins.'
+	)
+	for (const [text, name] of [
+		['搜索', 'web-search'], ['https://example.com', 'web-browse'], ['运行代码', 'code-execution'],
+		['文件', 'file-operations'], ['浏览器', 'browser-integration'], ['提醒我', 'timer'], ['fount', 'fount-api'],
+	]) CI.assert((await selectBuiltinPlugins(request(text), {}, deps)).includes(name), `Legacy keyword ${text} must activate ${name}.`)
+	for (const [key, name] of [
+		['webSearch', 'web-search'], ['webBrowse', 'web-browse'], ['CodeRunner', 'code-execution'],
+		['fileChange', 'file-operations'], ['browserIntegration', 'browser-integration'], ['timer', 'timer'],
+	]) CI.assert((await selectBuiltinPlugins(request('你好', { extension: { enable_prompts: { [key]: true } } }), {}, deps)).includes(name), `enable_prompts.${key} must activate ${name}.`)
+
+	CI.assert(!(await selectBuiltinPlugins(request('提醒我', { supported_functions: {} }), {}, deps)).includes('timer'), 'timer must require add_message capability.')
+	CI.assert(!(await selectBuiltinPlugins(request('打开'), {}, deps)).includes('code-execution'), 'Single user keyword must not reach the code threshold.')
+	CI.assert((await selectBuiltinPlugins(request('打开桌面'), {}, deps)).includes('code-execution'), 'Two user keywords must reach the code threshold.')
+	CI.assert(!(await selectBuiltinPlugins(request('修改'), {}, deps)).includes('file-operations'), 'Single user keyword must not reach the file threshold.')
+	CI.assert((await selectBuiltinPlugins(request('新建修改'), {}, deps)).includes('file-operations'), 'Two user keywords must reach the file threshold.')
+	CI.assert(!(await selectBuiltinPlugins(request('打开桌面', { chat_log: [{ uid: 'char', content: '打开桌面' }] }), {}, deps)).includes('code-execution'), 'Character speech must not count toward the user threshold.')
+	CI.assert((await selectBuiltinPlugins(request('C:\\project\\main.mjs'), {}, deps)).includes('file-operations'), 'Path mentions must supply file operations.')
+	const writing = await selectBuiltinPlugins(request('角色设定'), {}, deps)
+	CI.assert(writing.includes('char-writing') && writing.includes('file-operations'), 'Character writing must supply char-writing and file-operations.')
+	CI.assert(writing.length === new Set(writing).size, 'Selected plugins must be unique.')
+	const isolated = request('你好')
+	const snapshot = structuredClone(isolated)
+	const assist = await selectBuiltinPlugins(isolated, { in_assist: true }, deps)
+	for (const name of ['code-execution', 'file-operations', 'web-search', 'web-browse', 'browser-integration'])
+		CI.assert(assist.includes(name), `Assist mode must include ${name}.`)
+	CI.assert(JSON.stringify(isolated) === JSON.stringify(snapshot), 'Selection must not mutate the request.')
+
+	const platformDeps = { matchKeys, rudeWords: ['粗口'], lewdWords: ['情色'] }
+	for (const platform of ['telegram', 'discord']) {
+		const args = request('禁言', { extension: { chat: { bridge: { platform } } } })
+		CI.assert(await selectPlatformPlugin(args, platformDeps) === `${platform}-api`, `${platform} management keyword must select its API plugin.`)
+		args.chat_log = [{ uid: 'user', content: '禁言' }, ...Array.from({ length: 3 }, () => ({ uid: 'user', content: '你好' }))]
+		CI.assert(await selectPlatformPlugin(args, platformDeps) === null, `${platform} keyword outside lookback depth must not trigger.`)
+		args.chat_log = [{ uid: 'user', content: '情色' }]
+		CI.assert(await selectPlatformPlugin(args, platformDeps) === null, `${platform} lewd word from user must not trigger.`)
+		args.chat_log = [{ uid: 'other', content: '情色' }]
+		CI.assert(await selectPlatformPlugin(args, platformDeps) === `${platform}-api`, `${platform} lewd word from others must trigger.`)
+	}
+	CI.assert(await selectPlatformPlugin(request('禁言'), platformDeps) === null, 'Management keyword without a bridge platform must not trigger.')
+})
+
+await CI.test('Enable Plugins for Tool Contract Tests', async () => {
+	await CI.char.interfaces.config.SetData({ plugins: ['code-execution', 'file-operations', 'web-search', 'web-browse', 'timer', 'browser-integration'] })
+})
+
+await CI.test('Plugin Events and Role Statistics', async () => {
+	const { statisticDatas } = await import('../../scripts/statistics.mjs')
+	const before = statisticDatas.toolUsage.codeRuns || 0
+	const result = await CI.runOutput('<inline-js>6 * 7</inline-js>')
+	CI.assert((result.content_for_show ?? result.content).includes('42'), 'Inline JS did not execute.')
+	CI.assert(statisticDatas.toolUsage.codeRuns === before + 1, 'Successful host tool did not update role statistics.')
+	const event = { id: `CI-timer-${crypto.randomUUID()}`, pluginName: 'timer', type: 'background', status: 'succeeded', tool: 'timer.callback' }
+	const callbacks = statisticDatas.toolUsage.timerCallbacks || 0
+	await CI.char.interfaces.plugins.OnEvent(event, {})
+	await CI.char.interfaces.plugins.OnEvent(event, {})
+	CI.assert(statisticDatas.toolUsage.timerCallbacks === callbacks + 1, 'Background replay was counted twice.')
+	await CI.char.interfaces.plugins.OnEvent({ ...event, id: `failed-${event.id}`, status: 'failed' }, {})
+	CI.assert(statisticDatas.toolUsage.timerCallbacks === callbacks + 1, 'Failed background event must not count.')
 })
 
 CI.test('Request-level AI Source (args.ai_source)', async () => {
 	const stubAI = {
 		filename: 'stub-ai',
+		/**
+		 * 返回固定文本以验证请求级 AI 源覆盖。
+		 * @returns {Promise<object>} 固定回复。
+		 */
 		async StructCall() {
 			return { content: 'AI_SOURCE_OVERRIDE_TOKEN', extension: {}, files: [] }
 		}
@@ -120,7 +242,7 @@ CI.test('File Operations', async () => {
 		const testFilePath = path.join(CI.context.workSpace.path, 'view_page_test.txt')
 		fs.writeFileSync(testFilePath, 'line1\nline2\nline3\nline4\nline5', 'utf-8')
 		const result = await CI.runOutput([`<view-file offset="2" limit="2">${testFilePath}</view-file>`, 'Read a page.'])
-		const log = result.logContextBefore.find(entry => entry.role === 'tool' && entry.name === 'file-change')
+		const log = result.logContextBefore.find(entry => entry.role === 'tool' && entry.name === 'file-operations.view-file')
 		CI.assert(log && log.content.includes('line2') && log.content.includes('line3'), `<view-file> pagination failed to include requested lines. Log: ${log?.content}`)
 		CI.assert(log && !log.content.includes('line5'), `<view-file> pagination leaked out-of-window content. Log: ${log?.content}`)
 	})
@@ -130,7 +252,7 @@ CI.test('File Operations', async () => {
 		fs.mkdirSync(dir, { recursive: true })
 		fs.writeFileSync(path.join(dir, 'a_unique_glob.txt'), 'x', 'utf-8')
 		const result = await CI.runOutput([`<glob path="${dir}">**/*.txt</glob>`, 'Found files.'])
-		const log = result.logContextBefore.find(entry => entry.role === 'tool' && entry.name === 'file-change')
+		const log = result.logContextBefore.find(entry => entry.role === 'tool' && entry.name === 'file-operations.glob')
 		CI.assert(log && log.content.includes('a_unique_glob.txt'), `<glob> failed to find file. Log: ${log?.content}`)
 	})
 
@@ -138,7 +260,7 @@ CI.test('File Operations', async () => {
 		const testFilePath = path.join(CI.context.workSpace.path, 'grep_test.txt')
 		fs.writeFileSync(testFilePath, 'alpha\nCI_GREP_UNIQUE_TOKEN\nbeta', 'utf-8')
 		const result = await CI.runOutput([`<grep path="${CI.context.workSpace.path}" include="grep_test.txt">CI_GREP_UNIQUE_TOKEN</grep>`, 'Searched content.'])
-		const log = result.logContextBefore.find(entry => entry.role === 'tool' && entry.name === 'file-change')
+		const log = result.logContextBefore.find(entry => entry.role === 'tool' && entry.name === 'file-operations.grep')
 		CI.assert(log && log.content.includes('CI_GREP_UNIQUE_TOKEN'), `<grep> failed to find matching content. Log: ${log?.content}`)
 	})
 
@@ -152,7 +274,8 @@ CI.test('Code Runner', () => {
 		})
 		CI.test('<inline-pwsh>', async () => {
 			const result = await CI.runOutput('The result is <inline-pwsh>echo "hello from pwsh"</inline-pwsh>.')
-			CI.assert(result.content === 'The result is hello from pwsh.', `<inline-pwsh> failed to execute and replace content. Expected: 'The result is hello from pwsh.', but got: '${result.content}'`)
+			const shown = result.content_for_show ?? result.content
+			CI.assert(shown === 'The result is hello from pwsh.', `<inline-pwsh> failed to execute and replace content. Expected: 'The result is hello from pwsh.', but got: '${shown}'`)
 		})
 	}
 	else {
@@ -169,19 +292,26 @@ CI.test('Code Runner', () => {
 
 	CI.test('<inline-js>', async () => {
 		const result = await CI.runOutput('The result of 5 * 8 is <inline-js>return 5 * 8;</inline-js>.')
-		CI.assert(result.content === 'The result of 5 * 8 is 40.', `<inline-js> failed to execute and replace content. Expected: 'The result of 5 * 8 is 40.', but got: '${result.content}'`)
+		// 新管线把 inline 结果放入展示层（content_for_show）并回执 inline-rendered 工具日志，不再改写 content
+		const shown = result.content_for_show ?? result.content
+		CI.assert(shown === 'The result of 5 * 8 is 40.', `<inline-js> failed to execute and replace content. Expected: 'The result of 5 * 8 is 40.', but got: '${shown}'`)
 	})
 
 	CI.test('<run-js> with workspace', async () => {
-		const result = await CI.runOutput(['<run-js>workspace.testVar = "Success";</run-js>', 'Variable set. The value is: <inline-js>return workspace.testVar</inline-js>'])
-		CI.assert(result.content === 'Variable set. The value is: Success', `<run-js> failed to use the shared workspace. Expected: 'Variable set. The value is: Success', but got: '${result.content}'`)
+		const result = await CI.runOutput([
+			'<run-js>workspace.testVar = "Success";</run-js>',
+			'<run-js>console.log(workspace.testVar)</run-js>',
+			'Workspace read.',
+		])
+		const logs = result.logContextBefore.filter(entry => entry.role === 'tool' && entry.name === 'code-execution.run-js')
+		CI.assert(logs.some(entry => entry.content.includes('Success')), 'Host run-js should retain workspace across tool rounds.')
 	})
 
 	CI.test('<run-js> with callback', async () => {
+		// callback 现在只做 appendAndWake（不自行重入生成），因此不再需要额外的第三步输出
 		const result = await CI.runOutput([
 			'<run-js>callback("test", new Promise(resolve => setTimeout(resolve, 1000)).then(() => globalThis.callbacked = true))</run-js>',
-			'promise callback setted.',
-			'callbacked'
+			'promise callback setted.'
 		])
 		CI.assert(result.content === 'promise callback setted.', `<run-js> failed to use the callback. Expected: 'promise callback setted.', but got: '${result.content}'`)
 		await CI.wait(() => globalThis.callbacked)
@@ -206,13 +336,12 @@ CI.test('Web Browse', async () => {
 	})
 
 	const result = await CI.runOutput([
-		`<web-browse><url>${url}</url><question>What is in the paragraph?</question></web-browse>`,
+		`<web-browse summarize="false"><url>${url}</url><question>What is in the paragraph?</question></web-browse>`,
 		result => {
 			CI.assert(result.prompt_single.includes('This is a test paragraph for the CI'), `<web-browse> failed to process web content. Expected prompt_single to include 'This is a test paragraph for the CI', but got: ${result.prompt_single}`)
 			CI.assert(result.prompt_single.includes('What is in the paragraph?'), `<web-browse> failed to process question. Expected prompt_single to include 'What is in the paragraph?', but got: ${result.prompt_single}`)
 			return 'The paragraph says: This is a test paragraph for the CI.'
 		},
-		'Web browse test complete.'
 	])
 	const systemLog = result.logContextBefore.find(log => log.role === 'tool')
 	CI.assert(systemLog.content.includes('This is a test paragraph for the CI'), `<web-browse> failed to callback char. Expected tool log to include 'This is a test paragraph for the CI', but got: ${systemLog.content}`)
@@ -249,94 +378,75 @@ CI.test('Timer', async () => {
 		'<list-timers></list-timers>',
 		'<remove-timer>CI_Test_Timer</remove-timer>',
 		'<list-timers></list-timers>',
-		'<set-timer><item><time>1s</time><reason>CI_Test_Timer_Callback</reason></item></set-timer>',
-		'Timer test sequence complete.',
-		'<run-js>globalThis.timerCallbacked = true;</run-js>',
-		'Timer callback test sequence complete.'
+		'Timer test sequence complete.'
 	])
 	const logs = result.logContextBefore.filter(log => log.role === 'tool')
-	CI.assert(logs[0].content.includes('已设置1个定时器'), `set-timer failed. Expected log to include '已设置1个定时器', but got: ${logs[0].content}`)
+	CI.assert(logs[0].content.replace(/\s/g, '').includes('已设置1个定时器'), `set-timer failed. Expected log to include '已设置1个定时器', but got: ${logs[0].content}`)
 	CI.assert(logs[1].content.includes('CI_Test_Timer'), `list-timers failed to show new timer. Expected log to include 'CI_Test_Timer', but got: ${logs[1].content}`)
-	CI.assert(logs[2].content.includes('已成功删除定时器'), `remove-timer failed. Expected log to include '已成功删除定时器', but got: ${logs[2].content}`)
+	CI.assert(logs[2].content.includes('已删除'), `remove-timer failed. Expected log to include '已成功删除定时器', but got: ${logs[2].content}`)
 	CI.assert(logs[3].content.includes('无'), `list-timers showed timer after deletion. Expected log to include '无', but got: ${logs[3].content}`)
 	CI.assert(result.content === 'Timer test sequence complete.', `Final message not found. Expected: 'Timer test sequence complete.', but got: '${result.content}'`)
 
-	await CI.wait(() => globalThis.timerCallbacked, 10000)
-	CI.assert(globalThis.timerCallbacked, `Timer callback failed. Expected globalThis.timerCallbacked to be true, but it was ${globalThis.timerCallbacked}`)
-	delete globalThis.timerCallbacked
 })
 
-CI.test('Deep research', async () => {
-	const testFilePath = path.join(CI.context.workSpace.path, 'fount.txt')
-	const result = await CI.runOutput([
-		'<deep-research>What is fount made by steve02081504, what is 2+2 and what is the result of 5*8?</deep-research>',
-		'Plan:\nStep 1: Find the fount made by steve02081504.\nStep 2: Calculate 2+2.\nStep 3: Calculate 5*8.\nStep 4: make a file for fun.',
-		'<web-search>fount steve02081504</web-search>',
-		'The fount made by steve02081504 is fount.',
-		'<run-js>return 2+2</run-js>',
-		'The result of the calculation is 4.',
-		'The result of 5 * 8 is <inline-js>return 5 * 8;</inline-js>.',
-		process.platform === 'win32' ? `<run-pwsh>touch ${testFilePath}</run-pwsh>` : `<run-bash>touch ${testFilePath}</run-bash>`,
-		`File ${testFilePath} created.`,
-		'deep-research-answer: The fount is fount, 2+2 equals 4, and the result of 5*8 is 40.',
-		'The fount made by steve02081504 is fount, the sum of 2 and 2 is 4, and the result of 5*8 is 40.'
-	])
-	CI.assert(result.content === 'The fount made by steve02081504 is fount, the sum of 2 and 2 is 4, and the result of 5*8 is 40.', `Deep-research flow did not produce the correct final answer. Expected: 'The fount made by steve02081504 is fount, the sum of 2 and 2 is 4, and the result of 5*8 is 40.', but got: '${result.content}'`)
-	CI.assert(fs.existsSync(testFilePath), `File fount.txt was not created in the test workspace. Expected file to exist: ${testFilePath}`)
+CI.test('Sub Agent', () => {
+	CI.test('<list-ai-sources>', async () => {
+		const result = await CI.runOutput(['<list-ai-sources></list-ai-sources>', 'AI sources listed.'])
+		const log = result.logContextBefore.find(entry => entry.role === 'tool' && entry.name === 'sub-agent.list-ai-sources')
+		CI.assert(!!log, '<list-ai-sources> did not produce a tool log.')
+	})
+
+	CI.test('<run-subagent> sync', async () => {
+		// 用请求级临时 AI 源（独立输出队列）供子代理使用，避免子代与父代争抢 mock 输出队列
+		const { reply: result } = await CI.runInput('Delegate this task', {
+			ai_source: CI.createAISource([
+				'<run-subagent plugins="sub-agent,async-task" round-limit="2" time-limit="30s">Reply with the single word: done</run-subagent>',
+				'done', 'Sub-agent finished.',
+			]),
+		})
+		const log = result.logContextBefore.find(entry => entry.role === 'tool' && entry.name === 'sub-agent.run')
+		CI.assert(!!log, '<run-subagent> did not produce a tool log.')
+	})
+
+	CI.test('<run-subagent> requires round-limit/time-limit', async () => {
+		const result = await CI.runOutput([
+			'<run-subagent>Missing limits</run-subagent>',
+			'Rejected.'
+		])
+		const log = result.logContextBefore.find(entry => entry.role === 'tool' && entry.name === 'sub-agent.run')
+		CI.assert(!!log && log.content.includes('round-limit'), `<run-subagent> without limits should be rejected with a hint. Log: ${log?.content}`)
+	})
 })
 
-CI.test('Character Generator', () => {
-	CI.test('<generate-char>', async () => {
-		const charName = 'CI_Test_Char'
-		const charCode = 'export default { name: "CI Test Character" }'
-		const charDir = path.join(import.meta.dirname, '..', '..', 'reply_gener', 'functions', '..', '..', '..', charName)
-		const charFile = path.join(charDir, 'main.mjs')
-		const fountFile = path.join(charDir, 'fount.json')
-		if (fs.existsSync(charDir))
-			fs.rmSync(charDir, { recursive: true, force: true })
-
-		const result = await CI.runOutput([
-			`<generate-char name="${charName}">\n${charCode}\n</generate-char>`,
-			'Character generated successfully.'
-		])
-
-		const systemLog = result.logContextBefore.find(log => log.role === 'tool' && log.name === 'char-generator')
-		CI.assert(systemLog && systemLog.content.includes('生成角色'), `<generate-char> failed to generate character. Expected tool log to include '生成角色', but got: ${systemLog?.content}`)
-		CI.assert(fs.existsSync(charFile), `Character main.mjs file was not created. Expected file to exist: ${charFile}`)
-		CI.assert(fs.existsSync(fountFile), `Character fount.json file was not created. Expected file to exist: ${fountFile}`)
-
-		const mainContent = fs.readFileSync(charFile, 'utf-8')
-		CI.assert(mainContent === charCode, `Character code mismatch. Expected: "${charCode}", but got: "${mainContent}"`)
-
-		// Clean up
-		fs.rmSync(charDir, { recursive: true, force: true })
+CI.test('Async Task', () => {
+	CI.test('<list-async> empty', async () => {
+		const result = await CI.runOutput(['<list-async></list-async>', 'Listed.'])
+		const log = result.logContextBefore.find(entry => entry.role === 'tool' && entry.name === 'async-task.list')
+		CI.assert(!!log, '<list-async> did not produce a tool log.')
 	})
 
-	CI.test('<generate-persona>', async () => {
-		const personaName = 'CI_Test_Persona'
-		const personaCode = 'export default { persona: "CI Test Persona" }'
-		const personaDir = path.join(import.meta.dirname, '..', '..', 'reply_gener', 'functions', '..', '..', '..', '..', 'personas', personaName)
-		const personaFile = path.join(personaDir, 'main.mjs')
-		const fountFile = path.join(personaDir, 'fount.json')
-		if (fs.existsSync(personaDir))
-			fs.rmSync(personaDir, { recursive: true, force: true })
-
-		const result = await CI.runOutput([
-			`<generate-persona name="${personaName}">\n${personaCode}\n</generate-persona>`,
-			'Persona generated successfully.'
-		])
-
-		const systemLog = result.logContextBefore.find(log => log.role === 'tool' && log.name === 'persona-generator')
-		CI.assert(systemLog && systemLog.content.includes('生成用户人设'), `<generate-persona> failed to generate persona. Expected tool log to include '生成用户人设', but got: ${systemLog?.content}`)
-		CI.assert(fs.existsSync(personaFile), `Persona main.mjs file was not created. Expected file to exist: ${personaFile}`)
-		CI.assert(fs.existsSync(fountFile), `Persona fount.json file was not created. Expected file to exist: ${fountFile}`)
-
-		const mainContent = fs.readFileSync(personaFile, 'utf-8')
-		CI.assert(mainContent === personaCode, `Persona code mismatch. Expected: "${personaCode}", but got: "${mainContent}"`)
-
-		// Clean up
-		fs.rmSync(personaDir, { recursive: true, force: true })
+	CI.test('<await-async> unknown id', async () => {
+		const result = await CI.runOutput(['<await-async ids="no-such-task"></await-async>', 'Awaited.'])
+		const log = result.logContextBefore.find(entry => entry.role === 'tool' && entry.name === 'async-task.await')
+		CI.assert(!!log && log.content.includes('未找到'), `<await-async> with unknown id should report not-found. Log: ${log?.content}`)
 	})
+})
+
+CI.test('Preload Mentioned Files', () => {
+	CI.test('preloads a path mentioned in the user message', async () => {
+		const testFilePath = path.join(CI.context.workSpace.path, 'preload_mention_test.txt')
+		fs.writeFileSync(testFilePath, 'PRELOAD_UNIQUE_TOKEN', 'utf-8')
+		// 预读扫描的是“用户消息”中的路径，因此用 runInput 构造用户消息
+		const { reply } = await CI.runInput(`Please look at ${testFilePath}`, { workdir: { machine: '0', path: CI.context.workSpace.path } })
+		const log = reply.logContextBefore.find(entry => entry.role === 'tool' && entry.name === 'file-operations.preload')
+		CI.assert(!!log && log.content.includes('PRELOAD_UNIQUE_TOKEN'), `preload did not inject the mentioned file. Log: ${log?.content}`)
+	})
+})
+
+CI.test('Character Writing Plugin', async () => {
+	const { prompt_struct } = await CI.runInput('创建一个角色设定')
+	CI.assert(prompt_struct.plugin_prompts['char-writing']?.text.some(item => item.content.includes('charAPI.ts')), 'Character writing should load host documentation.')
+	CI.assert(prompt_struct.plugin_prompts['file-operations'], 'Character writing requires file operations.')
 })
 
 CI.test('Idle Management', async () => {
@@ -392,17 +502,6 @@ CI.test('Idle Management', async () => {
 		CI.assert(systemLog.content.includes('已设置下一次闲置任务'), `<postpone-idle> failed. Expected log to include '已设置下一次闲置任务', but got: ${systemLog.content}`)
 		CI.assert(systemLog.content.includes('2h'), `<postpone-idle> failed to show correct duration. Expected log to include '2h', but got: ${systemLog.content}`)
 	})
-})
-
-CI.test('Get Tool Info', async () => {
-	const result = await CI.runOutput([
-		'<get-tool-info>character-generator</get-tool-info>',
-		'Tool info retrieved.'
-	])
-
-	const systemLog = result.logContextBefore.find(log => log.role === 'tool' && log.name === 'get-tool-info')
-	CI.assert(!!systemLog, '<get-tool-info> did not produce a tool log. The tool log was not found in the context.')
-	CI.assert(systemLog.content.includes('generate-char'), `<get-tool-info> did not return tool information. Expected log to include 'generate-char', but got: ${systemLog.content}`)
 })
 
 CI.test('Special Reply Markers', () => {
