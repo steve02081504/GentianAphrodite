@@ -11,6 +11,7 @@ import { buildLogicalResults } from './logical_results/index.mjs'
 export async function GetPrompt(args) {
 	const logical_results = await buildLogicalResults(args)
 	const prompt = await buildPrompt(args, logical_results)
-	updatePromptTokenData(prompt)
+	// 子代理生成链（extension.subAgent 存在）不计入主会话的 prompt token 统计
+	if (!args.extension?.subAgent) updatePromptTokenData(prompt)
 	return prompt
 }
