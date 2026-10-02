@@ -33,7 +33,6 @@ import { getVar, saveVar } from './vars.mjs'
  *   },
  *   toolUsage: {
  *     codeRuns: number,
- *     deepResearchSessions: number,
  *     fileOperations: number,
  *     webSearches: number,
  *     webBrowses: number,
@@ -120,7 +119,6 @@ export function loadStatisticDatasFromDisk() {
 
 		toolUsage: {
 			codeRuns: 0,
-			deepResearchSessions: 0,
 			fileOperations: 0,
 			webSearches: 0,
 			webBrowses: 0,

@@ -92,11 +92,6 @@
 				"description": "让龙胆浏览了一个网页，带她探索互联网的奥秘。",
 				"locked_description": "让龙胆浏览一个网页，让她成为你的‘网络导游’。"
 			},
-			"use_deep_research": {
-				"name": "学霸模式",
-				"description": "让龙胆进行了一次深度研究，她仿佛化身图书馆管理员。",
-				"locked_description": "让龙胆进行一次深度研究，看看她能挖掘出什么。"
-			},
 			"use_file_change": {
 				"name": "数字裁缝",
 				"description": "让龙胆成功修改了一个文件，见证她的‘巧手’。",

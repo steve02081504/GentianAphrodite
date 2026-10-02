@@ -5,23 +5,21 @@ import process from 'node:process'
 import { compareTwoStrings as string_similarity } from 'npm:string-similarity'
 
 import { runBeforeReplyHooks, runReplyHandlers } from 'fount/public/parts/shells/chat/src/reply/handlerPipeline.mjs'
-import { injectRoundEntries } from 'fount/public/parts/shells/chat/src/reply/roundContext.mjs'
-import { formatGenerationError } from 'fount/scripts/error_format.mjs'
+import { finishToolRound } from 'fount/public/parts/shells/chat/src/reply/roundContext.mjs'
+import { formatErrorMessage, formatGenerationError } from 'fount/scripts/error_format.mjs'
 
-import {
-	findTriggerChatLogEntry,
-	hydrateBridgeNativeContext,
-} from '../../../../../../src/public/parts/shells/chat/src/chat/lib/codeBridgeContext.mjs'
+import { finishAsyncGeneration } from '../../../../../../src/public/parts/plugins/async-task/registry.mjs'
+import { beginPromptRequest, finishGeneration, finishPromptRequest } from '../../../../../../src/public/parts/shells/agent_studio/src/request_record.mjs'
+import { compressContext, needsCompression } from '../../../../../../src/public/parts/shells/chat/src/chat/session/summarize.mjs'
 import { buildPromptStruct } from '../../../../../../src/public/parts/shells/chat/src/prompt_struct/index.mjs'
 import { defineReplyHandler } from '../../../../../../src/public/parts/shells/chat/src/reply/defineReplyHandler.mjs'
 import { defineReplyPreviews } from '../../../../../../src/public/parts/shells/chat/src/streaming/index.mjs'
 import { chardir, is_dist } from '../charbase.mjs'
 import { plugins } from '../config/index.mjs'
-import { getDiscordApiPlugin } from '../interfaces/discord/api.mjs'
-import { getTelegramApiPlugin } from '../interfaces/telegram/api.mjs'
 import { buildLogicalResults } from '../prompt/logical_results/index.mjs'
 import { saveShortTermMemoryAfterReply } from '../prompt/memory/short-term/index.mjs'
 import { unlockAchievement } from '../scripts/achievements.mjs'
+import { loadTriggeredPlugins } from '../scripts/builtin-plugins.mjs'
 import { mergeChatLogEntries } from '../scripts/chat-log.mjs'
 import { match_keys, isUserSpeaker } from '../scripts/match.mjs'
 import { addNotifyAbleChannel } from '../scripts/notify.mjs'
@@ -30,20 +28,11 @@ import { noAISourceAvailable, OrderedAISourceCalling } from '../service_sources/
 import { MergeMessagePeriodMs } from '../trigger/constants.mjs'
 
 import { handleError } from './error.mjs'
-import { browserIntegration } from './functions/browser-integration.mjs'
-import { CharGenerator, PersonaGenerator } from './functions/char-generator.mjs'
-import { coderunnerHandlers } from './functions/code-runner.mjs'
-import { deepResearch } from './functions/deep-research.mjs'
-import { file_change } from './functions/file-change.mjs'
-import { getToolInfo } from './functions/get-tool-info.mjs'
 import { IdleManagementHandler } from './functions/idle-management.mjs'
 import { LongTermMemoryHandler } from './functions/long-term-memory.mjs'
 import { notifyHandler } from './functions/notify.mjs'
 import { rolesettingfilter } from './functions/role-setting-filter.mjs'
 import { ShortTermMemoryHandler } from './functions/short-term-memory.mjs'
-import { timer } from './functions/timer.mjs'
-import { webbrowse } from './functions/web-browse.mjs'
-import { websearch } from './functions/web-search.mjs'
 import { noAIreply } from './noAI/index.mjs'
 
 
@@ -141,28 +130,15 @@ export async function baseGetReply(args) {
 	if (noAISourceAvailable()) return Object.assign(result, noAIreply(args))
 	// 同人 180s 窗口消息合并（旧 bot_core 队列合并语义），减少 prompt 里的碎片消息
 	args.chat_log = mergeChatLogEntries(args.chat_log, MergeMessagePeriodMs)
-	// 注入角色插件与平台 API 插件（keyword-gated code_execution）
-	const bridgePlatform = args.extension?.chat?.bridge?.platform
-	const groupId = args.extension?.groupId
-	const channelId = args.extension?.channelId
-	const triggerEntry = findTriggerChatLogEntry(args.chat_log)
-	let nativeContext = null
-	if (bridgePlatform && groupId && channelId && args.username)
-		nativeContext = await hydrateBridgeNativeContext(args.username, groupId, channelId, triggerEntry)
-
-	const platformPlugins = {}
-	if (bridgePlatform === 'telegram')
-		platformPlugins.telegram_api = getTelegramApiPlugin(nativeContext)
-	else if (bridgePlatform === 'discord')
-		platformPlugins.discord_api = getDiscordApiPlugin(nativeContext)
-
-	args.plugins = Object.assign({}, plugins, platformPlugins, args.plugins)
+	// 关键词只负责加载宿主插件；必须在 prompt/BeforeReply/预览管线装配之前完成。
+	args.plugins = Object.assign({}, plugins, args.plugins)
+	const logical_results = await buildLogicalResults(args)
+	await loadTriggeredPlugins(args, logical_results)
 	const prompt_struct = Object.assign(await buildPromptStruct(args), {
 		alternative_charnames: [
 			'Gentian', /Gentian(•|·)Aphrodite/, '龙胆', /龙胆(•|·)阿芙萝黛蒂/
 		]
 	})
-	const logical_results = await buildLogicalResults(args, prompt_struct, 0)
 	const AddLongTimeLog = getLongTimeLogAdder(result, prompt_struct)
 	await runBeforeReplyHooks({ ...args, prompt_struct, AddLongTimeLog })
 	const last_entry = args.chat_log.slice(-1)[0]
@@ -196,18 +172,13 @@ export async function baseGetReply(args) {
 	const oriReplyPreviewUpdater = args.generation_options?.replyPreviewUpdater
 	/** @type {(import('../../../../../../src/decl/PluginAPI.ts').ReplyHandler_t)[]} */
 	const ownReplyHandlers = [
-		getToolInfo, CharGenerator, PersonaGenerator,
-		...coderunnerHandlers,
-		LongTermMemoryHandler, ShortTermMemoryHandler,
-		deepResearch, websearch, webbrowse, rolesettingfilter, file_change, browserIntegration, IdleManagementHandler,
-		notifyHandler,
-		gentianStickerHandler,
-		args.supported_functions.add_message ? timer : null,
-	].filter(Boolean)
+		LongTermMemoryHandler, ShortTermMemoryHandler, rolesettingfilter,
+		IdleManagementHandler, notifyHandler, gentianStickerHandler,
+	]
 	/** @type {(import('../../../../../../src/decl/PluginAPI.ts').ReplyHandler_t)[]} */
 	const replyHandlers = [
 		...ownReplyHandlers,
-		...Object.values(args.plugins).map(plugin => plugin.interfaces.chat?.ReplyHandler)
+		...Object.values(args.plugins).map(plugin => plugin.interfaces?.chat?.ReplyHandler)
 	].filter(Boolean)
 	/**
 	 * 聊天回复预览更新管道。
@@ -224,66 +195,111 @@ export async function baseGetReply(args) {
 	 * @param {reply_chunk_t} r - 来自 AI 的回复块。
 	 * @returns {void}
 	 */
-	args.generation_options.replyPreviewUpdater = r => replyPreviewUpdater(args, r)
-	regen: while (true) {
-		if (!is_dist && process.env.EdenOS) {
-			console.log('logical_results', logical_results)
-			console.log('prompt_struct', prompt_struct)
-		}
-		const AItype = args.extension?.source_purpose ?? (logical_results.in_reply_to_master ?
-			logical_results.in_nsfw ? 'nsfw' : logical_results.in_assist ? 'expert' : 'sfw'
-			: 'from-other')
-		const requestresult = await OrderedAISourceCalling(AItype, async AI => {
-			const result = await AI.StructCall(prompt_struct, args.generation_options)
-			if (!result.content?.trim() && !result.files?.length) throw new Error('empty reply')
-			return result
-		}, 3, console.error, args.ai_source)
-		result.content = requestresult.content
-		result.files = result.files.concat(requestresult.files || [])
-		result.extension = { ...result.extension, ...requestresult.extension }
-		if (result.content.split('\n').pop().trim() == '<-<null>->') { // AI skipped
-			const lastlog = prompt_struct.chat_log.slice(-1)[0]
-			if (lastlog) {
-				lastlog.logContextAfter ??= []
-				lastlog.logContextAfter.push({
-					name: '龙胆',
-					uid: args.CharUid,
-					role: 'char',
-					content: '<-<null>->',
-					charVisibility: [args.char_id]
-				})
+	args.generation_options.replyPreviewUpdater = r => replyPreviewUpdater(args, { ...r })
+	try {
+		regen: while (true) {
+			if (!is_dist && process.env.EdenOS) {
+				console.log('logical_results', logical_results)
+				console.log('prompt_struct', prompt_struct)
 			}
-			return null
-		}
-		if (result.content.split('\n').pop().trim() == '<-<error>->') { // AI throws error
-			const lastlog = prompt_struct.chat_log.slice(-1)[0]
-			if (lastlog) {
-				lastlog.logContextAfter ??= []
-				lastlog.logContextAfter.push({
-					name: '龙胆',
-					uid: args.CharUid,
-					role: 'char',
-					content: '<-<error>->',
-					charVisibility: [args.char_id]
-				})
+			const AItype = args.extension?.source_purpose ?? (logical_results.in_reply_to_master ?
+				logical_results.in_nsfw ? 'nsfw' : logical_results.in_assist ? 'expert' : 'sfw'
+				: 'from-other')
+			/** @type {import('../../../../../../src/decl/AIsource.ts').AIsource_t | undefined} */
+			let activeSource
+			// 每轮从原始 content 重新派生展示层：清掉上一轮的 content_for_show，避免旧渲染段落残留。
+			delete result.content_for_show
+			// 把累计回复容器暴露给 AI 源：其跨工具轮复用 files/extension（如 Gemini chatHistory），
+			// code shell 也据此读取 logContextBefore 推送增量工具日志。
+			args.generation_options.base_result = result
+			const requestresult = await OrderedAISourceCalling(AItype, async AI => {
+				activeSource = AI
+				// 每轮通过宿主插件更新上下文占用提示，使用本轮实际选中的 AI 源。
+				await args.plugins['context-compress']?.interfaces?.chat?.TweakPrompt?.(
+					{ ...args, ai_source: AI }, prompt_struct, prompt_struct.plugin_prompts['context-compress'], 0,
+				)
+				// 主动记录本轮 prompt：由角色自己调用 Agent Studio API，不依赖 shell 注入回调
+				const promptRequest = await beginPromptRequest(args, prompt_struct, { model: AI?.filename, aiSource: AI })
+				try {
+					const replied = await AI.StructCall(prompt_struct, args.generation_options)
+					if (!replied.content?.trim() && !replied.files?.length) throw new Error('empty reply')
+					finishPromptRequest(promptRequest, { output: replied.content })
+					return replied
+				}
+				catch (error) {
+					finishPromptRequest(promptRequest, { error })
+					throw error
+				}
+			}, 3, console.error, args.ai_source)
+			// 供 needsCompression / compressContext 与后续回落使用本次实际命中的 AI 源
+			args.ai_source ??= activeSource
+			// 约定：AI 源把本轮内容写回 `args.generation_options.base_result`（即 `result`）；未写回的源（如测试桩）用其返回值兜底。
+			if (requestresult !== result) {
+				result.content = requestresult.content
+				result.files = result.files.concat(requestresult.files || [])
+				result.extension = { ...result.extension, ...requestresult.extension }
 			}
-			throw Object.assign(new Error(), { skip_auto_fix: true, skip_report: true })
-		}
-		result.content = result.content.replace(/\s*<-<(null|error)>->\s*$/, '')
-		if (args.supported_functions.add_message) addNotifyAbleChannel(args)
-		if (!result.content.trim() && !result.files?.length) return null
-		if (await runReplyHandlers(result, {
-			...args, AddLongTimeLog, prompt_struct, extension: {
-				...args.extension,
-				logical_results
+			if (result.content.split('\n').pop().trim() == '<-<null>->') { // AI skipped
+				const lastlog = prompt_struct.chat_log.slice(-1)[0]
+				if (lastlog) {
+					lastlog.logContextAfter ??= []
+					lastlog.logContextAfter.push({
+						name: '龙胆',
+						uid: args.CharUid,
+						role: 'char',
+						content: '<-<null>->',
+						charVisibility: [args.char_id]
+					})
+				}
+				await finishGeneration(args, { response: result.content })
+				return null
 			}
-		}, replyHandlers)) {
-			await injectRoundEntries(args, prompt_struct)
-			if (!await args.generation_options.finishRound?.()) break
-			continue regen
+			if (result.content.split('\n').pop().trim() == '<-<error>->') { // AI throws error
+				const lastlog = prompt_struct.chat_log.slice(-1)[0]
+				if (lastlog) {
+					lastlog.logContextAfter ??= []
+					lastlog.logContextAfter.push({
+						name: '龙胆',
+						uid: args.CharUid,
+						role: 'char',
+						content: '<-<error>->',
+						charVisibility: [args.char_id]
+					})
+				}
+				throw Object.assign(new Error(), { skip_auto_fix: true, skip_report: true })
+			}
+			result.content = result.content.replace(/\s*<-<(null|error)>->\s*$/, '')
+			if (args.supported_functions.add_message) addNotifyAbleChannel(args)
+			if (!result.content.trim() && !result.files?.length) {
+				await finishGeneration(args, { response: result.content })
+				return null
+			}
+			// 接近上下文上限时压缩历史后重新生成（默认阈值 72.9%）
+			if (needsCompression(args, { prompt_struct }) &&
+				await compressContext({ args, aiSource: activeSource, prompt_struct, result })) {
+				if (await finishToolRound(args, prompt_struct)) continue regen
+				break
+			}
+			if (await runReplyHandlers(result, {
+				...args, AddLongTimeLog, prompt_struct, extension: {
+					...args.extension,
+					logical_results
+				}
+			}, replyHandlers)) {
+				if (await finishToolRound(args, prompt_struct)) continue regen
+				break
+			}
+			break
 		}
-		break
 	}
+	catch (error) {
+		await finishGeneration(args, { error: { name: error?.name, message: formatErrorMessage(error) } })
+		throw error
+	}
+	finally {
+		finishAsyncGeneration(args.extension?.generationId)
+	}
+	await finishGeneration(args, { response: result.content })
 	if (last_entry?.role == 'user' && isUserSpeaker(last_entry, args)) {
 		if (logical_results.in_nsfw)
 			statisticDatas.userActivity.NsfwMessagesSent++
@@ -351,7 +367,8 @@ export async function GetReply(args) {
 		return result
 	}
 	catch (error) {
-		console.error(`[ReplyGener] Error in GetReply for chat "${args.chat_name}":`, error)
+		// <-<error>-> 等有意为之的 skip_report 错误不按错误级别记录，避免污染日志/测试
+		if (!error?.skip_report) console.error(`[ReplyGener] Error in GetReply for chat "${args.chat_name}":`, error)
 		let replyError = error
 		if (!(error instanceof Error)) {
 			const originalError = error

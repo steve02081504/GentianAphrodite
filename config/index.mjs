@@ -7,7 +7,6 @@ import { resetIdleTimer } from '../event_engine/on-idle.mjs'
 import { checkVoiceSentinel, stopVoiceSentinel } from '../event_engine/voice-sentinel.mjs'
 import { mergeTree } from '../scripts/tools/index.mjs'
 import { getAISourceData, setAISourceData } from '../service_sources/AI.mjs'
-import { getSearchSourceData, setSearchSourceData } from '../service_sources/search.mjs'
 import { getTranslateSourceData, setTranslateSourceData } from '../service_sources/translate.mjs'
 
 /**
@@ -25,16 +24,11 @@ export async function GetConfigDisplayContent() {
 export let plugins = {}
 
 /**
- * 存储 Bot 的核心配置，例如深度研究参数、空闲事件和语音哨兵的禁用状态。
+ * 存储 Bot 的核心配置，例如空闲事件和语音哨兵的禁用状态。
  * @type {object}
  */
 export const config = {
-	deep_research: {
-		max_planning_cycles: 4,
-		initial_plan_max_retries: 5,
-		summary_max_retries: 5,
-		reasoning_interval: 3000
-	},
+	pluginServiceSources: {},
 	reality_channel_disables: {
 		idle_event: false,
 		voice_sentinel: false
@@ -55,14 +49,12 @@ export const config = {
 export function GetData() {
 	return {
 		AIsources: getAISourceData(),
-		searchSource: getSearchSourceData(),
 		translateSource: getTranslateSourceData(),
 		plugins: Object.keys(plugins),
-		deep_research: config.deep_research,
+		pluginServiceSources: config.pluginServiceSources,
 		reality_channel_disables: config.reality_channel_disables,
 		reality_channel_notification_fallback_order: config.reality_channel_notification_fallback_order,
 		disable_prompt: config.disable_prompt,
-		fountApiKey: config.fountApiKey,
 	}
 }
 /**
@@ -70,12 +62,11 @@ export function GetData() {
  * @param {object} data - 包含新配置数据的对象。
  */
 export async function SetData(data) {
+	if (data.pluginServiceSources) config.pluginServiceSources = data.pluginServiceSources
 	await setAISourceData(data.AIsources || getAISourceData())
 	checkVoiceSentinel()
-	await setSearchSourceData(data.searchSource || getSearchSourceData())
 	await setTranslateSourceData(data.translateSource || getTranslateSourceData())
 	if (data.plugins) plugins = Object.fromEntries(await Promise.all(data.plugins.map(async x => [x, await loadPart(username, 'plugins/' + x)])))
-	Object.assign(config.deep_research, data.deep_research)
 
 	if (data.reality_channel_disables) {
 		Object.assign(config.reality_channel_disables, data.reality_channel_disables)
@@ -89,7 +80,6 @@ export async function SetData(data) {
 			config.reality_channel_notification_fallback_order[prop] = data.reality_channel_notification_fallback_order[prop]
 
 	if (data.disable_prompt) Object.assign(config.disable_prompt, data.disable_prompt)
-	if (data.fountApiKey) config.fountApiKey = data.fountApiKey
 }
 
 /**

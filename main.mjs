@@ -1,4 +1,6 @@
-import { GentianAphrodite, initCharBase } from './charbase.mjs'
+import { loadPart } from '../../../../../src/server/parts_loader.mjs'
+
+import { GentianAphrodite, initCharBase, charname, username } from './charbase.mjs'
 import { GetData, SetData, GetConfigDisplayContent } from './config/index.mjs'
 import { setConfigEndpoints } from './config/router.mjs'
 import { initializeOnIdleHandler, stopIdleTimer } from './event_engine/on-idle.mjs'
@@ -11,12 +13,11 @@ import { GetPrompt } from './prompt/index.mjs'
 import { loadMemoriesFromDisk, saveMemories } from './prompt/memory/index.mjs'
 import { GetPromptForOther } from './prompt/role_settings/for-other.mjs'
 import { handleCharTopLevelError } from './reply_gener/error.mjs'
-import { BrowserJsCallback } from './reply_gener/functions/browser-integration.mjs'
-import { timerCallBack } from './reply_gener/functions/timer.mjs'
 import { GetReply } from './reply_gener/index.mjs'
 import { unlockAchievement } from './scripts/achievements.mjs'
 import { checkAndBackupDir, checkAndBackupMemoryFile } from './scripts/backup.mjs'
 import { startClipboardListening, stopClipboardListening } from './scripts/clipboard.mjs'
+import { GetPluginPrompt, GetPluginServiceSource, OnPluginEvent } from './scripts/plugin-customization.mjs'
 import { loadStatisticDatasFromDisk } from './scripts/statistics.mjs'
 import { saveVars } from './scripts/vars.mjs'
 import { OnGroupEvent } from './trigger/onGroupEvent.mjs'
@@ -64,6 +65,11 @@ Object.assign(GentianAphrodite, {
 	},
 
 	interfaces: {
+		plugins: {
+			OnEvent: OnPluginEvent,
+			GetServiceSource: GetPluginServiceSource,
+			GetPrompt: GetPluginPrompt,
+		},
 		info: {
 			UpdateInfo,
 		},
@@ -96,7 +102,15 @@ Object.assign(GentianAphrodite, {
 			Assist: async args => import('./interfaces/shellassist/index.mjs').then(mod => mod.shellAssistMain(args))
 		},
 		browserIntegration: {
-			BrowserJsCallback
+			/**
+			 * 兼容旧脚本的角色回调地址，处理逻辑由宿主插件提供。
+			 * @param {object} payload 浏览器回调数据。
+			 * @returns {Promise<void>} 回调完成。
+			 */
+			BrowserJsCallback: async payload => {
+				const plugin = await loadPart(username, 'plugins/browser-integration')
+				await plugin.interfaces.browserIntegration.BrowserJsCallback({ ...payload, username, char_id: charname })
+			},
 		},
 		timers: {
 			/**
@@ -107,14 +121,12 @@ Object.assign(GentianAphrodite, {
 			 * @returns {Promise<void>}
 			 */
 			TimerCallback: async (username, uid, callbackdata) => {
-				const { type } = callbackdata
-				switch (type) {
-					case 'timer':
-						timerCallBack(callbackdata)
-						break
-					default:
-						throw new Error(`Unknown timer type: ${type}`)
-				}
+				const plugin = await loadPart(username, 'plugins/timer')
+				await plugin.interfaces.timers.TimerCallback(username, uid, {
+					...callbackdata,
+					char_id: callbackdata.char_id || charname,
+					chatLogSnip: callbackdata.chatLogSnip ?? callbackdata.chat_log_snip,
+				})
 			}
 		}
 	}

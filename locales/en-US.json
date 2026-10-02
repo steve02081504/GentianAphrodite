@@ -92,11 +92,6 @@
 				"description": "Had Gentian browse a webpage, guiding her through the mysteries of the web.",
 				"locked_description": "Have Gentian browse a webpage and let her be your 'web-guide'."
 			},
-			"use_deep_research": {
-				"name": "Bookworm Mode: Activated",
-				"description": "Tasked Gentian with a deep research assignment. She's practically a librarian now.",
-				"locked_description": "Have Gentian conduct deep research and see what hidden gems she can unearth."
-			},
 			"use_file_change": {
 				"name": "The Digital Tailor",
 				"description": "Gentian has successfully modified a file. Witness her deft touch.",

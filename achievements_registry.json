@@ -56,13 +56,6 @@
 			"locked_description": "GentianAphrodite.achievements.use_webbrowse.locked_description",
 			"locked_icon": "https://api.iconify.design/line-md/question-circle.svg"
 		},
-		"use_deep_research": {
-			"name": "GentianAphrodite.achievements.use_deep_research.name",
-			"description": "GentianAphrodite.achievements.use_deep_research.description",
-			"icon": "https://api.iconify.design/material-symbols/science.svg",
-			"locked_description": "GentianAphrodite.achievements.use_deep_research.locked_description",
-			"locked_icon": "https://api.iconify.design/line-md/question-circle.svg"
-		},
 		"use_file_change": {
 			"name": "GentianAphrodite.achievements.use_file_change.name",
 			"description": "GentianAphrodite.achievements.use_file_change.description",

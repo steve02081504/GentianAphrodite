@@ -61,7 +61,6 @@ ${escapeHTML(statisticDatas.firstInteraction.characterReplyContent)}
 🛠️ For you, she:
 
 - ⚙️ ran code ${statisticDatas.toolUsage.codeRuns} times
-- 🤔 had ${statisticDatas.toolUsage.deepResearchSessions} rounds of deep research
 - 📄 performed ${statisticDatas.toolUsage.fileOperations} file operations
 - 🔎 performed ${statisticDatas.toolUsage.webSearches} web searches
 - 🌐 browsed the web ${statisticDatas.toolUsage.webBrowses} times
