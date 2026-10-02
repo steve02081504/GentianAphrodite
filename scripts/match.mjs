@@ -77,23 +77,30 @@ export async function SimplifyContent(content) {
 	if (!is_PureChinese(simplified_langcheck_content)) {
 		console.info('%ccontent "' + content + '" is not pure chinese, translating it for prompt building logic', 'color: red')
 		console.log('franc result:', francAll(content, { minLength: 0 }))
-		if (translateSource)
-			while (true) try {
-				const result = await translateSource.Translate(content, { from: 'auto', to: 'zh-CN' })
-				content = result.text
-				break
-			}
-			catch (e) {
-				if (e.name == 'TooManyRequestsError') {
-					console.info('Translate API rate limit exceeded, waiting 5 second before retrying')
-					await sleep(5000)
-				}
-				else {
-					console.error('Failed to translate content "' + content + '": ', e)
+		if (translateSource) {
+			// 有界重试：持续的 429/限流不应无限等待，否则每次构建 prompt 都会挂死。
+			// 用尽尝试后退化为原文参与匹配（翻译只是启发式辅助，缺失不影响主流程）。
+			const MAX_TRANSLATE_ATTEMPTS = 3
+			for (let attempt = 1; attempt <= MAX_TRANSLATE_ATTEMPTS; attempt++)
+				try {
+					const result = await translateSource.Translate(content, { from: 'auto', to: 'zh-CN' })
+					content = result.text
 					break
 				}
-			}
-		else console.error('Translate source is not available, skipping translation')
+				catch (e) {
+					if (e.name == 'TooManyRequestsError' && attempt < MAX_TRANSLATE_ATTEMPTS) {
+						const waitSeconds = 5 * attempt
+						console.info(`Translate API rate limit exceeded, waiting ${waitSeconds} second before retrying (attempt ${attempt}/${MAX_TRANSLATE_ATTEMPTS})`)
+						await sleep(waitSeconds * 1000)
+					}
+					else {
+						// 翻译仅为匹配启发式的辅助；失败不应以 error 级别污染日志/测试
+						console.warn('Failed to translate content "' + content + '": ', e)
+						break
+					}
+				}
+		}
+		else console.warn('Translate source is not available, skipping translation')
 	}
 	return SimpleSimplify(content)
 }
