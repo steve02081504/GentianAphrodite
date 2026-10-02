@@ -21,7 +21,7 @@
 | `trigger_message_id` | string  | 触发消息 ID                                                |
 | `is_reality_channel` | boolean | Reality Channel 后台流量（`event_engine` / `reply_gener`） |
 | `from_timer`         | boolean | 计时器发起的请求；`prompt/system/specialreplay.mjs` 读取   |
-| `enable_prompts`     | object  | 强制激活 `prompt/functions/` 模块，绕过常规 `match_keys`   |
+| `enable_prompts`     | object  | 强制激活角色 prompt 或在生成前加载对应宿主插件   |
 
 ```javascript
 // 强制激活计算与时间/节日
@@ -37,9 +37,7 @@
 
 | 键                   | 类型    | 来源                                           |
 | -------------------- | ------- | ---------------------------------------------- |
-| `decodedQRCodes`     | array   | `qrcodeParser.mjs`                             |
-| `processedURLs`      | boolean | `webbrowse.mjs`                                |
 | `SimplifiedContents` | array   | `prompt/memory/short-term/`                    |
-| `execed_codes`       | object  | `coderunner.mjs`                               |
-| `logical_results`    | object  | `deep-research.mjs`                            |
+| `execed_codes`       | object  | 宿主 code-execution 插件                               |
+| `logical_results`    | object  | `reply_gener/index.mjs`                        |
 | `recommend_command`  | string  | `interfaces/shellassist/recommend_command.mjs` |
