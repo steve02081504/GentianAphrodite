@@ -22,7 +22,7 @@
 - **`prompt/`**：AI 大脑 — `system/`、`role_settings/`、`functions/`（能力 API 声明）、`memory/`、`build.mjs`（动态组装）。
 - **`reply_gener/`**：工具实现与最终回复路径（`GetReply`），与平台无关；含 `functions/`、`noAI/`。
 - **`trigger/`**：`interfaces.chat.OnMessage` / `OnGroupEvent` 流水线（`scoring`、`repeat`、`commands`、`onGroupEvent` 等）。主人消息仅在 `channel.typingUsers()` **已观察到主人正在输入**时才等约 3s 静默；无 typing 入账的平台（如 Telegram）立即放行。
-- **`interfaces/`**：`main.mjs` 声明 `interfaces.*.stickers`，平台 `telegram-api`/`discord-api` 由 `plugin-triggers.mjs` 关键词装配；出站贴纸由壳层 bridge 解析。`shellassist` 等直接调 `GetReply`。
+- **`interfaces/`**：`main.mjs` 声明 `interfaces.*.stickers`，平台 `telegram-api`/`discord-api` 由 `plugin-triggers.mjs` 关键词装配；出站贴纸由壳层 bridge 解析。`shellassist` 在 `Load` 中由宿主 `GetDefaultShellAssistInterface` 工厂生成，仅通过 `requestExtension` 选择专用模型、`onResult` 记录终端统计；不要复制宿主实现。
 - **`event_engine/`**：空闲/Todo、语音哨兵、Reality Channel 等后台任务，直接调 `GetReply`。
 - **`prompt/plugin-triggers.mjs` + `scripts/builtin-plugins.mjs`**：保留关键词，生成前装配 fount 内置插件（见 §5）。
 - **`.esh/`**：Shell profile。

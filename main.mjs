@@ -1,3 +1,4 @@
+import { GetDefaultShellAssistInterface } from '../../../../../src/public/parts/shells/shellassist/src/default_interface/main.mjs'
 import { loadPart } from '../../../../../src/server/parts_loader.mjs'
 
 import { GentianAphrodite, initCharBase, charname, username } from './charbase.mjs'
@@ -18,7 +19,7 @@ import { unlockAchievement } from './scripts/achievements.mjs'
 import { checkAndBackupDir, checkAndBackupMemoryFile } from './scripts/backup.mjs'
 import { startClipboardListening, stopClipboardListening } from './scripts/clipboard.mjs'
 import { GetPluginPrompt, GetPluginServiceSource, OnPluginEvent } from './scripts/plugin-customization.mjs'
-import { loadStatisticDatasFromDisk } from './scripts/statistics.mjs'
+import { loadStatisticDatasFromDisk, newCharReply, newUserMessage } from './scripts/statistics.mjs'
 import { saveVars } from './scripts/vars.mjs'
 import { OnGroupEvent } from './trigger/onGroupEvent.mjs'
 import { initTriggerIdentity, OnMessage, selfEntityHash } from './trigger/onMessage.mjs'
@@ -93,14 +94,18 @@ Object.assign(GentianAphrodite, {
 		discord: {
 			stickers: discordStickers,
 		},
-		shellassist: {
+		shellassist: GetDefaultShellAssistInterface(GentianAphrodite, username, charname, {
+			requestExtension: { source_purpose: 'shell-assist' },
 			/**
-			 * 执行 shell 辅助操作。
-			 * @param {object} args - 参数对象。
-			 * @returns {Promise<any>} - shell 辅助操作的结果。
+			 * 保留终端交互统计及用户活动计时。
+			 * @param {object} args 终端请求。
+			 * @param {object | null | undefined} reply 角色回复。
 			 */
-			Assist: async args => import('./interfaces/shellassist/index.mjs').then(mod => mod.shellAssistMain(args))
-		},
+			onResult: (args, reply) => {
+				newUserMessage(args.command_now, 'shell')
+				if (reply) newCharReply(reply.content, 'shell')
+			},
+		}),
 		browserIntegration: {
 			/**
 			 * 兼容旧脚本的角色回调地址，处理逻辑由宿主插件提供。

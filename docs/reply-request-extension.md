@@ -40,4 +40,4 @@
 | `SimplifiedContents` | array   | `prompt/memory/short-term/`                    |
 | `execed_codes`       | object  | 宿主 code-execution 插件                               |
 | `logical_results`    | object  | `reply_gener/index.mjs`                        |
-| `recommend_command`  | string  | `interfaces/shellassist/recommend_command.mjs` |
+| `recommend_command`  | string  | fount `shells/shellassist/src/default_interface/recommend_command.mjs` |
