@@ -4,6 +4,27 @@ import path from 'node:path'
 /* global fountCharCI */
 const CI = fountCharCI
 
+await CI.test('Reality Channel History excludes bootstrap examples', async () => {
+	const { RealityChannel, initRealityChannel } = await import('../../event_engine/reality-channel.mjs')
+	const { RealityChannelHistoryPrompt } = await import('../../prompt/memory/reality-channel-history.mjs')
+	initRealityChannel()
+	const original = RealityChannel.chat_log
+	try {
+		RealityChannel.chat_log = original.filter(entry => entry.type === 'reality-bootstrap')
+		const empty = await RealityChannelHistoryPrompt({}, {})
+		CI.assert(empty.text.length === 0, 'Bootstrap examples should not be injected as real activity.')
+		RealityChannel.chat_log = [...RealityChannel.chat_log, { name: 'system', role: 'system', content: 'actual reality activity' }]
+		const active = await RealityChannelHistoryPrompt({}, {})
+		CI.assert(active.text[0].content.includes('actual reality activity'), 'Actual activity must remain visible.')
+		CI.assert(!active.text[0].content.includes('测试通知'), 'Bootstrap notification leaked into activity history.')
+		const own = await RealityChannelHistoryPrompt({ extension: { is_reality_channel: true } }, {})
+		CI.assert(own.text.length === 0, 'Reality channel must not repeat its own history.')
+	}
+	finally {
+		RealityChannel.chat_log = original
+	}
+})
+
 await CI.test('noAI Fallback', async () => {
 	await CI.char.interfaces.config.SetData({ AIsources: {} })
 	await CI.runOutput()

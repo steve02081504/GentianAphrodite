@@ -14,12 +14,11 @@ import { createContextSnapshot } from '../../scripts/context.mjs'
 export async function RealityChannelHistoryPrompt(args, logical_results) {
 	if (args.extension?.is_reality_channel) return { text: [], additional_chat_log: [] }
 
-	const recentHistory = RealityChannel.chat_log.slice(-5)
+	const recentHistory = (RealityChannel.chat_log ?? []).filter(entry => entry.type !== 'reality-bootstrap').slice(-5)
 	const historyText = createContextSnapshot(recentHistory)
+	if (!historyText.trim()) return { text: [], additional_chat_log: [] }
 
-	let result = ''
-	if (historyText.trim())
-		result = `\
+	const result = `\
 <reality-channel-history>
 以下是你最近在现实频道中的活动记录：
 ${historyText}

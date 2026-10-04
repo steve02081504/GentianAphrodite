@@ -73,6 +73,7 @@ export function initRealityChannel() {
 		time: new Date(),
 		chat_log: [
 			{
+				type: 'reality-bootstrap',
 				name: 'system',
 				uid: 'system',
 				role: 'system',
@@ -81,6 +82,7 @@ export function initRealityChannel() {
 `
 			},
 			{
+				type: 'reality-bootstrap',
 				name: '龙胆',
 				uid: 'char',
 				role: 'char',
@@ -92,6 +94,7 @@ export function initRealityChannel() {
 `
 			},
 			{
+				type: 'reality-bootstrap',
 				name: 'system',
 				uid: 'system',
 				role: 'system',
