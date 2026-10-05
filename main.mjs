@@ -94,7 +94,9 @@ Object.assign(GentianAphrodite, {
 		discord: {
 			stickers: discordStickers,
 		},
-		shellassist: GetDefaultShellAssistInterface(GentianAphrodite, username, charname, {
+		shellassist: GetDefaultShellAssistInterface(GentianAphrodite, {
+			/** @returns {{ username: string, charname: string }} 当前角色身份。 */
+			getIdentity: () => ({ username, charname }),
 			requestExtension: { source_purpose: 'shell-assist' },
 			/**
 			 * 保留终端交互统计及用户活动计时。
