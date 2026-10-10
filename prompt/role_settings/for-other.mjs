@@ -1,10 +1,13 @@
+import { is_dist } from '../../charbase.mjs'
+
 /**
  * 获取用于其他角色的 prompt。
  * @param {import('../../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReplyRequest_t} args - 生成 prompt 所需的参数。
- * @returns {Promise<{text: {content: string, important: number}[]}>} 返回生成的 prompt。
+ * @returns {Promise<{encrypted: boolean, text: {content: string, important: number}[]}>} 返回生成的 prompt。
  */
 export async function GetPromptForOther(args) {
 	return {
+		encrypted: is_dist,
 		text: [
 			{
 				content: `\

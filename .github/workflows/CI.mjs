@@ -1,8 +1,63 @@
+import { Buffer } from 'node:buffer'
 import fs from 'node:fs'
 import path from 'node:path'
 
 /* global fountCharCI */
 const CI = fountCharCI
+
+await CI.test('Distribution build injects flags before tree shaking', async () => {
+	const { rollup } = await import('npm:rollup')
+	const { distFlagsPlugin } = await import('../../.esh/commands/build-dist-flags.mjs')
+	const root = path.resolve(import.meta.dirname, '../..')
+	const charBasePath = path.join(root, 'charbase.mjs')
+	const version = 'v0.1.5.20'
+	const entryId = '\0dist-flags-test'
+	const bundle = await rollup({
+		input: entryId,
+		/**
+		 * 保留宿主模块为外部依赖。
+		 * @param {string} id 模块标识。
+		 * @returns {boolean} 是否外部依赖。
+		 */
+		external: id => id.startsWith('node:') || id.startsWith('npm:') || id.endsWith('/src/server/base.mjs'),
+		treeshake: { moduleSideEffects: false },
+		plugins: [
+			{
+				name: 'distribution-test-entry',
+				/**
+				 * 解析虚拟入口。
+				 * @param {string} id 模块标识。
+				 * @returns {string|null} 入口标识。
+				 */
+				resolveId(id) { return id === entryId ? id : null },
+				/**
+				 * 加载虚拟入口。
+				 * @param {string} id 模块标识。
+				 * @returns {string|null} 测试入口源码。
+				 */
+				load(id) {
+					if (id !== entryId) return null
+					return `export { is_dist, charvar } from ${JSON.stringify(charBasePath)};
+export { GetPromptForOther } from ${JSON.stringify(path.join(root, 'prompt/role_settings/for-other.mjs'))};`
+				},
+			},
+			distFlagsPlugin(version, charBasePath),
+		],
+	})
+	try {
+		const { output } = await bundle.generate({ format: 'esm' })
+		// data URL 没有 dirname，提供实际构建目录供 charbase 的路径初始化使用。
+		const code = output[0].code.replaceAll('import.meta.dirname', JSON.stringify(root))
+		const built = await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`)
+		CI.assert(built.is_dist === true, 'Built character must enable distribution mode.')
+		CI.assert(built.charvar === version, 'Built character must use the release version without invoking git.')
+		CI.assert((await built.GetPromptForOther({})).encrypted === true, 'Tree shaking must retain prompt privacy in the built character.')
+		CI.assert(fs.readFileSync(charBasePath, 'utf8').includes('export const is_dist = false'), 'Build must preserve development mode in source.')
+	}
+	finally {
+		await bundle.close()
+	}
+})
 
 await CI.test('Reality Channel History excludes bootstrap examples', async () => {
 	const { RealityChannel, initRealityChannel } = await import('../../event_engine/reality-channel.mjs')
@@ -88,7 +143,17 @@ await CI.test('Plugin Trigger Selection', async () => {
 	const request = (content, overrides = {}) => ({ chat_log: [{ uid: 'user', content }], UserUid: 'user', CharUid: 'char', supported_functions: { add_message: true }, ...overrides })
 	const deps = {
 		matchKeys,
+		/**
+		 * 提取测试文件路径。
+		 * @param {string} text 消息文本。
+		 * @returns {object[]} 路径候选。
+		 */
 		extractPathCandidates: text => /C:\\project\\main.mjs/.test(text) ? [{ path: text }] : [],
+		/**
+		 * 获取测试聊天记录。
+		 * @param {object} args 请求。
+		 * @returns {object[]} 聊天记录。
+		 */
 		getScopedChatLog: args => args.chat_log,
 	}
 

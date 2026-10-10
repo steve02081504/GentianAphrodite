@@ -8,6 +8,8 @@ import { visualizer } from 'npm:rollup-plugin-visualizer'
 
 import { nicerWriteFileSync } from '../../scripts/tools/index.mjs'
 
+import { distFlagsPlugin } from './build-dist-flags.mjs'
+
 // 创建dist目录
 fs.mkdirSync('dist', { recursive: true })
 
@@ -22,21 +24,7 @@ const bundle = await rollup({
 		/(?:.{2}\/){5}.*/
 	],
 	plugins: [
-		{
-			name: 'git-version-injector',
-			/**
-			 * 在打包时向代码块中注入Git版本号和分发模式标志。
-			 * @param {string} code - 输入的代码字符串。
-			 * @returns {{code: string, map: null}} - 包含修改后代码的对象。
-			 */
-			renderChunk(code) {
-				const newCode = code
-					.replace(/(const|let)\s*charvar = [^]*?\n\);?\n/, `const charvar = "${charvar}";`)
-					.replace(/(const|let)\s*is_dist = [^\n]*\n/, 'const is_dist = true;')
-
-				return { code: newCode, map: null }
-			}
-		},
+		distFlagsPlugin(charvar),
 
 		terser({
 			module: true,
