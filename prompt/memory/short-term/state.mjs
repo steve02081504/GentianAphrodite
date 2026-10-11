@@ -15,7 +15,7 @@ export let lastSavedMemoryChatName = null
  * @param {MemoryEntry[]} next 新的记忆列表
  */
 export function replaceMemories(next) {
-	memories = next
+	memories = next.filter(memory => memory != null)
 }
 
 /**

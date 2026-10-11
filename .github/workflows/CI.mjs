@@ -5,6 +5,26 @@ import path from 'node:path'
 /* global fountCharCI */
 const CI = fountCharCI
 
+await CI.test('Character info handles empty and nullable short-term memories', async () => {
+	const { memories, replaceMemories } = await import('../../prompt/memory/short-term/state.mjs')
+	const { getMostFrequentChatName } = await import('../../prompt/memory/short-term/storage.mjs')
+	const original = memories
+	try {
+		replaceMemories([])
+		CI.assert(getMostFrequentChatName() === undefined, 'Fresh imports must have no frequent channel.')
+		const emptyInfo = await CI.char.interfaces.info.UpdateInfo()
+		CI.assert(emptyInfo['zh-CN'] && emptyInfo['en-US'], 'Fresh imports must render both info locales.')
+		const memory = { time_stamp: new Date(), text: 'test memory', keywords: [], score: 0 }
+		replaceMemories([undefined, null, { ...memory }, { ...memory, chat_name: '' }, { ...memory, chat_name: '   ' }, { ...memory, chat_name: 'A' }, { ...memory, chat_name: 'B' }, { ...memory, chat_name: 'A' }])
+		CI.assert(getMostFrequentChatName() === 'A', 'Missing channel names must not hide the most frequent valid channel.')
+		const info = await CI.char.interfaces.info.UpdateInfo()
+		CI.assert(info['zh-CN'] && info['en-US'], 'Nullable memory entries must not break character info.')
+	}
+	finally {
+		replaceMemories(original)
+	}
+})
+
 await CI.test('Distribution build injects flags before tree shaking', async () => {
 	const { rollup } = await import('npm:rollup')
 	const { distFlagsPlugin } = await import('../../.esh/commands/build-dist-flags.mjs')

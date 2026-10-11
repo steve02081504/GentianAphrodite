@@ -27,10 +27,10 @@ export function loadShortTermMemoryFromDisk() {
 
 /**
  * 获取最频繁的聊天名称（用于统计主要互动的对象）
- * @returns {string} 最频繁的聊天名称
+ * @returns {string|undefined} 最频繁的聊天名称；无有效名称时为 undefined
  */
 export function getMostFrequentChatName() {
-	return findMostFrequentElement(memories.map(x => x.chat_name)).element
+	return findMostFrequentElement(memories.map(x => x?.chat_name).filter(name => typeof name === 'string' && name.trim())).element
 }
 
 /**
